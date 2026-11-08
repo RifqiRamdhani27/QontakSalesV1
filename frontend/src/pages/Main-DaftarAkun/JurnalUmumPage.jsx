@@ -5,6 +5,50 @@ import api from "@/services/api";
 export default function JurnalUmumPage() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+
+  const [themeMode, setThemeMode] = useState(() => localStorage.getItem("app_theme") || "light");
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+  const isDark = themeMode === "dark";
+  const c = isDark
+    ? {
+      popBg: "#1a1a1a",
+      popBorder: "#634f27",
+      shadow: "0 10px 25px -5px rgba(0,0,0,0.6)",
+      nav: "#f1f5f9",
+      accent: "#E5B85C",
+      weekday: "#94a3b8",
+      selBg: "#E5B85C",
+      selText: "#121212",
+      dayText: "#f1f5f9",
+      dayMuted: "#4b5563",
+      monthBg: "#262626",
+      hoverBg: "#2d2d2d",
+      divider: "#3a3326",
+    }
+    : {
+      popBg: "#ffffff",
+      popBorder: "#d5dcde",
+      shadow: "0 10px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1)",
+      nav: "#334155",
+      accent: "#0284c7",
+      weekday: "#334155",
+      selBg: "#0284c7",
+      selText: "#ffffff",
+      dayText: "#1e293b",
+      dayMuted: "#cbd5e1",
+      monthBg: "#f8fafc",
+      hoverBg: "#f1f5f9",
+      divider: "#f1f5f9",
+    };
+
   const datePickerRef = useRef(null);
   const [accounts, setAccounts] = useState([]);
   const [noTransaksi, setNoTransaksi] = useState("[Auto]");
@@ -81,6 +125,192 @@ export default function JurnalUmumPage() {
     }
     return days;
   };
+
+  const renderCalendarPopover = () => (
+    <div
+      style={{
+        position: "absolute", top: "calc(100% + 6px)", left: 0,
+        zIndex: 1000, backgroundColor: c.popBg, border: `1px solid ${c.popBorder}`,
+        borderRadius: "8px", boxShadow: c.shadow,
+        padding: "14px 16px", width: "280px", userSelect: "none",
+      }}
+    >
+      {/* Header navigasi */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+        <button
+          type="button"
+          style={{ background: "none", border: "none", fontSize: "16px", fontWeight: "bold", cursor: "pointer", color: c.nav, padding: "4px 8px", borderRadius: "4px" }}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (calendarViewMode === "days") setCalendarViewDate(new Date(calendarViewDate.getFullYear(), calendarViewDate.getMonth() - 1, 1));
+            else if (calendarViewMode === "months") setCalendarViewDate(new Date(calendarViewDate.getFullYear() - 1, calendarViewDate.getMonth(), 1));
+            else setYearRangeStart((prev) => prev - 12);
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = c.hoverBg)}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+        >
+          «
+        </button>
+
+        <button
+          type="button"
+          style={{ background: "none", border: "none", fontSize: "14px", fontWeight: "700", color: c.accent, cursor: "pointer", padding: "4px 8px", borderRadius: "4px", display: "flex", alignItems: "center", gap: "5px" }}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (calendarViewMode === "days") setCalendarViewMode("months");
+            else if (calendarViewMode === "months") {
+              setYearRangeStart(Math.floor(calendarViewDate.getFullYear() / 12) * 12);
+              setCalendarViewMode("years");
+            } else setCalendarViewMode("days");
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = c.hoverBg)}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+          title="Klik untuk memilih bulan / tahun"
+        >
+          <span>
+            {calendarViewMode === "days" && `${MONTH_NAMES[calendarViewDate.getMonth()]} ${calendarViewDate.getFullYear()}`}
+            {calendarViewMode === "months" && `${calendarViewDate.getFullYear()}`}
+            {calendarViewMode === "years" && `${yearRangeStart} - ${yearRangeStart + 11}`}
+          </span>
+          <span style={{ fontSize: "10px" }}>▼</span>
+        </button>
+
+        <button
+          type="button"
+          style={{ background: "none", border: "none", fontSize: "16px", fontWeight: "bold", cursor: "pointer", color: c.nav, padding: "4px 8px", borderRadius: "4px" }}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (calendarViewMode === "days") setCalendarViewDate(new Date(calendarViewDate.getFullYear(), calendarViewDate.getMonth() + 1, 1));
+            else if (calendarViewMode === "months") setCalendarViewDate(new Date(calendarViewDate.getFullYear() + 1, calendarViewDate.getMonth(), 1));
+            else setYearRangeStart((prev) => prev + 12);
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = c.hoverBg)}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+        >
+          »
+        </button>
+      </div>
+
+      {/* View: Hari */}
+      {calendarViewMode === "days" && (
+        <>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", textAlign: "center", fontWeight: 600, fontSize: "11px", color: c.weekday, marginBottom: "6px" }}>
+            <span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "2px", textAlign: "center", fontSize: "12px" }}>
+            {getCalendarDays(calendarViewDate.getFullYear(), calendarViewDate.getMonth()).map((d, idx) => {
+              const isSelected =
+                d.day === selectedDate.getDate() &&
+                d.month === selectedDate.getMonth() &&
+                d.year === selectedDate.getFullYear();
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newDate = new Date(d.year, d.month, d.day);
+                    setSelectedDate(newDate);
+                    setCalendarViewDate(newDate);
+                    setShowCalendar(false);
+                  }}
+                  style={{
+                    padding: "6px 0", border: "none", borderRadius: "4px", cursor: "pointer",
+                    backgroundColor: isSelected ? c.selBg : "transparent",
+                    color: isSelected ? c.selText : d.isCurrentMonth ? c.dayText : c.dayMuted,
+                    fontWeight: isSelected ? "bold" : "normal",
+                  }}
+                  onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = c.hoverBg; }}
+                  onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = "transparent"; }}
+                >
+                  {d.day}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      {/* View: Bulan */}
+      {calendarViewMode === "months" && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", textAlign: "center", fontSize: "12px", paddingTop: "8px" }}>
+          {MONTH_NAMES.map((mName, idx) => {
+            const sel = calendarViewDate.getMonth() === idx;
+            return (
+              <button
+                key={mName}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCalendarViewDate(new Date(calendarViewDate.getFullYear(), idx, 1));
+                  setCalendarViewMode("days");
+                }}
+                style={{
+                  padding: "10px 4px", border: "none", borderRadius: "4px", cursor: "pointer",
+                  backgroundColor: sel ? c.selBg : c.monthBg,
+                  color: sel ? c.selText : c.dayText,
+                  fontWeight: sel ? "bold" : "normal",
+                }}
+                onMouseEnter={(e) => { if (!sel) e.currentTarget.style.backgroundColor = c.hoverBg; }}
+                onMouseLeave={(e) => { if (!sel) e.currentTarget.style.backgroundColor = c.monthBg; }}
+              >
+                {mName.substring(0, 3)}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* View: Tahun */}
+      {calendarViewMode === "years" && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", textAlign: "center", fontSize: "12px", paddingTop: "8px" }}>
+          {Array.from({ length: 12 }).map((_, idx) => {
+            const yearVal = yearRangeStart + idx;
+            const sel = calendarViewDate.getFullYear() === yearVal;
+            return (
+              <button
+                key={yearVal}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCalendarViewDate(new Date(yearVal, calendarViewDate.getMonth(), 1));
+                  setCalendarViewMode("months");
+                }}
+                style={{
+                  padding: "10px 4px", border: "none", borderRadius: "4px", cursor: "pointer",
+                  backgroundColor: sel ? c.selBg : c.monthBg,
+                  color: sel ? c.selText : c.dayText,
+                  fontWeight: sel ? "bold" : "normal",
+                }}
+                onMouseEnter={(e) => { if (!sel) e.currentTarget.style.backgroundColor = c.hoverBg; }}
+                onMouseLeave={(e) => { if (!sel) e.currentTarget.style.backgroundColor = c.monthBg; }}
+              >
+                {yearVal}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Tombol hari ini */}
+      <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: `1px solid ${c.divider}`, textAlign: "center" }}>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            const today = new Date();
+            setSelectedDate(today);
+            setCalendarViewDate(today);
+            setCalendarViewMode("days");
+            setShowCalendar(false);
+          }}
+          style={{ background: "none", border: "none", fontSize: "13px", fontWeight: 600, color: c.accent, cursor: "pointer", padding: "4px 8px", borderRadius: "4px" }}
+        >
+          Hari ini
+        </button>
+      </div>
+    </div>
+  );
 
   const handleFileSelect = (e) => {
     const selectedFiles = Array.from(e.target.files);
@@ -159,7 +389,8 @@ export default function JurnalUmumPage() {
   };
 
   return (
-    <div style={{ margin: "-24px", minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "space-between", backgroundColor: "#ffffff", fontFamily: "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}>
+    <div className={isDark ? "dash-dark jn-root" : "jn-root"}
+      style={{ margin: "-24px", minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "space-between", backgroundColor: "#ffffff", fontFamily: "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}>
       <style>{`
         .control-label {
           font-family: 'Gotham-Medium', Montserrat, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
@@ -188,19 +419,68 @@ export default function JurnalUmumPage() {
           resize: vertical;
           min-height: 38px;
         }
+
+        /* Dark Mode */
+        .dash-dark.jn-root { background-color: #121212 !important; color-scheme: dark; }
+        .dash-dark h1 { color: #ffffff !important; }
+        .dash-dark label, .dash-dark label span, .dash-dark strong { color: #f1f5f9 !important; }
+        .dash-dark main div[style*="font-size: 13px"] { color: #cbd5e1; }
+
+        /* Permukaan */
+        .dash-dark .jn-banner { background-color: #1a1a1a !important; border-color: #634f27 !important; }
+        .dash-dark .jn-head { background-color: #d38e0d69 !important; border-color: #634f27 !important; color: #f1f5f9 !important; }
+        .dash-dark .jn-body { background-color: #121212 !important; border-color: #634f27 !important; }
+        .dash-dark .jn-body > div { border-color: #3a3326 !important; }
+        .dash-dark .jn-card { background-color: #1e1e1e !important; border-color: #634f27 !important; }
+        .dash-dark .jn-card div, .dash-dark .jn-card span { color: #cbd5e1; }
+        .dash-dark .jn-addon { background-color: #262626 !important; border-color: #634f27 !important; color: #E5B85C !important; }
+        .dash-dark .jn-addon svg { color: #E5B85C !important; }
+
+        /* Input */
+        .dash-dark .form-erp-input {
+          background-color: #262626 !important;
+          color: #f1f5f9 !important;
+          border-color: #634f27 !important;
+        }
+        .dash-dark .form-erp-input:focus {
+          border-color: #E5B85C !important;
+          box-shadow: 0 0 0 2px rgba(229,184,92,0.25) !important;
+        }
+        .dash-dark select option { background: #262626; color: #f1f5f9 !important; }
+        .dash-dark ::placeholder { color: #94a3b8; }
+
+        /* Tombol utama -> emas */
+        .dash-dark .jn-btn { background-color: #E5B85C !important; color: #121212 !important; box-shadow: 0 3px 0 #8a6d2f !important; }
+        .dash-dark .jn-btn:hover { background-color: #f0c978 !important; }
+
+        /* Tombol hapus baris */
+        .dash-dark .jn-body button { color: #E5B85C !important; }
+        .dash-dark .jn-body button rect { fill: #E5B85C; }
+
+        
+        
+        /* Teks kecil "Transaksi" */
+        .dash-dark .jn-crumb { color: #f8fafc !important; }
+
+        /* Total debit/kredit putih cerah */
+        .dash-dark .jn-total div { color: #ffffff !important; }
+
+        /* Ikon lampiran emas */
+        .dash-dark .jn-clip { color: #E5B85C !important; stroke: #E5B85C !important; }      
       `}</style>
 
       {/* BEGIN: MainContentContainer */}
       <main style={{ width: "100%", paddingBottom: "40px" }}>
         {/* BEGIN: TopHeader */}
         <div style={{ paddingLeft: "24px", paddingRight: "24px", paddingTop: "20px", paddingBottom: "12px", borderBottom: "1px solid #e2e8f0" }}>
-          <div style={{ fontSize: "13px", color: "#384f6eff", fontWeight: "400", lineHeight: "1", marginBottom: "6px" }}>Transaksi</div>
+          <div className="jn-crumb" style={{ fontSize: "13px", color: "#384f6eff", fontWeight: "400", lineHeight: "1", marginBottom: "6px" }}>Transaksi</div>
           <h1 style={{ fontSize: "24px", fontWeight: "700", color: "#003764", letterSpacing: "-0.025em" }}>Jurnal Umum</h1>
         </div>
         {/* END: TopHeader */}
 
         {/* BEGIN: TopFormBanner (Sejajar Horisontal) */}
-        <div style={{ backgroundColor: "#d9eff4ff", borderBottom: "1px solid #e1eff4", borderTop: "2px solid #b2eaffff", paddingLeft: "24px", paddingRight: "24px", paddingTop: "20px", paddingBottom: "20px" }}>
+        <div className="jn-banner"
+          style={{ backgroundColor: "#d9eff4ff", borderBottom: "1px solid #e1eff4", borderTop: "2px solid #b2eaffff", paddingLeft: "24px", paddingRight: "24px", paddingTop: "20px", paddingBottom: "20px" }}>
           <div style={{ maxWidth: "1720px", display: "flex", gap: "28px", alignItems: "flex-start", flexWrap: "wrap" }}>
             {/* Field 1: No Transaksi */}
             <div style={{ flex: "0 0 280px", minWidth: "220px" }}>
@@ -230,7 +510,7 @@ export default function JurnalUmumPage() {
             <div style={{ flex: "0 0 280px", minWidth: "220px", position: "relative" }} ref={datePickerRef}>
               <label className="control-label" style={{ display: "block", fontSize: "13px", fontWeight: "600", color: "#1e293b", marginBottom: "6px", fontFamily: "'Gotham-Medium', 'Montserrat', sans-serif" }} htmlFor="tgl-transaksi">Tgl Transaksi</label>
               <div style={{ display: "flex", cursor: "pointer" }} onClick={() => setShowCalendar((prev) => !prev)}>
-                <span style={{ display: "inline-flex", alignItems: "center", paddingLeft: "12px", paddingRight: "12px", backgroundColor: "#e9ecef", border: "1px solid #d5dcde", borderRight: "0", borderRadius: "4px 0 0 4px", color: "#475569", cursor: "pointer" }}>
+                <span className="jn-addon" style={{ display: "inline-flex", alignItems: "center", paddingLeft: "12px", paddingRight: "12px", backgroundColor: "#e9ecef", border: "1px solid #d5dcde", borderRight: "0", borderRadius: "4px 0 0 4px", color: "#475569", cursor: "pointer" }}>
                   <svg style={{ width: "16px", height: "16px", color: "#475569" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8"></path>
                   </svg>
@@ -246,263 +526,7 @@ export default function JurnalUmumPage() {
               </div>
 
               {/* Calendar Popover */}
-              {showCalendar && (
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "70px",
-                    left: 0,
-                    zIndex: 50,
-                    backgroundColor: "#ffffff",
-                    border: "1px solid #d5dcde",
-                    borderRadius: "8px",
-                    boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
-                    padding: "16px",
-                    width: "280px",
-                    userSelect: "none",
-                  }}
-                >
-                  {/* Month & Year Navigator Header */}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                    <button
-                      type="button"
-                      style={{ background: "none", border: "none", fontSize: "16px", fontWeight: "bold", cursor: "pointer", color: "#334155", padding: "4px 8px", borderRadius: "4px" }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (calendarViewMode === "days") {
-                          setCalendarViewDate(new Date(calendarViewDate.getFullYear(), calendarViewDate.getMonth() - 1, 1));
-                        } else if (calendarViewMode === "months") {
-                          setCalendarViewDate(new Date(calendarViewDate.getFullYear() - 1, calendarViewDate.getMonth(), 1));
-                        } else if (calendarViewMode === "years") {
-                          setYearRangeStart((prev) => prev - 12);
-                        }
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f1f5f9")}
-                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                    >
-                      «
-                    </button>
-
-                    <button
-                      type="button"
-                      style={{
-                        background: "none",
-                        border: "none",
-                        fontSize: "14px",
-                        fontWeight: "700",
-                        color: "#0284c7",
-                        cursor: "pointer",
-                        padding: "4px 8px",
-                        borderRadius: "4px",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "5px"
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (calendarViewMode === "days") {
-                          setCalendarViewMode("months");
-                        } else if (calendarViewMode === "months") {
-                          setYearRangeStart(Math.floor(calendarViewDate.getFullYear() / 12) * 12);
-                          setCalendarViewMode("years");
-                        } else {
-                          setCalendarViewMode("days");
-                        }
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e0f2fe")}
-                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                      title="Klik untuk memilih bulan / tahun"
-                    >
-                      <span>
-                        {calendarViewMode === "days" && `${MONTH_NAMES[calendarViewDate.getMonth()]} ${calendarViewDate.getFullYear()}`}
-                        {calendarViewMode === "months" && `${calendarViewDate.getFullYear()}`}
-                        {calendarViewMode === "years" && `${yearRangeStart} - ${yearRangeStart + 11}`}
-                      </span>
-                      <span style={{ fontSize: "10px", color: "#0284c7" }}>▼</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      style={{ background: "none", border: "none", fontSize: "16px", fontWeight: "bold", cursor: "pointer", color: "#334155", padding: "4px 8px", borderRadius: "4px" }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (calendarViewMode === "days") {
-                          setCalendarViewDate(new Date(calendarViewDate.getFullYear(), calendarViewDate.getMonth() + 1, 1));
-                        } else if (calendarViewMode === "months") {
-                          setCalendarViewDate(new Date(calendarViewDate.getFullYear() + 1, calendarViewDate.getMonth(), 1));
-                        } else if (calendarViewMode === "years") {
-                          setYearRangeStart((prev) => prev + 12);
-                        }
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f1f5f9")}
-                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                    >
-                      »
-                    </button>
-                  </div>
-
-                  {/* View 1: Days */}
-                  {calendarViewMode === "days" && (
-                    <>
-                      {/* Weekday Labels */}
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "2px", textAlign: "center", marginBottom: "8px" }}>
-                        {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((dayName) => (
-                          <div key={dayName} style={{ fontSize: "12px", fontWeight: "700", color: "#334155" }}>
-                            {dayName}
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Days Matrix */}
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "2px", textAlign: "center" }}>
-                        {getCalendarDays(calendarViewDate.getFullYear(), calendarViewDate.getMonth()).map((item, idx) => {
-                          const isSelected =
-                            selectedDate.getDate() === item.day &&
-                            selectedDate.getMonth() === item.month &&
-                            selectedDate.getFullYear() === item.year;
-
-                          return (
-                            <div
-                              key={idx}
-                              style={{
-                                height: "32px",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                fontSize: "13px",
-                                fontWeight: isSelected ? "700" : "400",
-                                color: isSelected ? "#ffffff" : item.isCurrentMonth ? "#1e293b" : "#cbd5e1",
-                                backgroundColor: isSelected ? "#0284c7" : "transparent",
-                                borderRadius: "6px",
-                                cursor: "pointer",
-                                transition: "all 0.15s ease",
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                const newDate = new Date(item.year, item.month, item.day);
-                                setSelectedDate(newDate);
-                                setCalendarViewDate(newDate);
-                                setShowCalendar(false);
-                              }}
-                              onMouseEnter={(e) => {
-                                if (!isSelected) e.currentTarget.style.backgroundColor = "#f1f5f9";
-                              }}
-                              onMouseLeave={(e) => {
-                                if (!isSelected) e.currentTarget.style.backgroundColor = "transparent";
-                              }}
-                            >
-                              {item.day}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </>
-                  )}
-
-                  {/* View 2: Months */}
-                  {calendarViewMode === "months" && (
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", padding: "4px 0" }}>
-                      {MONTH_NAMES.map((monthName, idx) => {
-                        const isSelected = calendarViewDate.getMonth() === idx;
-                        return (
-                          <div
-                            key={monthName}
-                            style={{
-                              height: "40px",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontSize: "13px",
-                              fontWeight: isSelected ? "700" : "500",
-                              color: isSelected ? "#ffffff" : "#1e293b",
-                              backgroundColor: isSelected ? "#0284c7" : "#f8fafc",
-                              border: isSelected ? "1px solid #0284c7" : "1px solid #e2e8f0",
-                              borderRadius: "6px",
-                              cursor: "pointer",
-                              transition: "all 0.15s ease",
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setCalendarViewDate(new Date(calendarViewDate.getFullYear(), idx, 1));
-                              setCalendarViewMode("days");
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!isSelected) e.currentTarget.style.backgroundColor = "#e0f2fe";
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!isSelected) e.currentTarget.style.backgroundColor = "#f8fafc";
-                            }}
-                          >
-                            {monthName.substring(0, 3)}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {/* View 3: Years */}
-                  {calendarViewMode === "years" && (
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", padding: "4px 0" }}>
-                      {Array.from({ length: 12 }).map((_, idx) => {
-                        const yearVal = yearRangeStart + idx;
-                        const isSelected = calendarViewDate.getFullYear() === yearVal;
-                        return (
-                          <div
-                            key={yearVal}
-                            style={{
-                              height: "40px",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontSize: "13px",
-                              fontWeight: isSelected ? "700" : "500",
-                              color: isSelected ? "#ffffff" : "#1e293b",
-                              backgroundColor: isSelected ? "#0284c7" : "#f8fafc",
-                              border: isSelected ? "1px solid #0284c7" : "1px solid #e2e8f0",
-                              borderRadius: "6px",
-                              cursor: "pointer",
-                              transition: "all 0.15s ease",
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setCalendarViewDate(new Date(yearVal, calendarViewDate.getMonth(), 1));
-                              setCalendarViewMode("months");
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!isSelected) e.currentTarget.style.backgroundColor = "#e0f2fe";
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!isSelected) e.currentTarget.style.backgroundColor = "#f8fafc";
-                            }}
-                          >
-                            {yearVal}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {/* Today Button */}
-                  <div style={{ marginTop: "12px", paddingTop: "8px", borderTop: "1px solid #f1f5f9", textAlign: "center" }}>
-                    <button
-                      type="button"
-                      style={{ background: "none", border: "none", fontSize: "13px", fontWeight: "700", color: "#1e293b", cursor: "pointer", padding: "4px 8px" }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const today = new Date();
-                        setSelectedDate(today);
-                        setCalendarViewDate(today);
-                        setCalendarViewMode("days");
-                        setShowCalendar(false);
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.color = "#0284c7")}
-                      onMouseLeave={(e) => (e.currentTarget.style.color = "#1e293b")}
-                    >
-                      Today
-                    </button>
-                  </div>
-                </div>
-              )}
+              {showCalendar && renderCalendarPopover()}
             </div>
 
             {/* Field 3: Tag */}
@@ -525,7 +549,8 @@ export default function JurnalUmumPage() {
         {/* BEGIN: JournalTableSection */}
         <div style={{ paddingLeft: "24px", paddingRight: "24px", marginTop: "24px" }}>
           {/* Table Headers */}
-          <div style={{ display: "grid", gridTemplateColumns: "4fr 3fr 2fr 2fr 1fr", gap: "12px", backgroundColor: "#d9eff4ff", borderTop: "2.8px solid #b2eaffff", borderBottom: "1.5px solid #a3a3a3ff", paddingLeft: "16px", paddingRight: "16px", paddingTop: "10px", paddingBottom: "10px", borderRadius: "4px 4px 0 0", fontSize: "13px", fontWeight: "700", color: "#1e293b", alignItems: "center", border: "1px solid #d2e8f1" }}>
+          <div className="jn-head"
+            style={{ display: "grid", gridTemplateColumns: "4fr 3fr 2fr 2fr 1fr", gap: "12px", backgroundColor: "#d9eff4ff", borderTop: "2.8px solid #b2eaffff", borderBottom: "1.5px solid #a3a3a3ff", paddingLeft: "16px", paddingRight: "16px", paddingTop: "10px", paddingBottom: "10px", borderRadius: "4px 4px 0 0", fontSize: "13px", fontWeight: "700", color: "#1e293b", alignItems: "center", border: "1px solid #d2e8f1" }}>
             <div>Akun</div>
             <div>Deskripsi</div>
             <div>Debit</div>
@@ -534,7 +559,8 @@ export default function JurnalUmumPage() {
           </div>
 
           {/* Table Body / Rows Container */}
-          <div style={{ border: "1px solid #e2e8f0", borderTop: "0", backgroundColor: "#ffffff", borderRadius: "0 0 4px 4px", marginBottom: "16px", boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)" }}>
+          <div className="jn-body"
+            style={{ border: "1px solid #e2e8f0", borderTop: "0", backgroundColor: "#ffffff", borderRadius: "0 0 4px 4px", marginBottom: "16px", boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)" }}>
             {rows.map((row, idx) => (
               <div
                 key={row.id}
@@ -628,6 +654,7 @@ export default function JurnalUmumPage() {
           {/* Add Row Action Button */}
           <div style={{ marginTop: "16px", marginBottom: "32px" }}>
             <button
+              className="jn-btn"
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -678,7 +705,7 @@ export default function JurnalUmumPage() {
               {/* Lampiran Field */}
               <div>
                 <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", fontWeight: "700", color: "#1e293b", marginBottom: "8px" }}>
-                  <svg style={{ width: "16px", height: "16px", color: "#475569", transform: "rotate(45deg)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="jn-clip" style={{ width: "16px", height: "16px", color: "#475569", transform: "rotate(45deg)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
                   </svg>
                   <span>Lampiran</span>
@@ -697,6 +724,7 @@ export default function JurnalUmumPage() {
                 {files.map((file) => (
                   <div
                     key={file.id}
+                    className="jn-card"
                     style={{
                       display: "flex",
                       alignItems: "center",
@@ -791,6 +819,7 @@ export default function JurnalUmumPage() {
 
                 {/* Drag and Drop Zone */}
                 <div
+                  className="jn-card"
                   style={{
                     border: "1px dashed #c5d3dc",
                     borderRadius: "4px",
@@ -828,7 +857,7 @@ export default function JurnalUmumPage() {
 
           {/* Right Column: Balance Summary Labels */}
           <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "flex-start", paddingRight: "48px", paddingTop: "8px" }}>
-            <div style={{ display: "flex", gap: "64px", textAlign: "left" }}>
+            <div className="jn-total" style={{ display: "flex", gap: "64px", textAlign: "left" }}>
               {/* Total Debit */}
               <div>
                 <div style={{ fontSize: "13px", fontWeight: "600", color: "#334155", lineHeight: "1.25" }}>Total Debit</div>
@@ -863,6 +892,7 @@ export default function JurnalUmumPage() {
           {/* Buat Jurnal Umum Split Action Button */}
           <div style={{ display: "inline-flex", borderRadius: "4px", boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)" }}>
             <button
+              className="jn-btn"
               style={{ backgroundColor: "#43a047", color: "#ffffff", fontSize: "13px", fontWeight: "500", paddingTop: "8px", paddingBottom: "8px", paddingLeft: "16px", paddingRight: "16px", borderRadius: "4px 0 0 4px", border: "none", cursor: "pointer", boxShadow: "0 3px 0 #357d39ff", transition: "background-color 0.15s ease" }}
               type="button"
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#388e3c")}
@@ -872,6 +902,7 @@ export default function JurnalUmumPage() {
             </button>
             <button
               aria-label="Opsi lainnya"
+              className="jn-btn"
               style={{ backgroundColor: "#43a047", borderLeft: "1px solid #388e3c", borderTop: "none", borderRight: "none", borderBottom: "none", color: "#ffffff", paddingLeft: "8px", paddingRight: "8px", paddingTop: "8px", paddingBottom: "8px", borderRadius: "0 4px 4px 0", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 3px 0 #357d39ff", transition: "background-color 0.15s ease" }}
               type="button"
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#388e3c")}

@@ -4,16 +4,18 @@ import { Link as RouterLink, useLocation } from "react-router-dom";
 import {
   House, AddressBookIcon, PackageIcon, NoteIcon,
   Gear, MagnifyingGlass, BookOpen, Buildings, FileText, Wallet,
-  Desktop, Tag, ShoppingCart, Bank, SidebarSimple, X,
+  Desktop, Tag, ShoppingCart, Bank, SidebarSimple, X, Factory, Truck
 } from "@phosphor-icons/react";
 import brandLogo from "@/assets/brand.png";
 
 const allNavItems = [
   { label: "Beranda", icon: House, path: "/beranda" },
   { label: "Dashboard", icon: Desktop, path: "/dashboard" },
-  { label: "Produk", icon: PackageIcon, path: "/main-product/products" },
-  { label: "Kontak", icon: AddressBookIcon, path: "/contact" },
   { label: "Daftar Akun", icon: BookOpen, path: "/daftar-akun" },
+  { label: "Kontak", icon: AddressBookIcon, path: "/contact" },
+  { label: "Produk", icon: PackageIcon, path: "/main-product/products" },
+  { label: "Produksi", icon: Factory, path: "/productionsmain" },
+  { label: "Pemenuhan", icon: Truck, path: "/fulfillment" },
   { label: "Aset", icon: Buildings, path: "/aset" },
   { label: "Laporan", icon: FileText, path: "/laporan" },
   { label: "Anggaran", icon: Wallet, path: "/anggaran" },
@@ -56,7 +58,7 @@ const THEME = {
     toggleBg: "#242424",
     toggleBorder: "#444",
     toggleColor: "#E5B85C",
-    logoFilter: "brightness(0) saturate(100%) invert(78%) sepia(22%) saturate(1046%) hue-rotate(351deg) brightness(93%) contrast(91%)",    titleFilter: "brightness(0) invert(1)",
+    logoFilter: "brightness(0) saturate(100%) invert(78%) sepia(22%) saturate(1046%) hue-rotate(351deg) brightness(93%) contrast(91%)", titleFilter: "brightness(0) invert(1)",
   }
 };
 
@@ -127,10 +129,10 @@ export default function Sidebar({ open, onClose }) {
           borderColor={currentTheme.toggleBorder}
           color={currentTheme.toggleColor}
           boxShadow={currentTheme.shadow}
-          _hover={{ 
-            bg: themeMode === 'dark' ? '#333' : 'gray.50', 
-            color: themeMode === 'dark' ? '#FFF' : 'gray.800', 
-            boxShadow: "0 2px 6px rgba(0,0,0,0.12)" 
+          _hover={{
+            bg: themeMode === 'dark' ? '#333' : 'gray.50',
+            color: themeMode === 'dark' ? '#FFF' : 'gray.800',
+            boxShadow: "0 2px 6px rgba(0,0,0,0.12)"
           }}
           transition="all 150ms ease"
           zIndex={60}
@@ -155,7 +157,7 @@ export default function Sidebar({ open, onClose }) {
           transition="background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease"
           display="flex"
           flexDirection="column"
-          overflow="hidden" 
+          overflow="hidden"
         >
           <Box
             w="260px"
@@ -195,9 +197,7 @@ export default function Sidebar({ open, onClose }) {
                   />
                 </Box>
               ) : isDark ? (
-                /* Dark mode: tulisan putih, bunga emas */
                 <Box position="relative" h="28px" flexShrink={0} display="inline-block">
-                  {/* Lapisan bawah: seluruh logo putih (tulisan) */}
                   <Box
                     as="img"
                     src={brandLogo}
@@ -209,7 +209,7 @@ export default function Sidebar({ open, onClose }) {
                       transition: "filter 0.3s ease",
                     }}
                   />
-                  {/* Lapisan atas: logo emas, hanya bagian bunga yang terlihat */}
+
                   <Box
                     as="img"
                     src={brandLogo}
@@ -227,16 +227,16 @@ export default function Sidebar({ open, onClose }) {
                   />
                 </Box>
               ) : (
-                <Box 
-                  as="img" 
-                  src={brandLogo} 
-                  h="28px" 
-                  alt="QontakSales" 
-                  flexShrink={0} 
-                  style={{ 
+                <Box
+                  as="img"
+                  src={brandLogo}
+                  h="28px"
+                  alt="QontakSales"
+                  flexShrink={0}
+                  style={{
                     filter: currentTheme.logoFilter,
                     transition: "filter 0.3s ease",
-                  }} 
+                  }}
                 />
               )}
 
@@ -304,10 +304,10 @@ export default function Sidebar({ open, onClose }) {
                 borderRadius="md"
                 color={location.pathname.startsWith("/settings") ? currentTheme.activeColor : currentTheme.text}
                 bg={location.pathname.startsWith("/settings") ? currentTheme.activeBg : "transparent"}
-                _hover={{ 
-                  bg: location.pathname.startsWith("/settings") ? currentTheme.activeHoverBg : currentTheme.hoverBg, 
+                _hover={{
+                  bg: location.pathname.startsWith("/settings") ? currentTheme.activeHoverBg : currentTheme.hoverBg,
                   color: location.pathname.startsWith("/settings") ? currentTheme.activeColor : currentTheme.hoverColor,
-                  textDecoration: "none" 
+                  textDecoration: "none"
                 }}
                 transition="all 150ms ease"
                 onClick={onClose}

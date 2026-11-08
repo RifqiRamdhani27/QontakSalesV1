@@ -9,10 +9,13 @@ import {
   MagnifyingGlass, Plus, PencilSimple, Trash, X, FloppyDisk, BookOpen, LockKey,
   List, FileXls, UploadSimple, User, CaretDown, Check,
 } from "@phosphor-icons/react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import api from "@/services/api";
 import brandLogo from "@/assets/brand.png";
 
+
+const LOGO_GOLD_FILTER =
+  "brightness(0) saturate(100%) invert(78%) sepia(22%) saturate(1046%) hue-rotate(351deg) brightness(93%) contrast(91%)";
 const KATEGORI_LIST = [
   "Cash & Bank",
   "Accounts Receivable (A/R)",
@@ -51,6 +54,141 @@ const KATEGORI_COLORS = {
   "Other Expense": { bg: "#FEE2E2", color: "#B91C1C" },
 };
 
+const ACCOUNT_ROUTES = {
+  "1-10001": "kas",
+  "1-10002": "rekening-bank",
+  "1-10003": "giro",
+  "1-10100": "piutang-usaha",
+  "1-10101": "piutang-belum-ditagih",
+  "1-10102": "cadangan-kerugian-piutang",
+  "1-10200": "persediaan-barang",
+  "1-10300": "piutang-lainnya",
+  "1-10301": "piutang-karyawan",
+  "1-10400": "dana-belum-disetor",
+  "1-10401": "aset-lancar-lainnya",
+  "1-10402": "biaya-dibayar-dimuka",
+  "1-10403": "uang-muka",
+  "1-10500": "ppn-masukan",
+  "1-10501": "pph-22",
+  "1-10502": "pph-23",
+  "1-10503": "pph-25",
+  "1-10700": "aset-tetap-tanah",
+  "1-10701": "aset-tetap-bangunan",
+  "1-10702": "aset-tetap-building-improvements",
+  "1-10703": "aset-tetap-kendaraan",
+  "1-10704": "aset-tetap-mesin-peralatan",
+  "1-10705": "aset-tetap-perlengkapan-kantor",
+  "1-10706": "aset-tetap-sewa-guna-usaha",
+  "1-10707": "aset-tak-berwujud",
+  "1-10751": "akumulasi-penyusutan-bangunan",
+  "1-10752": "akumulasi-penyusutan-building-improvements",
+  "1-10753": "akumulasi-penyusutan-kendaraan",
+  "1-10754": "akumulasi-penyusutan-mesin-peralatan",
+  "1-10755": "akumulasi-penyusutan-peralatan-kantor",
+  "1-10756": "akumulasi-penyusutan-sewa-guna-usaha",
+  "1-10757": "akumulasi-penyusutan-amortisasi",
+  "1-10800": "investasi",
+  "2-20100": "hutang-usaha",
+  "2-20101": "hutang-belum-ditagih",
+  "2-20200": "hutang-lain-lain",
+  "2-20201": "hutang-gaji",
+  "2-20202": "hutang-deviden",
+  "2-20203": "pendapatan-diterima-dimuka",
+  "2-20301": "sarana-kantor-terhutang",
+  "2-20302": "bunga-terhutang",
+  "2-20399": "biaya-terhutang-lainnya",
+  "2-20400": "hutang-bank",
+  "2-20500": "ppn-keluaran",
+  "2-20501": "hutang-pajak-pph21",
+  "2-20502": "hutang-pajak-pph22",
+  "2-20503": "hutang-pajak-pph23",
+  "2-20504": "hutang-pajak-pph29",
+  "2-20599": "hutang-pajak-lainnya",
+  "2-20600": "hutang-dari-pemegang-saham",
+  "2-20601": "kewajiban-lancar-lainnya",
+  "2-20700": "kewajiban-manfaat-karyawan",
+  "3-30000": "modal-saham",
+  "3-30001": "tambahan-modal-disetor",
+  "3-30100": "laba-ditahan",
+  "3-30200": "deviden",
+  "3-30300": "pendapatan-komprehensif-lainnya",
+  "3-30999": "equitas-saldo-awal",
+  "4-40000": "pendapatan-jasa",
+  "4-40100": "diskon-penjualan",
+  "4-40200": "retur-penjualan",
+  "4-40201": "pendapatan-belum-ditagih",
+  "5-50000": "beban-pokok-pendapatan",
+  "5-50100": "diskon-pembelian",
+  "5-50200": "retur-pembelian",
+  "5-50300": "pengiriman-pengangkutan",
+  "5-50400": "biaya-impor",
+  "5-50500": "biaya-produksi",
+  "6-60000": "biaya-penjualan",
+  "6-60001": "iklan-promosi",
+  "6-60002": "komisi-fee",
+  "6-60003": "bensin-tol-parkir-penjualan",
+  "6-60004": "perjalanan-dinas-penjualan",
+  "6-60005": "komunikasi-penjualan",
+  "6-60006": "marketing-lainnya",
+  "6-60100": "biaya-umum-administratif",
+  "6-60101": "gaji",
+  "6-60102": "upah",
+  "6-60103": "makanan-transportasi",
+  "6-60104": "lembur",
+  "6-60105": "pengobatan",
+  "6-60106": "thr-bonus",
+  "6-60107": "jamsostek",
+  "6-60108": "insentif",
+  "6-60109": "pesangon",
+  "6-60110": "manfaat-tunjangan-lain",
+  "6-60200": "donasi",
+  "6-60201": "hiburan",
+  "6-60202": "bensin-tol-parkir-umum",
+  "6-60203": "perbaikan-pemeliharaan",
+  "6-60204": "perjalanan-dinas-umum",
+  "6-60205": "makanan",
+  "6-60206": "komunikasi-umum",
+  "6-60207": "iuran-langganan",
+  "6-60208": "asuransi",
+  "6-60209": "legal-profesional",
+  "6-60210": "beban-manfaat-karyawan",
+  "6-60211": "sarana-kantor",
+  "6-60212": "pelatihan-pengembangan",
+  "6-60213": "beban-piutang-tak-tertagih",
+  "6-60214": "pajak-perizinan",
+  "6-60215": "denda",
+  "6-60216": "pengeluaran-barang-rusak",
+  "6-60300": "beban-kantor",
+  "6-60301": "alat-tulis-kantor-printing",
+  "6-60302": "bea-materai",
+  "6-60303": "keamanan-kebersihan",
+  "6-60304": "supplies-material",
+  "6-60305": "pemborong",
+  "6-60400": "biaya-sewa-bangunan",
+  "6-60401": "biaya-sewa-kendaraan",
+  "6-60402": "biaya-sewa-operasional",
+  "6-60403": "biaya-sewa-lain-lain",
+  "6-60500": "penyusutan-bangunan",
+  "6-60501": "penyusutan-perbaikan-bangunan",
+  "6-60502": "penyusutan-kendaraan",
+  "6-60503": "penyusutan-mesin-peralatan",
+  "6-60504": "penyusutan-peralatan-kantor",
+  "6-60599": "penyusutan-aset-sewa-guna-usaha",
+  "7-70000": "pendapatan-bunga-bank",
+  "7-70001": "pendapatan-bunga-deposito",
+  "7-70099": "pendapatan-lain-lain",
+  "8-80000": "beban-bunga",
+  "8-80001": "provisi",
+  "8-80002": "laba-rugi-pelepasan-aset-tetap",
+  "8-80100": "penyesuaian-persediaan",
+  "8-80999": "beban-lain-lain",
+  "9-90000": "beban-pajak-kini",
+  "9-90001": "beban-pajak-tangguhan",
+};
+
+const getAccountPath = (kode) =>
+  ACCOUNT_ROUTES[kode] ? `/isi-daftar-akun/${ACCOUNT_ROUTES[kode]}` : null;
+
 const formatIDR = (value) => {
   const num = parseFloat(value) || 0;
   const absNum = Math.abs(num);
@@ -58,9 +196,15 @@ const formatIDR = (value) => {
   return num < 0 ? `(${formatted})` : formatted;
 };
 
-function RoundCheckbox({ checked, onChange, title }) {
+function RoundCheckbox({ checked, onChange, title, isDark }) {
+  const activeColor = isDark ? "#E5B85C" : "#0077CC";
+  const activeBg = isDark ? "#E5B85C" : "#0077CC";
+  const checkColor = isDark ? "#121212" : "#FFFFFF";
+  const inactiveBorder = isDark ? "#634f27" : "#94A3B8";
+
   return (
     <div
+      className={`dd-rc ${checked ? "on" : ""}`}
       onClick={(e) => {
         e.stopPropagation();
         if (onChange) onChange(e);
@@ -70,8 +214,8 @@ function RoundCheckbox({ checked, onChange, title }) {
         width: "15px",
         height: "15px",
         borderRadius: "50%",
-        border: checked ? "1.5px solid #0077CC" : "1.5px solid #94A3B8",
-        backgroundColor: checked ? "#0077CC" : "#FFFFFF",
+        border: checked ? `1.5px solid ${activeColor}` : `1.5px solid ${inactiveBorder}`,
+        backgroundColor: checked ? activeBg : (isDark ? "#262626" : "#FFFFFF"),
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
@@ -83,14 +227,9 @@ function RoundCheckbox({ checked, onChange, title }) {
     >
       {checked && (
         <svg
-          width="9"
-          height="9"
-          viewBox="0 0 12 12"
-          fill="none"
-          stroke="#FFFFFF"
-          strokeWidth="2.4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+          width="9" height="9" viewBox="0 0 12 12"
+          fill="none" stroke={checkColor} strokeWidth="2.4"
+          strokeLinecap="round" strokeLinejoin="round"
         >
           <polyline points="2.5 6 5 8.5 9.5 3.5" />
         </svg>
@@ -128,22 +267,38 @@ export default function DaftarAkunPage() {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
 
-    const accounts = useMemo(() => {
-      const q = search.trim().toLowerCase();
-      return allAccounts.filter((a) => {
-        const matchSearch =
-          !q ||
-          (a.kode_akun || "").toLowerCase().includes(q) ||
-          (a.nama_akun || "").toLowerCase().includes(q);
-        const matchKategori = !filterKategori || a.kategori_akun === filterKategori;
-        return matchSearch && matchKategori;
-      });
-    }, [allAccounts, search, filterKategori]);
+  const [themeMode, setThemeMode] = useState(
+    () => localStorage.getItem("app_theme") || "light"
+  );
 
-    const totalCount = accounts.length;
-    useEffect(() => {
-      setSelectedIds((prev) => prev.filter((id) => accounts.some((a) => a.id === id)));
-    }, [accounts]);
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+
+  const isDark = themeMode === "dark";
+
+  const accounts = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return allAccounts.filter((a) => {
+      const matchSearch =
+        !q ||
+        (a.kode_akun || "").toLowerCase().includes(q) ||
+        (a.nama_akun || "").toLowerCase().includes(q);
+      const matchKategori = !filterKategori || a.kategori_akun === filterKategori;
+      return matchSearch && matchKategori;
+    });
+  }, [allAccounts, search, filterKategori]);
+
+  const totalCount = accounts.length;
+  useEffect(() => {
+    setSelectedIds((prev) => prev.filter((id) => accounts.some((a) => a.id === id)));
+  }, [accounts]);
 
   const isAllSelected = accounts.length > 0 && accounts.every((a) => selectedIds.includes(a.id));
 
@@ -308,28 +463,28 @@ export default function DaftarAkunPage() {
   };
 
   const fetchAccounts = useCallback(async (showLoading = false) => {
-  if (showLoading) setLoading(true);
-  try {
-    let pageNum = 1;
-    let all = [];
-    while (true) {
-      const res = await api.get("/coa/", { params: { page_size: 1000, page: pageNum } });
-      const data = res.data.results ?? res.data;
-      all = all.concat(data);
-      if (!Array.isArray(res.data.results) || !res.data.next) break;
-      pageNum += 1;
+    if (showLoading) setLoading(true);
+    try {
+      let pageNum = 1;
+      let all = [];
+      while (true) {
+        const res = await api.get("/coa/", { params: { page_size: 1000, page: pageNum } });
+        const data = res.data.results ?? res.data;
+        all = all.concat(data);
+        if (!Array.isArray(res.data.results) || !res.data.next) break;
+        pageNum += 1;
+      }
+      setAllAccounts(all);
+    } catch {
+      setAllAccounts([]);
+    } finally {
+      setLoading(false);
     }
-    setAllAccounts(all);
-  } catch {
-    setAllAccounts([]);
-  } finally {
-    setLoading(false);
-  }
-}, []);
+  }, []);
 
-useEffect(() => {
-  fetchAccounts(true); 
-}, [fetchAccounts]);
+  useEffect(() => {
+    fetchAccounts(true);
+  }, [fetchAccounts]);
 
   const openCreate = () => {
     setEditTarget(null);
@@ -405,7 +560,12 @@ useEffect(() => {
   };
 
   return (
-    <Box p={{ base: 4, md: 6 }} bg="white" minH="100vh">
+    <Box
+      className={isDark ? "dash-dark" : ""}
+      p={{ base: 4, md: 6 }}
+      bg={isDark ? "#121212" : "white"}
+      minH="100vh"
+    >
       {/* Header */}
       <Flex align="center" justify="space-between" mb={6} flexWrap="wrap" gap={3}>
         <HStack gap={3}>
@@ -414,7 +574,13 @@ useEffect(() => {
               as="img"
               src={brandLogo}
               h="36px"
-              style={{ objectFit: "cover", objectPosition: "left center", maxWidth: "none" }}
+              style={{
+                objectFit: "cover",
+                objectPosition: "left center",
+                maxWidth: "none",
+                filter: isDark ? LOGO_GOLD_FILTER : "none",
+                transition: "filter 0.3s ease",
+              }}
               alt="Daftar Akun"
             />
           </Box>
@@ -431,6 +597,7 @@ useEffect(() => {
         <HStack gap={3}>
           {/* Buat Jurnal Umum Button */}
           <Button
+            className="dd-btn"
             bg="#1d62a4ff"
             color="white"
             _hover={{ bg: "#163859" }}
@@ -453,105 +620,111 @@ useEffect(() => {
 
           {/* Single Navy Blue Tindakan Button */}
           <Box position="relative">
-          <Button
-            onClick={() => setTindakanOpen(!tindakanOpen)}
-            bg="#1d62a4ff"
-            color="white"
-            _hover={{ bg: "#163859" }}
-            _active={{ bg: "#091D30" }}
-            size="sm"
-            borderRadius="md"
-            fontWeight="600"
-            fontSize="14px"
-            px={0}
-            h="38px"
-            boxShadow="0 4px 14px rgba(0, 0, 0, 0.3)"
-            display="flex"
-            alignItems="center"
-            overflow="hidden"
-          >
-            <Box px={4} py={2}>Tindakan</Box>
-            <Box px={3} py={2} borderLeft="1px solid rgba(255,255,255,0.2)" display="flex" alignItems="center">
-              <List size={18} weight="bold" />
-            </Box>
-          </Button>
+            <Button
+              className="dd-btn"
+              onClick={() => setTindakanOpen(!tindakanOpen)}
+              bg="#1d62a4ff"
+              color="white"
+              _hover={{ bg: "#163859" }}
+              _active={{ bg: "#091D30" }}
+              size="sm"
+              borderRadius="md"
+              fontWeight="600"
+              fontSize="14px"
+              px={0}
+              h="38px"
+              boxShadow="0 4px 14px rgba(0, 0, 0, 0.3)"
+              display="flex"
+              alignItems="center"
+              overflow="hidden"
+            >
+              <Box px={4} py={2}>Tindakan</Box>
+              <Box px={3} py={2} borderLeft="1px solid rgba(255,255,255,0.2)" display="flex" alignItems="center">
+                <List size={18} weight="bold" />
+              </Box>
+            </Button>
 
-          {/* Dropdown Menu */}
-          {tindakanOpen && (
-            <>
-              <Box position="fixed" inset={0} zIndex={90} onClick={() => setTindakanOpen(false)} />
-              
-              <Box
-                position="absolute"
-                right={0}
-                top="44px"
-                w="250px"
-                bg="white"
-                borderRadius="xl"
-                shadow="2xl"
-                border="1px solid #E2E8F0"
-                py={2}
-                zIndex={100}
-                fontFamily="Segoe UI, -apple-system, sans-serif"
-              >
-                {/* Item 1: Buat Akun Baru */}
-                <Flex
-                  align="center" gap={3} px={4} py={2.5} cursor="pointer"
-                  fontSize="13px" color="#1E293B" fontWeight="500"
-                  _hover={{ bg: "#F1F5F9" }}
-                  onClick={() => { setTindakanOpen(false); openCreate(); }}
+            {/* Dropdown Menu */}
+            {tindakanOpen && (
+              <>
+                <Box position="fixed" inset={0} zIndex={90} onClick={() => setTindakanOpen(false)} />
+
+                <Box
+                  className="dd-card"
+                  position="absolute"
+                  right={0}
+                  top="44px"
+                  w="250px"
+                  bg="white"
+                  borderRadius="xl"
+                  shadow="2xl"
+                  border="1px solid #E2E8F0"
+                  py={2}
+                  zIndex={100}
+                  fontFamily="Segoe UI, -apple-system, sans-serif"
                 >
-                  <Plus size={16} color="#0F172A" />
-                  <Text>Buat Akun Baru</Text>
-                </Flex>
+                  {/* Item 1: Buat Akun Baru */}
+                  <Flex
+                    className="dd-item"
+                    align="center" gap={3} px={4} py={2.5} cursor="pointer"
+                    fontSize="13px" color="#1E293B" fontWeight="500"
+                    _hover={{ bg: "#F1F5F9" }}
+                    onClick={() => { setTindakanOpen(false); openCreate(); }}
 
-                {/* Item 2: Hapus Semua / Hapus Terpilih (ONLY shows when items are selected) */}
-                {selectedIds.length > 0 && (
+                  >
+                    <Plus size={16} className="dd-item-tindakan" />
+                    <Text>Buat Akun Baru</Text>
+                  </Flex>
+
+                  {/* Item 2: Hapus Semua / Hapus Terpilih */}
+                  {selectedIds.length > 0 && (
+                    <Flex
+                      align="center" gap={3} px={4} py={2.5} cursor="pointer"
+                      fontSize="13px" color="#DC2626" fontWeight="600"
+                      _hover={{ bg: "#FEF2F2" }}
+                      onClick={() => { setTindakanOpen(false); setBulkDeleteOpen(true); }}
+                      className="dd-item dd-danger"
+                    >
+                      <Trash size={16} color="#DC2626" />
+                      <Text>{isAllSelected ? "Hapus Semua Akun" : `Hapus ${selectedIds.length} Akun Terpilih`}</Text>
+                    </Flex>
+                  )}
+
+                  {/* Item 3: Tutup buku & kunci periode */}
                   <Flex
                     align="center" gap={3} px={4} py={2.5} cursor="pointer"
-                    fontSize="13px" color="#DC2626" fontWeight="600"
-                    _hover={{ bg: "#FEF2F2" }}
-                    onClick={() => { setTindakanOpen(false); setBulkDeleteOpen(true); }}
+                    fontSize="13px" color="#1E293B" fontWeight="500"
+                    _hover={{ bg: "#F1F5F9" }}
+                    onClick={() => { setTindakanOpen(false); navigate("/tutup-buku"); }}
+                    className="dd-item"
                   >
-                    <Trash size={16} color="#DC2626" />
-                    <Text>{isAllSelected ? "Hapus Semua Akun" : `Hapus ${selectedIds.length} Akun Terpilih`}</Text>
+                    <BookOpen size={16} className="dd-item-tindakan" />
+                    <Text>Tutup buku & kunci periode</Text>
                   </Flex>
-                )}
 
-                {/* Item 3: Tutup buku & kunci periode */}
-                <Flex
-                  align="center" gap={3} px={4} py={2.5} cursor="pointer"
-                  fontSize="13px" color="#1E293B" fontWeight="500"
-                  _hover={{ bg: "#F1F5F9" }}
-                  onClick={() => { setTindakanOpen(false); navigate("/tutup-buku"); }}
-                >
-                  <BookOpen size={16} color="#0F172A" />
-                  <Text>Tutup buku & kunci periode</Text>
-                </Flex>
-
-                <Box borderBottom="1px solid #E2E8F0" my={1.5} />
+                  <Box borderBottom="1px solid #E2E8F0" my={1.5} />
 
 
-                {/* Item 5: Ekspor Akun */}
-                <Flex
-                  align="center" gap={3} px={4} py={2.5} cursor="pointer"
-                  fontSize="13px" color="#1E293B" fontWeight="500"
-                  _hover={{ bg: "#F1F5F9" }}
-                  onClick={() => { setTindakanOpen(false); exportCOAToXLSX(); }}
-                >
-                  <FileXls size={16} color="#0F172A" />
-                  <Text>Ekspor Akun (.xlsx)</Text>
-                </Flex>
-              </Box>
-            </>
-          )}
-        </Box>
+                  {/* Item 5: Ekspor Akun */}
+                  <Flex
+                    align="center" gap={3} px={4} py={2.5} cursor="pointer"
+                    fontSize="13px" color="#1E293B" fontWeight="500"
+                    _hover={{ bg: "#f1f5f91a" }}
+                    onClick={() => { setTindakanOpen(false); exportCOAToXLSX(); }}
+                  >
+                    <FileXls size={16} className="dd-item-tindakan" />
+                    <Text>Ekspor Akun (.xlsx)</Text>
+                  </Flex>
+                </Box>
+              </>
+            )}
+          </Box>
         </HStack>
       </Flex>
 
       {/* Filters */}
-      <Box bg="white" borderRadius="xl" border="1px solid" borderColor="border" 
-      boxShadow="0 2px 6px rgba(0,0,0,0.06)" p={4} mb={4}>
+      <Box bg="white" borderRadius="xl" border="1px solid" borderColor="border"
+        boxShadow="0 2px 6px rgba(0,0,0,0.06)" p={4} mb={4} className="dd-card">
         <Flex gap={3} flexWrap="wrap">
           <Box position="relative" flex={1} minW="220px">
             <Box position="absolute" left={3} top="50%" transform="translateY(-50%)" color="gray.400" zIndex={1}>
@@ -584,6 +757,7 @@ useEffect(() => {
         bg="white" borderRadius="lg" border="1px solid" borderColor="#E2E8F0"
         boxShadow="0 2px 6px rgba(0,0,0,0.06)"
         overflow="hidden"
+        className="dd-card"
       >
         {loading ? (
           <Flex justify="center" align="center" py={16}>
@@ -596,7 +770,13 @@ useEffect(() => {
                 as="img"
                 src={brandLogo}
                 h="40px"
-                style={{ objectFit: "cover", objectPosition: "left center", maxWidth: "none" }}
+                style={{
+                  objectFit: "cover",
+                  objectPosition: "left center",
+                  maxWidth: "none",
+                  filter: isDark ? LOGO_GOLD_FILTER : "none",
+                  transition: "filter 0.3s ease",
+                }}
                 alt="Icon"
               />
             </Box>
@@ -647,6 +827,7 @@ useEffect(() => {
                   return (
                     <tr
                       key={acct.id}
+                      className={isSelected ? "dd-row dd-row-sel" : "dd-row"}
                       style={{
                         borderBottom: "1px solid #F1F5F9",
                         background: isSelected ? "#F0F9FF" : "white",
@@ -680,276 +861,18 @@ useEffect(() => {
                         {acct.kode_akun}
                       </td>
                       <td style={{ padding: "6px 12px" }}>
-                      <span
-                        style={{ color: "#0077CC", cursor: "pointer", textDecoration: "none" }}
-                        onClick={() => {
-                          if (acct.kode_akun === "2-20500") {
-                            navigate("/isi-daftar-akun/ppn-keluaran");
-                          } else if (acct.kode_akun === "1-10500") {
-                            navigate("/isi-daftar-akun/ppn-masukan");
-                          } else if (acct.kode_akun === "1-10001") {
-                            navigate("/isi-daftar-akun/kas");
-                          } else if (acct.kode_akun === "1-10002") {
-                            navigate("/isi-daftar-akun/rekening-bank");
-                          } else if (acct.kode_akun === "1-10003") {
-                            navigate("/isi-daftar-akun/giro");
-                          } else if (acct.kode_akun === "1-10101") {
-                            navigate("/isi-daftar-akun/piutang-belum-ditagih");
-                          } else if (acct.kode_akun === "1-10100") {
-                            navigate("/isi-daftar-akun/piutang-usaha");
-                          } else if (acct.kode_akun === "1-10102") {
-                            navigate("/isi-daftar-akun/cadangan-kerugian-piutang");
-                          } else if (acct.kode_akun === "1-10200") {
-                            navigate("/isi-daftar-akun/persediaan-barang");
-                          } else if (acct.kode_akun === "1-10300") {
-                            navigate("/isi-daftar-akun/piutang-lainnya");
-                          } else if (acct.kode_akun === "1-10301") {
-                            navigate("/isi-daftar-akun/piutang-karyawan");
-                          } else if (acct.kode_akun === "1-10400") {
-                            navigate("/isi-daftar-akun/dana-belum-disetor");
-                          } else if (acct.kode_akun === "1-10402") {
-                            navigate("/isi-daftar-akun/biaya-dibayar-dimuka");
-                          } else if (acct.kode_akun === "1-10401") {
-                            navigate("/isi-daftar-akun/aset-lancar-lainnya");
-                          } else if (acct.kode_akun === "1-10403") {
-                            navigate("/isi-daftar-akun/uang-muka");
-                          } else if (acct.kode_akun === "1-10500") {
-                            navigate("/isi-daftar-akun/ppn-masukan");
-                          } else if (acct.kode_akun === "1-10501") {
-                            navigate("/isi-daftar-akun/pph-22");
-                          } else if (acct.kode_akun === "1-10502") {
-                            navigate("/isi-daftar-akun/pph-23");
-                          } else if (acct.kode_akun === "1-10503") {
-                            navigate("/isi-daftar-akun/pph-25");
-                          } else if (acct.kode_akun === "1-10700") {
-                            navigate("/isi-daftar-akun/aset-tetap-tanah");
-                          } else if (acct.kode_akun === "1-10701") {
-                            navigate("/isi-daftar-akun/aset-tetap-bangunan");
-                          } else if (acct.kode_akun === "1-10702") {
-                            navigate("/isi-daftar-akun/aset-tetap-building-improvements");
-                          } else if (acct.kode_akun === "1-10703") {
-                            navigate("/isi-daftar-akun/aset-tetap-kendaraan");
-                          } else if (acct.kode_akun === "1-10704") {
-                            navigate("/isi-daftar-akun/aset-tetap-mesin-peralatan");
-                          } else if (acct.kode_akun === "1-10705") {
-                            navigate("/isi-daftar-akun/aset-tetap-perlengkapan-kantor");
-                          } else if (acct.kode_akun === "1-10706") {
-                            navigate("/isi-daftar-akun/aset-tetap-sewa-guna-usaha");
-                          } else if (acct.kode_akun === "1-10707") {
-                            navigate("/isi-daftar-akun/aset-tak-berwujud");
-                          } else if (acct.kode_akun === "1-10751") {
-                            navigate("/isi-daftar-akun/akumulasi-penyusutan-bangunan");
-                          } else if (acct.kode_akun === "1-10752") {
-                            navigate("/isi-daftar-akun/akumulasi-penyusutan-building-improvements");
-                          } else if (acct.kode_akun === "1-10753") {
-                            navigate("/isi-daftar-akun/akumulasi-penyusutan-kendaraan");
-                          } else if (acct.kode_akun === "1-10754") {
-                            navigate("/isi-daftar-akun/akumulasi-penyusutan-mesin-peralatan");
-                          } else if (acct.kode_akun === "1-10755") {
-                            navigate("/isi-daftar-akun/akumulasi-penyusutan-peralatan-kantor");
-                          } else if (acct.kode_akun === "1-10756") {
-                            navigate("/isi-daftar-akun/akumulasi-penyusutan-sewa-guna-usaha");
-                          } else if (acct.kode_akun === "1-10757") {
-                            navigate("/isi-daftar-akun/akumulasi-penyusutan-amortisasi");
-                          } else if (acct.kode_akun === "1-10800") {
-                            navigate("/isi-daftar-akun/investasi");
-                          } else if (acct.kode_akun === "2-20100") {
-                            navigate("/isi-daftar-akun/hutang-usaha");
-                          } else if (acct.kode_akun === "2-20101") {
-                            navigate("/isi-daftar-akun/hutang-belum-ditagih");
-                          } else if (acct.kode_akun === "2-20200") {
-                            navigate("/isi-daftar-akun/hutang-lain-lain");
-                          } else if (acct.kode_akun === "2-20201") {
-                            navigate("/isi-daftar-akun/hutang-gaji");
-                          } else if (acct.kode_akun === "2-20202") {
-                            navigate("/isi-daftar-akun/hutang-deviden");
-                          } else if (acct.kode_akun === "2-20203") {
-                            navigate("/isi-daftar-akun/pendapatan-diterima-dimuka");
-                          } else if (acct.kode_akun === "2-20301") {
-                            navigate("/isi-daftar-akun/sarana-kantor-terhutang");
-                          } else if (acct.kode_akun === "2-20302") {
-                            navigate("/isi-daftar-akun/bunga-terhutang");
-                          } else if (acct.kode_akun === "2-20399") {
-                            navigate("/isi-daftar-akun/biaya-terhutang-lainnya");
-                          } else if (acct.kode_akun === "2-20400") {
-                            navigate("/isi-daftar-akun/hutang-bank");
-                          } else if (acct.kode_akun === "2-20500") {
-                            navigate("/isi-daftar-akun/ppn-keluaran");
-                          } else if (acct.kode_akun === "2-20501") {
-                            navigate("/isi-daftar-akun/hutang-pajak-pph21");
-                          } else if (acct.kode_akun === "2-20502") {
-                            navigate("/isi-daftar-akun/hutang-pajak-pph22");
-                          } else if (acct.kode_akun === "2-20503") {
-                            navigate("/isi-daftar-akun/hutang-pajak-pph23");
-                          } else if (acct.kode_akun === "2-20504") {
-                            navigate("/isi-daftar-akun/hutang-pajak-pph29");
-                          } else if (acct.kode_akun === "2-20599") {
-                            navigate("/isi-daftar-akun/hutang-pajak-lainnya");
-                          } else if (acct.kode_akun === "2-20600") {
-                            navigate("/isi-daftar-akun/hutang-dari-pemegang-saham");
-                          } else if (acct.kode_akun === "2-20601") {
-                            navigate("/isi-daftar-akun/kewajiban-lancar-lainnya");
-                          } else if (acct.kode_akun === "2-20700") {
-                            navigate("/isi-daftar-akun/kewajiban-manfaat-karyawan");
-                          } else if (acct.kode_akun === "3-30000") {
-                            navigate("/isi-daftar-akun/modal-saham");
-                          } else if (acct.kode_akun === "3-30001") {
-                            navigate("/isi-daftar-akun/tambahan-modal-disetor");
-                          } else if (acct.kode_akun === "3-30100") {
-                            navigate("/isi-daftar-akun/laba-ditahan");
-                          } else if (acct.kode_akun === "3-30200") {
-                            navigate("/isi-daftar-akun/deviden");
-                          } else if (acct.kode_akun === "3-30300") {
-                            navigate("/isi-daftar-akun/pendapatan-komprehensif-lainnya");
-                          } else if (acct.kode_akun === "3-30999") {
-                            navigate("/isi-daftar-akun/equitas-saldo-awal");
-                          } else if (acct.kode_akun === "4-40000") {
-                            navigate("/isi-daftar-akun/pendapatan-jasa");
-                          } else if (acct.kode_akun === "4-40100") {
-                            navigate("/isi-daftar-akun/diskon-penjualan");
-                          } else if (acct.kode_akun === "4-40200") {
-                            navigate("/isi-daftar-akun/retur-penjualan");
-                          } else if (acct.kode_akun === "4-40201") {
-                            navigate("/isi-daftar-akun/pendapatan-belum-ditagih");
-                          } else if (acct.kode_akun === "5-50000") {
-                            navigate("/isi-daftar-akun/beban-pokok-pendapatan");
-                          } else if (acct.kode_akun === "5-50100") {
-                            navigate("/isi-daftar-akun/diskon-pembelian");
-                          } else if (acct.kode_akun === "5-50300") {
-                            navigate("/isi-daftar-akun/pengiriman-pengangkutan");
-                          } else if (acct.kode_akun === "5-50400") {
-                            navigate("/isi-daftar-akun/biaya-impor");
-                          } else if (acct.kode_akun === "5-50500") {
-                            navigate("/isi-daftar-akun/biaya-produksi");
-                          }  else if (acct.kode_akun === "6-60000") {
-                            navigate("/isi-daftar-akun/biaya-penjualan");
-                          } else if (acct.kode_akun === "6-60001") {
-                            navigate("/isi-daftar-akun/iklan-promosi");
-                          } else if (acct.kode_akun === "6-60002") {
-                            navigate("/isi-daftar-akun/komisi-fee");
-                          } else if (acct.kode_akun === "6-60003") {
-                            navigate("/isi-daftar-akun/bensin-tol-parkir-penjualan");
-                          } else if (acct.kode_akun === "6-60004") {
-                            navigate("/isi-daftar-akun/perjalanan-dinas-penjualan");
-                          } else if (acct.kode_akun === "6-60005") {
-                            navigate("/isi-daftar-akun/komunikasi-penjualan");
-                          } else if (acct.kode_akun === "6-60006") {
-                            navigate("/isi-daftar-akun/marketing-lainnya");
-                          } else if (acct.kode_akun === "6-60100") {
-                            navigate("/isi-daftar-akun/biaya-umum-administratif");
-                          } else if (acct.kode_akun === "6-60101") {
-                            navigate("/isi-daftar-akun/gaji");
-                          } else if (acct.kode_akun === "6-60102") {
-                            navigate("/isi-daftar-akun/upah");
-                          } else if (acct.kode_akun === "6-60103") {
-                            navigate("/isi-daftar-akun/makanan-transportasi");
-                          } else if (acct.kode_akun === "6-60104") {
-                            navigate("/isi-daftar-akun/lembur");
-                          } else if (acct.kode_akun === "6-60105") {
-                            navigate("/isi-daftar-akun/pengobatan");
-                          } else if (acct.kode_akun === "6-60106") {
-                            navigate("/isi-daftar-akun/thr-bonus");
-                          } else if (acct.kode_akun === "6-60107") {
-                            navigate("/isi-daftar-akun/jamsostek");
-                          } else if (acct.kode_akun === "6-60108") {
-                            navigate("/isi-daftar-akun/insentif");
-                          } else if (acct.kode_akun === "6-60109") {
-                            navigate("/isi-daftar-akun/pesangon");
-                          } else if (acct.kode_akun === "6-60110") {
-                            navigate("/isi-daftar-akun/manfaat-tunjangan-lain");
-                          } else if (acct.kode_akun === "6-60200") {
-                            navigate("/isi-daftar-akun/donasi");
-                          } else if (acct.kode_akun === "6-60201") {
-                            navigate("/isi-daftar-akun/hiburan");
-                          } else if (acct.kode_akun === "6-60202") {
-                            navigate("/isi-daftar-akun/bensin-tol-parkir-umum");
-                          } else if (acct.kode_akun === "6-60203") {
-                            navigate("/isi-daftar-akun/perbaikan-pemeliharaan");
-                          } else if (acct.kode_akun === "6-60204") {
-                            navigate("/isi-daftar-akun/perjalanan-dinas-umum");
-                          } else if (acct.kode_akun === "6-60205") {
-                            navigate("/isi-daftar-akun/makanan");
-                          } else if (acct.kode_akun === "6-60206") {
-                            navigate("/isi-daftar-akun/komunikasi-umum");
-                          } else if (acct.kode_akun === "6-60207") {
-                            navigate("/isi-daftar-akun/iuran-langganan");
-                          } else if (acct.kode_akun === "6-60208") {
-                            navigate("/isi-daftar-akun/asuransi");
-                          } else if (acct.kode_akun === "6-60209") {
-                            navigate("/isi-daftar-akun/legal-profesional");
-                          } else if (acct.kode_akun === "6-60210") {
-                            navigate("/isi-daftar-akun/beban-manfaat-karyawan");
-                          } else if (acct.kode_akun === "6-60211") {
-                            navigate("/isi-daftar-akun/sarana-kantor");
-                          } else if (acct.kode_akun === "6-60212") {
-                            navigate("/isi-daftar-akun/pelatihan-pengembangan");
-                          } else if (acct.kode_akun === "6-60213") {
-                            navigate("/isi-daftar-akun/beban-piutang-tak-tertagih");
-                          } else if (acct.kode_akun === "6-60214") {
-                            navigate("/isi-daftar-akun/pajak-perizinan");
-                          } else if (acct.kode_akun === "6-60215") {
-                            navigate("/isi-daftar-akun/denda");
-                          } else if (acct.kode_akun === "6-60216") {
-                            navigate("/isi-daftar-akun/pengeluaran-barang-rusak");
-                          } else if (acct.kode_akun === "6-60300") {
-                            navigate("/isi-daftar-akun/beban-kantor");
-                          } else if (acct.kode_akun === "6-60301") {
-                            navigate("/isi-daftar-akun/alat-tulis-kantor-printing");
-                          } else if (acct.kode_akun === "6-60302") {
-                            navigate("/isi-daftar-akun/bea-materai");
-                          } else if (acct.kode_akun === "6-60303") {
-                            navigate("/isi-daftar-akun/keamanan-kebersihan");
-                          } else if (acct.kode_akun === "6-60304") {
-                            navigate("/isi-daftar-akun/supplies-material");
-                          } else if (acct.kode_akun === "6-60305") {
-                            navigate("/isi-daftar-akun/pemborong");
-                          } else if (acct.kode_akun === "6-60400") {
-                            navigate("/isi-daftar-akun/biaya-sewa-bangunan");
-                          } else if (acct.kode_akun === "6-60401") {
-                            navigate("/isi-daftar-akun/biaya-sewa-kendaraan");
-                          } else if (acct.kode_akun === "6-60402") {
-                            navigate("/isi-daftar-akun/biaya-sewa-operasional");
-                          } else if (acct.kode_akun === "6-60403") {
-                            navigate("/isi-daftar-akun/biaya-sewa-lain-lain");
-                          } else if (acct.kode_akun === "6-60500") {
-                            navigate("/isi-daftar-akun/penyusutan-bangunan");
-                          } else if (acct.kode_akun === "6-60501") {
-                            navigate("/isi-daftar-akun/penyusutan-perbaikan-bangunan");
-                          } else if (acct.kode_akun === "6-60502") {
-                            navigate("/isi-daftar-akun/penyusutan-kendaraan");
-                          } else if (acct.kode_akun === "6-60503") {
-                            navigate("/isi-daftar-akun/penyusutan-mesin-peralatan");
-                          } else if (acct.kode_akun === "6-60504") {
-                            navigate("/isi-daftar-akun/penyusutan-peralatan-kantor");
-                          } else if (acct.kode_akun === "6-60599") {
-                            navigate("/isi-daftar-akun/penyusutan-aset-sewa-guna-usaha");
-                          } else if (acct.kode_akun === "7-70000") {
-                            navigate("/isi-daftar-akun/pendapatan-bunga-bank");
-                          } else if (acct.kode_akun === "7-70001") {
-                            navigate("/isi-daftar-akun/pendapatan-bunga-deposito");
-                          } else if (acct.kode_akun === "7-70099") {
-                            navigate("/isi-daftar-akun/pendapatan-lain-lain");
-                          } else if (acct.kode_akun === "8-80000") {
-                            navigate("/isi-daftar-akun/beban-bunga");
-                          } else if (acct.kode_akun === "8-80999") {
-                            navigate("/isi-daftar-akun/beban-lain-lain");
-                          } else if (acct.kode_akun === "9-90000") {
-                            navigate("/isi-daftar-akun/beban-pajak-kini");
-                          } else if (acct.kode_akun === "9-90001") {
-                            navigate("/isi-daftar-akun/beban-pajak-tangguhan");
-                          } else if (acct.kode_akun === "8-80002") {
-                            navigate("/isi-daftar-akun/laba-rugi-pelepasan-aset-tetap");
-                          } else if (acct.kode_akun === "8-80100") {
-                            navigate("/isi-daftar-akun/penyesuaian-persediaan");
-                          } else if (acct.kode_akun === "8-80001") {
-                            navigate("/isi-daftar-akun/provisi");
-                          }
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.textDecoration = "underline"}
-                        onMouseLeave={(e) => e.currentTarget.style.textDecoration = "none"}
-                      >
-                        {acct.nama_akun}
-                      </span>
+                        {getAccountPath(acct.kode_akun) ? (
+                          <Link
+                            to={getAccountPath(acct.kode_akun)}
+                            style={{ color: "#0077CC", textDecoration: "none" }}
+                            onMouseEnter={(e) => (e.currentTarget.style.textDecoration = "underline")}
+                            onMouseLeave={(e) => (e.currentTarget.style.textDecoration = "none")}
+                          >
+                            {acct.nama_akun}
+                          </Link>
+                        ) : (
+                          <span style={{ color: "#334155" }}>{acct.nama_akun}</span>
+                        )}
                       </td>
                       <td style={{ padding: "6px 12px", whiteSpace: "nowrap" }}>
                         <span
@@ -969,7 +892,7 @@ useEffect(() => {
                       <td style={{ padding: "6px 12px", textAlign: "right", whiteSpace: "nowrap", color: "#1E293B", fontFamily: "Segoe UI, sans-serif" }}>
                         {formatIDR(acct.saldo)}
                       </td>
-                                            <td style={{ padding: "6px 12px", textAlign: "right", whiteSpace: "nowrap" }}>
+                      <td style={{ padding: "6px 12px", textAlign: "right", whiteSpace: "nowrap" }}>
                         <HStack gap={1} justify="flex-end">
                           <IconButton
                             size="xs"
@@ -999,6 +922,7 @@ useEffect(() => {
             justify="flex-start" align="center"
             px={4} py={2.5} borderTop="1px solid" borderColor="#E2E8F0"
             bg="#F8FAFC"
+            className="dd-foot"
           >
             <Text fontSize="12px" color="#64748B">
               Total {totalCount} akun
@@ -1010,6 +934,7 @@ useEffect(() => {
       {/* Modal Tambah/Edit */}
       {modalOpen && (
         <Box
+          className="dd-overlay"
           position="fixed" inset={0} bg="blackAlpha.600" zIndex={100}
           display="flex" alignItems="center" justifyContent="center" p={4}
           onClick={(e) => { if (e.target === e.currentTarget) setModalOpen(false); }}
@@ -1027,7 +952,13 @@ useEffect(() => {
                     as="img"
                     src={brandLogo}
                     h="24px"
-                    style={{ objectFit: "cover", objectPosition: "left center", maxWidth: "none" }}
+                    style={{
+                      objectFit: "cover",
+                      objectPosition: "left center",
+                      maxWidth: "none",
+                      filter: isDark ? LOGO_GOLD_FILTER : "none",
+                      transition: "filter 0.3s ease",
+                    }}
                     alt="Icon"
                   />
                 </Box>
@@ -1054,7 +985,7 @@ useEffect(() => {
               }}
             >
               {formError && (
-                <Box w="full" bg="red.50" border="1px solid" borderColor="red.200" borderRadius="lg" px={4} py={3}>
+                <Box w="full" className="dd-error" bg="red.50" border="1px solid" borderColor="red.200" borderRadius="lg" px={4} py={3}>
                   <Text fontSize="sm" color="red.600">{formError}</Text>
                 </Box>
               )}
@@ -1142,7 +1073,7 @@ useEffect(() => {
               {/* Akses akun */}
               <Box w="full" pt={2}>
                 <Flex align="center" gap={2.5} mb={3}>
-                  <User size={26} color="#3B82F6" weight="regular" />
+                  <User size={26} color={isDark ? "#E5B85C" : "#3B82F6"} weight="regular" />
                   <Text fontSize="20px" fontWeight="700" color="#0F2B48" letterSpacing="-0.01em">
                     Akses akun
                   </Text>
@@ -1172,7 +1103,7 @@ useEffect(() => {
                       display="flex"
                       alignItems="center"
                       justifyContent="center"
-                      bg="white"
+                      bg={isDark ? "#1e1e1e" : "white"}
                       flexShrink={0}
                     >
                       {penggunaOption === "all" && <Box w="10px" h="10px" borderRadius="50%" bg="#3B82F6" />}
@@ -1201,7 +1132,7 @@ useEffect(() => {
                       display="flex"
                       alignItems="center"
                       justifyContent="center"
-                      bg="white"
+                      bg={isDark ? "#1e1e1e" : "white"}
                       flexShrink={0}
                     >
                       {penggunaOption === "sebagian" && <Box w="10px" h="10px" borderRadius="50%" bg="#3B82F6" />}
@@ -1226,11 +1157,11 @@ useEffect(() => {
                       w="18px"
                       h="18px"
                       borderRadius="50%"
-                      border={penggunaOption === "peran" ? "2px solid #3B82F6" : "1.5px solid #CBD5E1"}
+                      border={penggunaOption === "peran" ? "2px solid #e4ad08ff" : "1.5px solid #CBD5E1"}
                       display="flex"
                       alignItems="center"
                       justifyContent="center"
-                      bg="white"
+                      bg={isDark ? "#1e1e1e" : "white"}
                       flexShrink={0}
                     >
                       {penggunaOption === "peran" && <Box w="10px" h="10px" borderRadius="50%" bg="#3B82F6" />}
@@ -1243,7 +1174,7 @@ useEffect(() => {
 
                 {/* Sub-box for Sebagian Pengguna */}
                 {penggunaOption === "sebagian" && (
-                  <Box mt={3} p={3} bg="#F8FAFC" border="1px solid #E2E8F0" borderRadius="lg">
+                  <Box mt={3} p={3} className="dd-card" bg="#F8FAFC" border="1px solid #E2E8F0" borderRadius="lg">
                     <Text fontSize="12px" fontWeight="600" color="#94A3B8" mb={2} textTransform="uppercase" letterSpacing="0.05em">
                       Pilih Pengguna
                     </Text>
@@ -1261,7 +1192,7 @@ useEffect(() => {
 
                 {/* Sub-box for Peran Tertentu */}
                 {penggunaOption === "peran" && (
-                  <Box mt={3} p={3} bg="#F8FAFC" border="1px solid #E2E8F0" borderRadius="lg">
+                  <Box mt={3} p={3} className="dd-card" bg="#F8FAFC" border="1px solid #E2E8F0" borderRadius="lg">
                     <Text fontSize="12px" fontWeight="600" color="#94A3B8" mb={2} textTransform="uppercase" letterSpacing="0.05em">
                       Pilih Peran
                     </Text>
@@ -1307,6 +1238,7 @@ useEffect(() => {
               </Button>
               <Button
                 flex={1}
+                className="dd-btn"
                 bg="primary" color="white"
                 _hover={{ bg: "#1D4ED8" }}
                 onClick={handleSave}
@@ -1325,6 +1257,7 @@ useEffect(() => {
       {/* Modal Konfirmasi Hapus */}
       {deleteOpen && (
         <Box
+          className="dd-overlay"
           position="fixed" inset={0} bg="blackAlpha.600" zIndex={100}
           display="flex" alignItems="center" justifyContent="center" p={4}
           onClick={(e) => { if (e.target === e.currentTarget) setDeleteOpen(false); }}
@@ -1363,11 +1296,12 @@ useEffect(() => {
       {/* Modal Konfirmasi Hapus Masal */}
       {bulkDeleteOpen && (
         <Box
+          className="dd-overlay"
           position="fixed" inset={0} bg="blackAlpha.600" zIndex={100}
           display="flex" alignItems="center" justifyContent="center" p={4}
           onClick={(e) => { if (e.target === e.currentTarget) setBulkDeleteOpen(false); }}
         >
-          <Box bg="white" borderRadius="2xl" shadow="2xl" w="full" maxW="400px" p={6}>
+          <Box bg="white" className="dd-card" borderRadius="2xl" shadow="2xl" w="full" maxW="400px" p={6}>
             <VStack gap={4} align="start">
               <Box>
                 <Text fontWeight="bold" fontSize="lg" color="foreground">
@@ -1401,6 +1335,84 @@ useEffect(() => {
           </Box>
         </Box>
       )}
+      <style>{`
+      .dash-dark { color-scheme: dark; }
+
+      /* Teks Chakra */
+      .dash-dark p { color: #f1f5f9; }
+      .dash-dark .dd-danger p { color: #f87171; }
+      .dash-dark .dd-error p { color: #f87171; }
+      .dash-dark .dd-error { background: rgba(239,68,68,0.15); border-color: #7f1d1d; }
+
+      /* Kartu / panel */
+      .dash-dark .dd-card { background: #121212; border-color: #634f27; }
+      .dash-dark .dd-foot { background: #1a1a1a; border-color: #634f27; }
+      .dash-dark .dd-item:hover { background: #2d2d2dff; }
+      .dash-dark .dd-item-tindakan { color: #db9d00ff; }
+      .dash-dark .dd-danger:hover { background: rgba(239,68,68,0.15); }
+
+      /* Tombol utama -> emas */
+      .dash-dark .dd-btn { background: #E5B85C !important; color: #121212 !important; }
+      .dash-dark .dd-btn:hover { background: #f0c978 !important; }
+
+      /* Input, select, textarea */
+      .dash-dark input, .dash-dark select, .dash-dark textarea {
+        background: #262626 !important;
+        color: #f1f5f9 !important;
+        border-color: #634f27 !important;
+      }
+      .dash-dark input:focus, .dash-dark select:focus {
+        border-color: #E5B85C !important;
+        box-shadow: 0 0 0 2px rgba(229,184,92,0.25) !important;
+      }
+      .dash-dark ::placeholder { color: #94a3b8; }
+      .dash-dark input[type="radio"] { accent-color: #E5B85C; }
+
+      /* Tabel */
+      .dash-dark thead tr { background: #d38e0d69 !important; border-color: #634f27 !important; }
+      .dash-dark th { color: #f1f5f9 !important; }
+      .dash-dark .dd-row { background: #121212 !important; border-color: #3a3326 !important; }
+      .dash-dark .dd-row:hover { background: #2d2d2d !important; }
+      .dash-dark .dd-row-sel { background: rgba(229,184,92,0.15) !important; }
+      .dash-dark td { color: #e2e8f0 !important; }
+      .dash-dark td span[style*="cursor: pointer"] { color: #E5B85C !important; }
+      .dash-dark td a { color: #E5B85C !important; }
+      .dash-dark td span[style*="inline-flex"] { color: #f1f5f9 !important; }
+      .dash-dark td svg { fill: #f1f5f9; }
+      .dash-dark td button { color: #E5B85C !important; }
+      .dash-dark td button svg { fill: #E5B85C; }
+      .dash-dark td button:hover { background: #2d2d2d !important; }
+
+      /* Checkbox bulat */
+      .dash-dark .dd-rc { background: #262626 !important; border-color: #634f27 !important; }
+      .dash-dark .dd-rc.on { background: #E5B85C !important; border-color: #E5B85C !important; }
+      .dash-dark .dd-rc.on svg { stroke: #121212; }
+
+      /* Dropdown kategori */
+      .dash-dark .dd-cat-btn {
+        background: #262626 !important;
+        border-color: #634f27 !important;
+        color: #f1f5f9 !important;
+      }
+      .dash-dark .dd-cat-panel { background: #121212 !important; border-color: #634f27 !important; }
+      .dash-dark .dd-cat-item { color: #f1f5f9 !important; background: transparent !important; }
+      .dash-dark .dd-cat-item:hover { background: #2d2d2d !important; }
+      .dash-dark .dd-cat-item svg { fill: #E5B85C; 
+      }
+
+      .dash-dark .dd-overlay { background: rgba(0,0,0,0.7) !important; }
+      .dash-dark .dd-overlay > div,
+      .dash-dark .dd-overlay > div > div {
+        background-color: #121212 !important;
+        border-color: #634f27 !important;
+      }
+      .dash-dark .dd-overlay p,
+      .dash-dark .dd-overlay label,
+      .dash-dark .dd-overlay span { color: #f1f5f9 !important; }
+      .dash-dark .dd-overlay .dd-error p { color: #f87171 !important; }
+      .dash-dark .dd-overlay select option { background: #262626; color: #f1f5f9; 
+      }
+    `}</style>
     </Box>
   );
 }
@@ -1440,10 +1452,11 @@ function CategoryDropdown({ value, onChange, options, placeholder = "Pilih Kateg
   };
 
   return (
-    <div ref={ref} style={{ position: "relative", width: "100%" }}>
+    <div ref={ref} className="dd-cat" style={{ position: "relative", width: "100%" }}>
       {/* Trigger */}
       <button
         type="button"
+        className="dd-cat-btn"
         onClick={() => setOpen((o) => !o)}
         style={{
           width: "100%",
@@ -1479,8 +1492,9 @@ function CategoryDropdown({ value, onChange, options, placeholder = "Pilih Kateg
         />
       </button>
 
-      {/* Panel opsi (selalu ter-render supaya animasi buka/tutup halus) */}
+      {/* Panel  */}
       <div
+        className="dd-cat-panel"
         style={{
           position: "absolute",
           top: "calc(100% + 6px)",
@@ -1504,6 +1518,7 @@ function CategoryDropdown({ value, onChange, options, placeholder = "Pilih Kateg
       >
         {/* Opsi: semua kategori */}
         <div
+          className="dd-cat-item"
           onClick={() => pick("")}
           style={{
             ...itemBase,
@@ -1525,6 +1540,7 @@ function CategoryDropdown({ value, onChange, options, placeholder = "Pilih Kateg
           return (
             <div
               key={k}
+              className="dd-cat-item"
               onClick={() => pick(k)}
               style={{
                 ...itemBase,

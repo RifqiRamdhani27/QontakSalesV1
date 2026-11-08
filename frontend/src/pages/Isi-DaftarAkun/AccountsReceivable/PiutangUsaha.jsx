@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Flex, Text, Button, Input, HStack } from "@chakra-ui/react";
+import { Box, Flex, Text, Button, HStack } from "@chakra-ui/react";
 import { CaretDown } from "@phosphor-icons/react";
 import dompetBiru from "../../../assets/dompetbiru.png";
 
@@ -28,10 +28,43 @@ const MONTH_NAMES = [
   "Juli", "Agustus", "September", "Oktober", "November", "Desember",
 ];
 
-function formatDateDDMMYYYY(date) {
-  if (!date) return "";
-  const d = new Date(date);
-  if (isNaN(d)) return "";
+/* ---------- Hook tema ---------- */
+function useIsDark() {
+  const [mode, setMode] = useState(
+    () => localStorage.getItem("app_theme") || "light"
+  );
+  useEffect(() => {
+    const sync = () => setMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+  return mode === "dark";
+}
+
+/* ---------- Helper tanggal (aman zona waktu) ---------- */
+// "YYYY-MM-DD" -> Date lokal
+function parseYMD(str) {
+  if (!str) return null;
+  const [y, m, d] = str.split("-").map(Number);
+  if (!y || !m || !d) return null;
+  return new Date(y, m - 1, d);
+}
+
+// Date lokal -> "YYYY-MM-DD"
+function toYMD(date) {
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+function formatDateDDMMYYYY(str) {
+  const d = parseYMD(str);
+  if (!d || isNaN(d)) return "";
   const dd = String(d.getDate()).padStart(2, "0");
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const yyyy = d.getFullYear();
@@ -57,11 +90,33 @@ function getCalendarDays(year, month) {
 }
 
 // --- KOMPONEN KALENDER KUSTOM ---
-function DatePicker({ value, onChange, placeholder, minDate }) {
+function DatePicker({ value, onChange, placeholder }) {
+  const isDark = useIsDark();
+  const selectedDate = parseYMD(value);
+
   const [open, setOpen] = useState(false);
-  const [viewDate, setViewDate] = useState(() => (value ? new Date(value) : new Date()));
-  const [viewMode, setViewMode] = useState("days"); // "days" | "months"
+  const [calendarViewDate, setCalendarViewDate] = useState(() => selectedDate || new Date());
+  const [calendarViewMode, setCalendarViewMode] = useState("days"); // "days" | "months" | "years"
+  const [yearRangeStart, setYearRangeStart] = useState(() => Math.floor((selectedDate || new Date()).getFullYear() / 12) * 12);
   const containerRef = useRef(null);
+
+  const c = isDark
+    ? {
+        popBg: "#1a1a1a", popBorder: "#634f27",
+        shadow: "0 10px 25px -5px rgba(0,0,0,0.6)",
+        nav: "#f1f5f9", accent: "#E5B85C", weekday: "#94a3b8",
+        selBg: "#E5B85C", selText: "#121212",
+        dayText: "#f1f5f9", dayMuted: "#4b5563",
+        monthBg: "#262626", hoverBg: "#2d2d2d", divider: "#3a3326",
+      }
+    : {
+        popBg: "#ffffff", popBorder: "#cbd5e1",
+        shadow: "0 10px 25px -5px rgba(0,0,0,0.12), 0 8px 10px -6px rgba(0,0,0,0.08)",
+        nav: "#334155", accent: "#2563eb", weekday: "#64748b",
+        selBg: "#2563eb", selText: "#ffffff",
+        dayText: "#1e293b", dayMuted: "#94a3b8",
+        monthBg: "#f8fafc", hoverBg: "#f1f5f9", divider: "#f1f5f9",
+      };
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -73,24 +128,216 @@ function DatePicker({ value, onChange, placeholder, minDate }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSelectDate = (d) => {
-    const newDate = new Date(d.year, d.month, d.day);
-    onChange(newDate.toISOString().split("T")[0]); // Simpan dalam format YYYY-MM-DD
+  const toggleOpen = () => {
+    if (!open) {
+      const base = selectedDate || new Date();
+      setCalendarViewDate(base);
+      setCalendarViewMode("days");
+    }
+    setOpen(!open);
+  };
+
+  const pickDate = (date) => {
+    onChange(toYMD(date));
+    setCalendarViewDate(date);
+    setCalendarViewMode("days");
     setOpen(false);
   };
 
+  const renderCalendarPopover = () => (
+    <div
+      style={{
+        position: "absolute", top: "calc(100% + 6px)", left: 0,
+        zIndex: 1000, backgroundColor: c.popBg, border: `1px solid ${c.popBorder}`,
+        borderRadius: "8px", boxShadow: c.shadow,
+        padding: "14px 16px", width: "280px", userSelect: "none",
+      }}
+    >
+      {/* Header navigasi */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+        <button
+          type="button"
+          style={{ background: "none", border: "none", fontSize: "16px", fontWeight: "bold", cursor: "pointer", color: c.nav, padding: "4px 8px", borderRadius: "4px" }}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (calendarViewMode === "days") setCalendarViewDate(new Date(calendarViewDate.getFullYear(), calendarViewDate.getMonth() - 1, 1));
+            else if (calendarViewMode === "months") setCalendarViewDate(new Date(calendarViewDate.getFullYear() - 1, calendarViewDate.getMonth(), 1));
+            else setYearRangeStart((prev) => prev - 12);
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = c.hoverBg)}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+        >
+          «
+        </button>
+
+        <button
+          type="button"
+          style={{ background: "none", border: "none", fontSize: "14px", fontWeight: "700", color: c.accent, cursor: "pointer", padding: "4px 8px", borderRadius: "4px", display: "flex", alignItems: "center", gap: "5px" }}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (calendarViewMode === "days") setCalendarViewMode("months");
+            else if (calendarViewMode === "months") {
+              setYearRangeStart(Math.floor(calendarViewDate.getFullYear() / 12) * 12);
+              setCalendarViewMode("years");
+            } else setCalendarViewMode("days");
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = c.hoverBg)}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+          title="Klik untuk memilih bulan / tahun"
+        >
+          <span>
+            {calendarViewMode === "days" && `${MONTH_NAMES[calendarViewDate.getMonth()]} ${calendarViewDate.getFullYear()}`}
+            {calendarViewMode === "months" && `${calendarViewDate.getFullYear()}`}
+            {calendarViewMode === "years" && `${yearRangeStart} - ${yearRangeStart + 11}`}
+          </span>
+          <span style={{ fontSize: "10px" }}>▼</span>
+        </button>
+
+        <button
+          type="button"
+          style={{ background: "none", border: "none", fontSize: "16px", fontWeight: "bold", cursor: "pointer", color: c.nav, padding: "4px 8px", borderRadius: "4px" }}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (calendarViewMode === "days") setCalendarViewDate(new Date(calendarViewDate.getFullYear(), calendarViewDate.getMonth() + 1, 1));
+            else if (calendarViewMode === "months") setCalendarViewDate(new Date(calendarViewDate.getFullYear() + 1, calendarViewDate.getMonth(), 1));
+            else setYearRangeStart((prev) => prev + 12);
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = c.hoverBg)}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+        >
+          »
+        </button>
+      </div>
+
+      {/* View: Hari */}
+      {calendarViewMode === "days" && (
+        <>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", textAlign: "center", fontWeight: 600, fontSize: "11px", color: c.weekday, marginBottom: "6px" }}>
+            <span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "2px", textAlign: "center", fontSize: "12px" }}>
+            {getCalendarDays(calendarViewDate.getFullYear(), calendarViewDate.getMonth()).map((d, idx) => {
+              const isSelected =
+                !!selectedDate &&
+                d.day === selectedDate.getDate() &&
+                d.month === selectedDate.getMonth() &&
+                d.year === selectedDate.getFullYear();
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    pickDate(new Date(d.year, d.month, d.day));
+                  }}
+                  style={{
+                    padding: "6px 0", border: "none", borderRadius: "4px", cursor: "pointer",
+                    backgroundColor: isSelected ? c.selBg : "transparent",
+                    color: isSelected ? c.selText : d.isCurrentMonth ? c.dayText : c.dayMuted,
+                    fontWeight: isSelected ? "bold" : "normal",
+                  }}
+                  onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = c.hoverBg; }}
+                  onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = "transparent"; }}
+                >
+                  {d.day}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      {/* View: Bulan */}
+      {calendarViewMode === "months" && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", textAlign: "center", fontSize: "12px", paddingTop: "8px" }}>
+          {MONTH_NAMES.map((mName, idx) => {
+            const sel = calendarViewDate.getMonth() === idx;
+            return (
+              <button
+                key={mName}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCalendarViewDate(new Date(calendarViewDate.getFullYear(), idx, 1));
+                  setCalendarViewMode("days");
+                }}
+                style={{
+                  padding: "10px 4px", border: "none", borderRadius: "4px", cursor: "pointer",
+                  backgroundColor: sel ? c.selBg : c.monthBg,
+                  color: sel ? c.selText : c.dayText,
+                  fontWeight: sel ? "bold" : "normal",
+                }}
+                onMouseEnter={(e) => { if (!sel) e.currentTarget.style.backgroundColor = c.hoverBg; }}
+                onMouseLeave={(e) => { if (!sel) e.currentTarget.style.backgroundColor = c.monthBg; }}
+              >
+                {mName.substring(0, 3)}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* View: Tahun */}
+      {calendarViewMode === "years" && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", textAlign: "center", fontSize: "12px", paddingTop: "8px" }}>
+          {Array.from({ length: 12 }).map((_, idx) => {
+            const yearVal = yearRangeStart + idx;
+            const sel = calendarViewDate.getFullYear() === yearVal;
+            return (
+              <button
+                key={yearVal}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCalendarViewDate(new Date(yearVal, calendarViewDate.getMonth(), 1));
+                  setCalendarViewMode("months");
+                }}
+                style={{
+                  padding: "10px 4px", border: "none", borderRadius: "4px", cursor: "pointer",
+                  backgroundColor: sel ? c.selBg : c.monthBg,
+                  color: sel ? c.selText : c.dayText,
+                  fontWeight: sel ? "bold" : "normal",
+                }}
+                onMouseEnter={(e) => { if (!sel) e.currentTarget.style.backgroundColor = c.hoverBg; }}
+                onMouseLeave={(e) => { if (!sel) e.currentTarget.style.backgroundColor = c.monthBg; }}
+              >
+                {yearVal}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Tombol hari ini */}
+      <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: `1px solid ${c.divider}`, textAlign: "center" }}>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            pickDate(new Date());
+          }}
+          style={{ background: "none", border: "none", fontSize: "13px", fontWeight: 600, color: c.accent, cursor: "pointer", padding: "4px 8px", borderRadius: "4px" }}
+        >
+          Hari ini
+        </button>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="relative" ref={containerRef} style={{ width: "176px" }}>
+    <div className="relative" ref={containerRef} style={{ width: "176px", position: "relative" }}>
       <div
-        onClick={() => setOpen(!open)}
+        onClick={toggleOpen}
         style={{
-          height: "38px", fontSize: "13px", border: "1px solid #cfd7e2", borderRadius: "5px",
-          color: value ? "#1e293b" : "#94a3b8", backgroundColor: "white", cursor: "pointer",
-          display: "flex", alignItems: "center", justifyContent: "space-between", width: "175px", padding: "10px 12px"
+          height: "38px", fontSize: "13px",
+          border: `1px solid ${isDark ? "#634f27" : "#cfd7e2"}`, borderRadius: "5px",
+          color: value ? (isDark ? "#f1f5f9" : "#1e293b") : "#94a3b8",
+          backgroundColor: isDark ? "#262626" : "white", cursor: "pointer",
+          display: "flex", alignItems: "center", justifyContent: "space-between", width: "175px", padding: "10px 12px",
         }}
       >
         <span>{value ? formatDateDDMMYYYY(value) : placeholder}</span>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={isDark ? "#E5B85C" : "#94a3b8"} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
           <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
           <line x1="16" y1="2" x2="16" y2="6" />
           <line x1="8" y1="2" x2="8" y2="6" />
@@ -98,127 +345,7 @@ function DatePicker({ value, onChange, placeholder, minDate }) {
         </svg>
       </div>
 
-      {open && (
-        <div
-          style={{
-            position: "absolute", top: "calc(100% + 6px)", left: 0, zIndex: 1000,
-            backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "8px",
-            boxShadow: "0 10px 25px -5px rgba(0,0,0,0.12), 0 8px 10px -6px rgba(0,0,0,0.08)",
-            padding: "14px 16px", width: "280px", userSelect: "none",
-          }}
-        >
-          {/* Header Kalender */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-            <button
-              type="button"
-              style={{ background: "none", border: "none", fontSize: "16px", fontWeight: "bold", cursor: "pointer", color: "#334155", padding: "4px 8px", borderRadius: "4px" }}
-              onClick={(e) => {
-                e.stopPropagation();
-                if (viewMode === "days") setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1));
-                else setViewDate(new Date(viewDate.getFullYear() - 1, viewDate.getMonth(), 1));
-              }}
-            >
-              «
-            </button>
-            <button
-              type="button"
-              style={{ background: "none", border: "none", fontSize: "14px", fontWeight: "700", color: "#2563eb", cursor: "pointer", padding: "4px 8px" }}
-              onClick={(e) => {
-                e.stopPropagation();
-                setViewMode(viewMode === "days" ? "months" : "days");
-              }}
-            >
-              {viewMode === "days" && `${MONTH_NAMES[viewDate.getMonth()]} ${viewDate.getFullYear()}`}
-              {viewMode === "months" && `${viewDate.getFullYear()}`}
-            </button>
-            <button
-              type="button"
-              style={{ background: "none", border: "none", fontSize: "16px", fontWeight: "bold", cursor: "pointer", color: "#334155", padding: "4px 8px", borderRadius: "4px" }}
-              onClick={(e) => {
-                e.stopPropagation();
-                if (viewMode === "days") setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1));
-                else setViewDate(new Date(viewDate.getFullYear() + 1, viewDate.getMonth(), 1));
-              }}
-            >
-              »
-            </button>
-          </div>
-
-          {/* Tampilan Hari */}
-          {viewMode === "days" && (
-            <>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", textAlign: "center", fontWeight: 600, fontSize: "11px", color: "#64748b", marginBottom: "6px" }}>
-                <span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span>
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "2px", textAlign: "center", fontSize: "12px" }}>
-                {getCalendarDays(viewDate.getFullYear(), viewDate.getMonth()).map((d, idx) => {
-                  const isSelected = value && d.day === new Date(value).getDate() && d.month === new Date(value).getMonth() && d.year === new Date(value).getFullYear();
-                  return (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleSelectDate(d);
-                      }}
-                      style={{
-                        padding: "6px 0", border: "none", borderRadius: "4px", cursor: "pointer",
-                        backgroundColor: isSelected ? "#2563eb" : "transparent",
-                        color: isSelected ? "#ffffff" : d.isCurrentMonth ? "#1e293b" : "#94a3b8",
-                        fontWeight: isSelected ? "bold" : "normal",
-                      }}
-                    >
-                      {d.day}
-                    </button>
-                  );
-                })}
-              </div>
-            </>
-          )}
-
-          {/* Tampilan Bulan */}
-          {viewMode === "months" && (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", textAlign: "center", fontSize: "12px", paddingTop: "8px" }}>
-              {MONTH_NAMES.map((mName, idx) => (
-                <button
-                  key={mName}
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setViewDate(new Date(viewDate.getFullYear(), idx, 1));
-                    setViewMode("days");
-                  }}
-                  style={{
-                    padding: "10px 4px", border: "none", borderRadius: "4px", cursor: "pointer",
-                    backgroundColor: viewDate.getMonth() === idx ? "#2563eb" : "#f8fafc",
-                    color: viewDate.getMonth() === idx ? "#ffffff" : "#1e293b",
-                    fontWeight: viewDate.getMonth() === idx ? "bold" : "normal",
-                  }}
-                >
-                  {mName.substring(0, 3)}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* Tombol Hari Ini */}
-          <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid #f1f5f9", textAlign: "center" }}>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                const today = new Date();
-                onChange(today.toISOString().split("T")[0]);
-                setViewDate(today);
-                setOpen(false);
-              }}
-              style={{ background: "none", border: "none", fontSize: "13px", fontWeight: 600, color: "#2563eb", cursor: "pointer", padding: "4px 8px", borderRadius: "4px" }}
-            >
-              Hari ini
-            </button>
-          </div>
-        </div>
-      )}
+      {open && renderCalendarPopover()}
     </div>
   );
 }
@@ -226,6 +353,7 @@ function DatePicker({ value, onChange, placeholder, minDate }) {
 // --- HALAMAN UTAMA ---
 export default function DetailAkunPiutangPage() {
   const navigate = useNavigate();
+  const isDark = useIsDark();
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [transactions, setTransactions] = useState([]);
@@ -235,7 +363,12 @@ export default function DetailAkunPiutangPage() {
   };
 
   return (
-    <Flex direction="column" minH="100vh" bg="#ffffffff">
+    <Flex
+      className={isDark ? "da-dark" : ""}
+      direction="column"
+      minH="100vh"
+      bg={isDark ? "#121212" : "#ffffffff"}
+    >
       {/* Header */}
       <Flex
         px={6} pt={5} pb={4}
@@ -247,6 +380,7 @@ export default function DetailAkunPiutangPage() {
         <Box>
           <Text
             as="button"
+            className="da-link"
             fontSize="13px"
             color="#2563eb"
             mb={1}
@@ -255,16 +389,16 @@ export default function DetailAkunPiutangPage() {
           >
             Daftar akun
           </Text>
-          <Text fontSize="23px" fontWeight="bold" color="#1e293b" letterSpacing="-0.01em">
+          <Text className="da-title" fontSize="23px" fontWeight="bold" color="#1e293b" letterSpacing="-0.01em">
             ({AKUN.kode}) - {AKUN.nama}
           </Text>
         </Box>
 
         <HStack gap={2.5}>
-          <Button {...outlineBtn}>Beri masukan</Button>
-          <Button {...outlineBtn} display="inline-flex" alignItems="center" gap={2}>
+          <Button className="da-btn" {...outlineBtn}>Beri masukan</Button>
+          <Button className="da-btn" {...outlineBtn} display="inline-flex" alignItems="center" gap={2}>
             <span>Tindakan</span>
-            <CaretDown size={14} weight="bold" color="#2563eb" />
+            <CaretDown size={14} weight="bold" color={isDark ? "#E5B85C" : "#2563eb"} />
           </Button>
         </HStack>
       </Flex>
@@ -272,6 +406,7 @@ export default function DetailAkunPiutangPage() {
       {/* Main card */}
       <Box flex={1} px={4} display="flex" flexDirection="column">
         <Flex
+          className="da-card"
           flex={1}
           direction="column"
           bg="white"
@@ -282,6 +417,7 @@ export default function DetailAkunPiutangPage() {
         >
           {/* Toolbar */}
           <Flex
+            className="da-toolbar"
             px={6} py={4}
             borderBottom="1px solid #f1f5f9"
             align="center"
@@ -290,28 +426,25 @@ export default function DetailAkunPiutangPage() {
             gap={4}
           >
             <HStack gap={6} fontSize="13px">
-              <Text color="#64748b">Kategori akun</Text>
-              <Text color="#1e293b">{AKUN.kategori}</Text>
+              <Text className="da-muted" color="#64748b">Kategori akun</Text>
+              <Text className="da-title" color="#1e293b">{AKUN.kategori}</Text>
             </HStack>
 
             <Flex wrap="wrap" align="center" gap={3}>
-              
-              {/* TANGGAL AWAL DENGAN KALENDER KUSTOM */}
               <DatePicker
                 value={startDate}
                 onChange={setStartDate}
                 placeholder="Tanggal awal"
               />
 
-              {/* TANGGAL AKHIR DENGAN KALENDER KUSTOM */}
               <DatePicker
                 value={endDate}
                 onChange={setEndDate}
                 placeholder="Tanggal akhir"
-                minDate={startDate}
               />
 
               <Button
+                className="da-btn-primary"
                 h="36px"
                 px={6}
                 fontSize="13px"
@@ -341,6 +474,7 @@ export default function DetailAkunPiutangPage() {
             >
               <Box
                 as="img"
+                className="da-img"
                 src={dompetBiru}
                 alt="Belum ada transaksi"
                 w="240px"
@@ -348,16 +482,41 @@ export default function DetailAkunPiutangPage() {
                 mb={5}
                 style={{ objectFit: "contain" }}
               />
-              <Text fontSize="16px" fontWeight="600" color="#1e293b" mb={1}>
+              <Text className="da-title" fontSize="16px" fontWeight="600" color="#1e293b" mb={1}>
                 Belum ada transaksi
               </Text>
-              <Text fontSize="13px" color="#64748b">
+              <Text className="da-muted" fontSize="13px" color="#64748b">
                 Daftar transaksi Anda akan ditampilkan di sini.
               </Text>
             </Flex>
           )}
         </Flex>
       </Box>
+
+      <style>{`
+        .da-dark { color-scheme: dark; }
+        .da-dark .da-link { color: #E5B85C !important; }
+        .da-dark .da-title { color: #ffffff !important; }
+        .da-dark .da-muted { color: #94a3b8 !important; }
+        .da-dark .da-img { opacity: 0.9; }
+
+        .da-dark .da-btn {
+          background-color: #262626 !important;
+          border-color: #634f27 !important;
+          color: #E5B85C !important;
+        }
+        .da-dark .da-btn:hover { background-color: #2d2d2d !important; }
+        .da-dark .da-btn svg { color: #E5B85C !important; }
+
+        .da-dark .da-btn-primary { background-color: #E5B85C !important; color: #121212 !important; }
+        .da-dark .da-btn-primary:hover { background-color: #f0c978 !important; }
+
+        .da-dark .da-card {
+          background-color: #1a1a1a !important;
+          border-color: #634f27 !important;
+        }
+        .da-dark .da-toolbar { border-color: #3a3326 !important; }
+      `}</style>
     </Flex>
   );
 }

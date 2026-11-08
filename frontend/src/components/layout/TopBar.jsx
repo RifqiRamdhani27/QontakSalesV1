@@ -10,19 +10,19 @@ import {
   VStack,
   Spinner,
 } from "@chakra-ui/react";
-import { 
-  Bell, 
-  List, 
-  SignOut, 
-  Gear, 
-  ArrowsClockwise, 
-  ArrowUUpLeft, 
-  ArrowLeft, 
-  PaintBrush, 
-  CaretLeft, 
-  Check, 
-  Moon, 
-  Sun 
+import {
+  Bell,
+  List,
+  SignOut,
+  Gear,
+  ArrowsClockwise,
+  ArrowUUpLeft,
+  ArrowLeft,
+  PaintBrush,
+  CaretLeft,
+  Check,
+  Moon,
+  Sun
 } from "@phosphor-icons/react";
 import api from "@/services/api";
 import { DotsNine } from "@phosphor-icons/react";
@@ -42,10 +42,10 @@ const THEME = {
   },
   dark: {
     bg: "#1A1A1A",
-    text: "#E5B85C", // Warna Emas
+    text: "#eaeaeaff",
     border: "#333333",
-    shadow: "0 4px 14px rgba(229, 184, 92, 0.15)", 
-    hoverBg: "#2D2D2D",
+    shadow: "0 4px 14px rgba(229, 184, 92, 0.15)",
+    hoverBg: "none",
     dropdownBg: "#242424",
     dropdownText: "#F3F4F6",
     activeColor: "#E5B85C",
@@ -54,8 +54,6 @@ const THEME = {
 
 export default function TopBar({ onMenuClick }) {
   const navigate = useNavigate();
-  
-  // Ambil tema dari localStorage, default 'light'
   const [themeMode, setThemeMode] = useState(() => {
     return localStorage.getItem("app_theme") || "light";
   });
@@ -71,7 +69,7 @@ export default function TopBar({ onMenuClick }) {
   const [user, setUser] = useState(null);
   const [avatarKey, setAvatarKey] = useState(0);
   const [showApps, setShowApps] = useState(false);
-  
+
   const notifRef = useRef(null);
   const menuRef = useRef(null);
   const submenuRef = useRef(null);
@@ -236,9 +234,9 @@ export default function TopBar({ onMenuClick }) {
       )}
 
       <HStack
-        h="64px" px={{ base: 4, md: 6 }} 
+        h="64px" px={{ base: 4, md: 6 }}
         bg={currentTheme.bg}
-        borderBottom="1px solid" 
+        borderBottom="1px solid"
         borderColor={currentTheme.border}
         boxShadow={currentTheme.shadow}
         transition="all 0.3s ease"
@@ -256,7 +254,13 @@ export default function TopBar({ onMenuClick }) {
           cursor="pointer"
           p={2}
           borderRadius="md"
-          _hover={{ bg: currentTheme.hoverBg }}
+          _hover={{
+            bg: currentTheme.hoverBg,
+            "& svg": {
+              stroke: "#E5B85C",
+            },
+          }}
+          transition="all 0.2s ease"
           display="flex"
           alignItems="center"
           title="Support"
@@ -272,14 +276,18 @@ export default function TopBar({ onMenuClick }) {
           cursor="pointer"
           p={2}
           borderRadius="md"
-          _hover={{ bg: currentTheme.hoverBg }}
+          _hover={{
+            bg: currentTheme.hoverBg,
+            color: themeMode === "dark" ? "#E5B85C" : currentTheme.text,
+          }}
+          transition="all 0.2s ease"
           display="flex"
           alignItems="center"
           title="Help"
           onClick={() => navigate("/pusat-bantuan")}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M11.9946 16H12.0036M10 10.5V10C10 8.89543 10.8954 8 12 8C13.1046 8 14 8.89543 14 10V10.1213C14 10.6839 13.7765 11.2235 13.3787 11.6213L12 13M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke={currentTheme.text} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M11.9946 16H12.0036M10 10.5V10C10 8.89543 10.8954 8 12 8C13.1046 8 14 8.89543 14 10V10.1213C14 10.6839 13.7765 11.2235 13.3787 11.6213L12 13M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </Box>
 
@@ -288,20 +296,30 @@ export default function TopBar({ onMenuClick }) {
           cursor="pointer"
           p={2}
           borderRadius="md"
-          _hover={{ bg: currentTheme.hoverBg }}
+          _hover={{
+            bg: currentTheme.hoverBg,
+            color: themeMode === "dark" ? "#E5B85C" : currentTheme.text,
+          }}
+          transition="all 0.2s ease"
           display="flex"
           alignItems="center"
           title="History"
           onClick={() => navigate("/history")}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M15.71 15.18L12.61 13.33C12.07 13.01 11.63 12.24 11.63 11.61V7.51M22 12C22 17.52 17.52 22 12 22C6.48 22 2 17.52 2 12C2 6.48 6.48 2 12 2C17.52 2 22 6.48 22 12Z" stroke={currentTheme.text} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M15.71 15.18L12.61 13.33C12.07 13.01 11.63 12.24 11.63 11.61V7.51M22 12C22 17.52 17.52 22 12 22C6.48 22 2 17.52 2 12C2 6.48 6.48 2 12 2C17.52 2 22 6.48 22 12Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </Box>
 
         {/* Notifications */}
-        <Box ref={notifRef} position="relative">
-          <HStack cursor="pointer" p={2} borderRadius="md" _hover={{ bg: currentTheme.hoverBg }} onClick={() => setShowNotif(!showNotif)} position="relative">
+        <Box ref={notifRef} position="relative" >
+          <HStack cursor="pointer" p={2} borderRadius="md"
+            _hover={{
+              bg: currentTheme.hoverBg,
+              color: themeMode === "dark" ? "#E5B85C" : currentTheme.text,
+            }}
+            transition="all 0.2s ease"
+            onClick={() => setShowNotif(!showNotif)} position="relative" >
             <Bell size={20} color={currentTheme.text} />
             {unreadCount > 0 && (
               <Badge position="absolute" top={0} right={0} colorPalette="red" size="xs" borderRadius="full">{unreadCount}</Badge>
@@ -309,7 +327,7 @@ export default function TopBar({ onMenuClick }) {
           </HStack>
           {showNotif && (
             <Box position="absolute" top="100%" right={0} mt={2} w="360px" bg={currentTheme.dropdownBg} border="1px solid" borderColor={currentTheme.border} borderRadius="lg" shadow="lg" zIndex={50} maxH="400px" overflow="auto" color={currentTheme.dropdownText}>
-              <HStack justify="space-between" p={3} borderBottom="1px solid" borderColor={currentTheme.border}>
+              <HStack justify="space-between" p={3} borderBottom="1px solid" borderColor="currentColor">
                 <Text fontWeight="semibold" fontSize="sm">Notifications</Text>
                 {unreadCount > 0 && (
                   <Button size="xs" variant="ghost" color={currentTheme.text} _hover={{ bg: currentTheme.hoverBg }} onClick={async () => { await api.post("/notifications/mark_all_read/"); setNotifications(notifications.map((n) => ({ ...n, is_read: true }))); }}>Mark all read</Button>
@@ -351,9 +369,9 @@ export default function TopBar({ onMenuClick }) {
 
         {/* User Menu Wrapper */}
         <Box ref={menuRef} position="relative">
-          <Avatar.Root size="sm" cursor="pointer" onClick={() => { 
-            setShowMenu(!showMenu); 
-            setShowSwitchSubmenu(false); 
+          <Avatar.Root size="sm" cursor="pointer" onClick={() => {
+            setShowMenu(!showMenu);
+            setShowSwitchSubmenu(false);
             setShowThemeSubmenu(false);
           }}>
             {avatarUrl ? (
@@ -365,13 +383,13 @@ export default function TopBar({ onMenuClick }) {
 
           {/* DROPDOWN MENU */}
           {showMenu && (
-            <Box 
-              position="absolute" top="100%" right={0} mt={2} w="220px" 
-              bg={currentTheme.dropdownBg} border="1px solid" borderColor={currentTheme.border} 
+            <Box
+              position="absolute" top="100%" right={0} mt={2} w="220px"
+              bg={currentTheme.dropdownBg} border="1px solid" borderColor={currentTheme.border}
               borderRadius="lg" shadow="lg" zIndex={50} overflow="hidden"
               color={currentTheme.dropdownText}
             >
-              
+
               {!showThemeSubmenu ? (
                 <>
                   <Box p={3} borderBottom="1px solid" borderColor={currentTheme.border}>
@@ -385,25 +403,25 @@ export default function TopBar({ onMenuClick }) {
                     <HStack p={3} cursor="pointer" _hover={{ bg: currentTheme.hoverBg }} onClick={() => { navigate("/settings"); setShowMenu(false); }}>
                       <Gear size={16} color={currentTheme.text} /><Text fontSize="sm">Settings</Text>
                     </HStack>
-                    
+
                     {(isManager || isImpersonating) && (
                       <HStack p={3} cursor="pointer" _hover={{ bg: currentTheme.hoverBg }} onClick={isImpersonating ? handleSwitchBack : openSwitchSubmenu}>
                         {isImpersonating ? <ArrowUUpLeft size={16} color={currentTheme.text} /> : <ArrowsClockwise size={16} color={currentTheme.text} />}
                         <Text fontSize="sm">{isImpersonating ? "Switch Back" : "Switch Account"}</Text>
                       </HStack>
                     )}
-                    
+
                     <HStack p={3} cursor="pointer" _hover={{ bg: currentTheme.hoverBg }} onClick={() => setShowThemeSubmenu(true)}>
                       <PaintBrush size={16} color={currentTheme.text} />
                       <Text fontSize="sm">Change Themes</Text>
                     </HStack>
 
                     <HStack p={3} cursor="pointer" _hover={{ bg: currentTheme.hoverBg }} color="destructive" onClick={handleLogout}>
-                    <SignOut size={16} color="#ff0808ff" />
-                    <Text fontSize="sm" color={themeMode === "dark" ? "#ffffff" : "#ff0808ff"}>
-                      Logout
-                    </Text>
-                  </HStack>
+                      <SignOut size={16} color="#ff0808ff" />
+                      <Text fontSize="sm" color={themeMode === "dark" ? "#ffffff" : "#ff0808ff"}>
+                        Logout
+                      </Text>
+                    </HStack>
                   </VStack>
                 </>
               ) : (
@@ -415,11 +433,11 @@ export default function TopBar({ onMenuClick }) {
                     </HStack>
                     <Text fontSize="sm" fontWeight="semibold" color={currentTheme.activeColor}>Pilih Tema</Text>
                   </HStack>
-                  
+
                   <VStack align="stretch" gap={0} p={2}>
                     {/* Pilihan Light */}
-                    <HStack 
-                      p={2.5} cursor="pointer" borderRadius="md" 
+                    <HStack
+                      p={2.5} cursor="pointer" borderRadius="md"
                       _hover={{ bg: currentTheme.hoverBg }}
                       onClick={() => handleThemeChange("light")}
                     >
@@ -431,8 +449,8 @@ export default function TopBar({ onMenuClick }) {
                     </HStack>
 
                     {/* Pilihan Dark */}
-                    <HStack 
-                      p={2.5} cursor="pointer" borderRadius="md" 
+                    <HStack
+                      p={2.5} cursor="pointer" borderRadius="md"
                       _hover={{ bg: currentTheme.hoverBg }}
                       onClick={() => handleThemeChange("dark")}
                     >

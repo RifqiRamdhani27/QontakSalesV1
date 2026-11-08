@@ -5,6 +5,53 @@ export default function SimpanAsetPage() {
   const navigate = useNavigate();
   const datePickerRef = useRef(null);
 
+  const [themeMode, setThemeMode] = useState(
+    () => localStorage.getItem("app_theme") || "light"
+  );
+
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+
+  const isDark = themeMode === "dark";
+  const c = isDark
+    ? {
+      popBg: "#1a1a1a",
+      popBorder: "#634f27",
+      shadow: "0 10px 25px -5px rgba(0,0,0,0.6)",
+      nav: "#f1f5f9",
+      accent: "#E5B85C",
+      weekday: "#94a3b8",
+      selBg: "#E5B85C",
+      selText: "#121212",
+      dayText: "#f1f5f9",
+      dayMuted: "#4b5563",
+      monthBg: "#262626",
+      hoverBg: "#2d2d2d",
+      divider: "#3a3326",
+    }
+    : {
+      popBg: "#ffffff",
+      popBorder: "#d5dcde",
+      shadow: "0 10px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1)",
+      nav: "#334155",
+      accent: "#0284c7",
+      weekday: "#334155",
+      selBg: "#0284c7",
+      selText: "#ffffff",
+      dayText: "#1e293b",
+      dayMuted: "#cbd5e1",
+      monthBg: "#f8fafc",
+      hoverBg: "#f1f5f9",
+      divider: "#f1f5f9",
+    };
+
   const [nonDepresiasi, setNonDepresiasi] = useState(true);
   const [namaAset, setNamaAset] = useState("");
   const [nomorAset, setNomorAset] = useState("10001");
@@ -90,6 +137,192 @@ export default function SimpanAsetPage() {
     return days;
   };
 
+  const renderCalendarPopover = () => (
+    <div
+      style={{
+        position: "absolute", top: "calc(100% + 6px)", left: 0,
+        zIndex: 1000, backgroundColor: c.popBg, border: `1px solid ${c.popBorder}`,
+        borderRadius: "8px", boxShadow: c.shadow,
+        padding: "14px 16px", width: "280px", userSelect: "none",
+      }}
+    >
+      {/* Header navigasi */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+        <button
+          type="button"
+          style={{ background: "none", border: "none", fontSize: "16px", fontWeight: "bold", cursor: "pointer", color: c.nav, padding: "4px 8px", borderRadius: "4px" }}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (calendarViewMode === "days") setCalendarViewDate(new Date(calendarViewDate.getFullYear(), calendarViewDate.getMonth() - 1, 1));
+            else if (calendarViewMode === "months") setCalendarViewDate(new Date(calendarViewDate.getFullYear() - 1, calendarViewDate.getMonth(), 1));
+            else setYearRangeStart((prev) => prev - 12);
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = c.hoverBg)}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+        >
+          «
+        </button>
+
+        <button
+          type="button"
+          style={{ background: "none", border: "none", fontSize: "14px", fontWeight: "700", color: c.accent, cursor: "pointer", padding: "4px 8px", borderRadius: "4px", display: "flex", alignItems: "center", gap: "5px" }}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (calendarViewMode === "days") setCalendarViewMode("months");
+            else if (calendarViewMode === "months") {
+              setYearRangeStart(Math.floor(calendarViewDate.getFullYear() / 12) * 12);
+              setCalendarViewMode("years");
+            } else setCalendarViewMode("days");
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = c.hoverBg)}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+          title="Klik untuk memilih bulan / tahun"
+        >
+          <span>
+            {calendarViewMode === "days" && `${MONTH_NAMES[calendarViewDate.getMonth()]} ${calendarViewDate.getFullYear()}`}
+            {calendarViewMode === "months" && `${calendarViewDate.getFullYear()}`}
+            {calendarViewMode === "years" && `${yearRangeStart} - ${yearRangeStart + 11}`}
+          </span>
+          <span style={{ fontSize: "10px" }}>▼</span>
+        </button>
+
+        <button
+          type="button"
+          style={{ background: "none", border: "none", fontSize: "16px", fontWeight: "bold", cursor: "pointer", color: c.nav, padding: "4px 8px", borderRadius: "4px" }}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (calendarViewMode === "days") setCalendarViewDate(new Date(calendarViewDate.getFullYear(), calendarViewDate.getMonth() + 1, 1));
+            else if (calendarViewMode === "months") setCalendarViewDate(new Date(calendarViewDate.getFullYear() + 1, calendarViewDate.getMonth(), 1));
+            else setYearRangeStart((prev) => prev + 12);
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = c.hoverBg)}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+        >
+          »
+        </button>
+      </div>
+
+      {/* View: Hari */}
+      {calendarViewMode === "days" && (
+        <>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", textAlign: "center", fontWeight: 600, fontSize: "11px", color: c.weekday, marginBottom: "6px" }}>
+            <span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "2px", textAlign: "center", fontSize: "12px" }}>
+            {getCalendarDays(calendarViewDate.getFullYear(), calendarViewDate.getMonth()).map((d, idx) => {
+              const isSelected =
+                d.day === selectedDate.getDate() &&
+                d.month === selectedDate.getMonth() &&
+                d.year === selectedDate.getFullYear();
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newDate = new Date(d.year, d.month, d.day);
+                    setSelectedDate(newDate);
+                    setCalendarViewDate(newDate);
+                    setShowCalendar(false);
+                  }}
+                  style={{
+                    padding: "6px 0", border: "none", borderRadius: "4px", cursor: "pointer",
+                    backgroundColor: isSelected ? c.selBg : "transparent",
+                    color: isSelected ? c.selText : d.isCurrentMonth ? c.dayText : c.dayMuted,
+                    fontWeight: isSelected ? "bold" : "normal",
+                  }}
+                  onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = c.hoverBg; }}
+                  onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = "transparent"; }}
+                >
+                  {d.day}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      {/* View: Bulan */}
+      {calendarViewMode === "months" && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", textAlign: "center", fontSize: "12px", paddingTop: "8px" }}>
+          {MONTH_NAMES.map((mName, idx) => {
+            const sel = calendarViewDate.getMonth() === idx;
+            return (
+              <button
+                key={mName}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCalendarViewDate(new Date(calendarViewDate.getFullYear(), idx, 1));
+                  setCalendarViewMode("days");
+                }}
+                style={{
+                  padding: "10px 4px", border: "none", borderRadius: "4px", cursor: "pointer",
+                  backgroundColor: sel ? c.selBg : c.monthBg,
+                  color: sel ? c.selText : c.dayText,
+                  fontWeight: sel ? "bold" : "normal",
+                }}
+                onMouseEnter={(e) => { if (!sel) e.currentTarget.style.backgroundColor = c.hoverBg; }}
+                onMouseLeave={(e) => { if (!sel) e.currentTarget.style.backgroundColor = c.monthBg; }}
+              >
+                {mName.substring(0, 3)}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* View: Tahun */}
+      {calendarViewMode === "years" && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", textAlign: "center", fontSize: "12px", paddingTop: "8px" }}>
+          {Array.from({ length: 12 }).map((_, idx) => {
+            const yearVal = yearRangeStart + idx;
+            const sel = calendarViewDate.getFullYear() === yearVal;
+            return (
+              <button
+                key={yearVal}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCalendarViewDate(new Date(yearVal, calendarViewDate.getMonth(), 1));
+                  setCalendarViewMode("months");
+                }}
+                style={{
+                  padding: "10px 4px", border: "none", borderRadius: "4px", cursor: "pointer",
+                  backgroundColor: sel ? c.selBg : c.monthBg,
+                  color: sel ? c.selText : c.dayText,
+                  fontWeight: sel ? "bold" : "normal",
+                }}
+                onMouseEnter={(e) => { if (!sel) e.currentTarget.style.backgroundColor = c.hoverBg; }}
+                onMouseLeave={(e) => { if (!sel) e.currentTarget.style.backgroundColor = c.monthBg; }}
+              >
+                {yearVal}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Tombol hari ini */}
+      <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: `1px solid ${c.divider}`, textAlign: "center" }}>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            const today = new Date();
+            setSelectedDate(today);
+            setCalendarViewDate(today);
+            setCalendarViewMode("days");
+            setShowCalendar(false);
+          }}
+          style={{ background: "none", border: "none", fontSize: "13px", fontWeight: 600, color: c.accent, cursor: "pointer", padding: "4px 8px", borderRadius: "4px" }}
+        >
+          Hari ini
+        </button>
+      </div>
+    </div>
+  );
+
   const inputStyle = {
     width: "100%",
     border: "1px solid #cbd5e1",
@@ -139,16 +372,19 @@ export default function SimpanAsetPage() {
 
   return (
     <div
+      className={isDark ? "simpan-dark" : ""}
       style={{
         margin: "-24px",
         minHeight: "100vh",
-        backgroundColor: "#ffffff",
+        backgroundColor: isDark ? "#121212" : "#ffffff",
         fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-        color: "#334155",
+        color: isDark ? "#f1f5f9" : "#334155",
+        transition: "background-color 0.3s ease, color 0.3s ease",
       }}
     >
       {/* ── BEGIN: PageHeader ── */}
       <header
+        className="simpan-header"
         style={{
           borderBottom: "1px solid #e2e8f0",
           padding: "16px 32px",
@@ -156,7 +392,9 @@ export default function SimpanAsetPage() {
         }}
       >
         <div style={{ fontSize: "13px", color: "#64748b", marginBottom: "2px" }}>Aset Tetap</div>
-        <h1 style={{ fontSize: "22px", fontWeight: "700", color: "#143f77", letterSpacing: "-0.01em", margin: 0 }}>
+        <h1
+          className="simpan-title"
+          style={{ fontSize: "22px", fontWeight: "700", color: "#143f77", letterSpacing: "-0.01em", margin: 0 }}>
           Penyimpanan Aset Baru
         </h1>
       </header>
@@ -167,7 +405,9 @@ export default function SimpanAsetPage() {
         <form onSubmit={(e) => e.preventDefault()}>
           {/* ── BEGIN: SectionDetailAset ── */}
           <section style={{ marginBottom: "40px" }}>
-            <h2 style={{ fontSize: "17px", fontWeight: "600", color: "#1e293b", marginBottom: "20px" }}>Detail Aset</h2>
+            <h2
+              className="simpan-h2"
+              style={{ fontSize: "17px", fontWeight: "600", color: "#1e293b", marginBottom: "20px" }}>Detail Aset</h2>
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "16px 64px" }}>
               {/* Left Column */}
@@ -223,7 +463,9 @@ export default function SimpanAsetPage() {
                       style={{ display: "flex", cursor: "pointer" }}
                       onClick={() => setShowCalendar((prev) => !prev)}
                     >
-                      <span style={{ display: "inline-flex", alignItems: "center", padding: "0 12px", backgroundColor: "#e9ecef", border: "1px solid #d5dcde", borderRight: "none", borderRadius: "4px 0 0 4px", color: "#475569", cursor: "pointer" }}>
+                      <span
+                        className="simpan-addon"
+                        style={{ display: "inline-flex", alignItems: "center", padding: "0 12px", backgroundColor: "#e9ecef", border: "1px solid #d5dcde", borderRight: "none", borderRadius: "4px 0 0 4px", color: "#475569", cursor: "pointer" }}>
                         <svg style={{ width: "16px", height: "16px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
@@ -238,195 +480,7 @@ export default function SimpanAsetPage() {
                     </div>
 
                     {/* Calendar Popover */}
-                    {showCalendar && (
-                      <div
-                        style={{
-                          position: "absolute",
-                          top: "42px",
-                          left: 0,
-                          zIndex: 50,
-                          backgroundColor: "#ffffff",
-                          border: "1px solid #d5dcde",
-                          borderRadius: "8px",
-                          boxShadow: "0 10px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1)",
-                          padding: "16px",
-                          width: "280px",
-                          userSelect: "none",
-                        }}
-                      >
-                        {/* Month & Year Navigator Header */}
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                          <button
-                            type="button"
-                            style={{ background: "none", border: "none", fontSize: "16px", fontWeight: "bold", cursor: "pointer", color: "#334155", padding: "4px 8px", borderRadius: "4px" }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (calendarViewMode === "days") {
-                                setCalendarViewDate(new Date(calendarViewDate.getFullYear(), calendarViewDate.getMonth() - 1, 1));
-                              } else if (calendarViewMode === "months") {
-                                setCalendarViewDate(new Date(calendarViewDate.getFullYear() - 1, calendarViewDate.getMonth(), 1));
-                              } else if (calendarViewMode === "years") {
-                                setYearRangeStart((prev) => prev - 12);
-                              }
-                            }}
-                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f1f5f9")}
-                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                          >
-                            «
-                          </button>
-
-                          <button
-                            type="button"
-                            style={{ background: "none", border: "none", fontSize: "14px", fontWeight: "700", color: "#0284c7", cursor: "pointer", padding: "4px 8px", borderRadius: "4px", display: "flex", alignItems: "center", gap: "5px" }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (calendarViewMode === "days") {
-                                setCalendarViewMode("months");
-                              } else if (calendarViewMode === "months") {
-                                setYearRangeStart(Math.floor(calendarViewDate.getFullYear() / 12) * 12);
-                                setCalendarViewMode("years");
-                              } else {
-                                setCalendarViewMode("days");
-                              }
-                            }}
-                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e0f2fe")}
-                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                            title="Klik untuk memilih bulan / tahun"
-                          >
-                            <span>
-                              {calendarViewMode === "days" && `${MONTH_NAMES[calendarViewDate.getMonth()]} ${calendarViewDate.getFullYear()}`}
-                              {calendarViewMode === "months" && `${calendarViewDate.getFullYear()}`}
-                              {calendarViewMode === "years" && `${yearRangeStart} - ${yearRangeStart + 11}`}
-                            </span>
-                            <span style={{ fontSize: "10px" }}>▼</span>
-                          </button>
-
-                          <button
-                            type="button"
-                            style={{ background: "none", border: "none", fontSize: "16px", fontWeight: "bold", cursor: "pointer", color: "#334155", padding: "4px 8px", borderRadius: "4px" }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (calendarViewMode === "days") {
-                                setCalendarViewDate(new Date(calendarViewDate.getFullYear(), calendarViewDate.getMonth() + 1, 1));
-                              } else if (calendarViewMode === "months") {
-                                setCalendarViewDate(new Date(calendarViewDate.getFullYear() + 1, calendarViewDate.getMonth(), 1));
-                              } else if (calendarViewMode === "years") {
-                                setYearRangeStart((prev) => prev + 12);
-                              }
-                            }}
-                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f1f5f9")}
-                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                          >
-                            »
-                          </button>
-                        </div>
-
-                        {/* View 1: Days */}
-                        {calendarViewMode === "days" && (
-                          <>
-                            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "2px", textAlign: "center", marginBottom: "8px" }}>
-                              {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((dayName) => (
-                                <div key={dayName} style={{ fontSize: "12px", fontWeight: "700", color: "#334155" }}>{dayName}</div>
-                              ))}
-                            </div>
-                            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "2px", textAlign: "center" }}>
-                              {getCalendarDays(calendarViewDate.getFullYear(), calendarViewDate.getMonth()).map((item, idx) => {
-                                const isSelected =
-                                  selectedDate.getDate() === item.day &&
-                                  selectedDate.getMonth() === item.month &&
-                                  selectedDate.getFullYear() === item.year;
-                                return (
-                                  <div
-                                    key={idx}
-                                    style={{ height: "32px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: isSelected ? "700" : "400", color: isSelected ? "#ffffff" : item.isCurrentMonth ? "#1e293b" : "#cbd5e1", backgroundColor: isSelected ? "#0284c7" : "transparent", borderRadius: "6px", cursor: "pointer", transition: "all 0.15s ease" }}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      const newDate = new Date(item.year, item.month, item.day);
-                                      setSelectedDate(newDate);
-                                      setCalendarViewDate(newDate);
-                                      setShowCalendar(false);
-                                    }}
-                                    onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = "#f1f5f9"; }}
-                                    onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = "transparent"; }}
-                                  >
-                                    {item.day}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </>
-                        )}
-
-                        {/* View 2: Months */}
-                        {calendarViewMode === "months" && (
-                          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", padding: "4px 0" }}>
-                            {MONTH_NAMES.map((monthName, idx) => {
-                              const isSelected = calendarViewDate.getMonth() === idx;
-                              return (
-                                <div
-                                  key={monthName}
-                                  style={{ height: "40px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: isSelected ? "700" : "500", color: isSelected ? "#ffffff" : "#1e293b", backgroundColor: isSelected ? "#0284c7" : "#f8fafc", border: isSelected ? "1px solid #0284c7" : "1px solid #e2e8f0", borderRadius: "6px", cursor: "pointer", transition: "all 0.15s ease" }}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setCalendarViewDate(new Date(calendarViewDate.getFullYear(), idx, 1));
-                                    setCalendarViewMode("days");
-                                  }}
-                                  onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = "#e0f2fe"; }}
-                                  onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = "#f8fafc"; }}
-                                >
-                                  {monthName.substring(0, 3)}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-
-                        {/* View 3: Years */}
-                        {calendarViewMode === "years" && (
-                          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", padding: "4px 0" }}>
-                            {Array.from({ length: 12 }).map((_, idx) => {
-                              const yearVal = yearRangeStart + idx;
-                              const isSelected = calendarViewDate.getFullYear() === yearVal;
-                              return (
-                                <div
-                                  key={yearVal}
-                                  style={{ height: "40px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: isSelected ? "700" : "500", color: isSelected ? "#ffffff" : "#1e293b", backgroundColor: isSelected ? "#0284c7" : "#f8fafc", border: isSelected ? "1px solid #0284c7" : "1px solid #e2e8f0", borderRadius: "6px", cursor: "pointer", transition: "all 0.15s ease" }}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setCalendarViewDate(new Date(yearVal, calendarViewDate.getMonth(), 1));
-                                    setCalendarViewMode("months");
-                                  }}
-                                  onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = "#e0f2fe"; }}
-                                  onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = "#f8fafc"; }}
-                                >
-                                  {yearVal}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-
-                        {/* Today Button */}
-                        <div style={{ marginTop: "12px", paddingTop: "8px", borderTop: "1px solid #f1f5f9", textAlign: "center" }}>
-                          <button
-                            type="button"
-                            style={{ background: "none", border: "none", fontSize: "13px", fontWeight: "700", color: "#1e293b", cursor: "pointer", padding: "4px 8px" }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const today = new Date();
-                              setSelectedDate(today);
-                              setCalendarViewDate(today);
-                              setCalendarViewMode("days");
-                              setShowCalendar(false);
-                            }}
-                            onMouseEnter={(e) => (e.currentTarget.style.color = "#0284c7")}
-                            onMouseLeave={(e) => (e.currentTarget.style.color = "#1e293b")}
-                          >
-                            Today
-                          </button>
-                        </div>
-                      </div>
-                    )}
+                    {showCalendar && renderCalendarPopover()}
                   </div>
                   <TooltipIcon />
                 </div>
@@ -467,7 +521,9 @@ export default function SimpanAsetPage() {
 
           {/* ── BEGIN: SectionPenyusutan ── */}
           <section style={{ marginBottom: "32px" }}>
-            <h2 style={{ fontSize: "17px", fontWeight: "600", color: "#1e293b", marginBottom: "16px" }}>Penyusutan</h2>
+            <h2
+              className="simpan-h2"
+              style={{ fontSize: "17px", fontWeight: "600", color: "#1e293b", marginBottom: "16px" }}>Penyusutan</h2>
 
             {/* Checkbox Row */}
             <div style={{ display: "flex", alignItems: "center", marginBottom: "20px" }}>
@@ -590,7 +646,9 @@ export default function SimpanAsetPage() {
                 <div style={{ display: "flex", alignItems: "center" }}>
                   <label htmlFor="pada_tanggal" style={{ ...(nonDepresiasi ? labelDisabledStyle : labelStyle), width: "170px" }}>Pada Tanggal</label>
                   <div style={{ flex: 1, display: "flex" }}>
-                    <span style={{ display: "inline-flex", alignItems: "center", padding: "0 12px", backgroundColor: nonDepresiasi ? "#f8fafc" : "#f1f5f9", border: "1px solid #cbd5e1", borderRight: "none", borderRadius: "4px 0 0 4px", color: "#94a3b8" }}>
+                    <span
+                      className="simpan-addon"
+                      style={{ display: "inline-flex", alignItems: "center", padding: "0 12px", backgroundColor: nonDepresiasi ? "#f8fafc" : "#f1f5f9", border: "1px solid #cbd5e1", borderRight: "none", borderRadius: "4px 0 0 4px", color: "#94a3b8" }}>
                       <svg style={{ width: "16px", height: "16px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
@@ -651,6 +709,54 @@ export default function SimpanAsetPage() {
         </form>
       </main>
       {/* ── END: MainContent ── */}
+
+      <style>{`
+        .simpan-dark { color-scheme: dark; }
+
+        /* Header */
+        .simpan-dark .simpan-header { background-color: #1A1A1A !important; border-color: #634f27 !important; }
+        .simpan-dark .simpan-header div { color: #94a3b8 !important; }
+        .simpan-dark .simpan-title { color: #E5B85C !important; }
+        .simpan-dark .simpan-h2 { color: #f1f5f9 !important; }
+
+        /* Label */
+        .simpan-dark label { color: #e2e8f0 !important; }
+
+        /* Input, select, textarea */
+        .simpan-dark input, .simpan-dark select, .simpan-dark textarea {
+          background-color: #262626 !important;
+          color: #f1f5f9 !important;
+          border-color: #634f27 !important;
+        }
+        .simpan-dark input:focus, .simpan-dark select:focus, .simpan-dark textarea:focus {
+          border-color: #E5B85C !important;
+          box-shadow: 0 0 0 2px rgba(229,184,92,0.25) !important;
+        }
+        .simpan-dark input:disabled, .simpan-dark select:disabled {
+          background-color: #1a1a1a !important;
+          color: #6b7280 !important;
+          border-color: #3a3326 !important;
+        }
+        .simpan-dark select option { background: #262626; color: #f1f5f9; }
+
+        /* Ikon kalender (addon kiri input) */
+        .simpan-dark .simpan-addon {
+          background-color: #2d2d2d !important;
+          border-color: #634f27 !important;
+          color: #E5B85C !important;
+        }
+
+        /* Ikon bantuan (?) */
+        .simpan-dark form svg[viewBox="0 0 20 20"] { fill: #E5B85C !important; }
+
+        /* Checkbox non-depresiasi */
+        .simpan-dark [role="checkbox"][aria-checked="true"] { background-color: #E5B85C !important; }
+        .simpan-dark [role="checkbox"][aria-checked="true"] svg { stroke: #121212 !important; }
+        .simpan-dark [role="checkbox"][aria-checked="false"] {
+          background-color: #262626 !important;
+          border-color: #634f27 !important;
+        }
+      `}</style>
     </div>
   );
 }

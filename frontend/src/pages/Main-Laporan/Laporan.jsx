@@ -367,8 +367,80 @@ const REPORTS_PRODUKSI_RIGHT = [
   },
 ];
 
+const DARK_CSS = `
+.dash-dark { color-scheme: dark; }
+
+/* ===== Background ===== */
+.dash-dark[style*="background-color: rgb(255, 255, 255)"],
+.dash-dark [style*="background-color: rgb(255, 255, 255)"] { background-color: #121212 !important; }
+.dash-dark [style*="background-color: rgb(248, 250, 252)"] { background-color: #1a1a1a !important; }
+.dash-dark [style*="background-color: rgb(241, 245, 249)"] { background-color: #2d2d2d !important; }
+.dash-dark [style*="background-color: rgb(224, 235, 255)"] { background-color: rgba(229,184,92,0.2) !important; }
+
+/* ===== Border ===== */
+.dash-dark [style*="rgb(226, 232, 240)"],
+.dash-dark [style*="rgb(203, 213, 225)"],
+.dash-dark [style*="rgb(209, 213, 219)"],
+.dash-dark [style*="solid rgb(241, 245, 249)"] { border-color: #634f27 !important; }
+
+/* ===== Teks ===== */
+.dash-dark [style*="color: rgb(15, 23, 42)"],
+.dash-dark [style*="color: rgb(30, 41, 59)"],
+.dash-dark [style*="color: rgb(31, 41, 55)"],
+.dash-dark [style*="color: rgb(51, 65, 85)"] { color: #f1f5f9 !important; }
+
+.dash-dark [style*="color: rgb(71, 85, 105)"],
+.dash-dark [style*="color: rgb(75, 85, 99)"],
+.dash-dark [style*="color: rgb(100, 116, 139)"] { color: #cbd5e1 !important; }
+
+.dash-dark [style*="color: rgb(148, 163, 184)"]:not([style*="border-color"]) { color: #94a3b8 !important; }
+
+/* ===== Warna biru -> emas (tab, tombol Lihat laporan, link) ===== */
+.dash-dark [style*="color: rgb(37, 99, 235)"],
+.dash-dark [style*="color: rgb(22, 82, 240)"],
+.dash-dark [style*="color: rgb(29, 78, 216)"] { color: #E5B85C !important; }
+.dash-dark [style*="rgb(37, 99, 235)"][style*="border-bottom"] { border-color: #E5B85C !important; }
+.dash-dark [style*="border-bottom: 2px solid rgb(37, 99, 235)"],
+.dash-dark [style*="border-bottom: 2px solid #2563eb"] {
+  border-bottom-color: #ffffff !important;
+  color: #ffffff !important;
+}
+
+/* ===== Tombol utama (Ekspor / Lanjutkan / tanggal terpilih) ===== */
+.dash-dark [style*="background-color: rgb(67, 97, 238)"] {
+  background-color: #E5B85C !important;
+  color: #121212 !important;
+  box-shadow: none !important;
+}
+.dash-dark [style*="background-color: rgb(199, 210, 254)"],
+.dash-dark [style*="background-color: rgb(165, 180, 252)"] {
+  background-color: rgba(229,184,92,0.35) !important;
+  color: #121212 !important;
+}
+
+/* ===== Radio, ikon kalender, dropdown ===== */
+.dash-dark input[type="radio"] { accent-color: #E5B85C !important; }
+.dash-dark svg { color: #cbd5e1; }
+.dash-dark input::placeholder { color: #94a3b8; }
+.dash-dark input { color: #f1f5f9 !important; }
+`;
+
 export default function Laporan() {
   const navigate = useNavigate();
+
+  const [themeMode, setThemeMode] = useState(
+    () => localStorage.getItem("app_theme") || "light"
+  );
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+  const isDark = themeMode === "dark";
   const [activeTab, setActiveTab] = useState("sekilas-bisnis");
 
   // State Modal Ekspor Konversi Produk
@@ -876,6 +948,7 @@ export default function Laporan() {
 
   return (
     <div
+      className={isDark ? "dash-dark" : ""}
       style={{
         margin: "-24px",
         minHeight: "100vh",
@@ -935,10 +1008,12 @@ export default function Laporan() {
                     padding: "10px 2px",
                     fontSize: "13.5px",
                     fontWeight: 500,
-                    color: isActive ? "#2563eb" : "#475569",
                     borderBottom: isActive
-                      ? "2px solid #2563eb"
+                      ? `2px solid ${isDark ? "#ffffff" : "#2563eb"}`
                       : "2px solid transparent",
+                    color: isActive
+                      ? (isDark ? "#de9f53ff" : "#2563eb")
+                      : "#475569",  
                     whiteSpace: "nowrap",
                     background: "none",
                     borderLeft: "none",
@@ -1052,7 +1127,6 @@ export default function Laporan() {
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = "#f8fafc";
-                    e.currentTarget.style.borderColor = "#2563eb";
                     e.currentTarget.style.color = "#1d4ed8";
                   }}
                   onMouseLeave={(e) => {
@@ -1361,7 +1435,6 @@ export default function Laporan() {
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.backgroundColor = "#f8fafc";
-                      e.currentTarget.style.borderColor = "#94a3b8";
                       e.currentTarget.style.color = "#1d4ed8";
                     }}
                     onMouseLeave={(e) => {
@@ -1744,7 +1817,7 @@ export default function Laporan() {
                     onClick={() => {
                       if (report.id === "ringkasan-aset-tetap") {
                         navigate("/laporan/ringkasan-aset-tetap");
-                      } 
+                      }
                       else if (report.id === "penjualan-pelepasan-aset") {
                         navigate("/laporan/penjualan-pelepasan-aset");
                       } else {
@@ -3196,13 +3269,13 @@ export default function Laporan() {
                       penyusunanStartDateStr,
                       () => setShowPenyusunanStartCalendar(!showPenyusunanStartCalendar),
                       showPenyusunanStartCalendar &&
-                        renderCalendarPopup(
-                          penyusunanStartSelectedDate, setPenyusunanStartSelectedDate,
-                          penyusunanStartCalendarViewDate, setPenyusunanStartCalendarViewDate,
-                          penyusunanStartCalendarViewMode, setPenyusunanStartCalendarViewMode,
-                          penyusunanStartYearRangeStart, setPenyusunanStartYearRangeStart,
-                          () => setShowPenyusunanStartCalendar(false)
-                        )
+                      renderCalendarPopup(
+                        penyusunanStartSelectedDate, setPenyusunanStartSelectedDate,
+                        penyusunanStartCalendarViewDate, setPenyusunanStartCalendarViewDate,
+                        penyusunanStartCalendarViewMode, setPenyusunanStartCalendarViewMode,
+                        penyusunanStartYearRangeStart, setPenyusunanStartYearRangeStart,
+                        () => setShowPenyusunanStartCalendar(false)
+                      )
                     )}
                   </div>
                   <span style={{ color: "#64748b", fontWeight: 500 }}>-</span>
@@ -3211,14 +3284,14 @@ export default function Laporan() {
                       penyusunanEndDateStr,
                       () => setShowPenyusunanEndCalendar(!showPenyusunanEndCalendar),
                       showPenyusunanEndCalendar &&
-                        renderCalendarPopup(
-                          penyusunanEndSelectedDate, setPenyusunanEndSelectedDate,
-                          penyusunanEndCalendarViewDate, setPenyusunanEndCalendarViewDate,
-                          penyusunanEndCalendarViewMode, setPenyusunanEndCalendarViewMode,
-                          penyusunanEndYearRangeStart, setPenyusunanEndYearRangeStart,
-                          () => setShowPenyusunanEndCalendar(false),
-                          "right"
-                        )
+                      renderCalendarPopup(
+                        penyusunanEndSelectedDate, setPenyusunanEndSelectedDate,
+                        penyusunanEndCalendarViewDate, setPenyusunanEndCalendarViewDate,
+                        penyusunanEndCalendarViewMode, setPenyusunanEndCalendarViewMode,
+                        penyusunanEndYearRangeStart, setPenyusunanEndYearRangeStart,
+                        () => setShowPenyusunanEndCalendar(false),
+                        "right"
+                      )
                     )}
                   </div>
                 </div>
@@ -3365,13 +3438,13 @@ export default function Laporan() {
                       pemisahanStartDateStr,
                       () => setShowPemisahanStartCalendar(!showPemisahanStartCalendar),
                       showPemisahanStartCalendar &&
-                        renderCalendarPopup(
-                          pemisahanStartSelectedDate, setPemisahanStartSelectedDate,
-                          pemisahanStartCalendarViewDate, setPemisahanStartCalendarViewDate,
-                          pemisahanStartCalendarViewMode, setPemisahanStartCalendarViewMode,
-                          pemisahanStartYearRangeStart, setPemisahanStartYearRangeStart,
-                          () => setShowPemisahanStartCalendar(false)
-                        )
+                      renderCalendarPopup(
+                        pemisahanStartSelectedDate, setPemisahanStartSelectedDate,
+                        pemisahanStartCalendarViewDate, setPemisahanStartCalendarViewDate,
+                        pemisahanStartCalendarViewMode, setPemisahanStartCalendarViewMode,
+                        pemisahanStartYearRangeStart, setPemisahanStartYearRangeStart,
+                        () => setShowPemisahanStartCalendar(false)
+                      )
                     )}
                   </div>
                   <span style={{ color: "#64748b", fontWeight: 500 }}>-</span>
@@ -3380,14 +3453,14 @@ export default function Laporan() {
                       pemisahanEndDateStr,
                       () => setShowPemisahanEndCalendar(!showPemisahanEndCalendar),
                       showPemisahanEndCalendar &&
-                        renderCalendarPopup(
-                          pemisahanEndSelectedDate, setPemisahanEndSelectedDate,
-                          pemisahanEndCalendarViewDate, setPemisahanEndCalendarViewDate,
-                          pemisahanEndCalendarViewMode, setPemisahanEndCalendarViewMode,
-                          pemisahanEndYearRangeStart, setPemisahanEndYearRangeStart,
-                          () => setShowPemisahanEndCalendar(false),
-                          "right"
-                        )
+                      renderCalendarPopup(
+                        pemisahanEndSelectedDate, setPemisahanEndSelectedDate,
+                        pemisahanEndCalendarViewDate, setPemisahanEndCalendarViewDate,
+                        pemisahanEndCalendarViewMode, setPemisahanEndCalendarViewMode,
+                        pemisahanEndYearRangeStart, setPemisahanEndYearRangeStart,
+                        () => setShowPemisahanEndCalendar(false),
+                        "right"
+                      )
                     )}
                   </div>
                 </div>
@@ -3506,13 +3579,13 @@ export default function Laporan() {
                       cogmStartDateStr,
                       () => setShowCogmStartCalendar(!showCogmStartCalendar),
                       showCogmStartCalendar &&
-                        renderCalendarPopup(
-                          cogmStartSelectedDate, setCogmStartSelectedDate,
-                          cogmStartCalendarViewDate, setCogmStartCalendarViewDate,
-                          cogmStartCalendarViewMode, setCogmStartCalendarViewMode,
-                          cogmStartYearRangeStart, setCogmStartYearRangeStart,
-                          () => setShowCogmStartCalendar(false)
-                        )
+                      renderCalendarPopup(
+                        cogmStartSelectedDate, setCogmStartSelectedDate,
+                        cogmStartCalendarViewDate, setCogmStartCalendarViewDate,
+                        cogmStartCalendarViewMode, setCogmStartCalendarViewMode,
+                        cogmStartYearRangeStart, setCogmStartYearRangeStart,
+                        () => setShowCogmStartCalendar(false)
+                      )
                     )}
                   </div>
                   <span style={{ color: "#64748b", fontWeight: 500 }}>-</span>
@@ -3521,14 +3594,14 @@ export default function Laporan() {
                       cogmEndDateStr,
                       () => setShowCogmEndCalendar(!showCogmEndCalendar),
                       showCogmEndCalendar &&
-                        renderCalendarPopup(
-                          cogmEndSelectedDate, setCogmEndSelectedDate,
-                          cogmEndCalendarViewDate, setCogmEndCalendarViewDate,
-                          cogmEndCalendarViewMode, setCogmEndCalendarViewMode,
-                          cogmEndYearRangeStart, setCogmEndYearRangeStart,
-                          () => setShowCogmEndCalendar(false),
-                          "right"
-                        )
+                      renderCalendarPopup(
+                        cogmEndSelectedDate, setCogmEndSelectedDate,
+                        cogmEndCalendarViewDate, setCogmEndCalendarViewDate,
+                        cogmEndCalendarViewMode, setCogmEndCalendarViewMode,
+                        cogmEndYearRangeStart, setCogmEndYearRangeStart,
+                        () => setShowCogmEndCalendar(false),
+                        "right"
+                      )
                     )}
                   </div>
                 </div>
@@ -3573,6 +3646,7 @@ export default function Laporan() {
           </div>
         </div>
       )}
+      <style>{DARK_CSS}</style>
     </div>
   );
 }

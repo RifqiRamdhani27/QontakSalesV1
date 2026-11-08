@@ -15,6 +15,18 @@ export default function ArusKas() {
     }
   };
 
+  const [themeMode, setThemeMode] = useState(() => localStorage.getItem("app_theme") || "light");
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+  const isDark = themeMode === "dark";
+
   // Top Bar Start Date Calendar State
   const startDatePickerRef = useRef(null);
   const [startSelectedDate, setStartSelectedDate] = useState(() => new Date(2026, 8, 16));
@@ -197,6 +209,7 @@ export default function ArusKas() {
   ) => {
     return (
       <div
+        className="ak-pop"
         style={{
           position: "absolute",
           top: "72px",
@@ -358,6 +371,7 @@ export default function ArusKas() {
 
   return (
     <div
+      className={isDark ? "dash-dark ak-root" : "ak-root"}
       style={{
         margin: isFullscreen ? 0 : "-24px",
         minHeight: "100vh",
@@ -650,6 +664,7 @@ export default function ArusKas() {
             {/* Custom Dropdown Menu */}
             {showPeriodeDropdown && (
               <div
+                className="ak-dd"
                 style={{
                   position: "absolute",
                   top: "64px",
@@ -714,6 +729,7 @@ export default function ArusKas() {
           {/* Tombol Tampilkan (Primary Solid Blue Button) */}
           <button
             type="button"
+            className="ak-btn"
             style={{
               height: "36px",
               padding: "0 18px",
@@ -853,6 +869,7 @@ export default function ArusKas() {
 
               {showEksporDropdown && (
                 <div
+                  className="ak-dd"
                   style={{
                     position: "absolute",
                     top: "42px",
@@ -1418,7 +1435,7 @@ export default function ArusKas() {
                     style={{ accentColor: "#3559e0", width: "16px", height: "16px", cursor: "pointer" }}
                   />
                   <span>Salah satu</span>
-                  <svg style={{ width: "15" , height: "15", color: "#64748b" }} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <svg style={{ width: "15", height: "15", color: "#64748b" }} viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <circle cx="12" cy="12" r="10" strokeWidth="1.8" />
                     <path d="M12 16v-4M12 8h.01" strokeWidth="2" strokeLinecap="round" />
                   </svg>
@@ -1489,6 +1506,7 @@ export default function ArusKas() {
                 <button
                   type="button"
                   onClick={closeFilterDrawer}
+                  className="ak-btn"
                   style={{
                     padding: "8px 18px",
                     fontSize: "13.5px",
@@ -1508,6 +1526,63 @@ export default function ArusKas() {
           </aside>
         </div>
       )}
+      <style>{`
+  .dash-dark.ak-root { background-color: #121212 !important; color: #f1f5f9 !important; color-scheme: dark; }
+  .dash-dark h1, .dash-dark h2 { color: #ffffff !important; }
+  .dash-dark p, .dash-dark label { color: #cbd5e1 !important; }
+
+  /* Permukaan putih / abu inline -> gelap */
+  .dash-dark [style*="background-color: rgb(255, 255, 255)"] { background-color: #121212 !important; }
+  .dash-dark [style*="background-color: rgb(248, 250, 252)"] { background-color: #1a1a1a !important; }
+  .dash-dark [style*="background-color: rgb(226, 232, 240)"] { background-color: #1a1a1a !important; }
+  .dash-dark input, .dash-dark select {
+    background-color: #262626 !important;
+    color: #f1f5f9 !important;
+    border-color: #634f27 !important;
+  }
+  .dash-dark input:focus, .dash-dark select:focus { border-color: #E5B85C !important; }
+  .dash-dark select option { background: #262626; color: #f1f5f9; }
+  .dash-dark input[type="radio"], .dash-dark input[type="checkbox"] { accent-color: #E5B85C; }
+
+  /* Border */
+  .dash-dark [style*="border: 1px solid"],
+  .dash-dark [style*="border-bottom: 1px solid"],
+  .dash-dark [style*="border-top: 1px solid"],
+  .dash-dark [style*="border-left: 1px solid"] { border-color: #634f27 !important; }
+
+  /* Teks biru -> emas */
+  .dash-dark [style*="color: rgb(59, 102, 245)"],
+  .dash-dark [style*="color: rgb(79, 102, 238)"],
+  .dash-dark [style*="color: rgb(79, 103, 201)"],
+  .dash-dark [style*="color: rgb(53, 89, 224)"] { color: #E5B85C !important; }
+  .dash-dark svg[fill="#3b66f5"], .dash-dark svg[fill="#4f66ee"] { fill: #E5B85C; }
+  .dash-dark svg[stroke="#4f66ee"], .dash-dark svg[stroke="#4f67c9"] { stroke: #E5B85C; }
+
+  /* Teks abu -> terang */
+  .dash-dark [style*="color: rgb(51, 65, 85)"],
+  .dash-dark [style*="color: rgb(30, 41, 59)"],
+  .dash-dark [style*="color: rgb(29, 41, 57)"],
+  .dash-dark [style*="color: rgb(16, 24, 40)"],
+  .dash-dark [style*="color: rgb(71, 85, 105)"],
+  .dash-dark [style*="color: rgb(100, 116, 139)"] { color: #cbd5e1 !important; }
+
+  /* Tombol utama emas */
+  .dash-dark .ak-btn { background-color: #E5B85C !important; color: #121212 !important; }
+  .dash-dark .ak-btn:hover { background-color: #f0c978 !important; }
+
+  /* Dropdown & kalender */
+  .dash-dark .ak-dd, .dash-dark .ak-pop { background-color: #1e1e1e !important; border-color: #634f27 !important; }
+  .dash-dark .ak-dd div { color: #f1f5f9 !important; }
+  .dash-dark .ak-dd [style*="background-color: rgb(240, 244, 255)"] { background-color: rgba(229,184,92,0.2) !important; }
+  .dash-dark .ak-pop button { color: #f1f5f9 !important; }
+  .dash-dark .ak-pop span { color: #94a3b8 !important; }
+  .dash-dark .ak-pop [style*="background-color: rgb(248, 250, 252)"] { background-color: #262626 !important; }
+  .dash-dark .ak-pop [style*="background-color: rgb(2, 132, 199)"] { background-color: #E5B85C !important; color: #121212 !important; }
+
+  /* Backdrop & ilustrasi */
+  .dash-dark [style*="rgba(15, 23, 42, 0.3)"] { background-color: rgba(0,0,0,0.7) !important; }
+  .dash-dark main svg { opacity: 0.85; }
+`}</style>
     </div>
   );
 }

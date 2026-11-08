@@ -1,11 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { DotsThreeOutline, MagnifyingGlass, ArrowsClockwise, CaretDown } from "@phosphor-icons/react";
+import { DotsThreeOutline, MagnifyingGlass, ArrowsClockwise, CaretDown, X, MinusCircle, PlusCircle } from "@phosphor-icons/react";
 import {
   btnDangerOutline,
   btnModalCancel,
   btnModalDelete,
-  btnModalSubmit,
+  btnModalSubmit as _btnModalSubmit,
   btnSecondary,
   inputBase,
   modalFooter,
@@ -32,6 +32,8 @@ import {
   warehouseOptionsPurchase,
 } from "@/data/fulfillmentData";
 
+const btnModalSubmit = `${_btnModalSubmit} dd-btn`;
+
 function MainTab({ activeTab, setActiveTab }) {
   const tabs = [
     { key: "sales", label: "Sales" },
@@ -39,16 +41,15 @@ function MainTab({ activeTab, setActiveTab }) {
   ];
 
   return (
-    <div className="mb-6 flex gap-6 border-b border-gray-200">
+    <div className="flex gap-3">
       {tabs.map((tab) => (
         <button
           key={tab.key}
-          type="button"
-          className={`cursor-pointer border-b-2 pb-3 text-sm font-medium transition-colors ${
+          className={
             activeTab === tab.key
-              ? "border-brand text-brand"
-              : "border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700"
-          }`}
+              ? "border-b border-brand bg-white p-2 text-brand"
+              : "p-2 text-gray-400 hover:border-b hover:border-gray-500 hover:bg-gray-50 hover:text-black"
+          }
           onClick={() => setActiveTab(tab.key)}
         >
           {tab.label}
@@ -1821,7 +1822,7 @@ function InboundDetail({
   );
 }
 
-export default function FulfillmentPage() {
+function FulfillmentContent() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("sales");
   const [warehouseId, setWarehouseId] = useState(0);
@@ -2186,6 +2187,122 @@ export default function FulfillmentPage() {
           {toast}
         </div>
       )}
+    </div>
+  );
+}
+
+const DARK_CSS = `
+.dash-dark { color-scheme: dark; }
+
+/* Tombol aksi */
+.dd-btn { background: #1d62a4 !important; color: #fff !important; border-color: #1d62a4 !important; }
+.dd-btn:hover { background: #163859 !important; }
+.dd-btn:disabled { opacity: 0.5; }
+.dash-dark .dd-btn { background: #E5B85C !important; color: #121212 !important; border-color: #E5B85C !important; }
+.dash-dark .dd-btn:hover { background: #f0c978 !important; }
+
+/* Tombol sekunder (Reload, Print, dll.) -> outline emas */
+.dash-dark button[class*="border-gray-300"]:not(.dd-btn) {
+  background-color: transparent !important;
+  color: #E5B85C !important;
+  border-color: #E5B85C !important;
+}
+.dash-dark button[class*="border-gray-300"]:not(.dd-btn):hover { background-color: rgba(229,184,92,0.12) !important; }
+
+/* Background */
+.dash-dark .bg-white { background-color: #121212 !important; }
+.dash-dark .bg-slate-50 { background-color: #1a1a1a !important; }
+.dash-dark .bg-gray-50 { background-color: #1a1a1a !important; }
+.dash-dark .hover\\:bg-slate-50:hover,
+.dash-dark .hover\\:bg-slate-100:hover,
+.dash-dark .hover\\:bg-gray-50:hover { background-color: #2d2d2d !important; }
+
+/* Header kolom kanban (bg-[#xxxxxx]) */
+.dash-dark [class*="bg-[#"] { background-color: rgba(211,142,13,0.35) !important; }
+
+/* Border */
+.dash-dark .border-gray-100,
+.dash-dark .border-gray-200,
+.dash-dark .border-gray-300,
+.dash-dark .border-gray-50,
+.dash-dark .border-slate-100 { border-color: #634f27 !important; }
+.dash-dark .hover\\:border-gray-500:hover { border-color: #E5B85C !important; }
+
+/* Teks */
+.dash-dark .text-gray-900,
+.dash-dark .text-gray-700,
+.dash-dark .text-slate-900,
+.dash-dark .text-black,
+.dash-dark .hover\\:text-black:hover,
+.dash-dark .hover\\:text-gray-900:hover { color: #f1f5f9 !important; }
+.dash-dark .text-gray-600,
+.dash-dark .text-gray-500,
+.dash-dark .text-slate-600,
+.dash-dark .text-slate-500 { color: #cbd5e1 !important; }
+.dash-dark .text-gray-400 { color: #94a3b8 !important; }
+
+/* Brand -> emas */
+.dash-dark .text-brand { color: #E5B85C !important; }
+.dash-dark .border-brand { border-color: #E5B85C !important; }
+.dash-dark .focus\\:border-brand:focus { border-color: #E5B85C !important; }
+
+/* Input, select, textarea */
+.dash-dark input,
+.dash-dark select,
+.dash-dark textarea {
+  background-color: #262626 !important;
+  color: #f1f5f9 !important;
+  border-color: #634f27 !important;
+}
+.dash-dark input::placeholder,
+.dash-dark textarea::placeholder { color: #94a3b8; }
+.dash-dark input:focus,
+.dash-dark select:focus,
+.dash-dark textarea:focus { border-color: #E5B85C !important; }
+.dash-dark select option { background: #262626; color: #f1f5f9; }
+
+/* Tabel */
+.dash-dark thead tr,
+.dash-dark th { background-color: #d38e0d69 !important; color: #f1f5f9 !important; }
+.dash-dark td { color: #e2e8f0 !important; }
+
+/* Badge status (pastel -> transparan) */
+.dash-dark .bg-green-100,
+.dash-dark .bg-cyan-100,
+.dash-dark .bg-sky-100,
+.dash-dark .bg-teal-100,
+.dash-dark .bg-red-100 { background-color: rgba(255,255,255,0.12) !important; }
+.dash-dark .text-green-700,
+.dash-dark .text-cyan-700,
+.dash-dark .text-sky-700,
+.dash-dark .text-teal-700 { color: #f1f5f9 !important; }
+
+/* Pesan error tetap merah */
+.dash-dark .text-red-500,
+.dash-dark .text-red-600 { color: #f87171 !important; }
+`;
+
+export default function FulfillmentPage() {
+  const [themeMode, setThemeMode] = useState(
+    () => localStorage.getItem("app_theme") || "light"
+  );
+
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+
+  const isDark = themeMode === "dark";
+
+  return (
+    <div className={isDark ? "dash-dark" : ""}>
+      <FulfillmentContent />
+      <style>{DARK_CSS}</style>
     </div>
   );
 }

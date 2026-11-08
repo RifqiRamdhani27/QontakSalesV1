@@ -1,10 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CaretDown, Star } from "@phosphor-icons/react";
 
 export default function KasBankPage() {
   const [showMenu, setShowMenu] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
   const [openImport, setOpenImport] = useState(null);
+
+  const [themeMode, setThemeMode] = useState(
+    () => localStorage.getItem("app_theme") || "light"
+  );
+
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+
+  const isDark = themeMode === "dark";
 
   const accounts = [
     {
@@ -22,7 +38,7 @@ export default function KasBankPage() {
   ];
 
   return (
-    <div className="min-h-full bg-white">
+    <div className={`min-h-full bg-white ${isDark ? "kb-dark" : ""}`}>
       <div className="px-5 pb-8 pt-4">
         <div className="flex items-center justify-between">
           <h1 className="text-[21px] font-semibold text-slate-900">
@@ -99,7 +115,7 @@ export default function KasBankPage() {
         </div>
 
         <div className="mt-5 grid grid-cols-4 gap-4">
-          <div className="overflow-hidden rounded-md border border-green-500 bg-white">
+          <div className="stat-card transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg overflow-hidden rounded-md border border-green-500 bg-white">
             <div className="flex h-8 items-center justify-between bg-[#e8f5e9] px-3">
               <span className="text-xs font-semibold text-slate-800">
                 Pemasukan 30 hari mendatang
@@ -116,7 +132,7 @@ export default function KasBankPage() {
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-md border border-red-500 bg-white">
+          <div className="stat-card transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg overflow-hidden rounded-md border border-red-500 bg-white">
             <div className="flex h-8 items-center justify-between bg-[#fff0f0] px-3">
               <span className="text-xs font-semibold text-slate-800">
                 Pengeluaran 30 hari mendatang
@@ -133,7 +149,7 @@ export default function KasBankPage() {
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-md border border-blue-500 bg-white">
+          <div className="stat-card transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lgoverflow-hidden hover:shadow-lg rounded-md border border-blue-500 bg-white">
             <div className="flex h-8 items-center justify-between bg-[#dfe5ff] px-3">
               <span className="text-xs font-semibold text-slate-800">
                 Saldo kas & bank
@@ -150,7 +166,7 @@ export default function KasBankPage() {
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-md border border-blue-500 bg-white">
+          <div className="stat-card hover:shadow-lg overflow-hidden rounded-md border border-blue-500 bg-white transition-all duration-300 ease-in-out hover:-translate-y-1">
             <div className="flex h-8 items-center justify-between bg-[#dfe5ff] px-3">
               <span className="text-xs font-semibold text-slate-800">
                 Saldo kartu kredit
@@ -179,14 +195,12 @@ export default function KasBankPage() {
           <button
             type="button"
             onClick={() => setShowArchived(!showArchived)}
-            className={`relative h-4 w-7 rounded-full ${
-              showArchived ? "bg-blue-600" : "bg-slate-300"
-            }`}
+            className={`relative h-4 w-7 rounded-full ${showArchived ? "bg-blue-600" : "bg-slate-300"
+              }`}
           >
             <span
-              className={`absolute top-0.5 h-3 w-3 rounded-full bg-white ${
-                showArchived ? "left-3.5" : "left-0.5"
-              }`}
+              className={`absolute top-0.5 h-3 w-3 rounded-full bg-white ${showArchived ? "left-3.5" : "left-0.5"
+                }`}
             />
           </button>
 
@@ -195,7 +209,7 @@ export default function KasBankPage() {
           </span>
         </div>
 
-        <div className="mt-5 overflow-visible border border-slate-300 bg-white">
+        <div className="mt-5 overflow-hidden rounded-xl border border-slate-300 bg-white">
           <table className="w-full border-collapse">
             <thead>
               <tr className="border-b border-slate-300 bg-[#f5f7fa]">
@@ -222,7 +236,7 @@ export default function KasBankPage() {
             </thead>
 
             <tbody>
-              <tr className="border-b border-slate-300 bg-white">
+              <tr className="border-b round-md border-slate-300 bg-white">
                 <td
                   colSpan="6"
                   className="px-8 py-3 text-[11px] font-semibold text-slate-800"
@@ -321,6 +335,51 @@ export default function KasBankPage() {
           </table>
         </div>
       </div>
+
+      <style>{`
+        .kb-dark { background-color: #121212 !important; color-scheme: dark; }
+
+        /* Latar & border */
+        .kb-dark .bg-white { background-color: #121212 !important; }
+        .kb-dark .border-slate-400,
+        .kb-dark .border-slate-300,
+        .kb-dark .border-slate-200 { border-color: #634f27 !important; }
+
+        /* Teks */
+        .kb-dark .text-slate-900,
+        .kb-dark .text-slate-800,
+        .kb-dark .text-slate-700 { color: #f1f5f9 !important; }
+        .kb-dark .text-slate-500 { color: #94a3b8 !important; }
+
+        /* Aksen biru -> emas */
+        .kb-dark .text-blue-600 { color: #E5B85C !important; }
+
+        /* Tombol utama -> emas */
+        .kb-dark [class~="bg-[#5266d9]"] { background-color: #E5B85C !important; color: #121212 !important; }
+        .kb-dark [class~="hover:bg-[#4659c7]"]:hover { background-color: #f0c978 !important; }
+
+        /* Hover */
+        .kb-dark .hover\\:bg-slate-50:hover,
+        .kb-dark .hover\\:bg-slate-100:hover,
+        .kb-dark .hover\\:bg-blue-50:hover { background-color: #2d2d2d !important; }
+        /* Shadow hover kartu ringkasan */
+        .kb-dark .stat-card:hover {
+          box-shadow: 0 6px 18px rgba(229, 184, 92, 0.45) !important;
+        }
+
+        /* Header kartu ringkasan */
+        .kb-dark [class~="bg-[#e8f5e9]"] { background-color: rgba(34,197,94,0.18) !important; }
+        .kb-dark [class~="bg-[#fff0f0]"] { background-color: rgba(239,68,68,0.18) !important; }
+        .kb-dark [class~="bg-[#dfe5ff]"] { background-color: rgba(96,165,250,0.22) !important; }
+
+        /* Header tabel */
+        .kb-dark [class~="bg-[#f5f7fa]"] { background-color: #d38e0d69 !important; }
+
+        /* Toggle arsip */
+        .kb-dark .bg-blue-600 { background-color: #E5B85C !important; }
+        .kb-dark .bg-slate-300 { background-color: #4a4a4a !important; }
+        .kb-dark button > span.bg-white { background-color: #ffffff !important; }
+      `}</style>
     </div>
   );
 }

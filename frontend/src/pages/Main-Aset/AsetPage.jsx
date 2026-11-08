@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const TABS = [
@@ -13,22 +13,41 @@ export default function AsetPage() {
   const [activeTab, setActiveTab] = useState("tertunda");
   const [searchQuery, setSearchQuery] = useState("");
 
+  const [themeMode, setThemeMode] = useState(
+    () => localStorage.getItem("app_theme") || "light"
+  );
+
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+
+  const isDark = themeMode === "dark";
+
   return (
     <div
+      className={isDark ? "aset-dark" : ""}
       style={{
         margin: "-24px",
         minHeight: "100vh",
-        backgroundColor: "#f3f5f8",
+        backgroundColor: isDark ? "#121212" : "#f3f5f8",
         fontFamily:
           "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-        color: "#334155",
+        color: isDark ? "#f1f5f9" : "#334155",
+        transition: "background-color 0.3s ease, color 0.3s ease",
       }}
     >
       {/* ── BEGIN: TopPageHeader ── */}
       <header
+        className="aset-header"
         style={{
-          backgroundColor: "#ffffff",
-          borderBottom: "1px solid #e2e8f0",
+          backgroundColor: isDark ? "#121212" : "#ffffff",
+          borderBottom: isDark ? "1px solid #e2e8f0" : "1px solid #e2e8f0",
           padding: "20px 32px",
         }}
       >
@@ -58,6 +77,7 @@ export default function AsetPage() {
               Manajemen Aset
             </p>
             <h1
+              className="aset-title"
               style={{
                 fontSize: "24px",
                 fontWeight: "700",
@@ -76,6 +96,7 @@ export default function AsetPage() {
             {/* Import Button */}
             <button
               type="button"
+              className="aset-btn-outline"
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -101,14 +122,15 @@ export default function AsetPage() {
               {/* Download/Tray Icon */}
               <svg
                 aria-hidden="true"
+                className="impor-icon"
                 style={{ width: "18px", height: "18px", color: "#374151" }}
                 fill="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path d="M12 2a1 1 0 0 1 1 1v9.586l2.293-2.293a1 1 0 1 1 1.414 1.414l-4 4a1 1 0 0 1-1.414 0l-4-4a1 1 0 1 1 1.414-1.414L11 12.586V3a1 1 0 0 1 1-1z"/>
-                <path d="M3 17a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2zm2 0v2h14v-2H5z"/>
-                <circle cx="8" cy="19" r="0.75"/>
-                <circle cx="16" cy="19" r="0.75"/>
+                <path d="M12 2a1 1 0 0 1 1 1v9.586l2.293-2.293a1 1 0 1 1 1.414 1.414l-4 4a1 1 0 0 1-1.414 0l-4-4a1 1 0 1 1 1.414-1.414L11 12.586V3a1 1 0 0 1 1-1z" />
+                <path d="M3 17a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2zm2 0v2h14v-2H5z" />
+                <circle cx="8" cy="19" r="0.75" />
+                <circle cx="16" cy="19" r="0.75" />
               </svg>
               Impor
             </button>
@@ -116,6 +138,7 @@ export default function AsetPage() {
             {/* Simpan Aset Button */}
             <button
               type="button"
+              className="aset-btn-primary"
               onClick={() => navigate("/aset/simpan")}
               style={{
                 display: "inline-flex",
@@ -171,6 +194,7 @@ export default function AsetPage() {
       >
         {/* Card Container */}
         <div
+          className="aset-card"
           style={{
             backgroundColor: "#ffffff",
             borderRadius: "4px",
@@ -181,6 +205,7 @@ export default function AsetPage() {
         >
           {/* ── BEGIN: NavigationTabsAndSearch ── */}
           <section
+            className="aset-tabs-border"
             style={{
               borderBottom: "1px solid #dbe2e8",
               paddingBottom: 0,
@@ -208,6 +233,7 @@ export default function AsetPage() {
                     role="tab"
                     aria-selected="true"
                     type="button"
+                    className="aset-tab-active"
                     style={{
                       backgroundColor: "#ffffff",
                       color: "#334155",
@@ -229,6 +255,7 @@ export default function AsetPage() {
                     role="tab"
                     aria-selected="false"
                     type="button"
+                    className="aset-tab"
                     style={{
                       backgroundColor: "transparent",
                       color: "#1976d2",
@@ -266,6 +293,7 @@ export default function AsetPage() {
                   placeholder=""
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  className="aset-input"
                   style={{
                     width: "224px",
                     height: "32px",
@@ -291,6 +319,7 @@ export default function AsetPage() {
                 <button
                   aria-label="Tombol pencarian"
                   type="button"
+                  className="aset-search-btn"
                   style={{
                     height: "32px",
                     padding: "0 10px",
@@ -333,6 +362,7 @@ export default function AsetPage() {
           {/* Content Subtitle */}
           <div style={{ paddingTop: "24px", paddingBottom: "16px" }}>
             <h2
+              className="aset-h2"
               style={{
                 fontSize: "21px",
                 fontWeight: "600",
@@ -345,13 +375,14 @@ export default function AsetPage() {
               {activeTab === "aktif" || activeTab === "dijual"
                 ? "Daftar Aset"
                 : activeTab === "penyusutan"
-                ? "Jadwal Penyusutan"
-                : "Aset Belum Tersimpan"}
+                  ? "Jadwal Penyusutan"
+                  : "Aset Belum Tersimpan"}
             </h2>
           </div>
 
           {/* ── BEGIN: TableSection ── */}
           <section
+            className="aset-table"
             style={{
               border: "1px solid #e2e8f0",
               borderRadius: "4px",
@@ -361,6 +392,7 @@ export default function AsetPage() {
             {/* Table Column Headers */}
             {activeTab === "aktif" ? (
               <div
+                className="aset-thead"
                 style={{
                   backgroundColor: "#dcf0f9",
                   borderTop: "2px solid #b2eaffff",
@@ -382,6 +414,7 @@ export default function AsetPage() {
               </div>
             ) : activeTab === "dijual" ? (
               <div
+                className="aset-thead"
                 style={{
                   backgroundColor: "#dcf0f9",
                   borderTop: "2px solid #b2eaffff",
@@ -403,6 +436,7 @@ export default function AsetPage() {
               </div>
             ) : activeTab === "penyusutan" ? (
               <div
+                className="aset-thead"
                 style={{
                   backgroundColor: "#dcf0f9",
                   borderTop: "2px solid #b2eaffff",
@@ -423,6 +457,7 @@ export default function AsetPage() {
               </div>
             ) : (
               <div
+                className="aset-thead"
                 style={{
                   backgroundColor: "#dcf0f9",
                   borderTop: "2px solid #b2eaffff",
@@ -445,6 +480,7 @@ export default function AsetPage() {
 
             {/* Pagination Bar */}
             <div
+              className="aset-pagebar"
               style={{
                 backgroundColor: "#ffffff",
                 borderTop: "1px solid #e2e8f0",
@@ -517,6 +553,7 @@ export default function AsetPage() {
 
             {/* Empty State */}
             <div
+              className="aset-empty"
               style={{
                 backgroundColor: "#eef3f6",
                 padding: "56px 16px",
@@ -524,6 +561,7 @@ export default function AsetPage() {
               }}
             >
               <h3
+                className="aset-empty-title"
                 style={{
                   fontSize: "14px",
                   fontWeight: "600",
@@ -535,10 +573,10 @@ export default function AsetPage() {
                 {activeTab === "aktif"
                   ? "Anda tidak punya aset aktif terdaftar"
                   : activeTab === "dijual"
-                  ? "Tidak ada di daftar ini!"
-                  : activeTab === "penyusutan"
-                  ? "Anda tidak memiliki aset yang akan disusutkan"
-                  : "Anda tidak punya aset tertunda untuk disimpan"}
+                    ? "Tidak ada di daftar ini!"
+                    : activeTab === "penyusutan"
+                      ? "Anda tidak memiliki aset yang akan disusutkan"
+                      : "Anda tidak punya aset tertunda untuk disimpan"}
               </h3>
               <div style={{ fontSize: "13px", color: "#475569" }}>
                 {activeTab === "dijual" ? (
@@ -598,6 +636,85 @@ export default function AsetPage() {
         </div>
       </main>
       {/* ── END: MainContent ── */}
+
+      <style>{`
+        .aset-dark { color-scheme: dark; }
+
+        /* Header */
+        .aset-dark .aset-header { background-color: #1A1A1A !important; border-color: #634f27 !important; }
+        .aset-dark .aset-title { color: #fefefeff !important; }
+
+        /* Tombol */
+        .aset-dark .aset-btn-outline {
+          background-color: #262626 !important;
+          color: #f1f5f9 !important;
+          border-color: #634f27 !important;
+        }
+        .aset-dark .aset-btn-outline:hover { background-color: #2d2d2d !important; }
+        .aset-dark .aset-btn-primary {
+          background-color: #f08f18ff !important;
+          color: #000000ff !important;
+          box-shadow: 0 3px 0 #8d540dff !important;
+        }
+        .aset-dark .aset-btn-primary:hover { background-color: #c87817ff !important; }
+
+        /* Card */
+        .aset-dark .aset-card { background-color: #121212 !important; border-color: #634f27 !important; }
+        .aset-dark .aset-tabs-border { border-color: #634f27 !important; }
+        /* Light mode */
+        .impor-icon {
+          fill: #0c0c0c;
+        }
+        /* Dark mode */
+        .aset-dark .impor-icon {
+          fill: #f69d0ec4;
+        }
+
+        /* Tabs */
+        .aset-dark .aset-tab-active {
+          background-color: #121212 !important;
+          color: #f1f5f9 !important;
+          border-color: #634f27 !important;
+          border-bottom-color: #121212 !important;
+        }
+        .aset-dark .aset-tab { color: #E5B85C !important; }
+        .aset-dark .aset-tab:hover { color: #f0c978 !important; }
+
+        /* Search */
+        .aset-dark .aset-input {
+          background-color: #262626 !important;
+          color: #f1f5f9 !important;
+          border-color: #634f27 !important;
+        }
+        .aset-dark .aset-search-btn {
+          background-color: #262626 !important;
+          color: #E5B85C !important;
+          border-color: #634f27 !important;
+        }
+        .aset-dark .aset-search-btn:hover { background-color: #2d2d2d !important; }
+
+        /* Subtitle */
+        .aset-dark .aset-h2 { color: #f1f5f9 !important; }
+
+        /* Tabel */
+        .aset-dark .aset-table { border-color: #634f27 !important; }
+        .aset-dark .aset-thead {
+          background-color: #d38e0d69 !important;
+          border-top: none !important;
+          color: #f1f5f9 !important;
+        }
+        .aset-dark .aset-pagebar {
+          background-color: #121212 !important;
+          border-color: #3a3326 !important;
+        }
+
+        /* Empty state */
+        .aset-dark .aset-empty { background-color: #1a1a1a !important; }
+        .aset-dark .aset-empty-title { color: #E5B85C !important; }
+        .aset-dark .aset-empty p,
+        .aset-dark .aset-empty div { color: #cbd5e1 !important; }
+        .aset-dark .aset-empty a { color: #E5B85C !important; }
+      `}</style>
     </div>
   );
 }

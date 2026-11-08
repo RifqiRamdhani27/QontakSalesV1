@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { CaretDown, MagnifyingGlass, X } from "@phosphor-icons/react";
 import mekariPayLogo from "../../assets/pay2.png";
@@ -6,6 +6,22 @@ import purchaseFolder from "../../assets/dompetbiru.png";
 
 export default function PenjualanPage() {
   const navigate = useNavigate();
+
+  const [themeMode, setThemeMode] = useState(
+    () => localStorage.getItem("app_theme") || "light"
+  );
+
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+
+  const isDark = themeMode === "dark";
 
   const tabs = [
     "Penagihan",
@@ -119,7 +135,7 @@ export default function PenjualanPage() {
   };
 
   return (
-    <div className="min-h-full bg-white p-4 md:p-5">
+    <div className={`min-h-full bg-white p-4 md:p-5 ${isDark ? "pj-dark" : ""}`}>
       <div className="mx-auto max-w-[1500px]">
         <div className="mb-4 flex items-center justify-between">
           <h1 className="text-[22px] font-semibold text-slate-800">
@@ -178,7 +194,7 @@ export default function PenjualanPage() {
         </div>
 
         <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-4">
-          <div className="cursor-pointer overflow-hidden rounded-md border border-amber-400 bg-white transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg">
+          <div className="stat-card cursor-pointer overflow-hidden rounded-md border border-amber-400 bg-white transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg">
             <div className="flex items-center justify-between bg-amber-50 px-3 py-2">
               <span className="text-[14px] font-semibold text-slate-700">
                 Penagihan belum dibayar
@@ -196,7 +212,7 @@ export default function PenjualanPage() {
             </div>
           </div>
 
-          <div className="cursor-pointer overflow-hidden rounded-md border border-red-400 bg-white transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg">
+          <div className="stat-card cursor-pointer overflow-hidden rounded-md border border-red-400 bg-white transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg">
             <div className="flex items-center justify-between bg-orange-50 px-3 py-2">
               <span className="text-[14px] font-semibold text-slate-700">
                 Penagihan telat dibayar
@@ -214,7 +230,7 @@ export default function PenjualanPage() {
             </div>
           </div>
 
-          <div className="cursor-pointer overflow-hidden rounded-md border border-green-500 bg-white transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg">
+          <div className="stat-card cursor-pointer overflow-hidden rounded-md border border-green-500 bg-white transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg">
             <div className="flex items-center justify-between bg-green-50 px-3 py-2">
               <span className="text-[14px] font-semibold text-slate-700">
                 Pelunasan diterima 30 hari terakhir
@@ -232,7 +248,7 @@ export default function PenjualanPage() {
             </div>
           </div>
 
-          <div className="cursor-pointer rounded-md border border-slate-400 bg-white px-3 py-2 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:border-[#0052D4]">
+          <div className="stat-card cursor-pointer rounded-md border border-slate-400 bg-white px-3 py-2 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:border-[#0052D4]">
             <div className="flex h-full items-center gap-3">
               <img
                 src={mekariPayLogo}
@@ -270,11 +286,10 @@ export default function PenjualanPage() {
                   key={tab}
                   type="button"
                   onClick={() => changeTab(tab)}
-                  className={`relative whitespace-nowrap px-5 py-3 text-[13px] font-medium ${
-                    activeTab === tab
-                      ? "text-[#41D1C8]"
-                      : "text-slate-600 hover:text-slate-800"
-                  }`}
+                  className={`relative whitespace-nowrap px-5 py-3 text-[13px] font-medium ${activeTab === tab
+                    ? "text-[#41D1C8]"
+                    : "text-slate-600 hover:text-slate-800"
+                    }`}
                 >
                   {tab}
 
@@ -319,11 +334,10 @@ export default function PenjualanPage() {
                               setFilter(item);
                               setFilterOpen(false);
                             }}
-                            className={`w-full px-3 py-2 text-left text-[11px] hover:bg-slate-50 ${
-                              filter === item
-                                ? "font-medium text-blue-600"
-                                : "text-slate-700"
-                            }`}
+                            className={`w-full px-3 py-2 text-left text-[11px] hover:bg-slate-50 ${filter === item
+                              ? "font-medium text-blue-600"
+                              : "text-slate-700"
+                              }`}
                           >
                             {item}
                           </button>
@@ -357,11 +371,10 @@ export default function PenjualanPage() {
                               setStatus(item);
                               setStatusOpen(false);
                             }}
-                            className={`w-full px-3 py-2 text-left text-[11px] hover:bg-slate-50 ${
-                              status === item
-                                ? "font-medium text-blue-600"
-                                : "text-slate-700"
-                            }`}
+                            className={`w-full px-3 py-2 text-left text-[11px] hover:bg-slate-50 ${status === item
+                              ? "font-medium text-blue-600"
+                              : "text-slate-700"
+                              }`}
                           >
                             {item}
                           </button>
@@ -382,7 +395,7 @@ export default function PenjualanPage() {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Pencarian..."
-                    className="h-8 w-[230px] rounded-md border border-slate-300 bg-white pl-9 pr-8 text-[11px] outline-none focus:border-blue-500"
+                    className="pb-search h-8 w-[230px] rounded-md border border-slate-300 bg-white pl-9 pr-8 text-[11px] outline-none focus:border-blue-500"
                   />
 
                   {search && (
@@ -447,12 +460,12 @@ export default function PenjualanPage() {
 
             {activeTab === "Penagihan" && (
               <button
-              type="button"
-              onClick={() => navigate("/penjualan/create")}
-              className="mt-4 rounded-md bg-[#4B61DD] px-4 py-2 text-[13px] font-medium text-white hover:bg-blue-700"
-            >
-              {currentConfig.buttonText}
-            </button>
+                type="button"
+                onClick={() => navigate("/penjualan/create")}
+                className="mt-4 rounded-md bg-[#4B61DD] px-4 py-2 text-[13px] font-medium text-white hover:bg-blue-700"
+              >
+                {currentConfig.buttonText}
+              </button>
             )}
 
             {activeTab === "Pesanan" && (
@@ -477,6 +490,72 @@ export default function PenjualanPage() {
           </div>
         </div>
       </div>
+
+      <style>{`
+        .pj-dark { background-color: #121212 !important; color-scheme: dark; min-height: 100%; }
+
+        /* Latar & border umum */
+        .pj-dark .bg-white { background-color: #121212 !important; }
+        .pj-dark .border-slate-300,
+        .pj-dark .border-slate-200 { border-color: #634f27 !important; }
+        .pj-dark .border-slate-400 { border-color: #634f27 !important; }
+
+        /* Teks */
+        .pj-dark .text-slate-800,
+        .pj-dark .text-slate-700 { color: #f1f5f9 !important; }
+        .pj-dark .text-slate-600 { color: #cbd5e1 !important; }
+        .pj-dark .text-slate-500,
+        .pj-dark .text-slate-400 { color: #94a3b8 !important; }
+
+        /* Header kartu ringkasan */
+        .pj-dark .bg-amber-50 { background-color: rgba(245,158,11,0.15) !important; }
+        .pj-dark .bg-orange-50 { background-color: rgba(249,115,22,0.15) !important; }
+        .pj-dark .bg-green-50 { background-color: rgba(34,197,94,0.15) !important; }
+        .pj-dark .hover\\:border-\\[\\#0052D4\\]:hover { border-color: #E5B85C !important; }
+
+        /* Input pencarian di toolbar (wrapper + input transparan) */
+        .pb-dark .pb-search { background-color: #262626 !important; }
+        .pb-dark .pb-search input {
+            background-color: transparent !important;
+            border: none !important;
+        }
+
+        /* Tombol Impor & Buat penjualan baru */
+        .pj-dark .text-blue-600 { color: #E5B85C !important; }
+        .pj-dark .bg-gray-100 { background-color: #262626 !important; color: #cbd5e1 !important; }
+        .pj-dark .hover\\:bg-gray-200:hover { background-color: #2d2d2d !important; }
+        .pj-dark .hover\\:bg-slate-50:hover { background-color: #2d2d2d !important; }
+
+        /* Tombol utama (Buat penagihan, dst.) -> emas */
+        .pj-dark .bg-\\[\\#4B61DD\\] { background-color: #E5B85C !important; color: #121212 !important; }
+        .pj-dark .hover\\:bg-blue-700:hover { background-color: #f0c978 !important; }
+
+        /* Tab aktif -> emas */
+        .pj-dark .text-\\[\\#41D1C8\\] { color: #E5B85C !important; }
+        .pj-dark .bg-\\[\\#41D1C8\\] { background-color: #E5B85C !important; }
+        .pj-dark .hover\\:text-slate-800:hover { color: #E5B85C !important; }
+
+        /* Input pencarian */
+        .pj-dark input {
+          background-color: #262626 !important;
+          color: #f1f5f9 !important;
+          border-color: #634f27 !important;
+        }
+        .pj-dark input:focus { border-color: #E5B85C !important; }
+        .pj-dark ::placeholder { color: #94a3b8; }
+
+        /* Dropdown: item terpilih */
+        .pj-dark .font-medium.text-blue-600 { color: #E5B85C !important; }
+
+        /* Ilustrasi */
+        .pj-dark img { opacity: 0.9; }
+
+        /* Shadow hover kartu ringkasan */
+        .pj-dark .stat-card:hover {
+          box-shadow: 0 6px 18px rgba(229, 184, 92, 0.45) !important;
+        } 
+      `}</style>
     </div>
   );
 }
+

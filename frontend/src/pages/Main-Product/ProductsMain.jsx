@@ -549,7 +549,7 @@ function ProductStatCards() {
       {statCardConfigs.map((card) => (
         <div
           key={card.key}
-className={`stat-card group cursor-pointer overflow-hidden rounded-md border bg-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl ${statCardTone[card.tone].card}`}        >
+          className={`stat-card group cursor-pointer overflow-hidden rounded-md border bg-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl ${statCardTone[card.tone].card}`}        >
           <div className={`flex items-center justify-between px-2.5 py-2 ${statCardTone[card.tone].header}`}>
             <span className="text-xs font-bold text-gray-900">{card.label}</span>
             <Link

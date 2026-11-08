@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const LEFT_ITEMS = [
@@ -112,6 +112,7 @@ const ListItem = ({ item }) => {
     return (
         <div style={{ marginBottom: "28px" }}>
             <h3
+                className="dl-item-title"
                 onClick={() => item.path && navigate(item.path)}
                 style={{
                     margin: 0,
@@ -125,6 +126,7 @@ const ListItem = ({ item }) => {
                 {item.badge && <Badge />}
             </h3>
             <p
+                className="dl-item-desc"
                 style={{
                     margin: "6px 0 0 0",
                     fontSize: "14px",
@@ -140,20 +142,39 @@ const ListItem = ({ item }) => {
 };
 
 export default function DaftarLainnya() {
+    const [themeMode, setThemeMode] = useState(
+        () => localStorage.getItem("app_theme") || "light"
+    );
+
+    useEffect(() => {
+        const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+        window.addEventListener("themeChanged", sync);
+        window.addEventListener("storage", sync);
+        return () => {
+            window.removeEventListener("themeChanged", sync);
+            window.removeEventListener("storage", sync);
+        };
+    }, []);
+
+    const isDark = themeMode === "dark";
+
     return (
         <div
+            className={isDark ? "dl-dark" : ""}
             style={{
                 margin: "-24px",
                 minHeight: "100vh",
-                backgroundColor: "#EEF1F6",
+                backgroundColor: isDark ? "#121212" : "#ffffffff",
                 fontFamily: "'Inter', sans-serif, system-ui",
+                transition: "background-color 0.3s ease",
             }}
         >
             <div style={{ padding: "32px 32px 48px 32px" }}>
                 {/* Breadcrumb + title */}
                 <div style={{ marginBottom: "20px" }}>
-                    <p style={{ margin: 0, fontSize: "14px", color: "#64748B" }}>Pengaturan</p>
+                    <p className="dl-crumb" style={{ margin: 0, fontSize: "14px", color: "#64748B" }}>Pengaturan</p>
                     <h1
+                        className="dl-title"
                         style={{
                             margin: "-5px 0 0 0",
                             fontSize: "28px",
@@ -167,11 +188,13 @@ export default function DaftarLainnya() {
 
                 {/* Card */}
                 <div
+                    className="dl-card"
                     style={{
                         backgroundColor: "#ffffff",
-                        border: "1px solid #E5E7EB",
+                        border: "1px solid #d7d7d7ff",
                         borderRadius: "16px",
                         padding: "40px 48px",
+                        boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
                     }}
                 >
                     <div
@@ -194,6 +217,18 @@ export default function DaftarLainnya() {
                     </div>
                 </div>
             </div>
+            <style>{`
+                .dl-dark .dl-crumb { color: #94a3b8 !important; }
+                .dl-dark .dl-title { color: #ffffff !important; }
+                .dl-dark .dl-card {
+                    background-color: #1a1a1a !important;
+                    border-color: #634f27 !important;
+                    box-shadow: 0 4px 14px rgba(229, 184, 92, 0.25) !important;
+                }
+                .dl-dark .dl-item-title { color: #E5B85C !important; }
+                .dl-dark .dl-item-title:hover { color: #f0c978 !important; }
+                .dl-dark .dl-item-desc { color: #cbd5e1 !important; }
+            `}</style>
         </div>
     );
 }

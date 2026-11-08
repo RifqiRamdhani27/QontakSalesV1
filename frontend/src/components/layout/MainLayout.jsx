@@ -10,12 +10,10 @@ export default function MainLayout() {
   const location = useLocation();
   const isSettings = location.pathname.startsWith("/settings");
 
-  // State untuk mendeteksi tema
   const [themeMode, setThemeMode] = useState(() => {
     return localStorage.getItem("app_theme") || "light";
   });
 
-  // Dengarkan perubahan tema dari TopBar
   useEffect(() => {
     const handleThemeChange = () => {
       setThemeMode(localStorage.getItem("app_theme") || "light");
@@ -30,13 +28,10 @@ export default function MainLayout() {
   }, []);
 
   const toggleFullscreen = () => setIsFullscreen((prev) => !prev);
-
-  // Warna dinamis
   const isDark = themeMode === "dark";
   const bgColor = isDark ? "#121212" : "white";
   const textColor = isDark ? "#F3F4F6" : "inherit";
 
-  
   const scrollbarCss = {
     "&::-webkit-scrollbar, & *::-webkit-scrollbar": {
       width: "12px",

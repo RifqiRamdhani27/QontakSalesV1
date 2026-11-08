@@ -160,9 +160,9 @@ export default function Beranda({ userName = "Rifqi" }) {
     const isDark = themeMode === "dark";
     const bgMain = isDark ? "#121212" : "#ffffff";
     const cardBg = isDark ? "#1e1e1e" : "#ffffff";
-    const cardBorderHover = isDark ? "#E5B85C" : "#564ef9ff";
-    const cardBoxShadowHover = isDark ? "0 1px 6px rgba(255, 187, 2, 0.8)" : "0 1px 6px rgba(0,0,0,0.4)";
-    const cardBorder = isDark ? "#634f27ff" : "#d4d6daff";
+    const cardBorderHover = isDark ? "#ff780aff" : "#564ef9ff";
+    const cardBoxShadowHover = isDark ? "0 1px 10px rgba(255, 200, 2, 1)" : "0 1px 6px rgba(0,0,0,0.4)";
+    const cardBorder = isDark ? "#d29417ff" : "#d4d6daff";
     const cardBorderV2 = isDark ? "#dea636ff" : "#d4d6daff";
     const textTitle = isDark ? "#f8fafc" : "#0f172a";
     const iconColor = isDark ? "#dea636ff" : "#0f172a";

@@ -1,5 +1,5 @@
 import { useOutletContext, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Anggaran() {
   const outletContext = useOutletContext();
@@ -7,20 +7,39 @@ export default function Anggaran() {
   const [localFullscreen, setLocalFullscreen] = useState(false);
   const isFullscreen = outletContext ? outletContext.isFullscreen : localFullscreen;
 
+  const [themeMode, setThemeMode] = useState(
+    () => localStorage.getItem("app_theme") || "light"
+  );
+
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+
+  const isDark = themeMode === "dark";
+
   return (
     <div
+      className={isDark ? "ang-dark" : ""}
       style={{
         margin: isFullscreen ? 0 : "-24px",
         minHeight: "100vh",
-        backgroundColor: "#ffffff",
+        backgroundColor: isDark ? "#121212" : "#ffffff",
         fontFamily: "'Inter', sans-serif, system-ui",
-        color: "#1d2939",
+        color: isDark ? "#f1f5f9" : "#1d2939",
         display: "flex",
         flexDirection: "column",
+        transition: "background-color 0.3s ease, color 0.3s ease",
       }}
     >
       {/* ── BEGIN: MainHeader ── */}
       <header
+        className="ang-header"
         style={{
           width: "100%",
           padding: "20px 24px 12px 24px",
@@ -32,11 +51,12 @@ export default function Anggaran() {
       >
         {/* Left side title */}
         <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-          <span style={{ fontSize: "13px", fontWeight: 500, color: "#4763e4" }}>
+          <span className="ang-crumb" style={{ fontSize: "13px", fontWeight: 500, color: "#4763e4" }}>
             Laporan
           </span>
           <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
             <h1
+              className="ang-title"
               style={{
                 fontSize: "20px",
                 fontWeight: 700,
@@ -47,7 +67,9 @@ export default function Anggaran() {
             >
               Anggaran
             </h1>
-            <span style={{ fontSize: "13px", fontWeight: 400, color: "#667085" }}>
+            <span
+              className="ang-sub"
+              style={{ fontSize: "13px", fontWeight: 400, color: "#667085" }}>
               (dalam IDR)
             </span>
           </div>
@@ -56,6 +78,7 @@ export default function Anggaran() {
         {/* Right side: Buat anggaran button */}
         <button
           type="button"
+          className="ang-btn"
           onClick={() => navigate("/anggaran/rincian-anggaran")}
           style={{
             height: "36px",
@@ -87,6 +110,7 @@ export default function Anggaran() {
           <a
             href="#lihat-contoh"
             onClick={(e) => e.preventDefault()}
+            className="ang-link"
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -167,6 +191,7 @@ export default function Anggaran() {
         >
           {/* Illustration */}
           <div
+            className="ang-img"
             style={{
               marginBottom: "20px",
               marginTop: "-90px",
@@ -186,6 +211,7 @@ export default function Anggaran() {
 
           {/* Empty State Title and Subtitle */}
           <h2
+            className="ang-empty-title"
             style={{
               fontSize: "14.5px",
               fontWeight: 600,
@@ -197,12 +223,38 @@ export default function Anggaran() {
           >
             Anggaran akan muncul di sini
           </h2>
-          <p style={{ fontSize: "12.5px", color: "#667085", lineHeight: 1.5, margin: 0 }}>
+          <p className="ang-empty-text" style={{ fontSize: "12.5px", color: "#667085", lineHeight: 1.5, margin: 0 }}>
             Buat anggaran melalui tombol{" "}
             <span style={{ fontWeight: 400, color: "#475569" }}>Buat anggaran</span>.
           </p>
         </div>
       </main>
+
+      <style>{`
+        .ang-dark { color-scheme: dark; }
+
+        .ang-dark .ang-header { border-color: #634f27 !important; }
+        .ang-dark .ang-crumb { color: #E5B85C !important; }
+        .ang-dark .ang-title { color: #ffffff !important; }
+        .ang-dark .ang-sub { color: #94a3b8 !important; }
+
+        /* Tombol utama -> emas */
+        .ang-dark .ang-btn {
+          background-color: #E5B85C !important;
+          color: #121212 !important;
+        }
+        .ang-dark .ang-btn:hover { background-color: #f0c978 !important; }
+
+        /* Link "Lihat contoh" */
+        .ang-dark .ang-link { color: #E5B85C !important; }
+        .ang-dark .ang-link svg { color: #E5B85C !important; }
+
+        /* Empty state */
+        .ang-dark .ang-empty-title { color: #f1f5f9 !important; }
+        .ang-dark .ang-empty-text { color: #94a3b8 !important; }
+        .ang-dark .ang-empty-text span { color: #cbd5e1 !important; }
+        .ang-dark .ang-img { opacity: 0.85; filter: brightness(0.9); }
+      `}</style>
     </div>
   );
 }

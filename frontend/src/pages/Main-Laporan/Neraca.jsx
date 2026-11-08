@@ -19,6 +19,18 @@ export default function Neraca() {
   const drawerDatePickerRef = useRef(null);
   const filterDropdownRef = useRef(null);
 
+  const [themeMode, setThemeMode] = useState(() => localStorage.getItem("app_theme") || "light");
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+  const isDark = themeMode === "dark";
+
   const [selectedDate, setSelectedDate] = useState(() => new Date(2026, 8, 16));
   const [calendarViewDate, setCalendarViewDate] = useState(() => new Date(2026, 8, 16));
   const [calendarViewMode, setCalendarViewMode] = useState("days");
@@ -144,6 +156,7 @@ export default function Neraca() {
 
   return (
     <div
+      className={isDark ? "dash-dark nr-root" : "nr-root"}
       style={{
         margin: isFullscreen ? 0 : "-24px",
         minHeight: "100vh",
@@ -328,6 +341,7 @@ export default function Neraca() {
               {/* Calendar Popover */}
               {showCalendar && (
                 <div
+                  className="nr-pop"
                   style={{
                     position: "absolute",
                     top: "70px",
@@ -519,8 +533,8 @@ export default function Neraca() {
                                 color: isSelected
                                   ? "#ffffff"
                                   : d.isCurrentMonth
-                                  ? "#1e293b"
-                                  : "#94a3b8",
+                                    ? "#1e293b"
+                                    : "#94a3b8",
                                 fontWeight: isSelected ? "bold" : "normal",
                               }}
                             >
@@ -745,7 +759,7 @@ export default function Neraca() {
                           onMouseEnter={(e) => {
                             if (!isSelected)
                               e.currentTarget.style.backgroundColor =
-                                "#f8fafc";
+                               isDark ? "#585858ff" : "#f5f5f5ff";
                           }}
                           onMouseLeave={(e) => {
                             if (!isSelected)
@@ -765,6 +779,7 @@ export default function Neraca() {
             {/* Primary Filter Button */}
             <button
               type="button"
+              className="nr-btn"
               style={{
                 height: "36px",
                 padding: "0 20px",
@@ -806,7 +821,7 @@ export default function Neraca() {
                 transition: "background-color 0.15s ease",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#f9fafb";
+                e.currentTarget.style.backgroundColor = isDark ? "#212121ff" : "#f2f2f2ff";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = "#ffffff";
@@ -1123,12 +1138,65 @@ export default function Neraca() {
       </main>
 
       {/* ── Filter Drawer Overlay + Slide-over panel ── */}
-      {/* CSS for slide animation */}
       <style>{`
         @keyframes fadeInBackdrop {
           from { opacity: 0; }
           to { opacity: 1; }
         }
+      `}</style>
+
+      {/* Dark Mode */}
+      <style>{`
+        .dash-dark.nr-root { background-color: #121212 !important; color: #f1f5f9 !important; color-scheme: dark; }
+        .dash-dark h1, .dash-dark h2 { color: #ffffff !important; }
+        .dash-dark p, .dash-dark label { color: #cbd5e1 !important; }
+        .dash-dark header, .dash-dark aside > div { border-color: #634f27 !important; }
+
+        /* Semua permukaan putih inline -> gelap */
+        .dash-dark [style*="background-color: rgb(255, 255, 255)"] { background-color: #121212 !important; }
+        .dash-dark input, .dash-dark select {
+          background-color: #262626 !important;
+          color: #f1f5f9 !important;
+          border-color: #634f27 !important;
+        }
+        .dash-dark input:focus, .dash-dark select:focus { border-color: #E5B85C !important; }
+        .dash-dark select option { background: #262626; color: #f1f5f9; }
+
+        /* Border */
+        .dash-dark [style*="border: 1px solid rgb(208, 213, 221)"],
+        .dash-dark [style*="border: 1px solid rgb(203, 213, 225)"],
+        .dash-dark [style*="border-left: 1px solid"],
+        .dash-dark [style*="border-bottom: 1px solid"],
+        .dash-dark [style*="border-top: 1px solid"] { border-color: #634f27 !important; }
+
+        /* Teks tombol biru -> emas */
+        .dash-dark button { color: #E5B85C; }
+        .dash-dark [style*="color: rgb(26, 86, 191)"],
+        .dash-dark [style*="color: rgb(37, 99, 235)"] { color: #E5B85C !important; }
+        .dash-dark svg[fill="#1a56bf"] { fill: #E5B85C; }
+        .dash-dark [style*="color: rgb(71, 85, 105)"],
+        .dash-dark [style*="color: rgb(52, 64, 84)"],
+        .dash-dark [style*="color: rgb(102, 112, 133)"],
+        .dash-dark [style*="color: rgb(29, 41, 57)"],
+        .dash-dark [style*="color: rgb(16, 24, 40)"] { color: #cbd5e1 !important; }
+
+        /* Tombol utama emas */
+        .dash-dark .nr-btn { background-color: #E5B85C !important; color: #121212 !important; }
+        .dash-dark .nr-btn:hover { background-color: #f0c978 !important; }
+
+        /* Dropdown periode: opsi terpilih */
+        .dash-dark [style*="background-color: rgb(71, 99, 228)"] { background-color: #E5B85C !important; color: #121212 !important; }
+
+        /* Kalender */
+        .dash-dark .nr-pop { background-color: #1e1e1e !important; border-color: #634f27 !important; }
+        .dash-dark .nr-pop button { color: #f1f5f9 !important; }
+        .dash-dark .nr-pop span { color: #94a3b8 !important; }
+        .dash-dark .nr-pop [style*="background-color: rgb(248, 250, 252)"] { background-color: #262626 !important; }
+        .dash-dark .nr-pop [style*="background-color: rgb(2, 132, 199)"] { background-color: #E5B85C !important; color: #121212 !important; }
+
+        /* Backdrop & ilustrasi */
+        .dash-dark [style*="rgba(15, 23, 42, 0.45)"] { background-color: rgba(0,0,0,0.7) !important; }
+        .dash-dark main svg { opacity: 0.85; }
       `}</style>
 
       {showFilterDrawer && (
@@ -1283,6 +1351,7 @@ export default function Neraca() {
                 {/* Calendar Popover */}
                 {showDrawerCalendar && (
                   <div
+                    className="nr-pop"
                     style={{
                       position: "absolute",
                       top: "66px",
@@ -1474,8 +1543,8 @@ export default function Neraca() {
                                   color: isSelected
                                     ? "#ffffff"
                                     : d.isCurrentMonth
-                                    ? "#1e293b"
-                                    : "#94a3b8",
+                                      ? "#1e293b"
+                                      : "#94a3b8",
                                   fontWeight: isSelected ? "bold" : "normal",
                                 }}
                               >
@@ -1609,7 +1678,7 @@ export default function Neraca() {
                       color: "#1e293b",
                       border: "1px solid #cbd5e1",
                       borderRadius: "4px",
-                      backgroundColor: "#ffffff",
+                      backgroundColor: "#ffffffff",
                       boxSizing: "border-box",
                       outline: "none",
                       appearance: "none",
@@ -1722,6 +1791,7 @@ export default function Neraca() {
                 <button
                   type="button"
                   onClick={closeFilterDrawer}
+                  className="nr-btn"
                   style={{
                     padding: "6px 16px",
                     fontSize: "12px",

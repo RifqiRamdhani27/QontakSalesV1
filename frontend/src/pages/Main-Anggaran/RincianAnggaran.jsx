@@ -6,6 +6,40 @@ export default function RincianAnggaran() {
     const outletContext = useOutletContext();
     const [localFullscreen, setLocalFullscreen] = useState(false);
     const isFullscreen = outletContext ? outletContext.isFullscreen : localFullscreen;
+    const [themeMode, setThemeMode] = useState(
+        () => localStorage.getItem("app_theme") || "light"
+    );
+
+    useEffect(() => {
+        const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+        window.addEventListener("themeChanged", sync);
+        window.addEventListener("storage", sync);
+        return () => {
+            window.removeEventListener("themeChanged", sync);
+            window.removeEventListener("storage", sync);
+        };
+    }, []);
+
+    const isDark = themeMode === "dark";
+
+    const c = isDark
+        ? {
+            popBg: "#1a1a1a", popBorder: "#634f27",
+            shadow: "0 10px 25px -5px rgba(0,0,0,0.6)",
+            nav: "#f1f5f9", accent: "#E5B85C", weekday: "#94a3b8",
+            selBg: "#E5B85C", selText: "#121212",
+            dayText: "#f1f5f9", dayMuted: "#4b5563",
+            monthBg: "#262626", hoverBg: "#2d2d2d",
+        }
+        : {
+            popBg: "#ffffff", popBorder: "#d5dcde",
+            shadow: "0 10px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1)",
+            nav: "#334155", accent: "#0284c7", weekday: "#64748b",
+            selBg: "#0284c7", selText: "#ffffff",
+            dayText: "#1e293b", dayMuted: "#94a3b8",
+            monthBg: "#f8fafc", hoverBg: "#f1f5f9",
+        };
+
     const toggleFullscreen = () => {
         if (outletContext?.toggleFullscreen) {
             outletContext.toggleFullscreen();
@@ -208,20 +242,177 @@ export default function RincianAnggaran() {
 
     const zeroValue = "Rp0,00";
 
+    const renderMulaiCalendarPopover = () => {
+        const navBtn = {
+            background: "none", border: "none", fontSize: "16px", fontWeight: "bold",
+            cursor: "pointer", color: c.nav, padding: "4px 8px", borderRadius: "4px",
+        };
+        const hoverOn = (e) => (e.currentTarget.style.backgroundColor = c.hoverBg);
+        const hoverOff = (e) => (e.currentTarget.style.backgroundColor = "transparent");
+        const cellBtn = (sel) => ({
+            padding: "10px 4px", border: "none", borderRadius: "4px", cursor: "pointer",
+            backgroundColor: sel ? c.selBg : c.monthBg,
+            color: sel ? c.selText : c.dayText,
+            fontWeight: sel ? "bold" : "normal",
+        });
+        const viewYear = mulaiCalendarViewDate.getFullYear();
+        const viewMonth = mulaiCalendarViewDate.getMonth();
+
+        return (
+            <div
+                style={{
+                    position: "absolute", top: "calc(100% + 6px)", left: 0, zIndex: 1000,
+                    backgroundColor: c.popBg, border: `1px solid ${c.popBorder}`,
+                    borderRadius: "8px", boxShadow: c.shadow,
+                    padding: "14px 16px", width: "280px", userSelect: "none",
+                }}
+            >
+                {/* Header navigasi */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                    <button
+                        type="button" style={navBtn} onMouseEnter={hoverOn} onMouseLeave={hoverOff}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            if (mulaiCalendarViewMode === "days") setMulaiCalendarViewDate(new Date(viewYear, viewMonth - 1, 1));
+                            else if (mulaiCalendarViewMode === "months") setMulaiCalendarViewDate(new Date(viewYear - 1, viewMonth, 1));
+                            else setMulaiYearRangeStart((p) => p - 12);
+                        }}
+                    >«</button>
+
+                    <button
+                        type="button"
+                        style={{ ...navBtn, fontSize: "14px", fontWeight: "700", color: c.accent }}
+                        onMouseEnter={hoverOn} onMouseLeave={hoverOff}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            if (mulaiCalendarViewMode === "days") setMulaiCalendarViewMode("months");
+                            else if (mulaiCalendarViewMode === "months") {
+                                setMulaiYearRangeStart(Math.floor(viewYear / 12) * 12);
+                                setMulaiCalendarViewMode("years");
+                            } else setMulaiCalendarViewMode("days");
+                        }}
+                    >
+                        {mulaiCalendarViewMode === "days" && `${MONTH_NAMES[viewMonth]} ${viewYear}`}
+                        {mulaiCalendarViewMode === "months" && `${viewYear}`}
+                        {mulaiCalendarViewMode === "years" && `${mulaiYearRangeStart} - ${mulaiYearRangeStart + 11}`}
+                    </button>
+
+                    <button
+                        type="button" style={navBtn} onMouseEnter={hoverOn} onMouseLeave={hoverOff}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            if (mulaiCalendarViewMode === "days") setMulaiCalendarViewDate(new Date(viewYear, viewMonth + 1, 1));
+                            else if (mulaiCalendarViewMode === "months") setMulaiCalendarViewDate(new Date(viewYear + 1, viewMonth, 1));
+                            else setMulaiYearRangeStart((p) => p + 12);
+                        }}
+                    >»</button>
+                </div>
+
+                {/* Hari */}
+                {mulaiCalendarViewMode === "days" && (
+                    <>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", textAlign: "center", fontWeight: 600, fontSize: "11px", color: c.weekday, marginBottom: "6px" }}>
+                            <span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span>
+                        </div>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "2px", textAlign: "center", fontSize: "12px" }}>
+                            {getCalendarDays(viewYear, viewMonth).map((d, idx) => {
+                                const isSelected =
+                                    d.day === mulaiSelectedDate.getDate() &&
+                                    d.month === mulaiSelectedDate.getMonth() &&
+                                    d.year === mulaiSelectedDate.getFullYear();
+                                return (
+                                    <button
+                                        key={idx} type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            const nd = new Date(d.year, d.month, d.day);
+                                            setMulaiSelectedDate(nd);
+                                            setMulaiCalendarViewDate(nd);
+                                            setShowMulaiCalendar(false);
+                                        }}
+                                        style={{
+                                            padding: "6px 0", border: "none", borderRadius: "4px", cursor: "pointer",
+                                            backgroundColor: isSelected ? c.selBg : "transparent",
+                                            color: isSelected ? c.selText : d.isCurrentMonth ? c.dayText : c.dayMuted,
+                                            fontWeight: isSelected ? "bold" : "normal",
+                                        }}
+                                        onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = c.hoverBg; }}
+                                        onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = "transparent"; }}
+                                    >
+                                        {d.day}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </>
+                )}
+
+                {/* Bulan */}
+                {mulaiCalendarViewMode === "months" && (
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", textAlign: "center", fontSize: "12px", paddingTop: "8px" }}>
+                        {MONTH_NAMES.map((mName, idx) => {
+                            const sel = viewMonth === idx;
+                            return (
+                                <button
+                                    key={mName} type="button" style={cellBtn(sel)}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setMulaiCalendarViewDate(new Date(viewYear, idx, 1));
+                                        setMulaiCalendarViewMode("days");
+                                    }}
+                                    onMouseEnter={(e) => { if (!sel) e.currentTarget.style.backgroundColor = c.hoverBg; }}
+                                    onMouseLeave={(e) => { if (!sel) e.currentTarget.style.backgroundColor = c.monthBg; }}
+                                >
+                                    {mName.substring(0, 3)}
+                                </button>
+                            );
+                        })}
+                    </div>
+                )}
+
+                {/* Tahun */}
+                {mulaiCalendarViewMode === "years" && (
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", textAlign: "center", fontSize: "12px", paddingTop: "8px" }}>
+                        {Array.from({ length: 12 }, (_, i) => mulaiYearRangeStart + i).map((yr) => {
+                            const sel = viewYear === yr;
+                            return (
+                                <button
+                                    key={yr} type="button" style={cellBtn(sel)}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setMulaiCalendarViewDate(new Date(yr, viewMonth, 1));
+                                        setMulaiCalendarViewMode("months");
+                                    }}
+                                    onMouseEnter={(e) => { if (!sel) e.currentTarget.style.backgroundColor = c.hoverBg; }}
+                                    onMouseLeave={(e) => { if (!sel) e.currentTarget.style.backgroundColor = c.monthBg; }}
+                                >
+                                    {yr}
+                                </button>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     return (
         <div
+            className={isDark ? "rb-dark" : ""}
             style={{
                 margin: isFullscreen ? 0 : "-24px",
                 minHeight: "100vh",
-                backgroundColor: "#ffffff",
+                backgroundColor: isDark ? "#121212" : "#ffffff",
                 fontFamily: "'Inter', sans-serif, system-ui",
-                color: "#1d2939",
+                color: isDark ? "#f1f5f9" : "#1d2939",
                 display: "flex",
                 flexDirection: "column",
+                transition: "background-color 0.3s ease, color 0.3s ease",
             }}
         >
             {/* ── BEGIN: MainHeader ── */}
             <header
+                className="rb-header"
                 style={{
                     width: "100%",
                     padding: "20px 24px 12px 24px",
@@ -229,6 +420,7 @@ export default function RincianAnggaran() {
                 }}
             >
                 <div
+                    className="rb-crumb"
                     onClick={() => navigate(-1)}
                     style={{
                         fontSize: "13px",
@@ -242,6 +434,7 @@ export default function RincianAnggaran() {
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     <h1
+                        className="rb-title"
                         style={{
                             fontSize: "20px",
                             fontWeight: 700,
@@ -254,6 +447,7 @@ export default function RincianAnggaran() {
                     </h1>
                     <button
                         type="button"
+                        className="rb-icon"
                         title="Ubah nama"
                         style={{
                             display: "flex",
@@ -357,317 +551,8 @@ export default function RincianAnggaran() {
                                 </svg>
                             </div>
 
-                            {/* Calendar Popover (identik dengan Periode di Neraca.jsx) */}
-                            {showMulaiCalendar && (
-                                <div
-                                    style={{
-                                        position: "absolute",
-                                        top: "72px",
-                                        left: 0,
-                                        zIndex: 50,
-                                        backgroundColor: "#ffffff",
-                                        border: "1px solid #d5dcde",
-                                        borderRadius: "8px",
-                                        boxShadow:
-                                            "0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
-                                        padding: "16px",
-                                        width: "280px",
-                                        userSelect: "none",
-                                    }}
-                                >
-                                    {/* Month & Year Navigator Header */}
-                                    <div
-                                        style={{
-                                            display: "flex",
-                                            justifyContent: "space-between",
-                                            alignItems: "center",
-                                            marginBottom: "12px",
-                                        }}
-                                    >
-                                        <button
-                                            type="button"
-                                            style={{
-                                                background: "none",
-                                                border: "none",
-                                                fontSize: "16px",
-                                                fontWeight: "bold",
-                                                cursor: "pointer",
-                                                color: "#334155",
-                                                padding: "4px 8px",
-                                                borderRadius: "4px",
-                                            }}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                if (mulaiCalendarViewMode === "days") {
-                                                    setMulaiCalendarViewDate(
-                                                        new Date(
-                                                            mulaiCalendarViewDate.getFullYear(),
-                                                            mulaiCalendarViewDate.getMonth() - 1,
-                                                            1
-                                                        )
-                                                    );
-                                                } else if (mulaiCalendarViewMode === "months") {
-                                                    setMulaiCalendarViewDate(
-                                                        new Date(
-                                                            mulaiCalendarViewDate.getFullYear() - 1,
-                                                            mulaiCalendarViewDate.getMonth(),
-                                                            1
-                                                        )
-                                                    );
-                                                } else if (mulaiCalendarViewMode === "years") {
-                                                    setMulaiYearRangeStart((prev) => prev - 12);
-                                                }
-                                            }}
-                                        >
-                                            «
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            style={{
-                                                background: "none",
-                                                border: "none",
-                                                fontSize: "14px",
-                                                fontWeight: "700",
-                                                color: "#0284c7",
-                                                cursor: "pointer",
-                                                padding: "4px 8px",
-                                                borderRadius: "4px",
-                                            }}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                if (mulaiCalendarViewMode === "days")
-                                                    setMulaiCalendarViewMode("months");
-                                                else if (mulaiCalendarViewMode === "months")
-                                                    setMulaiCalendarViewMode("years");
-                                            }}
-                                        >
-                                            {mulaiCalendarViewMode === "days" &&
-                                                `${MONTH_NAMES[mulaiCalendarViewDate.getMonth()]} ${mulaiCalendarViewDate.getFullYear()}`}
-                                            {mulaiCalendarViewMode === "months" &&
-                                                `${mulaiCalendarViewDate.getFullYear()}`}
-                                            {mulaiCalendarViewMode === "years" &&
-                                                `${mulaiYearRangeStart} - ${mulaiYearRangeStart + 11}`}
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            style={{
-                                                background: "none",
-                                                border: "none",
-                                                fontSize: "16px",
-                                                fontWeight: "bold",
-                                                cursor: "pointer",
-                                                color: "#334155",
-                                                padding: "4px 8px",
-                                                borderRadius: "4px",
-                                            }}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                if (mulaiCalendarViewMode === "days") {
-                                                    setMulaiCalendarViewDate(
-                                                        new Date(
-                                                            mulaiCalendarViewDate.getFullYear(),
-                                                            mulaiCalendarViewDate.getMonth() + 1,
-                                                            1
-                                                        )
-                                                    );
-                                                } else if (mulaiCalendarViewMode === "months") {
-                                                    setMulaiCalendarViewDate(
-                                                        new Date(
-                                                            mulaiCalendarViewDate.getFullYear() + 1,
-                                                            mulaiCalendarViewDate.getMonth(),
-                                                            1
-                                                        )
-                                                    );
-                                                } else if (mulaiCalendarViewMode === "years") {
-                                                    setMulaiYearRangeStart((prev) => prev + 12);
-                                                }
-                                            }}
-                                        >
-                                            »
-                                        </button>
-                                    </div>
-
-                                    {/* Days View */}
-                                    {mulaiCalendarViewMode === "days" && (
-                                        <>
-                                            <div
-                                                style={{
-                                                    display: "grid",
-                                                    gridTemplateColumns: "repeat(7, 1fr)",
-                                                    textAlign: "center",
-                                                    fontWeight: "600",
-                                                    fontSize: "11px",
-                                                    color: "#64748b",
-                                                    marginBottom: "6px",
-                                                }}
-                                            >
-                                                <span>Min</span>
-                                                <span>Sen</span>
-                                                <span>Sel</span>
-                                                <span>Rab</span>
-                                                <span>Kam</span>
-                                                <span>Jum</span>
-                                                <span>Sab</span>
-                                            </div>
-                                            <div
-                                                style={{
-                                                    display: "grid",
-                                                    gridTemplateColumns: "repeat(7, 1fr)",
-                                                    gap: "2px",
-                                                    textAlign: "center",
-                                                    fontSize: "12px",
-                                                }}
-                                            >
-                                                {getCalendarDays(
-                                                    mulaiCalendarViewDate.getFullYear(),
-                                                    mulaiCalendarViewDate.getMonth()
-                                                ).map((d, idx) => {
-                                                    const isSelected =
-                                                        mulaiSelectedDate &&
-                                                        d.day === mulaiSelectedDate.getDate() &&
-                                                        d.month === mulaiSelectedDate.getMonth() &&
-                                                        d.year === mulaiSelectedDate.getFullYear();
-                                                    return (
-                                                        <button
-                                                            key={idx}
-                                                            type="button"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setMulaiSelectedDate(
-                                                                    new Date(d.year, d.month, d.day)
-                                                                );
-                                                                setShowMulaiCalendar(false);
-                                                            }}
-                                                            style={{
-                                                                padding: "6px 0",
-                                                                border: "none",
-                                                                borderRadius: "4px",
-                                                                cursor: "pointer",
-                                                                backgroundColor: isSelected
-                                                                    ? "#0284c7"
-                                                                    : "transparent",
-                                                                color: isSelected
-                                                                    ? "#ffffff"
-                                                                    : d.isCurrentMonth
-                                                                        ? "#1e293b"
-                                                                        : "#94a3b8",
-                                                                fontWeight: isSelected ? "bold" : "normal",
-                                                            }}
-                                                        >
-                                                            {d.day}
-                                                        </button>
-                                                    );
-                                                })}
-                                            </div>
-                                        </>
-                                    )}
-
-                                    {/* Months View */}
-                                    {mulaiCalendarViewMode === "months" && (
-                                        <div
-                                            style={{
-                                                display: "grid",
-                                                gridTemplateColumns: "repeat(3, 1fr)",
-                                                gap: "8px",
-                                                textAlign: "center",
-                                                fontSize: "12px",
-                                                paddingTop: "8px",
-                                            }}
-                                        >
-                                            {MONTH_NAMES.map((mName, idx) => (
-                                                <button
-                                                    key={mName}
-                                                    type="button"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setMulaiCalendarViewDate(
-                                                            new Date(
-                                                                mulaiCalendarViewDate.getFullYear(),
-                                                                idx,
-                                                                1
-                                                            )
-                                                        );
-                                                        setMulaiCalendarViewMode("days");
-                                                    }}
-                                                    style={{
-                                                        padding: "10px 4px",
-                                                        border: "none",
-                                                        borderRadius: "4px",
-                                                        cursor: "pointer",
-                                                        backgroundColor:
-                                                            mulaiCalendarViewDate.getMonth() === idx
-                                                                ? "#0284c7"
-                                                                : "#f8fafc",
-                                                        color:
-                                                            mulaiCalendarViewDate.getMonth() === idx
-                                                                ? "#ffffff"
-                                                                : "#1e293b",
-                                                        fontWeight:
-                                                            mulaiCalendarViewDate.getMonth() === idx
-                                                                ? "bold"
-                                                                : "normal",
-                                                    }}
-                                                >
-                                                    {mName.substring(0, 3)}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {/* Years View */}
-                                    {mulaiCalendarViewMode === "years" && (
-                                        <div
-                                            style={{
-                                                display: "grid",
-                                                gridTemplateColumns: "repeat(3, 1fr)",
-                                                gap: "8px",
-                                                textAlign: "center",
-                                                fontSize: "12px",
-                                                paddingTop: "8px",
-                                            }}
-                                        >
-                                            {Array.from(
-                                                { length: 12 },
-                                                (_, i) => mulaiYearRangeStart + i
-                                            ).map((yr) => (
-                                                <button
-                                                    key={yr}
-                                                    type="button"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setMulaiCalendarViewDate(
-                                                            new Date(yr, mulaiCalendarViewDate.getMonth(), 1)
-                                                        );
-                                                        setMulaiCalendarViewMode("months");
-                                                    }}
-                                                    style={{
-                                                        padding: "10px 4px",
-                                                        border: "none",
-                                                        borderRadius: "4px",
-                                                        cursor: "pointer",
-                                                        backgroundColor:
-                                                            mulaiCalendarViewDate.getFullYear() === yr
-                                                                ? "#0284c7"
-                                                                : "#f8fafc",
-                                                        color:
-                                                            mulaiCalendarViewDate.getFullYear() === yr
-                                                                ? "#ffffff"
-                                                                : "#1e293b",
-                                                        fontWeight:
-                                                            mulaiCalendarViewDate.getFullYear() === yr
-                                                                ? "bold"
-                                                                : "normal",
-                                                    }}
-                                                >
-                                                    {yr}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
+                            {/* Calendar Popover */}
+                            {showMulaiCalendar && renderMulaiCalendarPopover()}
                         </div>
 
                         {/* Anggaran hingga */}
@@ -685,6 +570,7 @@ export default function RincianAnggaran() {
                             </label>
                             <div style={{ position: "relative", width: "170px" }}>
                                 <button
+                                    className="rb-field"
                                     type="button"
                                     onClick={() => setShowHinggaDropdown((prev) => !prev)}
                                     style={{
@@ -718,6 +604,7 @@ export default function RincianAnggaran() {
 
                                 {showHinggaDropdown && (
                                     <div
+                                        className="rb-panel"
                                         style={{
                                             position: "absolute",
                                             top: "42px",
@@ -769,6 +656,7 @@ export default function RincianAnggaran() {
                                                 return (
                                                     <div
                                                         key={n}
+                                                        className={isSelected ? "rb-item rb-item-sel" : "rb-item"}
                                                         onClick={() => {
                                                             setHinggaBulan(n);
                                                             setShowHinggaDropdown(false);
@@ -828,6 +716,7 @@ export default function RincianAnggaran() {
                         {/* Tampilkan */}
                         <button
                             type="button"
+                            className="rb-link"
                             style={{
                                 height: "36px",
                                 fontSize: "13px",
@@ -847,6 +736,7 @@ export default function RincianAnggaran() {
                     {/* Fullscreen icon */}
                     <button
                         type="button"
+                        className="rb-icon"
                         title={isFullscreen ? "Kecilkan Layar" : "Perbesar"}
                         onClick={toggleFullscreen}
                         style={{
@@ -878,6 +768,7 @@ export default function RincianAnggaran() {
             {/* ── BEGIN: BudgetTable ── */}
             <section style={{ width: "100%", padding: "16px 24px 0 24px" }}>
                 <div
+                    className="rb-box"
                     style={{
                         border: "1px solid #eaecf0",
                         borderRadius: "8px",
@@ -887,6 +778,7 @@ export default function RincianAnggaran() {
                     <div style={{ display: "flex" }}>
                         {/* Sticky Akun column */}
                         <div
+                            className="rb-col"
                             style={{
                                 width: "260px",
                                 flexShrink: 0,
@@ -895,6 +787,7 @@ export default function RincianAnggaran() {
                             }}
                         >
                             <div
+                                className="rb-head"
                                 style={{
                                     height: "40px",
                                     display: "flex",
@@ -910,6 +803,7 @@ export default function RincianAnggaran() {
                                 Akun
                             </div>
                             <div
+                                className="rb-head"
                                 style={{
                                     height: "36px",
                                     borderBottom: "1px solid #eaecf0",
@@ -932,6 +826,7 @@ export default function RincianAnggaran() {
                                 <div style={{ minWidth: `${MONTHS.length * 130}px` }}>
                                     {/* Bandingkan row */}
                                     <div
+                                        className="rb-head"
                                         style={{
                                             height: "40px",
                                             display: "flex",
@@ -964,6 +859,7 @@ export default function RincianAnggaran() {
 
                                             {showBandingkanDropdown && (
                                                 <div
+                                                    className="rb-panel"
                                                     style={{
                                                         position: "absolute",
                                                         top: "24px",
@@ -983,6 +879,7 @@ export default function RincianAnggaran() {
                                                             return (
                                                                 <div
                                                                     key={option}
+                                                                    className={isSelected ? "rb-item rb-item-sel" : "rb-item"}
                                                                     onClick={() => {
                                                                         setBandingkanValue(option);
                                                                         setShowBandingkanDropdown(false);
@@ -1035,6 +932,7 @@ export default function RincianAnggaran() {
                                         {MONTHS.map((m) => (
                                             <div
                                                 key={m}
+                                                className="rb-head"
                                                 style={{
                                                     width: "130px",
                                                     flexShrink: 0,
@@ -1055,7 +953,7 @@ export default function RincianAnggaran() {
 
                                     {/* Data rows */}
                                     {rows.map((row, idx) => (
-                                        <div key={idx} style={{ display: "flex", ...rowBg(row) }}>
+                                        <div key={idx} className={`rb-r-${row.type}`} style={{ display: "flex", ...rowBg(row) }}>
                                             {MONTHS.map((m) => (
                                                 <div
                                                     key={m}
@@ -1121,6 +1019,7 @@ export default function RincianAnggaran() {
             {/* ── BEGIN: FooterActions ── */}
             <div style={{ flex: 1 }} />
             <footer
+                className="rb-footer"
                 style={{
                     width: "100%",
                     padding: "20px 24px",
@@ -1133,6 +1032,7 @@ export default function RincianAnggaran() {
                 <button
                     type="button"
                     onClick={() => navigate(-1)}
+                    className="rb-cancel"
                     style={{
                         fontSize: "13px",
                         fontWeight: 500,
@@ -1146,6 +1046,7 @@ export default function RincianAnggaran() {
                 </button>
                 <button
                     type="button"
+                    className="rb-btn"
                     style={{
                         height: "36px",
                         padding: "0 20px",
@@ -1169,6 +1070,64 @@ export default function RincianAnggaran() {
                     Simpan
                 </button>
             </footer>
+
+            <style>{`
+                .rb-dark { color-scheme: dark; }
+
+                /* Header */
+                .rb-dark .rb-header { border-color: #634f27 !important; }
+                .rb-dark .rb-crumb { color: #E5B85C !important; }
+                .rb-dark .rb-title { color: #ffffff !important; }
+                .rb-dark svg { color: #E5B85C !important; }
+
+                /* Label, input, textarea, trigger dropdown */
+                .rb-dark label { color: #e2e8f0 !important; }
+                .rb-dark input, .rb-dark textarea, .rb-dark .rb-field {
+                    background-color: #262626 !important;
+                    color: #f1f5f9 !important;
+                    border-color: #634f27 !important;
+                }
+                .rb-dark input:focus, .rb-dark textarea:focus {
+                    border-color: #E5B85C !important;
+                    box-shadow: 0 0 0 2px rgba(229,184,92,0.25) !important;
+                }
+
+                /* Tombol */
+                .rb-dark .rb-link { color: #E5B85C !important; border-color: #634f27 !important; }
+                .rb-dark .rb-link:hover { background-color: #2d2d2d !important; }
+                .rb-dark .rb-icon:hover { background-color: #2d2d2d !important; }
+                .rb-dark .rb-cancel { color: #cbd5e1 !important; }
+                .rb-dark .rb-cancel:hover { color: #E5B85C !important; }
+                .rb-dark .rb-btn { background-color: #E5B85C !important; color: #121212 !important; }
+                .rb-dark .rb-btn:hover { background-color: #f0c978 !important; }
+
+                /* Panel dropdown (hingga & bandingkan) */
+                .rb-dark .rb-panel {
+                    background-color: #1a1a1a !important;
+                    border-color: #634f27 !important;
+                }
+                .rb-dark .rb-panel .rb-item { background-color: transparent !important; }
+                .rb-dark .rb-panel .rb-item:hover { background-color: #2d2d2d !important; }
+                .rb-dark .rb-panel .rb-item,
+                .rb-dark .rb-panel .rb-item div { color: #f1f5f9 !important; }
+                .rb-dark .rb-panel .rb-item div + div { color: #E5B85C !important; }
+                .rb-dark .rb-panel .rb-item-sel { background-color: #E5B85C !important; }
+                .rb-dark .rb-panel .rb-item-sel,
+                .rb-dark .rb-panel .rb-item-sel div { color: #121212 !important; }
+
+                /* Tabel */
+                .rb-dark .rb-box,
+                .rb-dark .rb-box div { border-color: #3a3326 !important; }
+                .rb-dark .rb-box div { color: #ffffff !important; }
+                .rb-dark .rb-col { background-color: #121212 !important; }
+                .rb-dark .rb-head { background-color: #db8e00ce !important; }
+                .rb-dark .rb-head,
+                .rb-dark .rb-head div,
+                .rb-dark .rb-head span { color: #f1f5f9 !important; }
+                .rb-dark .rb-r-group,
+                .rb-dark .rb-r-summary { background-color: #1e1e1e !important; }
+                .rb-dark .rb-r-total { background-color: #121212 !important; }
+            `}</style>
         </div>
     );
 }
@@ -1187,6 +1146,7 @@ function RowLabelCell({ row, expandedGroups, toggleGroup }) {
 
     return (
         <div
+            className={`rb-r-${row.type}`}
             onClick={isGroup ? () => toggleGroup(row.key) : undefined}
             style={{
                 height: "40px",

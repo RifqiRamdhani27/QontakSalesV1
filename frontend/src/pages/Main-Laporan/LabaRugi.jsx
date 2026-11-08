@@ -18,6 +18,18 @@ export default function LabaRugi() {
   // Main Filter Date states
   const [startDate, setStartDate] = useState("01/08/2026");
 
+  const [themeMode, setThemeMode] = useState(() => localStorage.getItem("app_theme") || "light");
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+  const isDark = themeMode === "dark";
+
   // End Date Calendar State (Main)
   const endDatePickerRef = useRef(null);
   const [endSelectedDate, setEndSelectedDate] = useState(() => new Date(2026, 7, 31));
@@ -156,6 +168,7 @@ export default function LabaRugi() {
 
   return (
     <div
+      className={isDark ? "dash-dark lr-root" : "lr-root"}
       style={{
         margin: isFullscreen ? 0 : "-24px",
         minHeight: "100vh",
@@ -251,14 +264,14 @@ export default function LabaRugi() {
               fontSize: "14px",
               fontWeight: 500,
               color: "#3b66f5",
-              backgroundColor: "#ffffff",
+              backgroundColor: isDark ? "#121212" : "#f8fafc",
               border: "1px solid #cbd5e1",
               borderRadius: "4px",
               cursor: "pointer",
               transition: "background-color 0.15s ease",
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f8fafc")}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#ffffff")}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = isDark ? "#2d2d2d" : "#f8fafc")}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = isDark ? "#121212" : "#ffffff")}
           >
             Lihat anggaran laba &amp; rugi
           </button>
@@ -386,6 +399,7 @@ export default function LabaRugi() {
             {/* Calendar Popover */}
             {showEndCalendar && (
               <div
+                className="lr-pop"
                 style={{
                   position: "absolute",
                   top: "64px",
@@ -577,8 +591,8 @@ export default function LabaRugi() {
                               color: isSelected
                                 ? "#ffffff"
                                 : d.isCurrentMonth
-                                ? "#1e293b"
-                                : "#94a3b8",
+                                  ? "#1e293b"
+                                  : "#94a3b8",
                               fontWeight: isSelected ? "bold" : "normal",
                             }}
                           >
@@ -741,6 +755,7 @@ export default function LabaRugi() {
             {/* Custom Dropdown Menu List */}
             {showPeriodeDropdown && (
               <div
+                className="lr-dd"
                 style={{
                   position: "absolute",
                   top: "64px",
@@ -806,6 +821,7 @@ export default function LabaRugi() {
           {/* Filter Button */}
           <button
             type="button"
+            className="lr-btn"
             style={{
               height: "36px",
               padding: "0 16px",
@@ -844,8 +860,8 @@ export default function LabaRugi() {
               cursor: "pointer",
               transition: "background-color 0.15s ease",
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f8fafc")}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#ffffff")}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = isDark ? "#2d2d2d" : "#f8fafc")}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = isDark ? "#121212" : "#ffffff")}
           >
             <svg
               style={{ width: "14px", height: "14px", color: "#2563eb" }}
@@ -929,7 +945,7 @@ export default function LabaRugi() {
               style={{
                 height: "36px",
                 padding: "0 14px",
-                backgroundColor: "#ffffff",
+                backgroundColor: isDark ? "#121212" : "#f8fafc",
                 border: "1px solid #cbd5e1",
                 borderRadius: "6px",
                 fontSize: "13.5px",
@@ -943,11 +959,11 @@ export default function LabaRugi() {
                 transition: "all 0.15s ease",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#f8fafc";
+                e.currentTarget.style.backgroundColor = isDark ? "#232323ff" : "#f8fafc";
                 e.currentTarget.style.borderColor = "#94a3b8";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#ffffff";
+                e.currentTarget.style.backgroundColor = isDark ? "#121212" : "#ffffff";
                 e.currentTarget.style.borderColor = "#cbd5e1";
               }}
             >
@@ -979,7 +995,7 @@ export default function LabaRugi() {
                   transition: "all 0.15s ease",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "#f8fafc";
+                  e.currentTarget.style.backgroundColor = isDark ? "#272727ff" : "#fdfdfdff";
                   e.currentTarget.style.borderColor = "#94a3b8";
                 }}
                 onMouseLeave={(e) => {
@@ -995,6 +1011,7 @@ export default function LabaRugi() {
 
               {showEksporDropdown && (
                 <div
+                  className="lr-dd"
                   style={{
                     position: "absolute",
                     top: "42px",
@@ -1012,7 +1029,7 @@ export default function LabaRugi() {
                   <div
                     onClick={() => setShowEksporDropdown(false)}
                     style={{ padding: "8px 14px", fontSize: "13px", color: "#334155", cursor: "pointer" }}
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f8fafc")}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = isDark ? "#272727ff" : "#e9e9e9ff")}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#ffffff")}
                   >
                     Ekspor PDF
@@ -1020,7 +1037,7 @@ export default function LabaRugi() {
                   <div
                     onClick={() => setShowEksporDropdown(false)}
                     style={{ padding: "8px 14px", fontSize: "13px", color: "#334155", cursor: "pointer" }}
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f8fafc")}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = isDark ? "#272727ff" : "#e8e8e8ff")}
                     onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#ffffff")}
                   >
                     Ekspor Excel
@@ -1376,6 +1393,7 @@ export default function LabaRugi() {
                     {/* Drawer End Date Calendar Popover */}
                     {showDrawerEndCalendar && (
                       <div
+                        className="lr-pop"
                         style={{
                           position: "absolute",
                           top: "64px",
@@ -1780,6 +1798,7 @@ export default function LabaRugi() {
                 <button
                   type="button"
                   onClick={closeFilterDrawer}
+                  className="lr-btn"
                   style={{
                     padding: "8px 18px",
                     fontSize: "13.5px",
@@ -1799,6 +1818,63 @@ export default function LabaRugi() {
           </aside>
         </div>
       )}
+      <style>{`
+  .dash-dark.lr-root { background-color: #121212 !important; color: #f1f5f9 !important; color-scheme: dark; }
+  .dash-dark h1, .dash-dark h2 { color: #ffffff !important; }
+  .dash-dark p, .dash-dark label { color: #cbd5e1 !important; }
+
+  /* Permukaan putih inline -> gelap */
+  .dash-dark [style*="background-color: rgb(255, 255, 255)"] { background-color: #121212 !important; }
+  .dash-dark [style*="background-color: rgb(241, 245, 249)"] { background-color: #1a1a1a !important; }
+  .dash-dark input, .dash-dark select {
+    background-color: #262626 !important;
+    color: #f1f5f9 !important;
+    border-color: #634f27 !important;
+  }
+  .dash-dark input:disabled { color: #94a3b8 !important; background-color: #1a1a1a !important; }
+  .dash-dark input:focus, .dash-dark select:focus { border-color: #E5B85C !important; }
+  .dash-dark select option { background: #262626; color: #f1f5f9; }
+  .dash-dark input[type="radio"], .dash-dark input[type="checkbox"] { accent-color: #E5B85C; }
+
+  /* Border */
+  .dash-dark [style*="border: 1px solid"],
+  .dash-dark [style*="border-bottom: 1px solid"],
+  .dash-dark [style*="border-top: 1px solid"],
+  .dash-dark [style*="border-left: 1px solid"] { border-color: #634f27 !important; }
+
+  /* Teks biru -> emas */
+  .dash-dark [style*="color: rgb(59, 102, 245)"],
+  .dash-dark [style*="color: rgb(37, 99, 235)"],
+  .dash-dark [style*="color: rgb(79, 102, 238)"],
+  .dash-dark [style*="color: rgb(53, 89, 224)"] { color: #E5B85C !important; }
+  .dash-dark svg[fill="#3b66f5"], .dash-dark svg[fill="#4f66ee"] { fill: #E5B85C; }
+  .dash-dark svg[stroke="#4f66ee"] { stroke: #E5B85C; }
+
+  /* Teks abu -> terang */
+  .dash-dark [style*="color: rgb(51, 65, 85)"],
+  .dash-dark [style*="color: rgb(30, 41, 59)"],
+  .dash-dark [style*="color: rgb(29, 41, 57)"],
+  .dash-dark [style*="color: rgb(16, 24, 40)"],
+  .dash-dark [style*="color: rgb(71, 85, 105)"],
+  .dash-dark [style*="color: rgb(100, 116, 139)"] { color: #cbd5e1 !important; }
+
+  /* Tombol utama emas */
+  .dash-dark .lr-btn { background-color: #E5B85C !important; color: #121212 !important; }
+  .dash-dark .lr-btn:hover { background-color: #f0c978 !important; }
+
+  /* Dropdown & kalender */
+  .dash-dark .lr-dd, .dash-dark .lr-pop { background-color: #1e1e1e !important; border-color: #634f27 !important; }
+  .dash-dark .lr-dd div { color: #f1f5f9 !important; }
+  .dash-dark .lr-dd [style*="background-color: rgb(224, 237, 255)"] { background-color: rgba(229,184,92,0.2) !important; }
+  .dash-dark .lr-pop button { color: #f1f5f9 !important; }
+  .dash-dark .lr-pop span { color: #94a3b8 !important; }
+  .dash-dark .lr-pop [style*="background-color: rgb(248, 250, 252)"] { background-color: #262626 !important; }
+  .dash-dark .lr-pop [style*="background-color: rgb(2, 132, 199)"] { background-color: #E5B85C !important; color: #121212 !important; }
+
+  /* Backdrop & ilustrasi */
+  .dash-dark [style*="rgba(15, 23, 42, 0.45)"] { background-color: rgba(0,0,0,0.7) !important; }
+  .dash-dark main svg { opacity: 0.85; }
+`}</style>
     </div>
   );
 }

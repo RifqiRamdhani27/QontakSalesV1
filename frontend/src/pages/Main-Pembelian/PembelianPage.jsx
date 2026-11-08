@@ -181,6 +181,24 @@ const emptyContent = {
     },
 };
 
+function useIsDark() {
+    const [mode, setMode] = useState(
+        () => localStorage.getItem("app_theme") || "light"
+    );
+
+    useEffect(() => {
+        const sync = () => setMode(localStorage.getItem("app_theme") || "light");
+        window.addEventListener("themeChanged", sync);
+        window.addEventListener("storage", sync);
+        return () => {
+            window.removeEventListener("themeChanged", sync);
+            window.removeEventListener("storage", sync);
+        };
+    }, []);
+
+    return mode === "dark";
+}
+
 function useFloating(open, setOpen, triggerRef, panelRef, minWidth = 0, estHeight = 280) {
     const [pos, setPos] = useState(null);
 
@@ -223,7 +241,7 @@ function useFloating(open, setOpen, triggerRef, panelRef, minWidth = 0, estHeigh
             document.removeEventListener("mousedown", onDown);
             document.removeEventListener("keydown", onKey);
         };
-       
+
     }, [open]);
 
     return pos;
@@ -242,6 +260,7 @@ function Select({
     const triggerRef = useRef(null);
     const panelRef = useRef(null);
     const pos = useFloating(open, setOpen, triggerRef, panelRef, minPanelWidth, 260);
+    const isDark = useIsDark();
 
     const selected = options.find((o) => o.value === value);
 
@@ -251,11 +270,10 @@ function Select({
                 ref={triggerRef}
                 type="button"
                 onClick={() => setOpen((o) => !o)}
-                className={`flex h-9 w-full items-center justify-between gap-2 rounded-md border bg-white px-3 text-left text-xs outline-none transition-all ${
-                    open
-                        ? "border-blue-500 shadow-[0_0_0_3px_rgba(37,99,235,0.12)]"
-                        : "border-slate-300 hover:border-slate-400"
-                }`}
+                className={`flex h-9 w-full items-center justify-between gap-2 rounded-md border bg-white px-3 text-left text-xs outline-none transition-all ${open
+                    ? "border-blue-500 shadow-[0_0_0_3px_rgba(37,99,235,0.12)]"
+                    : "border-slate-300 hover:border-slate-400"
+                    }`}
             >
                 <span
                     className={`truncate ${selected && selected.value !== "" ? "text-slate-700" : "text-slate-400"}`}
@@ -265,9 +283,8 @@ function Select({
                 <CaretDown
                     size={13}
                     weight="bold"
-                    className={`shrink-0 text-slate-500 transition-transform duration-200 ${
-                        open ? "rotate-180" : ""
-                    }`}
+                    className={`shrink-0 text-slate-500 transition-transform duration-200 ${open ? "rotate-180" : ""
+                        }`}
                 />
             </button>
 
@@ -276,8 +293,7 @@ function Select({
                 createPortal(
                     <div
                         ref={panelRef}
-                        className="pb-pop max-h-[260px] overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-[0_12px_32px_rgba(15,23,42,0.16)]"
-                        style={{
+                        className={`pb-pop ${isDark ? "pb-dark-pop" : ""} max-h-[260px] overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-[0_12px_32px_rgba(15,23,42,0.16)]`} style={{
                             position: "fixed",
                             left: pos.left,
                             width: pos.width,
@@ -296,11 +312,10 @@ function Select({
                                         onChange(o.value);
                                         setOpen(false);
                                     }}
-                                    className={`flex cursor-pointer items-center justify-between gap-2 rounded-lg px-3 py-2 text-xs transition-colors ${
-                                        active
-                                            ? "bg-blue-50 font-semibold text-blue-600"
-                                            : "text-slate-700 hover:bg-slate-100"
-                                    }`}
+                                    className={`flex cursor-pointer items-center justify-between gap-2 rounded-lg px-3 py-2 text-xs transition-colors ${active
+                                        ? "bg-blue-50 font-semibold text-blue-600"
+                                        : "text-slate-700 hover:bg-slate-100"
+                                        }`}
                                 >
                                     <span className="truncate">{o.label}</span>
                                     {active && (
@@ -337,6 +352,7 @@ function DatePicker({ value, onChange, placeholder }) {
     const triggerRef = useRef(null);
     const panelRef = useRef(null);
     const pos = useFloating(open, setOpen, triggerRef, panelRef, 288, 340);
+    const isDark = useIsDark();
 
     const now = new Date();
     const [view, setView] = useState({ y: now.getFullYear(), m: now.getMonth() });
@@ -347,7 +363,7 @@ function DatePicker({ value, onChange, placeholder }) {
             const n = new Date();
             setView({ y: p ? p.y : n.getFullYear(), m: p ? p.m : n.getMonth() });
         }
-        
+
     }, [open]);
 
     const shiftMonth = (delta) => {
@@ -372,11 +388,10 @@ function DatePicker({ value, onChange, placeholder }) {
                 ref={triggerRef}
                 type="button"
                 onClick={() => setOpen((o) => !o)}
-                className={`flex h-9 w-full items-center justify-between gap-2 rounded-md border bg-white px-3 text-left text-xs outline-none transition-all ${
-                    open
-                        ? "border-blue-500 shadow-[0_0_0_3px_rgba(37,99,235,0.12)]"
-                        : "border-slate-300 hover:border-slate-400"
-                }`}
+                className={`flex h-9 w-full items-center justify-between gap-2 rounded-md border bg-white px-3 text-left text-xs outline-none transition-all ${open
+                    ? "border-blue-500 shadow-[0_0_0_3px_rgba(37,99,235,0.12)]"
+                    : "border-slate-300 hover:border-slate-400"
+                    }`}
             >
                 <span className={`truncate ${value ? "text-slate-700" : "text-slate-400"}`}>
                     {value || placeholder}
@@ -389,8 +404,7 @@ function DatePicker({ value, onChange, placeholder }) {
                 createPortal(
                     <div
                         ref={panelRef}
-                        className="pb-pop rounded-xl border border-slate-200 bg-white p-3 shadow-[0_12px_32px_rgba(15,23,42,0.16)]"
-                        style={{
+                        className={`pb-pop ${isDark ? "pb-dark-pop" : ""} rounded-xl border border-slate-200 bg-white p-3 shadow-[0_12px_32px_rgba(15,23,42,0.16)]`} style={{
                             position: "fixed",
                             left: pos.left,
                             width: pos.width,
@@ -445,13 +459,12 @@ function DatePicker({ value, onChange, placeholder }) {
                                             onChange(str);
                                             setOpen(false);
                                         }}
-                                        className={`mx-auto flex h-8 w-8 items-center justify-center rounded-full text-xs transition-colors ${
-                                            isSelected
-                                                ? "bg-blue-600 font-semibold text-white"
-                                                : isToday
-                                                  ? "border border-blue-600 font-semibold text-blue-600 hover:bg-blue-50"
-                                                  : "text-slate-700 hover:bg-slate-100"
-                                        }`}
+                                        className={`mx-auto flex h-8 w-8 items-center justify-center rounded-full text-xs transition-colors ${isSelected
+                                            ? "bg-blue-600 font-semibold text-white"
+                                            : isToday
+                                                ? "border border-blue-600 font-semibold text-blue-600 hover:bg-blue-50"
+                                                : "text-slate-700 hover:bg-slate-100"
+                                            }`}
                                     >
                                         {d}
                                     </button>
@@ -742,6 +755,7 @@ const toOptions = (list) => list.map((o) => ({ value: o, label: o }));
 
 export default function PembelianPage() {
     const navigate = useNavigate();
+    const isDark = useIsDark();
     const [activeTab, setActiveTab] = useState("Faktur");
     const [status, setStatus] = useState("Semua status");
     const [column, setColumn] = useState("Semua kolom");
@@ -795,8 +809,8 @@ export default function PembelianPage() {
                 {(currentFilterType === "full" ||
                     currentFilterType === "tukar" ||
                     currentFilterType === "request") && (
-                    <DateRange label="Tgl. transaksi" />
-                )}
+                        <DateRange label="Tgl. transaksi" />
+                    )}
 
                 {(currentFilterType === "full" || currentFilterType === "tukar") && (
                     <DateRange label="Tgl. jatuh tempo" />
@@ -827,7 +841,7 @@ export default function PembelianPage() {
     };
 
     return (
-        <div className="min-h-full bg-white p-4 text-slate-700 md:p-5">
+        <div className={`min-h-full bg-white p-4 text-slate-700 md:p-5 ${isDark ? "pb-dark" : ""}`}>
             <style>{`
                 @keyframes pbPopIn {
                     from { opacity: 0; transform: translateY(-6px) scale(0.98); }
@@ -841,6 +855,93 @@ export default function PembelianPage() {
                 }
                 .pb-fade { animation: pbFadeIn 0.25s ease-out; }
                 .pb-slide { animation: pbSlideIn 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
+            `}</style>
+
+            <style>{`
+                .pb-dark { background-color: #121212 !important; color-scheme: dark; min-height: 100%; }
+                .pb-dark.text-slate-700 { color: #f1f5f9 !important; }
+
+                /* Panel portal (Select & DatePicker) */
+                .pb-dark-pop {
+                    background-color: #1a1a1a !important;
+                    border-color: #634f27 !important;
+                    color-scheme: dark;
+                }
+
+                /* Latar & border umum */
+                :is(.pb-dark, .pb-dark-pop) .bg-white { background-color: #121212 !important; }
+                :is(.pb-dark, .pb-dark-pop) .border-slate-400,
+                :is(.pb-dark, .pb-dark-pop) .border-slate-300,
+                :is(.pb-dark, .pb-dark-pop) .border-slate-200 { border-color: #634f27 !important; }
+                :is(.pb-dark, .pb-dark-pop) .border-slate-100,
+                :is(.pb-dark, .pb-dark-pop) .border-amber-100,
+                :is(.pb-dark, .pb-dark-pop) .border-red-100,
+                :is(.pb-dark, .pb-dark-pop) .border-emerald-100 { border-color: #3a3326 !important; }
+
+                /* Teks */
+                :is(.pb-dark, .pb-dark-pop) .text-slate-800,
+                :is(.pb-dark, .pb-dark-pop) .text-slate-700 { color: #f1f5f9 !important; }
+                :is(.pb-dark, .pb-dark-pop) .text-slate-600 { color: #cbd5e1 !important; }
+                :is(.pb-dark, .pb-dark-pop) .text-slate-500,
+                :is(.pb-dark, .pb-dark-pop) .text-slate-400 { color: #94a3b8 !important; }
+
+                /* Header kartu ringkasan */
+                .pb-dark .bg-amber-50 { background-color: rgba(245,158,11,0.15) !important; }
+                .pb-dark .bg-red-50 { background-color: rgba(239,68,68,0.15) !important; }
+                .pb-dark .bg-emerald-50 { background-color: rgba(34,197,94,0.15) !important; }
+                .pb-dark .hover\\:border-\\[\\#0052D4\\]:hover { border-color: #E5B85C !important; }
+                .pb-dark .hover\\:border-slate-400:hover { border-color: #8a6d2f !important; }
+
+                /* Aksen biru -> emas */
+                :is(.pb-dark, .pb-dark-pop) .text-blue-600 { color: #E5B85C !important; }
+                :is(.pb-dark, .pb-dark-pop) .hover\\:text-blue-700:hover { color: #f0c978 !important; }
+                :is(.pb-dark, .pb-dark-pop) .border-blue-600,
+                :is(.pb-dark, .pb-dark-pop) .border-blue-500 { border-color: #E5B85C !important; }
+                :is(.pb-dark, .pb-dark-pop) .focus-within\\:border-blue-500:focus-within,
+                :is(.pb-dark, .pb-dark-pop) .focus\\:border-blue-500:focus { border-color: #E5B85C !important; }
+                :is(.pb-dark, .pb-dark-pop) .bg-blue-50 { background-color: rgba(229,184,92,0.15) !important; }
+                :is(.pb-dark, .pb-dark-pop) .hover\\:bg-blue-50:hover { background-color: rgba(229,184,92,0.15) !important; }
+                :is(.pb-dark, .pb-dark-pop) .bg-blue-600 { background-color: #E5B85C !important; color: #121212 !important; }
+                :is(.pb-dark, .pb-dark-pop) .accent-blue-600 { accent-color: #E5B85C; }
+
+                /* Tombol utama -> emas */
+                .pb-dark .bg-\\[\\#4B61DD\\] { background-color: #E5B85C !important; color: #121212 !important; }
+                .pb-dark .hover\\:bg-blue-700:hover { background-color: #f0c978 !important; }
+
+                /* Tab aktif -> emas */
+                .pb-dark .text-\\[\\#41D1C8\\] { color: #E5B85C !important; }
+                .pb-dark .bg-\\[\\#41D1C8\\] { background-color: #E5B85C !important; }
+                .pb-dark .hover\\:text-slate-800:hover { color: #E5B85C !important; }
+
+                /* Tombol abu & hover */
+                .pb-dark .bg-gray-100,
+                :is(.pb-dark, .pb-dark-pop) .bg-slate-100 { background-color: #262626 !important; }
+                :is(.pb-dark, .pb-dark-pop) .hover\\:bg-slate-50:hover,
+                :is(.pb-dark, .pb-dark-pop) .hover\\:bg-slate-100:hover { background-color: #2d2d2d !important; }
+
+                /* Input */
+                .pb-dark input:not([type="radio"]):not([type="checkbox"]) {
+                    background-color: #262626 !important;
+                    color: #f1f5f9 !important;
+                    border-color: #634f27 !important;
+                }
+                .pb-dark input:focus { border-color: #E5B85C !important; }
+                :is(.pb-dark, .pb-dark-pop) ::placeholder { color: #94a3b8; }
+
+                /* Input pencarian di toolbar (wrapper + input transparan) */
+                .pb-dark .pb-search { background-color: #262626 !important; }
+                .pb-dark .pb-search input {
+                    background-color: transparent !important;
+                    border: none !important;
+                }
+
+                /* Ilustrasi */
+                .pb-dark img { opacity: 0.9; }
+
+                /* Shadow hover kartu ringkasan */
+                .pb-dark .stat-card:hover {
+                    box-shadow: 0 6px 18px rgba(229, 184, 92, 0.45) !important;
+                }
             `}</style>
 
             <div className="mx-auto max-w-[1500px]">
@@ -873,7 +974,7 @@ export default function PembelianPage() {
                 {/* Summary Stat Cards */}
                 <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     {/* Card 1: Faktur belum dibayar (kuning) */}
-                    <div className="cursor-pointer overflow-hidden rounded-md border border-amber-300 bg-white transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg">
+                    <div className="stat-card cursor-pointer overflow-hidden rounded-md border border-amber-300 bg-white transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg">
                         <div className="flex items-center justify-between border-b border-amber-100 bg-amber-50 px-3 py-2">
                             <span className="text-[14px] font-semibold text-slate-700">
                                 Faktur belum dibayar
@@ -890,7 +991,7 @@ export default function PembelianPage() {
                     </div>
 
                     {/* Card 2: Faktur telat dibayar (merah) */}
-                    <div className="cursor-pointer overflow-hidden rounded-md border border-red-300 bg-white transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg">
+                    <div className="stat-card cursor-pointer overflow-hidden rounded-md border border-red-300 bg-white transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg">
                         <div className="flex items-center justify-between border-b border-red-100 bg-red-50 px-3 py-2">
                             <span className="text-[14px] font-semibold text-slate-700">
                                 Faktur telat dibayar
@@ -907,7 +1008,7 @@ export default function PembelianPage() {
                     </div>
 
                     {/* Card 3: Pelunasan 30 hari terakhir (hijau) */}
-                    <div className="cursor-pointer overflow-hidden rounded-md border border-emerald-300 bg-white transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg">
+                    <div className="stat-card cursor-pointer overflow-hidden rounded-md border border-emerald-300 bg-white transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg">
                         <div className="flex items-center justify-between border-b border-emerald-100 bg-emerald-50 px-3 py-2">
                             <span className="text-[14px] font-semibold text-slate-700">
                                 Pelunasan 30 hari terakhir
@@ -924,7 +1025,7 @@ export default function PembelianPage() {
                     </div>
 
                     {/* Card 4: Mekari Pay */}
-                    <div className="cursor-pointer rounded-md border border-slate-400 bg-white px-3 py-2 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:border-[#0052D4]">
+                    <div className="stat-card cursor-pointer rounded-md border border-slate-400 bg-white px-3 py-2 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:border-[#0052D4]">
                         <div className="flex items-center gap-2.5">
                             <img
                                 src={mekariPayLogo}
@@ -959,11 +1060,10 @@ export default function PembelianPage() {
                                     key={tab}
                                     type="button"
                                     onClick={() => handleTabChange(tab)}
-                                    className={`relative whitespace-nowrap px-5 py-3 text-[13px] font-medium transition-colors ${
-                                        activeTab === tab
-                                            ? "text-[#41D1C8]"
-                                            : "text-slate-600 hover:text-slate-800"
-                                    }`}
+                                    className={`relative whitespace-nowrap px-5 py-3 text-[13px] font-medium transition-colors ${activeTab === tab
+                                        ? "text-[#41D1C8]"
+                                        : "text-slate-600 hover:text-slate-800"
+                                        }`}
                                 >
                                     {tab}
 
@@ -991,9 +1091,8 @@ export default function PembelianPage() {
                         />
 
                         <div className="flex items-center gap-2">
-                            <div className="flex h-9 w-60 items-center rounded-md border border-slate-300 bg-white px-3 transition-all hover:border-slate-400 focus-within:border-blue-500 focus-within:shadow-[0_0_0_3px_rgba(37,99,235,0.12)]">
+                            <div className="pb-search flex h-9 w-60 items-center rounded-md border border-slate-300 bg-white px-3 transition-all hover:border-slate-400 focus-within:border-blue-500 focus-within:shadow-[0_0_0_3px_rgba(37,99,235,0.12)]">
                                 <MagnifyingGlass size={16} className="text-slate-400" />
-
                                 <input
                                     type="text"
                                     value={search}

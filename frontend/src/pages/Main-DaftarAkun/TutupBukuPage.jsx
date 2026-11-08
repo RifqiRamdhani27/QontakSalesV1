@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box, Flex, Text, Button, HStack, VStack, SimpleGrid, Input,
 } from "@chakra-ui/react";
@@ -10,9 +10,25 @@ import illustrationImg from "@/assets/tutup_buku_illustration.png";
 
 export default function TutupBukuPage() {
   const navigate = useNavigate();
-  const [modalType, setModalType] = useState(null); // "kunci" | "tutup" | null
+  const [modalType, setModalType] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState("2026-12");
   const [isSuccess, setIsSuccess] = useState(false);
+
+  const [themeMode, setThemeMode] = useState(
+    () => localStorage.getItem("app_theme") || "light"
+  );
+
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+
+  const isDark = themeMode === "dark";
 
   const handleProcess = () => {
     setIsSuccess(true);
@@ -24,34 +40,40 @@ export default function TutupBukuPage() {
   };
 
   return (
-    <Box bg="white" minH="100vh" p={{ base: 6, md: 10 }} fontFamily="Segoe UI, -apple-system, sans-serif">
+    <Box
+      className={`tb-root ${isDark ? "tb-dark" : ""}`}
+      bg={isDark ? "#121212" : "white"}
+      minH="100vh"
+      p={{ base: 6, md: 10 }}
+      fontFamily="Segoe UI, -apple-system, sans-serif"
+    >
       {/* Top Section */}
       <Flex direction={{ base: "column", lg: "row" }} justify="space-between" align="flex-start" gap={8} mb={12}>
         {/* Left Column: Text & Buttons */}
         <Box flex={1} maxW="720px">
-          <Text fontSize={{ base: "22px", md: "26px" }} fontWeight="700" color="#0F172A" mb={4} lineHeight="1.2">
+          <Text className="tb-title" fontSize={{ base: "22px", md: "26px" }} fontWeight="700" color="#0F172A" mb={4} lineHeight="1.2">
             Fitur kunci periode dan tutup buku
           </Text>
 
-          <Text fontSize="14px" color="#334155" mb={3} lineHeight="1.6">
+          <Text className="tb-text" fontSize="14px" color="#334155" mb={3} lineHeight="1.6">
             Kunci periode memastikan transaksi yang berada dalam periode yang sudah dikunci tidak berubah.
           </Text>
 
-          <Text fontSize="14px" color="#334155" mb={6} lineHeight="1.6">
+          <Text className="tb-text" fontSize="14px" color="#334155" mb={6} lineHeight="1.6">
             Tutup buku meliputi penguncian periode dan peralihan keuntungan bersih/rugi periode sebelumnya menjadi modal awal periode berikutnya melalui jurnal penutup.
           </Text>
 
-          <Text fontSize="14px" fontWeight="700" color="#0F172A" mb={2}>
+          <Text className="tb-title" fontSize="14px" fontWeight="700" color="#0F172A" mb={2}>
             Waktu untuk melakukan
           </Text>
 
           <VStack align="stretch" gap={1.5} mb={6} fontSize="14px" color="#334155">
             <HStack align="flex-start" gap={2}>
-              <Text color="#475569" fontWeight="bold">•</Text>
+              <Text className="tb-title2" color="#475569" fontWeight="bold">•</Text>
               <Text>Kunci periode dapat dilakukan saat transaksi dalam laporan sudah ditinjau dan tidak ingin diubah.</Text>
             </HStack>
             <HStack align="flex-start" gap={2}>
-              <Text color="#475569" fontWeight="bold">•</Text>
+              <Text className="tb-title2" color="#475569" fontWeight="bold">•</Text>
               <Text>Tutup buku umumnya dilakukan pada akhir tahun, akhir periode akuntansi, atau keduanya.</Text>
             </HStack>
           </VStack>
@@ -59,6 +81,7 @@ export default function TutupBukuPage() {
           {/* Action Buttons */}
           <HStack gap={3} flexWrap="wrap">
             <Button
+              className="tb-btn-outline"
               variant="outline"
               borderColor="#cececeff"
               color="#2563EB"
@@ -74,6 +97,7 @@ export default function TutupBukuPage() {
               Mulai kunci periode
             </Button>
             <Button
+              className="tb-btn-outline"
               variant="outline"
               borderColor="#cececeff"
               color="#2563EB"
@@ -106,7 +130,7 @@ export default function TutupBukuPage() {
 
       {/* Middle Section Title */}
       <Box textAlign="center" my={10}>
-        <Text fontSize="18px" fontWeight="550" color="#0F172A">
+        <Text className="tb-title" fontSize="18px" fontWeight="550" color="#0F172A">
           Langkah-langkah kunci periode dan tutup buku
         </Text>
       </Box>
@@ -115,10 +139,10 @@ export default function TutupBukuPage() {
       <SimpleGrid columns={{ base: 1, sm: 2, md: 4 }} gap={8} mb={16}>
         {/* Step 1 */}
         <VStack align="flex-start" gap={3}>
-          <Box bg="#2563EB" p={2.5} borderRadius="xl" color="white" display="inline-flex">
+          <Box bg="#2563EB" className="tb-icon" p={2.5} borderRadius="xl" color="white" display="inline-flex">
             <CalendarBlank size={24} weight="bold" />
           </Box>
-          <Text fontWeight="600" fontSize="15px" color="#0F172A">
+          <Text className="tb-muted" fontWeight="600" fontSize="15px" color="#0F172A">
             1. Pilih periode
           </Text>
           <Text fontSize="13px" color="#64748B" lineHeight="1.5">
@@ -128,10 +152,10 @@ export default function TutupBukuPage() {
 
         {/* Step 2 */}
         <VStack align="flex-start" gap={3}>
-          <Box bg="#2563EB" p={2.5} borderRadius="xl" color="white" display="inline-flex">
+          <Box bg="#2563EB" className="tb-icon" p={2.5} borderRadius="xl" color="white" display="inline-flex">
             <Receipt size={24} weight="bold" />
           </Box>
-          <Text fontWeight="600" fontSize="15px" color="#0F172A">
+          <Text className="tb-muted" fontWeight="600" fontSize="15px" color="#0F172A">
             2. Cek rekonsiliasi
           </Text>
           <Text fontSize="13px" color="#64748B" lineHeight="1.5">
@@ -141,10 +165,10 @@ export default function TutupBukuPage() {
 
         {/* Step 3 */}
         <VStack align="flex-start" gap={3}>
-          <Box bg="#2563EB" p={2.5} borderRadius="xl" color="white" display="inline-flex">
+          <Box bg="#2563EB" className="tb-icon" p={2.5} borderRadius="xl" color="white" display="inline-flex">
             <Calculator size={24} weight="bold" />
           </Box>
-          <Text fontWeight="600" fontSize="15px" color="#0F172A">
+          <Text className="tb-muted" fontWeight="600" fontSize="15px" color="#0F172A">
             3. Periksa kertas kerja
           </Text>
           <Text fontSize="13px" color="#64748B" lineHeight="1.5">
@@ -154,10 +178,10 @@ export default function TutupBukuPage() {
 
         {/* Step 4 */}
         <VStack align="flex-start" gap={3}>
-          <Box bg="#2563EB" p={2.5} borderRadius="xl" color="white" display="inline-flex">
+          <Box bg="#2563EB" className="tb-icon" p={2.5} borderRadius="xl" color="white" display="inline-flex">
             <TrendUp size={24} weight="bold" />
           </Box>
-          <Text fontWeight="600" fontSize="15px" color="#0F172A">
+          <Text className="tb-muted" fontWeight="600" fontSize="15px" color="#0F172A">
             4. Tinjau laporan keuangan
           </Text>
           <Text fontSize="13px" color="#64748B" lineHeight="1.5">
@@ -167,16 +191,16 @@ export default function TutupBukuPage() {
       </SimpleGrid>
 
       {/* Divider & Footer Learn More Link */}
-      <Box borderBottom="1px solid #E2E8F0" mb={8} />
+      <Box className="tb-divider" borderBottom="1px solid #E2E8F0" mb={8} />
 
       <Box textAlign="center" pb={8}>
         <Text fontSize="13px" color="#64748B">
           Pelajari lebih lanjut tentang{" "}
-          <span style={{ color: "#2563EB", cursor: "pointer", textDecoration: "none" }} onClick={() => setModalType("kunci")}>
+          <span className="tb-link" style={{ color: "#2563EB", cursor: "pointer", textDecoration: "none" }} onClick={() => setModalType("kunci")}>
             kunci periode
           </span>{" "}
           dan{" "}
-          <span style={{ color: "#2563EB", cursor: "pointer", textDecoration: "none" }} onClick={() => setModalType("tutup")}>
+          <span className="tb-link" style={{ color: "#2563EB", cursor: "pointer", textDecoration: "none" }} onClick={() => setModalType("tutup")}>
             tutup buku
           </span>
         </Text>
@@ -189,11 +213,11 @@ export default function TutupBukuPage() {
           display="flex" alignItems="center" justifyContent="center" p={4}
           onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
         >
-          <Box bg="white" borderRadius="2xl" shadow="2xl" w="full" maxW="460px" p={6}>
+          <Box bg="white" borderRadius="2xl" className="tb-modal" shadow="2xl" w="full" maxW="460px" p={6}>
             <Flex align="center" justify="space-between" mb={4}>
               <HStack gap={2}>
-                {modalType === "kunci" ? <LockKey size={22} color="#2563EB" /> : <BookOpen size={22} color="#2563EB" />}
-                <Text fontWeight="bold" fontSize="lg" color="#0F172A">
+                {modalType === "kunci" ? <LockKey size={22} color="#2563EB" className="tb-icon-key"/> : <BookOpen size={22} color="#2563EB" className="tb-icon-key"/>}
+                <Text className="tb-title" fontWeight="bold" fontSize="lg" color="#0F172A">
                   {modalType === "kunci" ? "Kunci Periode Transaksi" : "Proses Tutup Buku Total"}
                 </Text>
               </HStack>
@@ -233,6 +257,7 @@ export default function TutupBukuPage() {
                     Periode (Bulan & Tahun)
                   </Text>
                   <Input
+                    className="tb-input"
                     type="month"
                     value={selectedMonth}
                     onChange={(e) => setSelectedMonth(e.target.value)}
@@ -243,10 +268,11 @@ export default function TutupBukuPage() {
                 </Box>
 
                 <Flex gap={3} pt={2}>
-                  <Button flex={1} variant="outline" borderColor="#CBD5E1" onClick={closeModal} borderRadius="lg">
+                  <Button className="tb-btn-outline" flex={1} variant="outline" borderColor="#CBD5E1" onClick={closeModal} borderRadius="lg">
                     Batal
                   </Button>
                   <Button
+                    className="tb-btn"
                     flex={1} bg="#2563EB" color="white" _hover={{ bg: "#1D4ED8" }}
                     onClick={handleProcess} borderRadius="lg" fontWeight="semibold"
                   >
@@ -258,6 +284,52 @@ export default function TutupBukuPage() {
           </Box>
         </Box>
       )}
+      <style>{`
+        /* Sembunyikan scrollbar (Chrome/Safari/Edge, Firefox, IE) */
+        html, body, .tb-root, .tb-root * {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        html::-webkit-scrollbar,
+        body::-webkit-scrollbar,
+        .tb-root::-webkit-scrollbar,
+        .tb-root *::-webkit-scrollbar {
+          display: none;
+          width: 0;
+          height: 0;
+        }
+
+        /* Dark mode */
+        .tb-dark { color-scheme: dark; }
+        .tb-dark .tb-title { color: #ffffff !important; }
+        .tb-dark .tb-title2 { color: #ffffff !important; }
+        .tb-dark .tb-text { color: #e2e8f0 !important; }
+        .tb-dark .tb-muted { color: #94a3b8 !important; }
+        .tb-dark .tb-divider { border-color: #634f27 !important; }
+        .tb-dark .tb-link { color: #E5B85C !important; }
+        .tb-dark .tb-icon-key { fill: #E5B85C !important; }
+        .tb-dark .tb-icon { background-color: #E5B85C !important; color: #121212 !important; }
+        .tb-dark .tb-btn-outline {
+          background-color: transparent !important;
+          border-color: #634f27 !important;
+          color: #E5B85C !important;
+        }
+        .tb-dark .tb-btn-outline:hover { background-color: #2d2d2d !important; }
+        .tb-dark .tb-btn { background-color: #E5B85C !important; color: #121212 !important; }
+        .tb-dark .tb-btn:hover { background-color: #f0c978 !important; }
+        .tb-dark .tb-modal {
+          background-color: #1a1a1a !important;
+          border: 1px solid #634f27;
+        }
+        .tb-dark .tb-modal svg { color: #E5B85C; }
+        .tb-dark .tb-input {
+          background-color: #262626 !important;
+          color: #f1f5f9 !important;
+          border-color: #634f27 !important;
+        }
+        .tb-dark .tb-input:focus { border-color: #E5B85C !important; }
+        .tb-dark .tb-img { opacity: 0.9; }
+      `}</style>
     </Box>
   );
 }

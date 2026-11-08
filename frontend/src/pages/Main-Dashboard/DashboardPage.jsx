@@ -549,9 +549,9 @@ const isDark = themeMode === "dark";
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-3.5">
               {/* Belum dibayar */}
-              <div className="border border-amber-300 rounded overflow-hidden">
+              <div className="border border-amber-300 rounded transition-transform transform-gpu duration-300 ease-in-out hover:scale-[1.01] hover:shadow-lg overflow-hidden">
                 <div className="bg-amber-50 px-3 py-1.5 flex items-center justify-between border-b border-amber-100">
                   <span className="text-xs font-semibold text-slate-700">Belum dibayar</span>
                   <span className="bg-amber-500 text-white rounded-full text-[10px] font-bold w-4 h-4 flex items-center justify-center">
@@ -567,8 +567,8 @@ const isDark = themeMode === "dark";
                 </div>
               </div>
               {/* Telat dibayar */}
-              <div className="border border-red-300 rounded overflow-hidden">
-                <div className="bg-red-50 px-3 py-1.5 flex items-center justify-between border-b border-red-100">
+              <div className="border border-red-300 rounded transition-transform transform-gpu duration-300 ease-in-out hover:scale-[1.01] hover:shadow-lg overflow-hidden">
+                <div className="bg-red-50 px-3 py-1.5 flex items-center justify-between border-b border-red-100 ">
                   <span className="text-xs font-semibold text-slate-700">Telat dibayar</span>
                   <span className="bg-red-600 text-white rounded-full text-[10px] font-bold w-4 h-4 flex items-center justify-center">
                     {stats?.lost_count || 0}
@@ -585,7 +585,7 @@ const isDark = themeMode === "dark";
             </div>
 
             {/* Lunas Full Width Subcard */}
-            <div className="border border-emerald-300 rounded overflow-hidden">
+            <div className="border border-emerald-300 rounded transition-transform transform-gpu duration-300 ease-in-out hover:scale-[1.01] hover:shadow-lg overflow-hidden">
               <div className="bg-emerald-50 px-3 py-1.5 flex items-center justify-between border-b border-emerald-100">
                 <span className="text-xs font-semibold text-slate-700">Lunas</span>
                 <span className="bg-emerald-600 text-white rounded-full text-[10px] font-bold w-4 h-4 flex items-center justify-center">
@@ -629,7 +629,7 @@ const isDark = themeMode === "dark";
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
               {/* Belum dibayar */}
-              <div className="border border-amber-300 rounded overflow-hidden">
+              <div className="border border-amber-300 rounded transition-transform transform-gpu duration-300 ease-in-out hover:scale-[1.01] hover:shadow-lg overflow-hidden">
                 <div className="bg-amber-50 px-3 py-1.5 flex items-center justify-between border-b border-amber-100">
                   <span className="text-xs font-semibold text-slate-700">Belum dibayar</span>
                   <span className="bg-amber-500 text-white rounded-full text-[10px] font-bold w-4 h-4 flex items-center justify-center">0</span>
@@ -643,7 +643,7 @@ const isDark = themeMode === "dark";
                 </div>
               </div>
               {/* Telat dibayar */}
-              <div className="border border-red-300 rounded overflow-hidden">
+              <div className="border border-red-300 rounded transition-transform transform-gpu duration-300 ease-in-out hover:scale-[1.01] hover:shadow-lg overflow-hidden">
                 <div className="bg-red-50 px-3 py-1.5 flex items-center justify-between border-b border-red-100">
                   <span className="text-xs font-semibold text-slate-700">Telat dibayar</span>
                   <span className="bg-red-600 text-white rounded-full text-[10px] font-bold w-4 h-4 flex items-center justify-center">0</span>
@@ -659,7 +659,7 @@ const isDark = themeMode === "dark";
             </div>
 
             {/* Lunas Full Width Subcard */}
-            <div className="border border-emerald-300 rounded overflow-hidden">
+            <div className="border border-emerald-300 rounded transition-transform transform-gpu duration-300 ease-in-out hover:scale-[1.01] hover:shadow-lg overflow-hidden">
               <div className="bg-emerald-50 px-3 py-1.5 flex items-center justify-between border-b border-emerald-100">
                 <span className="text-xs font-semibold text-slate-700">Lunas</span>
                 <span className="bg-emerald-600 text-white rounded-full text-[10px] font-bold w-4 h-4 flex items-center justify-center">0</span>
