@@ -190,6 +190,81 @@ class MemberViewSet(viewsets.ModelViewSet):
         return Response({"detail": "Kepemilikan berhasil dialihkan."})
 
 
+class AccountMappingViewSet(viewsets.ModelViewSet):
+    serializer_class = AccountMappingSerializer
+    permission_classes = [SettingsPermission]
+    settings_feature = "Account Mapping"
+
+    def get_queryset(self):
+        company = self.request.user.company
+        if company is None:
+            return AccountMapping.objects.none()
+        return AccountMapping.objects.filter(company=company)
+
+    def perform_create(self, serializer):
+        serializer.save(company=self.request.user.company)
+
+    @action(detail=False, methods=["get"])
+    def options(self, request):
+        company = request.user.company
+        if company is None:
+            return Response({"accounts": []})
+        accounts = AccountCOA.objects.filter(company=company).order_by("kode_akun")
+        return Response(
+            {
+                "accounts": [
+                    {
+                        "code": account.kode_akun,
+                        "name": account.nama_akun,
+                        "category": account.kategori_akun,
+                        "label": (
+                            f"({account.kode_akun}) - {account.nama_akun} "
+                            f"({account.kategori_akun})"
+                        ),
+                    }
+                    for account in accounts
+                ]
+            }
+        )
+
+    @action(detail=False, methods=["put"], url_path="bulk")
+    def bulk(self, request):
+        entries = request.data.get("mappings")
+        if not isinstance(entries, list):
+            raise ValidationError({"mappings": "Data mapping harus berupa list."})
+
+        company = request.user.company
+        if company is None:
+            raise ValidationError({"detail": "Company pengguna tidak ditemukan."})
+
+        serializer = AccountMappingSerializer(data=entries, many=True, context={"request": request, "bulk": True})
+        serializer.is_valid(raise_exception=True)
+
+        saved = []
+        seen = set()
+        with transaction.atomic():
+            for item in serializer.validated_data:
+                target_type = item.get("target_type") or "company"
+                key = (item["account_type"], target_type, item["target_id"])
+                if key in seen:
+                    raise ValidationError(
+                        {"mappings": "Target mapping tidak boleh duplikat."}
+                    )
+                seen.add(key)
+                obj, _created = AccountMapping.objects.update_or_create(
+                    company=company,
+                    account_type=item["account_type"],
+                    target_type=target_type,
+                    target_id=item["target_id"],
+                    defaults={
+                        "account_code": item["account_code"],
+                        "account_name": item["account_name"],
+                        "is_active": item.get("is_active", True),
+                        "mapping_options": item.get("mapping_options"),
+                    },
+                )
+                saved.append(obj)
+        return Response(AccountMappingSerializer(saved, many=True, context={"request": request}).data)
 
 
 
