@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   CaretDown,
   Check,
@@ -9,7 +9,8 @@ import {
   X,
 } from "@phosphor-icons/react";
 import Pagination from "@/components/ui/Pagination";
-import PopoverSelect from "@/components/ui/PopoverSelect";
+import PopoverSelect, { useOutsideClose } from "@/components/ui/PopoverSelect";
+import { DropdownPanel } from "@/components/ui/PopoverSelect";
 import MultiSelect from "@/components/ui/MultiSelect";
 import {
   tableWrapper,
@@ -37,34 +38,14 @@ import {
   approvalTransactionTypes,
   approvalApproverTypes,
   approvalCriteriaOptions,
-  dummyApprovalRules,
-  dummyApprovalChangelogs,
-  dummyCustomers,
 } from "@/data/ruleData";
-import { dummyUsers } from "@/data/dummy";
+import { useApprovalRules } from "@/services/useSetting";
 
 const PAGE_SIZE = 5;
 const MAX_APPROVAL_STEPS = 4;
 const RULE_NAME_MAX = 60;
 const DESCRIPTION_MAX = 200;
 
-function useOutsideClose() {
-  const ref = useRef(null);
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    const handleClick = (event) => {
-      if (ref.current && !ref.current.contains(event.target)) {
-        setOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
-
-  return { ref, open, setOpen };
-}
 
 const formatAmount = (value) =>
   new Intl.NumberFormat("id-ID", {
@@ -121,6 +102,7 @@ function TransactionTypeSelect({
   return (
     <div className="flex flex-col gap-2.5">
       <PopoverSelect
+        floating
         value={group}
         placeholder="Select transaction type"
         groups={[{ label: "", options: groupOptions }]}
@@ -128,6 +110,7 @@ function TransactionTypeSelect({
       />
       {group && subOptions.length > 0 && (
         <PopoverSelect
+          floating
           value={type}
           placeholder="Select transaction type"
           groups={[{ label: group, options: subOptions }]}
@@ -138,7 +121,7 @@ function TransactionTypeSelect({
   );
 }
 
-function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
+function ApprovalRuleForm({ initialRule, users, customers, onSubmit, onClose }) {
   const [ruleName, setRuleName] = useState(initialRule?.ruleName || "");
   const [description, setDescription] = useState(initialRule?.description || "");
   const [transactionGroup, setTransactionGroup] = useState(
@@ -169,18 +152,13 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
   const [steps, setSteps] = useState(
     initialRule?.levels || [{ approverType: "All must approve", approvers: [] }]
   );
-  const [showCriteriaPopover, setShowCriteriaPopover] = useState(false);
-  const criteriaRef = useRef(null);
-
-  useEffect(() => {
-    const handleClick = (event) => {
-      if (criteriaRef.current && !criteriaRef.current.contains(event.target)) {
-        setShowCriteriaPopover(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
+  const {
+    ref: criteriaRef,
+    menuRef: criteriaMenuRef,
+    open: showCriteriaPopover,
+    setOpen: setShowCriteriaPopover,
+  } = useOutsideClose();
+  const criteriaButtonRef = useRef(null);
 
   const submit = (event) => {
     event.preventDefault();
@@ -218,19 +196,6 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
       )
     );
 
-  const toggleStepApprover = (index, user) =>
-    setSteps((current) =>
-      current.map((step, idx) => {
-        if (idx !== index) return step;
-        const exists = step.approvers.includes(user);
-        return {
-          ...step,
-          approvers: exists
-            ? step.approvers.filter((item) => item !== user)
-            : [...step.approvers, user],
-        };
-      })
-    );
 
   const addApproverToStep = (index) =>
     setSteps((current) =>
@@ -448,9 +413,10 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
               <div className="mt-3">
                 <span className={formLabel}>Select user</span>
                 <MultiSelect
+                  floating
                   selected={createdByUsers}
                   onToggle={toggleCreatedByUser}
-                  options={dummyUsers.map((user) => user.username)}
+                  options={users.map((user) => user.username)}
                   placeholder="Select user"
                 />
               </div>
@@ -489,9 +455,10 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
                 <div className="mt-3">
                   <span className={formLabel}>Select customer</span>
                   <MultiSelect
+                    floating
                     selected={createdForCustomers}
                     onToggle={toggleCreatedForCustomer}
-                    options={dummyCustomers.map((customer) => customer.name)}
+                    options={customers.map((customer) => customer.name)}
                     placeholder="Select customer"
                   />
                 </div>
@@ -600,12 +567,21 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
               <button
                 type="button"
                 className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-dashed border-gray-300 bg-white px-3 py-2 text-[13px] font-semibold text-gray-700 transition-colors hover:bg-slate-50"
+                ref={criteriaButtonRef}
                 onClick={() => setShowCriteriaPopover((current) => !current)}
               >
                 <Plus size={14} /> Add criteria
               </button>
               {showCriteriaPopover && (
-                <div className="absolute left-0 top-full z-30 mt-1 w-full max-w-[340px] overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+                <DropdownPanel
+                  rect={criteriaButtonRef.current?.getBoundingClientRect()}
+                  triggerRef={criteriaButtonRef}
+                  contentRef={criteriaMenuRef}
+                  onClose={() => setShowCriteriaPopover(false)}
+                  width={340}
+                  variant="settings"
+                  className="rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
+                >
                   {approvalCriteriaOptions
                     .filter((option) => !criteria.includes(option.value))
                     .map((option) => (
@@ -628,7 +604,7 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
                       All criteria have been added.
                     </p>
                   )}
-                </div>
+                </DropdownPanel>
               )}
             </div>
           </div>
@@ -702,10 +678,11 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
                     >
                       <div className="flex-1">
                         <PopoverSelect
+                          floating
                           value={user}
                           placeholder="Select approver"
                           groups={[
-                            { label: "", options: dummyUsers.map((item) => item.username) },
+                            { label: "", options: users.map((item) => item.username) },
                           ]}
                           onSelect={(value) =>
                             setStepApprover(index, position, value)
@@ -817,13 +794,15 @@ function DeleteApprovalModal({ onConfirm, onClose }) {
   );
 }
 
-function ChangelogModal({ onClose }) {
+function ChangelogModal({ rule, onClose }) {
   const [currentPage, setCurrentPage] = useState(1);
-  const logs = dummyApprovalChangelogs[4] || [];
-  const totalPages = Math.ceil(logs.length / PAGE_SIZE);
+  const [pageSize, setPageSize] = useState(PAGE_SIZE);
+  const logs = rule.changelog || [];
+  const totalPages = Math.max(1, Math.ceil(logs.length / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
   const pageLogs = logs.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE
+    (safePage - 1) * pageSize,
+    safePage * pageSize
   );
 
   return (
@@ -867,11 +846,15 @@ function ChangelogModal({ onClose }) {
           </div>
           <div className="mt-4">
             <Pagination
-              currentPage={currentPage}
+              currentPage={safePage}
               totalPages={totalPages}
               totalItems={logs.length}
-              pageSize={PAGE_SIZE}
+              pageSize={pageSize}
               onPageChange={setCurrentPage}
+              onPageSizeChange={(size) => {
+                setPageSize(size);
+                setCurrentPage(1);
+              }}
             />
           </div>
         </div>
@@ -880,20 +863,16 @@ function ChangelogModal({ onClose }) {
   );
 }
 
-function RuleDetailModal({ rule, onEdit, onDelete, onClose }) {
-  const { ref, open, setOpen } = useOutsideClose();
-  const [showAllUsers, setShowAllUsers] = useState(false);
-  const allUsersRef = useRef(null);
-
-  useEffect(() => {
-    const handleClick = (event) => {
-      if (allUsersRef.current && !allUsersRef.current.contains(event.target)) {
-        setShowAllUsers(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
+function RuleDetailModal({ rule, users, onEdit, onDelete, onClose }) {
+  const { ref, menuRef, open, setOpen } = useOutsideClose();
+  const actionTriggerRef = useRef(null);
+  const {
+    ref: allUsersRef,
+    menuRef: allUsersMenuRef,
+    open: showAllUsers,
+    setOpen: setShowAllUsers,
+  } = useOutsideClose();
+  const allUsersButtonRef = useRef(null);
 
   const criteriaRows = [
     ...(rule.criteria || []).includes("specificValue")
@@ -931,12 +910,22 @@ function RuleDetailModal({ rule, onEdit, onDelete, onClose }) {
               <button
                 type="button"
                 className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-slate-50"
+                ref={actionTriggerRef}
                 onClick={() => setOpen((current) => !current)}
               >
                 Actions <CaretDown size={12} />
               </button>
               {open && (
-                <div className="absolute right-0 top-full z-30 mt-1 w-40 overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+                <DropdownPanel
+                  rect={actionTriggerRef.current?.getBoundingClientRect()}
+                  triggerRef={actionTriggerRef}
+                  contentRef={menuRef}
+                  onClose={() => setOpen(false)}
+                  width={160}
+                  align="right"
+                  variant="settings"
+                  className="rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
+                >
                   <button
                     type="button"
                     className="flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-left text-[13px] text-gray-700 hover:bg-slate-50"
@@ -957,7 +946,7 @@ function RuleDetailModal({ rule, onEdit, onDelete, onClose }) {
                   >
                     <Trash size={14} /> Delete
                   </button>
-                </div>
+                </DropdownPanel>
               )}
             </div>
             <button
@@ -1019,13 +1008,22 @@ function RuleDetailModal({ rule, onEdit, onDelete, onClose }) {
                           <button
                             type="button"
                             className="cursor-pointer border-0 bg-transparent p-0 text-[13px] font-medium text-brand hover:underline"
+                            ref={allUsersButtonRef}
                             onClick={() => setShowAllUsers((current) => !current)}
                           >
                             View all
                           </button>
                           {showAllUsers && (
-                            <div className="absolute left-0 top-full z-30 mt-1 w-[220px] overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
-                              {dummyUsers.map((user) => (
+                            <DropdownPanel
+                              rect={allUsersButtonRef.current?.getBoundingClientRect()}
+                              triggerRef={allUsersButtonRef}
+                              contentRef={allUsersMenuRef}
+                              onClose={() => setShowAllUsers(false)}
+                              width={220}
+                              variant="settings"
+                              className="rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
+                            >
+                              {users.map((user) => (
                                 <p
                                   key={user.id}
                                   className="m-0 cursor-pointer px-4 py-2 text-[13px] text-gray-700 hover:bg-slate-50"
@@ -1033,7 +1031,7 @@ function RuleDetailModal({ rule, onEdit, onDelete, onClose }) {
                                   {displayName(user.username)}
                                 </p>
                               ))}
-                            </div>
+                            </DropdownPanel>
                           )}
                         </div>
                       </div>
@@ -1145,6 +1143,7 @@ function ActionsMenu({
   onDelete,
   onChangelog,
 }) {
+  const triggerRef = useRef(null);
   const isOpen = openActionId === rule.id;
 
   return (
@@ -1152,12 +1151,21 @@ function ActionsMenu({
       <button
         type="button"
         className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-slate-50"
+        ref={triggerRef}
         onClick={() => setOpenActionId(isOpen ? null : rule.id)}
       >
         Actions <CaretDown size={12} />
       </button>
       {isOpen && (
-        <div className="absolute right-0 top-full z-20 mt-1 w-44 overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+        <DropdownPanel
+          rect={triggerRef.current?.getBoundingClientRect()}
+          triggerRef={triggerRef}
+          onClose={() => setOpenActionId(null)}
+          width={176}
+          align="right"
+          variant="settings"
+          className="rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
+        >
           <button
             type="button"
             className="flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-left text-[13px] text-gray-700 hover:bg-slate-50"
@@ -1188,14 +1196,15 @@ function ActionsMenu({
           >
             <Clock size={14} /> View changelog
           </button>
-        </div>
+        </DropdownPanel>
       )}
     </div>
   );
 }
 
 export default function ApprovalRulesPage() {
-  const [rules, setRules] = useState(dummyApprovalRules);
+  const { rules, options, loading, error, create, update, remove } =
+    useApprovalRules();
   const [filterType, setFilterType] = useState("");
   const [searchName, setSearchName] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -1205,6 +1214,7 @@ export default function ApprovalRulesPage() {
   const [detailRule, setDetailRule] = useState(null);
   const [openActionId, setOpenActionId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(PAGE_SIZE);
 
   const filtered = rules.filter((rule) => {
     const matchType = filterType ? rule.transactionType === filterType : true;
@@ -1214,10 +1224,11 @@ export default function ApprovalRulesPage() {
     return matchType && matchName;
   });
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
   const pageItems = filtered.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE
+    (safePage - 1) * pageSize,
+    safePage * pageSize
   );
 
   const stamp = () =>
@@ -1229,29 +1240,40 @@ export default function ApprovalRulesPage() {
       minute: "2-digit",
     });
 
-  const handleSubmit = (values) => {
-    if (editingRule) {
-      setRules((current) =>
-        current.map((rule) =>
-          rule.id === editingRule.id
-            ? { ...rule, ...values, lastEdited: stamp(), lastEditedBy: "Fathan Hilmi" }
-            : rule
-        )
-      );
+  const handleSubmit = async (values) => {
+    const change = {
+      changeTime: stamp(),
+      user: "Anda",
+      action: editingRule ? "Edit" : "Create",
+      description: editingRule ? "Updated approval rule" : "Created approval rule",
+    };
+    const payload = {
+      ...values,
+      lastEdited: change.changeTime,
+      lastEditedBy: change.user,
+      changelog: [...(editingRule?.changelog || []), change],
+    };
+    try {
+      if (editingRule) {
+        await update(editingRule.id, payload);
+      } else {
+        await create(payload);
+      }
       setEditingRule(null);
-    } else {
-      setRules((current) => [
-        ...current,
-        { id: Date.now(), ...values, lastEdited: stamp(), lastEditedBy: "Fathan Hilmi" },
-      ]);
+      setShowForm(false);
+    } catch (requestError) {
+      window.alert(requestError.response?.data?.detail || "Gagal menyimpan approval rule.");
     }
-    setShowForm(false);
   };
 
-  const handleDelete = () => {
-    setRules((current) => current.filter((rule) => rule.id !== deletingRule.id));
-    setDeletingRule(null);
-    setCurrentPage((page) => Math.max(1, page));
+  const handleDelete = async () => {
+    try {
+      await remove(deletingRule.id);
+      setDeletingRule(null);
+      setCurrentPage((page) => Math.max(1, page));
+    } catch (requestError) {
+      window.alert(requestError.response?.data?.detail || "Gagal menghapus approval rule.");
+    }
   };
 
   return (
@@ -1272,9 +1294,16 @@ export default function ApprovalRulesPage() {
         </button>
       </div>
 
+      {(error || loading) && (
+        <p className="m-0 mb-4 text-sm text-slate-500">
+          {loading ? "Memuat approval rules..." : error}
+        </p>
+      )}
+
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="w-full max-w-[240px]">
           <PopoverSelect
+            floating
             value={filterType}
             placeholder="Transaction type"
             groups={approvalTransactionTypes}
@@ -1396,17 +1425,22 @@ export default function ApprovalRulesPage() {
 
       <div className="mt-4">
         <Pagination
-          currentPage={currentPage}
+          currentPage={safePage}
           totalPages={totalPages}
           totalItems={filtered.length}
-          pageSize={PAGE_SIZE}
+          pageSize={pageSize}
           onPageChange={setCurrentPage}
+          onPageSizeChange={(size) => {
+            setPageSize(size);
+            setCurrentPage(1);
+          }}
         />
       </div>
 
       {detailRule && (
         <RuleDetailModal
           rule={detailRule}
+          users={options.users}
           onEdit={(rule) => {
             setDetailRule(null);
             setEditingRule(rule);
@@ -1424,6 +1458,8 @@ export default function ApprovalRulesPage() {
         <div className={modalOverlay}>
           <ApprovalRuleForm
             initialRule={editingRule}
+            users={options.users}
+            customers={options.customers}
             onSubmit={handleSubmit}
             onClose={() => {
               setShowForm(false);
@@ -1441,7 +1477,10 @@ export default function ApprovalRulesPage() {
       )}
 
       {viewingChangelog && (
-        <ChangelogModal rule={viewingChangelog} onClose={() => setViewingChangelog(null)} />
+        <ChangelogModal
+          rule={viewingChangelog}
+          onClose={() => setViewingChangelog(null)}
+        />
       )}
     </div>
   );

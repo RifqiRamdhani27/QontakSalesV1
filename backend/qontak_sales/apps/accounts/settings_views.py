@@ -307,5 +307,38 @@ class BillingViewSet(viewsets.ModelViewSet):
         response["Content-Disposition"] = f'attachment; filename="invoice-{invoice.pk}.html"'
         return response
 
+class ApprovalRuleViewSet(viewsets.ModelViewSet):
+    serializer_class = ApprovalRuleSerializer
+    permission_classes = [SettingsPermission]
+    settings_feature = "Approval Rules"
+
+    def get_queryset(self):
+        company = self.request.user.company
+        if company is None:
+            return ApprovalRule.objects.none()
+        return ApprovalRule.objects.filter(company=company)
+
+    def perform_create(self, serializer):
+        serializer.save(company=self.request.user.company)
+
+    @action(detail=False, methods=["get"])
+    def options(self, request):
+        company = request.user.company
+        customers = (
+            Customer.objects.filter(
+                Q(agent__company=company)
+            ).order_by("name")
+            if company is not None
+            else Customer.objects.none()
+        )
+        return Response(
+            {
+                "users": [user_option(user) for user in company_members(company)],
+                "customers": [
+                    {"id": customer.id, "name": customer.name}
+                    for customer in customers
+                ],
+            }
+        )
 
 
