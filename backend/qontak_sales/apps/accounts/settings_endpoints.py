@@ -55,5 +55,64 @@ class CompanySettingView(APIView):
 
 
 
+class CompanyRoleSerializer(serializers.ModelSerializer):
+    authorities = RoleAuthoritySerializer(many=True, required=False)
+
+    class Meta:
+        model = Role
+        fields = ["id", "code", "name", "description", "is_default", "authorities"]
+        read_only_fields = ["id", "is_default"]
+
+    def to_internal_value(self, data):
+        data = data.copy()
+        if self.instance is None and data.get("code"):
+            data["code"] = f"company_{settings_company(self.context['request']).pk}_{data['code']}"
+        return super().to_internal_value(data)
+
+    def validate_authorities(self, value):
+        keys = [(item["feature"], item["sub_feature"]) for item in value]
+        if len(set(keys)) != len(keys):
+            raise serializers.ValidationError("Authority tidak boleh duplikat.")
+        validate_settings_authorities(self.context["request"].user, value)
+        return value
+
+    def create(self, validated_data):
+        authorities = validated_data.pop("authorities", [])
+        with transaction.atomic():
+            role = Role.objects.create(**validated_data)
+            RoleAuthority.objects.bulk_create([RoleAuthority(role=role, **item) for item in authorities])
+        return role
+
+    def update(self, instance, validated_data):
+        if instance.company_id != settings_company(self.context["request"]).pk or instance.is_default:
+            raise serializers.ValidationError("Role bawaan atau role global tidak dapat diubah.")
+        authorities = validated_data.pop("authorities", None)
+        validated_data.pop("code", None)
+        with transaction.atomic():
+            instance = super().update(instance, validated_data)
+            if authorities is not None:
+                instance.authorities.all().delete()
+                RoleAuthority.objects.bulk_create([RoleAuthority(role=instance, **item) for item in authorities])
+        return instance
 
 
+class CompanyRoleViewSet(viewsets.ModelViewSet):
+    serializer_class = CompanyRoleSerializer
+    permission_classes = [SettingsPermission]
+    settings_feature = "User management: Custom role"
+    settings_role_choices = True
+
+    def get_queryset(self):
+        company = settings_company(self.request)
+        return Role.objects.filter(Q(company=company) | Q(company__isnull=True)).prefetch_related("authorities").order_by("name")
+
+    def perform_create(self, serializer):
+        serializer.save(company=settings_company(self.request), is_default=False)
+
+    def destroy(self, request, *args, **kwargs):
+        role = self.get_object()
+        if role.company_id != settings_company(request).pk or role.is_default:
+            raise ValidationError({"detail": "Role bawaan atau role global tidak dapat dihapus."})
+        if role.users.exists() or role.approval_rules.exists():
+            raise ValidationError({"detail": "Role masih digunakan."})
+        return super().destroy(request, *args, **kwargs)

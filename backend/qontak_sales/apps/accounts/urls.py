@@ -7,19 +7,19 @@ from .views import (
     EmailTokenObtainPairView,
     ProfileView,
     AgentViewSet,
-    MemberViewSet,
     ProductionSettingDetailView,
     RegisterView,
-    RoleViewSet,
 )
 from qontak_sales.apps.customers.views import CustomerViewSet
+from .settings_endpoints import CompanyRoleViewSet
 from .settings_access_views import SettingsAccessView, SettingsAgentViewSet, SettingsCompanyView
+from .settings_views import MemberViewSet as SettingsMemberViewSet
 
 router = DefaultRouter()
 router.register(r"agents", AgentViewSet, basename="agent")
 router.register(r"settings/agents", SettingsAgentViewSet, basename="settings-agent")
-router.register(r"members", MemberViewSet, basename="member")
-router.register(r"roles", RoleViewSet, basename="role")
+router.register(r"members", SettingsMemberViewSet, basename="member")
+router.register(r"roles", CompanyRoleViewSet, basename="role")
 router.register(r"customers", CustomerViewSet, basename="customer")
 
 urlpatterns = [

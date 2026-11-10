@@ -128,10 +128,16 @@ export const customRoleFeatures = [
     ],
   },
   {
+    name: "Other lists",
+    viewOnly: false,
+    subs: ["Chart of Accounts", "Customer", "Product: Unit"],
+  },
+  {
     name: "Setting",
     viewOnly: false,
     subs: [
       "Company setting",
+      "Agents",
       "User management: User list",
       "User management: Custom role",
       "Sales: Form settings",
@@ -139,6 +145,9 @@ export const customRoleFeatures = [
       "Purchase",
       "Product: Good & Services",
       "Product: Warehouse",
+      "Production",
+      "Custom fields",
+      "Billings",
       "Email Template: Sales Invoice",
       "Email Template: Sales Quote",
       "Email Template: Sales Order",
