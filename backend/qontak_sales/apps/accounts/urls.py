@@ -12,7 +12,7 @@ from .views import (
 from qontak_sales.apps.customers.views import CustomerViewSet
 from .settings_endpoints import CompanyProductionSettingView, CompanyRoleViewSet, InvoiceReminderIntervalViewSet, InvoiceReminderView, ProductBatchReminderListView, ProductSettingView, PurchaseSettingView, SalesFormSettingView
 from .settings_access_views import SettingsAccessView, SettingsAgentViewSet, SettingsCompanyView
-from .settings_views import AcceptInvitationView, AccountMappingViewSet, ApprovalRuleViewSet, BillingViewSet, InvitationDetailView, MemberViewSet as SettingsMemberViewSet
+from .settings_views import AcceptInvitationView, AccountMappingViewSet, ApprovalRuleViewSet, BillingViewSet, CustomFieldViewSet, InvitationDetailView, MemberViewSet as SettingsMemberViewSet
 
 router = DefaultRouter()
 router.register(r"agents", AgentViewSet, basename="agent")
@@ -23,6 +23,7 @@ router.register(r"customers", CustomerViewSet, basename="customer")
 router.register(r"account-mappings", AccountMappingViewSet, basename="account-mapping")
 router.register(r"approval-rules", ApprovalRuleViewSet, basename="approval-rule")
 router.register(r"billings", BillingViewSet, basename="billing")
+router.register(r"custom-fields", CustomFieldViewSet, basename="custom-field")
 router.register(r"sales/invoice-reminder/intervals", InvoiceReminderIntervalViewSet, basename="invoice-reminder-interval")
 
 urlpatterns = [

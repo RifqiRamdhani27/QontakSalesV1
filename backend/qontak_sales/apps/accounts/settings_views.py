@@ -190,6 +190,91 @@ class MemberViewSet(viewsets.ModelViewSet):
             current.save(update_fields=["role"])
         return Response({"detail": "Kepemilikan berhasil dialihkan."})
 
+class CustomFieldViewSet(viewsets.ModelViewSet):
+    settings_feature = "Custom fields"
+    def create(self, request, *args, **kwargs):
+        if request.user.company_id is None:
+            raise ValidationError({"detail": "Company pengguna tidak ditemukan."})
+        with transaction.atomic():
+            Company.objects.select_for_update().get(pk=request.user.company_id)
+            return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        with transaction.atomic():
+            Company.objects.select_for_update().get(pk=request.user.company_id)
+            return super().update(request, *args, **kwargs)
+
+    serializer_class = CustomFieldSerializer
+    permission_classes = [SettingsPermission]
+
+    def get_queryset(self):
+        company = self.request.user.company
+        if company is None:
+            return CustomField.objects.none()
+        queryset = CustomField.objects.filter(company=company)
+        params = self.request.query_params
+        status_value = params.get("status")
+        if status_value in dict(CustomField.STATUS_CHOICES):
+            queryset = queryset.filter(status=status_value)
+        for_page = params.get("for_page")
+        if for_page:
+            queryset = queryset.filter(page=for_page)
+        for_sub_page = params.get("for_sub_page")
+        if for_sub_page:
+            if connection.vendor == "sqlite":
+                queryset = queryset.filter(pk__in=[field.pk for field in queryset if for_sub_page in field.sub_pages])
+            else:
+                queryset = queryset.filter(sub_pages__contains=[for_sub_page])
+        search = params.get("search", "").strip()
+        if search:
+            queryset = queryset.filter(name__icontains=search)
+        return queryset
+
+    def perform_create(self, serializer):
+        company = self.request.user.company
+        last_order = CustomField.objects.filter(company=company).aggregate(
+            last=Max("sort_order")
+        )["last"]
+        serializer.save(company=company, sort_order=(last_order or 0) + 1)
+
+    def destroy(self, request, *args, **kwargs):
+        field = self.get_object()
+        if field.status != "deleted":
+            field.status = "deleted"
+            field.save(update_fields=["status", "updated_at"])
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=["get"])
+    def quota(self, request):
+        company = request.user.company
+        used = (
+            CustomField.objects.filter(company=company).exclude(status="deleted").count()
+            if company
+            else 0
+        )
+        return Response({"quota": CustomField.QUOTA, "used": used})
+
+    @action(detail=False, methods=["post"])
+    def reorder(self, request):
+        serializer = CustomFieldReorderSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        ids = serializer.validated_data["ids"]
+        fields = {
+            field.id: field
+            for field in CustomField.objects.filter(
+                company=request.user.company, id__in=ids
+            ).exclude(status="deleted")
+        }
+        if len(fields) != len(ids):
+            raise ValidationError({"ids": "Custom field tidak ditemukan."})
+        positions = sorted(field.sort_order for field in fields.values())
+        ordered = []
+        for position, field_id in zip(positions, ids):
+            field = fields[field_id]
+            field.sort_order = position
+            ordered.append(field)
+        CustomField.objects.bulk_update(ordered, ["sort_order"])
+        return Response(self.get_serializer(ordered, many=True).data)
 
 class AccountMappingViewSet(viewsets.ModelViewSet):
     serializer_class = AccountMappingSerializer
