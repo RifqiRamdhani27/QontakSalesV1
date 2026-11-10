@@ -49,6 +49,7 @@ class Company(models.Model):
 
 
 class Role(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, null=True, blank=True, related_name="setting_roles")
     code = models.CharField(max_length=50, unique=True)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, default="")
@@ -124,6 +125,7 @@ class CustomUser(AbstractUser):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="active")
     type = models.CharField(max_length=10, choices=TYPE_CHOICES, default="member")
     access_time_limit = models.CharField(max_length=255, blank=True, default="")
+    role_config = models.JSONField(default=dict, blank=True)
 
     def __str__(self):
         return f"{self.get_full_name()} ({self.role})"
@@ -133,3 +135,6 @@ class CustomUser(AbstractUser):
         if self.avatar:
             return self.avatar.url
         return None
+
+
+from .settings_models import AccountMapping, ApprovalRule, Billing, CompanyProductionSetting, CustomField, Invitation, InvoiceReminder, InvoiceReminderInterval, ProductBatchReminder, ProductSetting, PurchaseSetting, SalesFormSetting, TaggingRule, TemplateSetting

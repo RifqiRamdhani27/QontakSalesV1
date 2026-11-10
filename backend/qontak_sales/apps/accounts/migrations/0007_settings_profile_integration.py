@@ -1,0 +1,267 @@
+import django.core.validators
+import django.db.models.deletion
+from django.conf import settings
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('accounts', '0006_alter_customuser_access_time_limit'),
+        ('customers', '0002_customer_city_customer_district_customer_postal_code_and_more'),
+    ]
+
+    operations = [
+        migrations.AddField(
+            model_name='customuser',
+            name='role_config',
+            field=models.JSONField(blank=True, default=dict),
+        ),
+        migrations.AddField(
+            model_name='role',
+            name='company',
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='setting_roles', to='accounts.company'),
+        ),
+        migrations.CreateModel(
+            name='ApprovalRule',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(max_length=255)),
+                ('description', models.TextField(blank=True, default='')),
+                ('rule_type', models.CharField(choices=[('amount_based', 'Amount Based'), ('role_based', 'Role Based'), ('user_based', 'User Based'), ('workflow', 'Workflow')], max_length=50)),
+                ('amount_threshold', models.DecimalField(blank=True, decimal_places=2, max_digits=15, null=True)),
+                ('is_active', models.BooleanField(default=True)),
+                ('condition', models.JSONField(blank=True, null=True)),
+                ('notification_template', models.TextField(blank=True, default='')),
+                ('approver_role', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='approval_rules', to='accounts.role')),
+                ('approver_user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='approval_rules', to=settings.AUTH_USER_MODEL)),
+                ('company', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='approval_rules', to='accounts.company')),
+            ],
+            options={
+                'ordering': ['name'],
+            },
+        ),
+        migrations.CreateModel(
+            name='Billing',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('invoice_number', models.CharField(max_length=100, unique=True)),
+                ('invoice_date', models.DateField()),
+                ('due_date', models.DateField()),
+                ('amount', models.DecimalField(decimal_places=2, max_digits=15)),
+                ('tax_amount', models.DecimalField(decimal_places=2, default=0, max_digits=15)),
+                ('total_amount', models.DecimalField(decimal_places=2, default=0, max_digits=15)),
+                ('status', models.CharField(choices=[('draft', 'Draft'), ('sent', 'Sent'), ('paid', 'Paid'), ('overdue', 'Overdue'), ('canceled', 'Canceled')], default='draft', max_length=20)),
+                ('payment_method', models.CharField(blank=True, choices=[('cash', 'Cash'), ('bank_transfer', 'Bank Transfer'), ('credit_card', 'Credit Card'), ('check', 'Check'), ('online', 'Online Payment')], default='', max_length=50)),
+                ('billing_period', models.CharField(max_length=100)),
+                ('notes', models.TextField(blank=True, default='')),
+                ('paid_at', models.DateTimeField(blank=True, null=True)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+                ('customer', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='billings', to='accounts.company')),
+            ],
+            options={
+                'ordering': ['-invoice_date'],
+            },
+        ),
+        migrations.CreateModel(
+            name='CompanyProductionSetting',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('production_plan_date_mode', models.CharField(choices=[('required', 'required'), ('optional', 'optional'), ('hidden', 'hidden')], default='required', max_length=10)),
+                ('allow_backdated_plan_date', models.BooleanField(default=False)),
+                ('allow_partial_production', models.BooleanField(default=False)),
+                ('company', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='production_settings', to='accounts.company')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Invitation',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('token_hash', models.CharField(max_length=64, unique=True)),
+                ('expires_at', models.DateTimeField()),
+                ('accepted_at', models.DateTimeField(blank=True, null=True)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='sent_invitations', to=settings.AUTH_USER_MODEL)),
+                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='invitation', to=settings.AUTH_USER_MODEL)),
+            ],
+            options={
+                'ordering': ['-created_at'],
+            },
+        ),
+        migrations.CreateModel(
+            name='InvoiceReminder',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('is_enabled', models.BooleanField(default=False)),
+                ('invoice_type', models.CharField(choices=[('sales_invoice', 'Invoice penjualan'), ('sales_order', 'Pesanan penjualan'), ('both', 'Keduanya')], default='sales_invoice', max_length=20)),
+                ('exempt_by_amount', models.BooleanField(default=False)),
+                ('exempt_amount_under', models.DecimalField(blank=True, decimal_places=2, max_digits=18, null=True)),
+                ('exempt_by_customer', models.BooleanField(default=False)),
+                ('exempt_by_invoice', models.BooleanField(default=False)),
+                ('exempt_by_order', models.BooleanField(default=False)),
+                ('company', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='invoice_reminders', to='accounts.company')),
+                ('exempt_customers', models.ManyToManyField(blank=True, related_name='exempt_from_reminders', to='customers.customer')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='ProductBatchReminder',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('title', models.CharField(max_length=40)),
+                ('interval_value', models.PositiveIntegerField(default=1, validators=[django.core.validators.MinValueValidator(1)])),
+                ('interval_unit', models.CharField(choices=[('day', 'Hari'), ('week', 'Minggu'), ('month', 'Bulan')], default='day', max_length=10)),
+                ('timing', models.CharField(choices=[('before_expiration', 'Sebelum kedaluwarsa'), ('after_expiration', 'Sesudah kedaluwarsa')], default='before_expiration', max_length=20)),
+                ('email_subject', models.CharField(blank=True, default='', max_length=255)),
+                ('email_body', models.TextField(blank=True, default='')),
+                ('company', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='product_batch_reminders', to='accounts.company')),
+            ],
+            options={
+                'ordering': ['id'],
+            },
+        ),
+        migrations.CreateModel(
+            name='ProductSetting',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('inventory_costing_method', models.CharField(choices=[('average', 'Average cost')], default='average', max_length=20)),
+                ('show_stock_info', models.BooleanField(default=False)),
+                ('enable_barcode', models.BooleanField(default=False)),
+                ('use_product_variant', models.BooleanField(default=False)),
+                ('enable_serial_number_tracking', models.BooleanField(default=True)),
+                ('enable_batch_tracking', models.BooleanField(default=True)),
+                ('enable_storage_location', models.BooleanField(default=False)),
+                ('company', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='product_settings', to='accounts.company')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='PurchaseSetting',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('preferred_purchase_term', models.CharField(choices=[('net_15', 'Net 15'), ('net_30', 'Net 30'), ('net_60', 'Net 60'), ('cod', 'Cash On Delivery'), ('custom', 'Custom')], default='net_30', max_length=20)),
+                ('enable_supplier_in_purchase_request', models.BooleanField(default=False)),
+                ('use_purchase_shipping', models.BooleanField(default=False)),
+                ('use_purchase_discount', models.BooleanField(default=False)),
+                ('use_purchase_discount_per_line', models.BooleanField(default=False)),
+                ('use_purchase_deposit', models.BooleanField(default=False)),
+                ('default_purchase_order_message', models.TextField(blank=True, default='')),
+                ('company', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='purchase_settings', to='accounts.company')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='SalesFormSetting',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('preferred_sales_term', models.CharField(choices=[('net_15', 'Net 15'), ('net_30', 'Net 30'), ('net_60', 'Net 60'), ('cod', 'Cash On Delivery'), ('custom', 'Custom')], default='net_30', max_length=20)),
+                ('use_sales_shipping', models.BooleanField(default=False)),
+                ('use_sales_discount', models.BooleanField(default=False)),
+                ('use_sales_discount_per_line', models.BooleanField(default=False)),
+                ('use_discount_account_per_product', models.BooleanField(default=False)),
+                ('use_sales_deposit', models.BooleanField(default=False)),
+                ('show_profit_margin_on_invoice', models.BooleanField(default=False)),
+                ('block_sale_if_stock_insufficient', models.BooleanField(default=False)),
+                ('lock_price_by_price_rule', models.BooleanField(default=False)),
+                ('default_invoice_message', models.TextField(blank=True, default='')),
+                ('default_delivery_slip_message', models.TextField(blank=True, default='')),
+                ('company', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='sales_form_settings', to='accounts.company')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='TaggingRule',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(max_length=255)),
+                ('description', models.TextField(blank=True, default='')),
+                ('tag_type', models.CharField(choices=[('transaction', 'Transaction'), ('customer', 'Customer'), ('product', 'Product'), ('employee', 'Employee')], max_length=50)),
+                ('transaction_type', models.CharField(max_length=100)),
+                ('tag_mapping', models.JSONField(blank=True, null=True)),
+                ('is_active', models.BooleanField(default=True)),
+                ('default_tag', models.CharField(blank=True, default='', max_length=100)),
+                ('tag_set', models.JSONField(blank=True, null=True)),
+                ('company', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='tagging_rules', to='accounts.company')),
+            ],
+            options={
+                'ordering': ['name'],
+            },
+        ),
+        migrations.CreateModel(
+            name='AccountMapping',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('account_type', models.CharField(choices=[('sales', 'Sales'), ('purchase', 'Purchase'), ('ar_ap', 'AR/AP'), ('inventory', 'Inventory'), ('others', 'Others'), ('bank', 'Bank'), ('cash', 'Cash'), ('credit_card', 'Credit Card'), ('account_receivable', 'Account Receivable'), ('account_payable', 'Account Payable')], max_length=50)),
+                ('target_type', models.CharField(default='company', max_length=100)),
+                ('target_id', models.CharField(max_length=100)),
+                ('account_code', models.CharField(max_length=50)),
+                ('account_name', models.CharField(max_length=255)),
+                ('is_active', models.BooleanField(default=True)),
+                ('mapping_options', models.JSONField(blank=True, null=True)),
+                ('company', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='account_mappings', to='accounts.company')),
+            ],
+            options={
+                'ordering': ['account_type', 'target_id'],
+                'unique_together': {('company', 'account_type', 'target_type', 'target_id')},
+            },
+        ),
+        migrations.CreateModel(
+            name='CustomField',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(max_length=25)),
+                ('page', models.CharField(choices=[('sales', 'Sales'), ('purchases', 'Purchases'), ('products', 'Products'), ('expenses', 'Expenses')], max_length=20)),
+                ('sub_pages', models.JSONField(blank=True, default=list)),
+                ('field_type', models.CharField(choices=[('text', 'Text'), ('number', 'Number'), ('date', 'Date'), ('dropdown', 'Dropdown')], max_length=20)),
+                ('status', models.CharField(choices=[('active', 'Active'), ('inactive', 'Inactive'), ('deleted', 'Deleted')], default='active', max_length=10)),
+                ('is_required', models.BooleanField(default=False)),
+                ('show_in_print', models.BooleanField(default=False)),
+                ('max_chars', models.PositiveIntegerField(blank=True, null=True)),
+                ('use_decimal', models.BooleanField(default=False)),
+                ('affix_type', models.CharField(choices=[('none', 'None'), ('prefix', 'Prefix'), ('suffix', 'Suffix')], default='none', max_length=10)),
+                ('affix_text', models.CharField(blank=True, default='', max_length=30)),
+                ('date_default', models.CharField(choices=[('none', 'Empty'), ('today', 'Today')], default='none', max_length=10)),
+                ('allow_multiple', models.BooleanField(default=False)),
+                ('options', models.JSONField(blank=True, default=list)),
+                ('default_value', models.CharField(blank=True, max_length=100, null=True)),
+                ('sort_order', models.PositiveIntegerField(default=0)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+                ('company', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='custom_fields', to='accounts.company')),
+            ],
+            options={
+                'ordering': ['sort_order', 'id'],
+                'indexes': [models.Index(fields=['company', 'page', 'status'], name='accounts_cu_company_a0229f_idx')],
+            },
+        ),
+        migrations.CreateModel(
+            name='InvoiceReminderInterval',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('days', models.PositiveIntegerField()),
+                ('timing', models.CharField(choices=[('before_due', 'Sebelum jatuh tempo'), ('after_due', 'Sesudah jatuh tempo')], default='before_due', max_length=10)),
+                ('email_subject', models.CharField(max_length=255)),
+                ('email_body', models.TextField()),
+                ('include_pdf', models.BooleanField(default=True)),
+                ('reminder', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='intervals', to='accounts.invoicereminder')),
+            ],
+            options={
+                'ordering': ['timing', 'days'],
+                'constraints': [models.UniqueConstraint(fields=('reminder', 'days', 'timing'), name='settings_invoice_interval_unique')],
+            },
+        ),
+        migrations.CreateModel(
+            name='TemplateSetting',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('key', models.CharField(max_length=50)),
+                ('data', models.JSONField(blank=True, default=dict)),
+                ('signature_image', models.ImageField(blank=True, null=True, upload_to='template_signatures/')),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+                ('company', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='template_settings', to='accounts.company')),
+            ],
+            options={
+                'ordering': ['key'],
+                'unique_together': {('company', 'key')},
+            },
+        ),
+    ]
