@@ -47,6 +47,10 @@ class SalesFormSettingView(CompanySettingView):
     serializer_class = SalesFormSettingSerializer
 
 
+class PurchaseSettingView(CompanySettingView):
+    settings_feature = "Purchase"
+    model = PurchaseSetting
+    serializer_class = PurchaseSettingSerializer
 
 
 
