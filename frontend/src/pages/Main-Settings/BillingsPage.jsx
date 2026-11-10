@@ -1,5 +1,8 @@
 import { useState } from "react";
 
+import { useBillings } from "@/services/useSetting";
+import { extractError } from "@/services/api";
+
 function CardHeading({ title, muted }) {
   return (
     <h3
@@ -44,44 +47,44 @@ function ContactSupportModal({ onClose }) {
   );
 }
 
-const initialBillingHistory = [
-  {
-    payDate: "16/09/2026",
-    period: "16/09/2026 - 23/09/2026",
-    amount: "Rp. 0,00",
-    invoiceAvailable: false,
-  },
-];
-
 export default function BillingsPage() {
-  const [billingHistory] = useState(initialBillingHistory);
+  const { history: billingHistory, company: companyData, overview, loading, error, downloadInvoice } = useBillings();
   const [downloadingIndex, setDownloadingIndex] = useState(null);
   const [showSupportModal, setShowSupportModal] = useState(false);
+  const [downloadError, setDownloadError] = useState("");
 
   const company = {
-    name: "Company Name",
-    status: "Active",
+    name: companyData?.name || "-",
+    status: "-",
   };
 
   const subscription = {
-    name: "Trial Qontak 360",
-    usersUsed: 1,
+    name: "Data paket belum tersedia",
+    usersUsed: overview?.user_count ?? "-",
     usersLimit: "-",
-    partners: 0,
-    daysLeft: 6,
-    expiryDate: "2026-09-23",
+    partners: overview?.partner_count ?? "-",
+    daysLeft: "-",
+    expiryDate: "-",
   };
 
   const billing = {
-    cycle: "-",
-    nextBillingDate: "-",
+    cycle: overview?.billing_period || "-",
+    nextBillingDate: overview?.next_due_date
+      ? new Date(overview.next_due_date).toLocaleDateString("id-ID")
+      : "-",
   };
 
-  const handleDownload = (index) => {
+  const handleDownload = async (index) => {
+    if (downloadingIndex !== null) return;
     setDownloadingIndex(index);
-    setTimeout(() => {
+    setDownloadError("");
+    try {
+      await downloadInvoice(billingHistory[index].id);
+    } catch (requestError) {
+      setDownloadError(extractError(requestError, "Gagal mengunduh invoice."));
+    } finally {
       setDownloadingIndex(null);
-    }, 1200);
+    }
   };
 
   return (
@@ -93,6 +96,14 @@ export default function BillingsPage() {
           <p className="m-0 text-sm font-bold text-red-600">{company.status}</p>
         </div>
       </div>
+
+      {(error || loading) && (
+        <p className="m-0 mb-4 text-sm text-slate-500">
+          {loading ? "Memuat billing..." : error}
+        </p>
+      )}
+
+      {downloadError && <p className="m-0 mb-4 text-sm text-red-600" role="alert">{downloadError}</p>}
 
       <div className="mb-6 grid grid-cols-3 gap-5 max-md:grid-cols-1">
         <div className="rounded-[10px] bg-white p-6 shadow-sm">
@@ -112,12 +123,10 @@ export default function BillingsPage() {
                 Number of days left: </span>
               <span className="m-0 text-xs font-medium font-semibold text-gray-900">{subscription.daysLeft}</span>
             </div>
-            <p className="m-0 text-xs">
-            <div className="flex gap-2">
+            <div className="flex gap-2 text-xs">
               <span className="text-gray-900">Expiry date </span>
               <span className="font-semibold font-semibold text-gray-900">{subscription.expiryDate}</span>
             </div>
-            </p>
           </div>
         </div>
 
@@ -173,27 +182,35 @@ export default function BillingsPage() {
               </tr>
             </thead>
             <tbody>
-              {billingHistory.map((row, index) => (
-                <tr key={index} className="border-b border-slate-100 last:border-b-0">
-                  <td className="px-6 py-3.5 text-sm text-blue-600">{row.payDate}</td>
-                  <td className="px-6 py-3.5 text-sm text-blue-600">{row.period}</td>
-                  <td className="px-6 py-3.5 text-sm text-blue-600">{row.amount}</td>
-                  <td className="px-6 py-3.5 text-sm">
-                    {row.invoiceAvailable ? (
-                      <button
-                        type="button"
-                        className="text-blue-600 hover:underline disabled:opacity-60"
-                        disabled={downloadingIndex === index}
-                        onClick={() => handleDownload(index)}
-                      >
-                        {downloadingIndex === index ? "Downloading..." : "Download"}
-                      </button>
-                    ) : (
-                      <span className="text-slate-400">Invoice not Available yet</span>
-                    )}
+              {billingHistory.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-6 py-10 text-center text-sm text-slate-500">
+                    Belum ada riwayat billing.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                billingHistory.map((row, index) => (
+                  <tr key={index} className="border-b border-slate-100 last:border-b-0">
+                    <td className="px-6 py-3.5 text-sm text-blue-600">{row.payDate}</td>
+                    <td className="px-6 py-3.5 text-sm text-blue-600">{row.period}</td>
+                    <td className="px-6 py-3.5 text-sm text-blue-600">{row.amount}</td>
+                    <td className="px-6 py-3.5 text-sm">
+                      {row.invoiceAvailable ? (
+                        <button
+                          type="button"
+                          className="text-blue-600 hover:underline disabled:opacity-60"
+                          disabled={downloadingIndex === index}
+                          onClick={() => handleDownload(index)}
+                        >
+                          {downloadingIndex === index ? "Downloading..." : "Download"}
+                        </button>
+                      ) : (
+                        <span className="text-slate-400">Invoice not Available yet</span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

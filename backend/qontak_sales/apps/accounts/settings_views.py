@@ -16,6 +16,7 @@ from qontak_sales.apps.accounts_coa.models import AccountCOA
 from qontak_sales.apps.customers.models import Customer
 
 from .invitations import build_invitation_url, find_invitation, issue_invitation, send_invitation_email
+from .billing_documents import render_billing_invoice
 from .models import Company
 from .permissions import IsManager, IsManagerOrReadOnly
 from .settings_models import AccountMapping, ApprovalRule, Billing, CustomField, TaggingRule, TemplateSetting
@@ -266,6 +267,45 @@ class AccountMappingViewSet(viewsets.ModelViewSet):
                 saved.append(obj)
         return Response(AccountMappingSerializer(saved, many=True, context={"request": request}).data)
 
+class BillingViewSet(viewsets.ModelViewSet):
+    serializer_class = BillingSerializer
+    permission_classes = [SettingsPermission]
+    settings_feature = "Billings"
+
+    def get_queryset(self):
+        company = self.request.user.company
+        if company is None:
+            return Billing.objects.none()
+        return Billing.objects.filter(customer=company)
+
+    def perform_create(self, serializer):
+        if self.request.user.company_id is None:
+            raise ValidationError({"detail": "Company pengguna tidak ditemukan."})
+        serializer.save(customer=self.request.user.company)
+
+    @action(detail=False, methods=["get"])
+    def overview(self, request):
+        company = request.user.company
+        if company is None:
+            raise ValidationError({"detail": "Company pengguna tidak ditemukan."})
+        members = User.objects.filter(company=company)
+        invoices = self.get_queryset()
+        next_invoice = invoices.filter(status__in=["sent", "overdue"]).order_by("due_date").first()
+        latest_invoice = invoices.order_by("-invoice_date", "-pk").first()
+        return Response({
+            "subscription": None,
+            "user_count": members.filter(type="member").count(),
+            "partner_count": members.filter(type="partner").count(),
+            "billing_period": latest_invoice.billing_period if latest_invoice else None,
+            "next_due_date": next_invoice.due_date if next_invoice else None,
+        })
+
+    @action(detail=True, methods=["get"])
+    def invoice(self, request, pk=None):
+        invoice = self.get_object()
+        response = HttpResponse(render_billing_invoice(invoice), content_type="text/html; charset=utf-8")
+        response["Content-Disposition"] = f'attachment; filename="invoice-{invoice.pk}.html"'
+        return response
 
 
 
