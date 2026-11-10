@@ -41,7 +41,43 @@ def user_option(user):
         "email": user.email,
     }
 
+class InvitationDetailView(APIView):
 
+    authentication_classes = []
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        invitation = find_invitation(request.query_params.get("token", "").strip())
+        if (
+            invitation is None
+            or not invitation.is_usable
+            or invitation.user.status != "invited"
+        ):
+            return Response(
+                {"detail": "Undangan tidak valid atau sudah kedaluwarsa."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user = invitation.user
+        return Response(
+            {
+                "email": user.email,
+                "name": user.get_full_name().strip() or user.username,
+                "company_name": user.company.name if user.company else "",
+                "expires_at": invitation.expires_at,
+            }
+        )
+
+class AcceptInvitationView(APIView):
+
+    authentication_classes = []
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = AcceptInvitationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"message": "Password berhasil dibuat. Silakan login."})
 
 class MemberViewSet(viewsets.ModelViewSet):
     serializer_class = MemberSerializer

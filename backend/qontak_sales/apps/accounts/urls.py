@@ -13,7 +13,7 @@ from .views import (
 from qontak_sales.apps.customers.views import CustomerViewSet
 from .settings_endpoints import CompanyRoleViewSet
 from .settings_access_views import SettingsAccessView, SettingsAgentViewSet, SettingsCompanyView
-from .settings_views import MemberViewSet as SettingsMemberViewSet
+from .settings_views import AcceptInvitationView, InvitationDetailView, MemberViewSet as SettingsMemberViewSet
 
 router = DefaultRouter()
 router.register(r"agents", AgentViewSet, basename="agent")
@@ -31,6 +31,8 @@ urlpatterns = [
     path("settings/access/", SettingsAccessView.as_view(), name="settings-access"),
     path("settings/company/", SettingsCompanyView.as_view(), name="settings-company"),
     path("production-settings/", ProductionSettingDetailView.as_view(), name="production-setting-detail"),
+    path("auth/invitation/", InvitationDetailView.as_view(), name="invitation-detail"),
+    path("auth/accept-invitation/", AcceptInvitationView.as_view(), name="accept-invitation"),
     path("dashboard/stats/", DashboardStatsView.as_view(), name="dashboard-stats"),
     path("", include(router.urls)),
 ]

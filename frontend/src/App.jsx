@@ -11,6 +11,7 @@ import PipelinePage from "./pages/PipelinePage";
 import CalendarPage from "./pages/CalendarPage";
 import LeadDetailPage from "./pages/LeadDetailPage";
 import SettingsPage from "./pages/Main-Settings/SettingsPage";
+import AcceptInvitationPage from "./pages/Main-Settings/AcceptInvitationPage";
 import BroadcastPage from "./pages/BroadcastPage";
 import BroadcastHistoryPage from "./pages/BroadcastHistoryPage";
 import ArchivedLeadsPage from "./pages/ArchivedLeadsPage";
@@ -250,6 +251,7 @@ function App() {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/privacy" element={<PrivacyPolicyPage />} />
       <Route path="/terms" element={<TermsPage />} />
