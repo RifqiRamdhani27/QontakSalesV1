@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { CaretDown, Check, PencilSimple, Plus, Trash, X } from "@phosphor-icons/react";
 import Pagination from "@/components/ui/Pagination";
 import PopoverSelect from "@/components/ui/PopoverSelect";
 import MultiSelect from "@/components/ui/MultiSelect";
+import { DropdownPanel } from "@/components/ui/PopoverSelect";
 import {
   tableWrapper,
   tableBase,
@@ -10,7 +11,6 @@ import {
   th,
   td,
   trHover,
-  selectBase,
   formLabel,
   btnPrimary,
   modalOverlay,
@@ -29,27 +29,27 @@ import {
   taggingTransactionTypes,
   taggingTypeOptions,
   customTagOptions,
-  dummyTaggingRules,
 } from "@/data/ruleData";
-import { dummyUsers } from "@/data/dummy";
+import { useTaggingRules } from "@/services/useSetting";
 
 const PAGE_SIZE = 5;
 
 const taggingTypeLabel = (value) =>
   taggingTypeOptions.find((option) => option.value === value)?.label || "-";
 
-function UserChips({ selected, onToggle }) {
+function UserChips({ selected, users, onToggle }) {
   return (
     <MultiSelect
+        floating
       selected={selected}
       onToggle={onToggle}
-      options={dummyUsers.map((user) => user.username)}
+      options={users.map((user) => user.username)}
       placeholder="Select users (max. 250 people)"
     />
   );
 }
 
-function TaggingRuleForm({ initialRule, onSubmit, onClose }) {
+function TaggingRuleForm({ initialRule, users, onSubmit, onClose }) {
   const [ruleName, setRuleName] = useState(initialRule?.ruleName || "");
   const [transactionType, setTransactionType] = useState(
     initialRule?.transactionType || "Sales Invoice"
@@ -121,6 +121,7 @@ function TaggingRuleForm({ initialRule, onSubmit, onClose }) {
         <div className={formGroup}>
           <span className={formLabel}>Transaction Type</span>
           <PopoverSelect
+        floating
             value={transactionType}
             placeholder="Select option"
             groups={[
@@ -157,6 +158,7 @@ function TaggingRuleForm({ initialRule, onSubmit, onClose }) {
             <div className="mt-3">
               <span className={formLabel}>Custom tag</span>
               <MultiSelect
+        floating
                 selected={customTags}
                 onToggle={toggleCustomTag}
                 options={customTagOptions}
@@ -168,7 +170,11 @@ function TaggingRuleForm({ initialRule, onSubmit, onClose }) {
 
         <div>
           <span className={formLabel}>Transaction maker</span>
-          <UserChips selected={transactionMakers} onToggle={toggleMaker} />
+          <UserChips
+            selected={transactionMakers}
+            users={users}
+            onToggle={toggleMaker}
+          />
         </div>
       </div>
 
@@ -218,41 +224,49 @@ function DeleteTaggingModal({ ruleName, onConfirm, onClose }) {
 }
 
 export default function TaggingRulesPage() {
-  const [rules, setRules] = useState(dummyTaggingRules);
+  const { rules, options, loading, error, create, update, remove } =
+    useTaggingRules();
   const [filterType, setFilterType] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingRule, setEditingRule] = useState(null);
   const [deletingRule, setDeletingRule] = useState(null);
   const [openActionId, setOpenActionId] = useState(null);
+  const actionRef = useRef(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(PAGE_SIZE);
 
   const filtered = rules.filter((rule) =>
     filterType ? rule.transactionType === filterType : true
   );
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
   const pageItems = filtered.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE
+    (safePage - 1) * pageSize,
+    safePage * pageSize
   );
 
-  const handleSubmit = (values) => {
-    if (editingRule) {
-      setRules((current) =>
-        current.map((rule) =>
-          rule.id === editingRule.id ? { ...rule, ...values } : rule
-        )
-      );
-      setEditingRule(null);
-    } else {
-      setRules((current) => [...current, { id: Date.now(), ...values }]);
+  const handleSubmit = async (values) => {
+    try {
+      if (editingRule) {
+        await update(editingRule.id, values);
+        setEditingRule(null);
+      } else {
+        await create(values);
+      }
+      setShowForm(false);
+    } catch (requestError) {
+      window.alert(requestError.response?.data?.detail || "Gagal menyimpan tagging rule.");
     }
-    setShowForm(false);
   };
 
-  const handleDelete = () => {
-    setRules((current) => current.filter((rule) => rule.id !== deletingRule.id));
-    setDeletingRule(null);
+  const handleDelete = async () => {
+    try {
+      await remove(deletingRule.id);
+      setDeletingRule(null);
+    } catch (requestError) {
+      window.alert(requestError.response?.data?.detail || "Gagal menghapus tagging rule.");
+    }
   };
 
   const taggingDisplay = (rule) => {
@@ -280,9 +294,16 @@ export default function TaggingRulesPage() {
         </button>
       </div>
 
+      {(error || loading) && (
+        <p className="m-0 mb-4 text-sm text-slate-500">
+          {loading ? "Memuat tagging rules..." : error}
+        </p>
+      )}
+
       <div className="mb-4 flex items-center justify-end gap-3">
         <div className="w-[220px]">
           <PopoverSelect
+        floating
             value={filterType}
             placeholder="All transaction type"
             includeAll
@@ -341,16 +362,25 @@ export default function TaggingRulesPage() {
                         <button
                           type="button"
                           className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-slate-50"
-                          onClick={() =>
+                          onClick={(event) => {
+                            actionRef.current = event.currentTarget;
                             setOpenActionId(
                               openActionId === rule.id ? null : rule.id
-                            )
-                          }
+                            );
+                          }}
                         >
                           Action <CaretDown size={12} />
                         </button>
                         {openActionId === rule.id && (
-                          <div className="absolute right-0 top-full z-10 mt-1 w-44 overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+                          <DropdownPanel
+                            rect={actionRef.current?.getBoundingClientRect()}
+                            triggerRef={actionRef}
+                            onClose={() => setOpenActionId(null)}
+                            variant="settings"
+                            width={176}
+                            align="right"
+                            className="rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
+                          >
                             <button
                               type="button"
                               className="flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-left text-[13px] text-gray-700 hover:bg-slate-50"
@@ -372,7 +402,7 @@ export default function TaggingRulesPage() {
                             >
                               <Trash size={14} /> Delete rule
                             </button>
-                          </div>
+                          </DropdownPanel>
                         )}
                       </div>
                     </td>
@@ -386,11 +416,15 @@ export default function TaggingRulesPage() {
 
       <div className="mt-4">
         <Pagination
-          currentPage={currentPage}
+          currentPage={safePage}
           totalPages={totalPages}
           totalItems={filtered.length}
-          pageSize={PAGE_SIZE}
+          pageSize={pageSize}
           onPageChange={setCurrentPage}
+          onPageSizeChange={(size) => {
+            setPageSize(size);
+            setCurrentPage(1);
+          }}
         />
       </div>
 
@@ -398,6 +432,7 @@ export default function TaggingRulesPage() {
         <div className={modalOverlay}>
           <TaggingRuleForm
             initialRule={editingRule}
+            users={options.users}
             onSubmit={handleSubmit}
             onClose={() => {
               setShowForm(false);

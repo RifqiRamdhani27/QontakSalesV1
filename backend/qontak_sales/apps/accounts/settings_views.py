@@ -426,4 +426,26 @@ class ApprovalRuleViewSet(viewsets.ModelViewSet):
             }
         )
 
+class TaggingRuleViewSet(viewsets.ModelViewSet):
+    serializer_class = TaggingRuleSerializer
+    permission_classes = [SettingsPermission]
+    settings_feature = "Tagging Rules"
+
+    def get_queryset(self):
+        company = self.request.user.company
+        if company is None:
+            return TaggingRule.objects.none()
+        return TaggingRule.objects.filter(company=company)
+
+    def perform_create(self, serializer):
+        serializer.save(company=self.request.user.company)
+
+    @action(detail=False, methods=["get"])
+    def options(self, request):
+        company = request.user.company
+        return Response(
+            {
+                "users": [user_option(user) for user in company_members(company)],
+            }
+        )
 
