@@ -12,7 +12,7 @@ from .views import (
 from qontak_sales.apps.customers.views import CustomerViewSet
 from .settings_endpoints import CompanyProductionSettingView, CompanyRoleViewSet, InvoiceReminderIntervalViewSet, InvoiceReminderView, ProductBatchReminderListView, ProductSettingView, PurchaseSettingView, SalesFormSettingView
 from .settings_access_views import SettingsAccessView, SettingsAgentViewSet, SettingsCompanyView
-from .settings_views import AcceptInvitationView, AccountMappingViewSet, ApprovalRuleViewSet, BillingViewSet, CustomFieldViewSet, InvitationDetailView, MemberViewSet as SettingsMemberViewSet, TaggingRuleViewSet
+from .settings_views import AcceptInvitationView, AccountMappingViewSet, ApprovalRuleViewSet, BillingViewSet, CustomFieldViewSet, InvitationDetailView, MemberViewSet as SettingsMemberViewSet, TaggingRuleViewSet, TemplateSettingView
 
 router = DefaultRouter()
 router.register(r"agents", AgentViewSet, basename="agent")
@@ -43,6 +43,8 @@ urlpatterns = [
     path("products/batch-reminders/", ProductBatchReminderListView.as_view(), name="product-batch-reminders"),
     path("auth/invitation/", InvitationDetailView.as_view(), name="invitation-detail"),
     path("auth/accept-invitation/", AcceptInvitationView.as_view(), name="accept-invitation"),
+    path("template-settings/", TemplateSettingView.as_view(), name="template-settings"),
+    path("template-settings/<str:key>/", TemplateSettingView.as_view(), name="template-setting-detail"),
     path("dashboard/stats/", DashboardStatsView.as_view(), name="dashboard-stats"),
     path("", include(router.urls)),
 ]

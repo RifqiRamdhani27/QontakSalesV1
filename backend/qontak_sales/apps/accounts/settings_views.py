@@ -449,3 +449,81 @@ class TaggingRuleViewSet(viewsets.ModelViewSet):
             }
         )
 
+class TemplateSettingView(APIView):
+    permission_classes = [SettingsPermission]
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
+
+    def get_settings_features(self):
+        key = self.kwargs.get("key")
+        return (TEMPLATE_FEATURES.get(key),) if key is not None else SETTINGS_MODULES["template"]
+
+    def _payload(self, setting, request):
+        payload = dict(setting.data)
+        if setting.key == "pdf_general":
+            payload["signature_image_url"] = (
+                request.build_absolute_uri(setting.signature_image.url)
+                if setting.signature_image
+                else None
+            )
+        return payload
+
+    def _raw_data(self, request):
+        if (request.content_type or "").startswith("multipart"):
+            try:
+                return json.loads(request.data.get("data", "{}"))
+            except (TypeError, ValueError):
+                raise ValidationError({"data": "Format data tidak valid."})
+        return request.data
+
+    def get(self, request, key=None):
+        company = request.user.company
+        queryset = (
+            TemplateSetting.objects.filter(company=company)
+            if company
+            else TemplateSetting.objects.none()
+        )
+        if key is None:
+            access = request_settings_access(request)
+            return Response({
+                item.key: self._payload(item, request) for item in queryset
+                if access["is_owner"] or access["features"].get(TEMPLATE_FEATURES.get(item.key), {}).get("view", False)
+            })
+        if key not in TEMPLATE_SERIALIZERS:
+            raise NotFound("Template tidak dikenal.")
+        item = queryset.filter(key=key).first()
+        return Response(self._payload(item, request) if item else {})
+
+    def put(self, request, key):
+        serializer_class = TEMPLATE_SERIALIZERS.get(key)
+        if serializer_class is None:
+            raise NotFound("Template tidak dikenal.")
+        company = request.user.company
+        if company is None:
+            raise ValidationError({"detail": "User belum terhubung ke company."})
+
+        serializer = serializer_class(data=self._raw_data(request))
+        serializer.is_valid(raise_exception=True)
+
+        image_serializer = SignatureImageSerializer(
+            data={
+                "image": request.FILES.get("signature_image"),
+                "remove": request.data.get("remove_signature_image", False),
+            }
+        )
+        image_serializer.is_valid(raise_exception=True)
+        image = image_serializer.validated_data.get("image")
+        remove_image = image_serializer.validated_data.get("remove")
+        if key != "pdf_general" and (image or remove_image):
+            raise ValidationError({"signature_image": "Gambar hanya untuk pdf_general."})
+
+        with transaction.atomic():
+            item, _created = TemplateSetting.objects.get_or_create(company=company, key=key)
+            item.data = serializer.validated_data
+            if (image or remove_image) and item.signature_image:
+                item.signature_image.delete(save=False)
+            if image:
+                item.signature_image = image
+            elif remove_image:
+                item.signature_image = None
+            item.save()
+        return Response(self._payload(item, request))
