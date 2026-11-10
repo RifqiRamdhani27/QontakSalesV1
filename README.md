@@ -175,6 +175,22 @@ python manage.py createsuperuser
 python manage.py runserver 8000
 ```
 
+### Data Wilayah dan Kode Pos
+
+Data dropdown Company berasal dari tabel wilayah melalui API Django, bukan katalog JSON yang dibaca frontend. Dataset untuk mengisi tabel ikut disertakan dalam repository agar setup setiap anggota tim dapat diulang.
+
+Dari folder `backend`, setelah virtual environment aktif dan database di `.env` sudah dikonfigurasi:
+
+```bash
+python manage.py migrate
+python manage.py seed_wilayah --dry-run
+python manage.py seed_wilayah
+```
+
+Seeder memakai tabel existing, tidak menghapus data, mempertahankan ID/nama/relasi existing, serta hanya mengisi kode pos existing yang masih kosong. Menjalankannya ulang tidak membuat duplikat. Tidak perlu menyalin database laptop pembuat aplikasi atau mempunyai folder project referensi lain.
+
+Sumber snapshot, jumlah data, dan batasan kelengkapan tersedia di [dokumentasi dataset wilayah](backend/qontak_sales/apps/regions/data/README.md).
+
 ### Frontend Setup
 
 ```bash
