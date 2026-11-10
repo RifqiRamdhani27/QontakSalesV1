@@ -1,0 +1,56 @@
+[data-qontak-settings] {
+  color: #0f172a;
+  color-scheme: light;
+}
+
+[data-qontak-settings] .bg-brand {
+  background-color: var(--chakra-colors-primary, #2563eb);
+}
+
+[data-qontak-settings] .bg-brand\/5 {
+  background-color: rgb(37 99 235 / 5%);
+}
+
+[data-qontak-settings] .bg-brand\/10 {
+  background-color: rgb(37 99 235 / 10%);
+}
+
+[data-qontak-settings] .hover\:bg-brand-dark:hover {
+  background-color: #1d4ed8;
+}
+
+[data-qontak-settings] .text-brand {
+  color: var(--chakra-colors-primary, #2563eb);
+}
+
+[data-qontak-settings] .accent-brand {
+  accent-color: var(--chakra-colors-primary, #2563eb);
+}
+
+[data-qontak-settings] .border-brand {
+  border-color: var(--chakra-colors-primary, #2563eb);
+}
+
+[data-qontak-settings] .border-brand\/30 {
+  border-color: rgb(37 99 235 / 30%);
+}
+
+[data-qontak-settings] .border-l-brand {
+  border-left-color: var(--chakra-colors-primary, #2563eb);
+}
+
+[data-qontak-settings] .border-t-brand {
+  border-top-color: var(--chakra-colors-primary, #2563eb);
+}
+
+[data-qontak-settings] .focus\:border-brand:focus {
+  border-color: var(--chakra-colors-primary, #2563eb);
+}
+
+[data-qontak-settings] .peer:checked ~ .peer-checked\:bg-brand {
+  background-color: var(--chakra-colors-primary, #2563eb);
+}
+
+[data-qontak-settings] button.text-gray-400:not(:disabled) {
+  color: #475569;
+}
