@@ -41,6 +41,10 @@ class CompanySettingView(APIView):
         return Response(serializer.data)
 
 
+class SalesFormSettingView(CompanySettingView):
+    settings_feature = "Sales: Form settings"
+    model = SalesFormSetting
+    serializer_class = SalesFormSettingSerializer
 
 
 
@@ -49,8 +53,44 @@ class CompanySettingView(APIView):
 
 
 
+class InvoiceReminderView(CompanySettingView):
+    settings_feature = "Sales: Invoice reminder"
+    model = InvoiceReminder
+    serializer_class = InvoiceReminderSerializer
+
+    def get(self, request):
+        company = settings_company(request)
+        item = self.model.objects.filter(company=company).first()
+        if item is not None:
+            return Response(self.serializer_class(item, context={"request": request}).data)
+        serializer = self.serializer_class(self.model(company=company), context={"request": request})
+        serializer.fields.pop("intervals")
+        serializer.fields.pop("exempt_customers")
+        return Response({**serializer.data, "intervals": [], "exempt_customers": []})
 
 
+class InvoiceReminderIntervalViewSet(viewsets.ModelViewSet):
+    serializer_class = InvoiceReminderIntervalSerializer
+    permission_classes = [SettingsPermission]
+    settings_feature = "Sales: Invoice reminder"
+
+    def get_queryset(self):
+        return InvoiceReminderInterval.objects.filter(reminder__company=self.request.user.company)
+
+    def create(self, request, *args, **kwargs):
+        company = settings_company(request)
+        with transaction.atomic():
+            Company.objects.select_for_update().get(pk=company.pk)
+            reminder, _created = InvoiceReminder.objects.get_or_create(company=company)
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save(reminder=reminder)
+        return Response(serializer.data, status=201)
+
+    def update(self, request, *args, **kwargs):
+        with transaction.atomic():
+            Company.objects.select_for_update().get(pk=settings_company(request).pk)
+            return super().update(request, *args, **kwargs)
 
 
 
