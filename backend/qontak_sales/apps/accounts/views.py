@@ -17,6 +17,8 @@ from .serializers import (
     UserSerializer,
 )
 
+from .settings_serializers import ProfileUpdateSerializer
+
 User = get_user_model()
 
 
@@ -41,14 +43,13 @@ class ProfileView(APIView):
         return Response(UserSerializer(request.user, context={"request": request}).data)
 
     def put(self, request):
-        user = request.user
-        for field in ("first_name", "last_name", "email", "phone"):
-            if field in request.data:
-                setattr(user, field, request.data[field])
-        if "avatar" in request.FILES:
-            user.avatar = request.FILES["avatar"]
-        user.save()
+        serializer = ProfileUpdateSerializer(request.user, data=request.data, partial=True, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
         return Response(UserSerializer(user, context={"request": request}).data)
+
+    def patch(self, request):
+        return self.put(request)
 
 
 class CompanyDetailView(APIView):

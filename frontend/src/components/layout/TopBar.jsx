@@ -25,10 +25,12 @@ import {
   Sun 
 } from "@phosphor-icons/react";
 import api from "@/services/api";
-import { DotsNine } from "@phosphor-icons/react";
+import { clearAuth, getAuthStorage } from "@/services/authStorage";
+import { DotsNine, UserCircle } from "@phosphor-icons/react";
 import AppsDrawer from "./AppsDrawer";
+import ProfileModal from "@/components/profile/ProfileModal";
 
-// Palet Warna Tema
+
 const THEME = {
   light: {
     bg: "white",
@@ -42,7 +44,7 @@ const THEME = {
   },
   dark: {
     bg: "#1A1A1A",
-    text: "#E5B85C", // Warna Emas
+    text: "#E5B85C",
     border: "#333333",
     shadow: "0 4px 14px rgba(229, 184, 92, 0.15)", 
     hoverBg: "#2D2D2D",
@@ -54,8 +56,7 @@ const THEME = {
 
 export default function TopBar({ onMenuClick }) {
   const navigate = useNavigate();
-  
-  // Ambil tema dari localStorage, default 'light'
+  const authStorage = getAuthStorage();
   const [themeMode, setThemeMode] = useState(() => {
     return localStorage.getItem("app_theme") || "light";
   });
@@ -71,6 +72,7 @@ export default function TopBar({ onMenuClick }) {
   const [user, setUser] = useState(null);
   const [avatarKey, setAvatarKey] = useState(0);
   const [showApps, setShowApps] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   
   const notifRef = useRef(null);
   const menuRef = useRef(null);
@@ -78,16 +80,25 @@ export default function TopBar({ onMenuClick }) {
 
   const currentTheme = THEME[themeMode];
 
-  const isImpersonating = localStorage.getItem("impersonating") === "true";
-  const impersonatedName = localStorage.getItem("impersonated_name") || "";
-  const impersonatedId = localStorage.getItem("impersonated_id") || "";
-  const userRole = localStorage.getItem("user_role");
+  const isImpersonating = authStorage.getItem("impersonating") === "true";
+  const impersonatedName = authStorage.getItem("impersonated_name") || "";
+  const impersonatedId = authStorage.getItem("impersonated_id") || "";
+  const userRole = authStorage.getItem("user_role");
   const isManager = userRole === "MANAGER" && !isImpersonating;
+
+  const handleProfileUpdated = (updatedUser) => {
+    setUser(updatedUser);
+    setAvatarKey((key) => key + 1);
+    authStorage.setItem("user_name", `${updatedUser.first_name} ${updatedUser.last_name}`.trim());
+    authStorage.setItem("user_role", updatedUser.role);
+  };
 
   const fetchUser = () => {
     api.get("/auth/profile/").then((r) => {
       setUser(r.data);
       setAvatarKey((k) => k + 1);
+      authStorage.setItem("user_role", r.data.role);
+      authStorage.setItem("user_name", `${r.data.first_name} ${r.data.last_name}`.trim());
     });
   };
 
@@ -130,24 +141,24 @@ export default function TopBar({ onMenuClick }) {
   };
 
   const handleLogout = () => {
-    localStorage.clear();
+    clearAuth();
     navigate("/");
   };
 
   const handleSwitchBack = () => {
-    const managerToken = localStorage.getItem("manager_token");
-    const managerRefresh = localStorage.getItem("manager_refresh");
-    const managerUser = JSON.parse(localStorage.getItem("manager_user") || "{}");
-    localStorage.setItem("access_token", managerToken);
-    localStorage.setItem("refresh_token", managerRefresh);
-    localStorage.setItem("user_role", managerUser.role);
-    localStorage.setItem("user_name", managerUser.name);
-    localStorage.removeItem("manager_token");
-    localStorage.removeItem("manager_refresh");
-    localStorage.removeItem("manager_user");
-    localStorage.removeItem("impersonating");
-    localStorage.removeItem("impersonated_name");
-    localStorage.removeItem("impersonated_id");
+    const managerToken = authStorage.getItem("manager_token");
+    const managerRefresh = authStorage.getItem("manager_refresh");
+    const managerUser = JSON.parse(authStorage.getItem("manager_user") || "{}");
+    authStorage.setItem("access_token", managerToken);
+    authStorage.setItem("refresh_token", managerRefresh);
+    authStorage.setItem("user_role", managerUser.role);
+    authStorage.setItem("user_name", managerUser.name);
+    authStorage.removeItem("manager_token");
+    authStorage.removeItem("manager_refresh");
+    authStorage.removeItem("manager_user");
+    authStorage.removeItem("impersonating");
+    authStorage.removeItem("impersonated_name");
+    authStorage.removeItem("impersonated_id");
     window.location.href = "/dashboard";
   };
 
@@ -156,22 +167,22 @@ export default function TopBar({ onMenuClick }) {
     setSwitching(member.id);
     try {
       const res = await api.post("/auth/switch-account/", { user_id: member.id });
-      const managerToken = localStorage.getItem("access_token");
-      const managerRefresh = localStorage.getItem("refresh_token");
+      const managerToken = authStorage.getItem("access_token");
+      const managerRefresh = authStorage.getItem("refresh_token");
       const managerUser = {
-        role: localStorage.getItem("user_role"),
-        name: localStorage.getItem("user_name"),
+        role: authStorage.getItem("user_role"),
+        name: authStorage.getItem("user_name"),
       };
-      localStorage.setItem("manager_token", managerToken);
-      localStorage.setItem("manager_refresh", managerRefresh);
-      localStorage.setItem("manager_user", JSON.stringify(managerUser));
-      localStorage.setItem("access_token", res.data.access);
-      localStorage.setItem("refresh_token", res.data.refresh);
-      localStorage.setItem("user_role", res.data.user.role);
-      localStorage.setItem("user_name", `${res.data.user.first_name} ${res.data.user.last_name}`);
-      localStorage.setItem("impersonating", "true");
-      localStorage.setItem("impersonated_name", `${res.data.user.first_name} ${res.data.user.last_name}`);
-      localStorage.setItem("impersonated_id", String(res.data.user.id));
+      authStorage.setItem("manager_token", managerToken);
+      authStorage.setItem("manager_refresh", managerRefresh);
+      authStorage.setItem("manager_user", JSON.stringify(managerUser));
+      authStorage.setItem("access_token", res.data.access);
+      authStorage.setItem("refresh_token", res.data.refresh);
+      authStorage.setItem("user_role", res.data.user.role);
+      authStorage.setItem("user_name", `${res.data.user.first_name} ${res.data.user.last_name}`);
+      authStorage.setItem("impersonating", "true");
+      authStorage.setItem("impersonated_name", `${res.data.user.first_name} ${res.data.user.last_name}`);
+      authStorage.setItem("impersonated_id", String(res.data.user.id));
       window.location.href = "/dashboard";
     } catch {
       setSwitching(null);
@@ -189,11 +200,10 @@ export default function TopBar({ onMenuClick }) {
     setShowMenu(true);
   };
 
-  // FUNGSI PERUBAHAN TEMA (Kunci agar seluruh aplikasi bereaksi)
   const handleThemeChange = (mode) => {
     setThemeMode(mode);
     localStorage.setItem("app_theme", mode);
-    window.dispatchEvent(new Event("themeChanged")); // Beri tahu Sidebar & Layout
+    window.dispatchEvent(new Event("themeChanged"));
     setShowThemeSubmenu(false);
     setShowMenu(false);
   };
@@ -249,7 +259,6 @@ export default function TopBar({ onMenuClick }) {
           <List size={22} color={currentTheme.text} />
         </Box>
 
-        {/* Support (Intercom) */}
         <Box
           as="a"
           href="mailto:support@yourcompany.com"
@@ -267,7 +276,6 @@ export default function TopBar({ onMenuClick }) {
           </svg>
         </Box>
 
-        {/* Help */}
         <Box
           cursor="pointer"
           p={2}
@@ -283,7 +291,6 @@ export default function TopBar({ onMenuClick }) {
           </svg>
         </Box>
 
-        {/* Riwayat / Time */}
         <Box
           cursor="pointer"
           p={2}
@@ -299,7 +306,6 @@ export default function TopBar({ onMenuClick }) {
           </svg>
         </Box>
 
-        {/* Notifications */}
         <Box ref={notifRef} position="relative">
           <HStack cursor="pointer" p={2} borderRadius="md" _hover={{ bg: currentTheme.hoverBg }} onClick={() => setShowNotif(!showNotif)} position="relative">
             <Bell size={20} color={currentTheme.text} />
@@ -330,7 +336,6 @@ export default function TopBar({ onMenuClick }) {
           )}
         </Box>
 
-        {/* Apps Launcher */}
         <Box
           cursor="pointer"
           p={2}
@@ -349,7 +354,6 @@ export default function TopBar({ onMenuClick }) {
           userName={user ? `${user.first_name} ${user.last_name}` : ""}
         />
 
-        {/* User Menu Wrapper */}
         <Box ref={menuRef} position="relative">
           <Avatar.Root size="sm" cursor="pointer" onClick={() => { 
             setShowMenu(!showMenu); 
@@ -363,7 +367,6 @@ export default function TopBar({ onMenuClick }) {
             )}
           </Avatar.Root>
 
-          {/* DROPDOWN MENU */}
           {showMenu && (
             <Box 
               position="absolute" top="100%" right={0} mt={2} w="220px" 
@@ -382,6 +385,9 @@ export default function TopBar({ onMenuClick }) {
                     )}
                   </Box>
                   <VStack align="stretch" gap={0}>
+                    <HStack as="button" type="button" p={3} cursor="pointer" _hover={{ bg: currentTheme.hoverBg }} onClick={() => { setShowProfile(true); setShowMenu(false); }}>
+                      <UserCircle size={16} color={currentTheme.text} /><Text fontSize="sm">Edit Profile</Text>
+                    </HStack>
                     <HStack p={3} cursor="pointer" _hover={{ bg: currentTheme.hoverBg }} onClick={() => { navigate("/settings"); setShowMenu(false); }}>
                       <Gear size={16} color={currentTheme.text} /><Text fontSize="sm">Settings</Text>
                     </HStack>
@@ -417,7 +423,6 @@ export default function TopBar({ onMenuClick }) {
                   </HStack>
                   
                   <VStack align="stretch" gap={0} p={2}>
-                    {/* Pilihan Light */}
                     <HStack 
                       p={2.5} cursor="pointer" borderRadius="md" 
                       _hover={{ bg: currentTheme.hoverBg }}
@@ -430,7 +435,6 @@ export default function TopBar({ onMenuClick }) {
                       {themeMode === "light" && <Check size={16} color="#2563EB" weight="bold" />}
                     </HStack>
 
-                    {/* Pilihan Dark */}
                     <HStack 
                       p={2.5} cursor="pointer" borderRadius="md" 
                       _hover={{ bg: currentTheme.hoverBg }}
@@ -448,7 +452,6 @@ export default function TopBar({ onMenuClick }) {
             </Box>
           )}
 
-          {/* Switch Account Submenu */}
           {showSwitchSubmenu && (
             <Box ref={submenuRef} position="absolute" top="100%" right={0} mt={2} w="300px" bg={currentTheme.dropdownBg} border="1px solid" borderColor={currentTheme.border} borderRadius="lg" shadow="lg" zIndex={50} color={currentTheme.dropdownText}>
               <HStack p={3} borderBottom="1px solid" borderColor={currentTheme.border} justify="space-between">
@@ -508,6 +511,9 @@ export default function TopBar({ onMenuClick }) {
           )}
         </Box>
       </HStack>
+      {showProfile && user && (
+        <ProfileModal user={user} onClose={() => setShowProfile(false)} onUpdated={handleProfileUpdated} />
+      )}
     </>
   );
 }
