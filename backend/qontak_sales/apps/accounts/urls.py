@@ -7,11 +7,10 @@ from .views import (
     EmailTokenObtainPairView,
     ProfileView,
     AgentViewSet,
-    ProductionSettingDetailView,
     RegisterView,
 )
 from qontak_sales.apps.customers.views import CustomerViewSet
-from .settings_endpoints import CompanyRoleViewSet, InvoiceReminderIntervalViewSet, InvoiceReminderView, ProductBatchReminderListView, ProductSettingView, PurchaseSettingView, SalesFormSettingView
+from .settings_endpoints import CompanyProductionSettingView, CompanyRoleViewSet, InvoiceReminderIntervalViewSet, InvoiceReminderView, ProductBatchReminderListView, ProductSettingView, PurchaseSettingView, SalesFormSettingView
 from .settings_access_views import SettingsAccessView, SettingsAgentViewSet, SettingsCompanyView
 from .settings_views import AcceptInvitationView, InvitationDetailView, MemberViewSet as SettingsMemberViewSet
 
@@ -31,7 +30,7 @@ urlpatterns = [
     path("company/", CompanyDetailView.as_view(), name="company-detail"),
     path("settings/access/", SettingsAccessView.as_view(), name="settings-access"),
     path("settings/company/", SettingsCompanyView.as_view(), name="settings-company"),
-    path("production-settings/", ProductionSettingDetailView.as_view(), name="production-setting-detail"),
+    path("production-settings/", CompanyProductionSettingView.as_view(), name="production-setting-detail"),
     path("sales/form-settings/", SalesFormSettingView.as_view(), name="sales-form-settings"),
     path("sales/invoice-reminder/", InvoiceReminderView.as_view(), name="invoice-reminder"),
     path("purchases/form-settings/", PurchaseSettingView.as_view(), name="purchase-form-settings"),

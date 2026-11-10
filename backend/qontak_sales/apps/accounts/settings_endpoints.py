@@ -81,6 +81,37 @@ class ProductSettingView(CompanySettingView):
         return self._allowed_response(request, super().put(request))
 
 
+class CompanyProductionSettingView(CompanySettingView):
+    settings_feature = "Production"
+    model = CompanyProductionSetting
+    serializer_class = CompanyProductionSettingSerializer
+
+    def legacy_defaults(self):
+        legacy = ProductionSetting.objects.order_by("pk").first()
+        if legacy is None:
+            return {}
+        return {
+            "production_plan_date_mode": legacy.production_plan_date_mode,
+            "allow_backdated_plan_date": legacy.allow_backdated_plan_date,
+            "allow_partial_production": legacy.allow_partial_production,
+        }
+
+    def get(self, request):
+        company = settings_company(request)
+        item = self.model.objects.filter(company=company).first()
+        if item is None:
+            item = self.model(company=company, **self.legacy_defaults())
+        return Response(self.serializer_class(item).data)
+
+    def put(self, request):
+        company = settings_company(request)
+        with transaction.atomic():
+            Company.objects.select_for_update().get(pk=company.pk)
+            item, _created = self.model.objects.get_or_create(company=company, defaults=self.legacy_defaults())
+            serializer = self.serializer_class(item, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+        return Response(serializer.data)
 
 
 class InvoiceReminderView(CompanySettingView):
