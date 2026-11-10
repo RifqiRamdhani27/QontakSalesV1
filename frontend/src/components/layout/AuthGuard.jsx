@@ -1,8 +1,10 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { getAuthStorage } from "@/services/authStorage";
 
 export default function AuthGuard() {
-  const token = localStorage.getItem("access_token");
-  const userRole = localStorage.getItem("user_role");
+  const authStorage = getAuthStorage();
+  const token = authStorage.getItem("access_token");
+  const userRole = authStorage.getItem("user_role");
   const location = useLocation();
 
   if (!token) return <Navigate to="/login" replace />;

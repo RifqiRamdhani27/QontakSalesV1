@@ -15,36 +15,36 @@ import {
   Icon,
 } from "@chakra-ui/react";
 import { Eye, EyeClosed, Lightning, ChartLineUp, Kanban } from "@phosphor-icons/react";
-import api from "@/services/api";
+import api, { publicApi } from "@/services/api";
+import { clearAuth, getAuthStorage } from "@/services/authStorage";
 import brandLogo from "@/assets/brand.png";
 import LoadingPopup from "@/components/ui/LoadingPopup";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const authStorage = getAuthStorage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  if (localStorage.getItem("access_token")) return <Navigate to="/dashboard" replace />;
+  if (authStorage.getItem("access_token")) return <Navigate to="/dashboard" replace />;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
     try {
-      const response = await api.post("/token/", { email, password });
-      localStorage.setItem("access_token", response.data.access);
-      localStorage.setItem("refresh_token", response.data.refresh);
+      const response = await publicApi.post("/token/", { email, password });
+      clearAuth();
+      authStorage.setItem("access_token", response.data.access);
+      authStorage.setItem("refresh_token", response.data.refresh);
       const profile = await api.get("/auth/profile/");
-      localStorage.setItem("user_role", profile.data.role);
-      localStorage.setItem("user_name", `${profile.data.first_name} ${profile.data.last_name}`);
-      localStorage.removeItem("manager_token");
-      localStorage.removeItem("manager_refresh");
-      localStorage.removeItem("manager_user");
-      localStorage.removeItem("impersonating");
-      localStorage.removeItem("impersonated_name");
+      authStorage.setItem("user_role", profile.data.role);
+      authStorage.setItem("user_name", `${profile.data.first_name} ${profile.data.last_name}`);
+      authStorage.setItem("user_id", profile.data.id);
+      authStorage.setItem("role_config", JSON.stringify(profile.data.role_config || {}));
       navigate("/dashboard");
     } catch (err) {
       const msg = err.response?.data?.detail || err.response?.data?.error || "Invalid email or password";
