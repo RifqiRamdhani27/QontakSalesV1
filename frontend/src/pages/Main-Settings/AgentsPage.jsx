@@ -8,6 +8,7 @@ import {
   X,
 } from "@phosphor-icons/react";
 import api from "@/services/api";
+import { canAccessSettings } from "@/services/settingsAccess";
 import {
   btnPrimary,
   btnSecondary,
@@ -70,7 +71,7 @@ export default function AgentsPage() {
     try {
       setLoading(true);
 
-      const response = await api.get("/agents/");
+      const response = await api.get("/settings/agents/");
 
       const data = response.data;
 
@@ -197,14 +198,14 @@ export default function AgentsPage() {
 
       if (editAgent) {
         response = await api.put(
-          `/agents/${editAgent.id}/`,
+          `/settings/agents/${editAgent.id}/`,
           formData
         );
 
         alert("Agent berhasil diperbarui.");
       } else {
         response = await api.post(
-          "/agents/",
+          "/settings/agents/",
           formData
         );
 
@@ -261,7 +262,7 @@ export default function AgentsPage() {
     try {
       setDeleteLoading(true);
 
-      await api.delete(`/agents/${deleteId}/`);
+      await api.delete(`/settings/agents/${deleteId}/`);
 
       alert("Agent berhasil dihapus.");
 
@@ -323,6 +324,7 @@ export default function AgentsPage() {
   type="button"
   className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 disabled:opacity-60 max-md:w-full"
   onClick={openCreate}
+  disabled={!canAccessSettings("agents", "create")}
 >
   <Plus size={18} />
   Add Agent
@@ -388,6 +390,7 @@ export default function AgentsPage() {
               type="button"
               className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
               onClick={openCreate}
+              disabled={!canAccessSettings("agents", "create")}
             >
               <Plus size={18} />
               Add Agent
@@ -471,6 +474,7 @@ export default function AgentsPage() {
                         <button
                           type="button"
                           className={`${btnSecondary} max-md:justify-center`}
+                          disabled={!canAccessSettings("agents", "edit")}
                           onClick={() =>
                             openEdit(agent)
                           }
@@ -482,6 +486,7 @@ export default function AgentsPage() {
                         <button
                           type="button"
                           className={`${btnDangerOutline} max-md:justify-center`}
+                          disabled={!canAccessSettings("agents", "delete")}
                           onClick={() =>
                             setDeleteId(agent.id)
                           }
