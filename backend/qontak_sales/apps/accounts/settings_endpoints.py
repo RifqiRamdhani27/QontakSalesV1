@@ -53,6 +53,32 @@ class PurchaseSettingView(CompanySettingView):
     serializer_class = PurchaseSettingSerializer
 
 
+class ProductSettingView(CompanySettingView):
+    settings_feature = "Product: Good & Services"
+    model = ProductSetting
+    serializer_class = ProductSettingSerializer
+
+    def get_settings_features(self):
+        return ("Product: Good & Services", "Product: Warehouse")
+
+    def _allowed_response(self, request, response):
+        features = request_settings_access(request)["features"]
+        if not features["Product: Good & Services"]["view"]:
+            response.data = {key: value for key, value in response.data.items() if key == "enable_storage_location"}
+        if not features["Product: Warehouse"]["view"]:
+            response.data.pop("enable_storage_location", None)
+        return response
+
+    def get(self, request):
+        return self._allowed_response(request, super().get(request))
+
+    def put(self, request):
+        features = request_settings_access(request)["features"]
+        if "enable_storage_location" in request.data and not features["Product: Warehouse"]["edit"]:
+            raise PermissionDenied("Tidak memiliki izin mengubah pengaturan gudang.")
+        if any(key != "enable_storage_location" for key in request.data) and not features["Product: Good & Services"]["edit"]:
+            raise PermissionDenied("Tidak memiliki izin mengubah pengaturan produk.")
+        return self._allowed_response(request, super().put(request))
 
 
 
@@ -97,6 +123,25 @@ class InvoiceReminderIntervalViewSet(viewsets.ModelViewSet):
             return super().update(request, *args, **kwargs)
 
 
+class ProductBatchReminderListView(APIView):
+    permission_classes = [SettingsPermission]
+    settings_feature = "Product: Good & Services"
+
+    def get(self, request):
+        items = ProductBatchReminder.objects.filter(company=settings_company(request))
+        return Response(ProductBatchReminderSerializer(items, many=True).data)
+
+    def put(self, request):
+        company = settings_company(request)
+        if not isinstance(request.data, list):
+            raise ValidationError({"detail": "Reminder harus berupa list."})
+        serializer = ProductBatchReminderSerializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        with transaction.atomic():
+            Company.objects.select_for_update().get(pk=company.pk)
+            ProductBatchReminder.objects.filter(company=company).delete()
+            items = ProductBatchReminder.objects.bulk_create([ProductBatchReminder(company=company, **item) for item in serializer.validated_data])
+        return Response(ProductBatchReminderSerializer(items, many=True).data)
 
 
 class CompanyRoleSerializer(serializers.ModelSerializer):
