@@ -58,6 +58,20 @@ export default function TopBar({ onMenuClick }) {
     return localStorage.getItem("app_theme") || "light";
   });
 
+  useEffect(() => {
+    const handleThemeChange = () => {
+      setThemeMode(localStorage.getItem("app_theme") || "light");
+    };
+    window.addEventListener("themeChanged", handleThemeChange);
+    window.addEventListener("storage", handleThemeChange);
+
+    return () => {
+      window.removeEventListener("themeChanged", handleThemeChange);
+      window.removeEventListener("storage", handleThemeChange);
+    };
+  }, []);
+
+
   const [notifications, setNotifications] = useState([]);
   const [showNotif, setShowNotif] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
