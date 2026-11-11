@@ -14,6 +14,18 @@ export default function Jurnal() {
     }
   };
 
+  const [themeMode, setThemeMode] = useState(() => localStorage.getItem("app_theme") || "light");
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+  const isDark = themeMode === "dark";
+
   // Top Bar Start Date Calendar State
   const startDatePickerRef = useRef(null);
   const [startSelectedDate, setStartSelectedDate] = useState(() => new Date(2026, 8, 16));
@@ -145,7 +157,7 @@ export default function Jurnal() {
   const renderCalendarPopover = (
     viewDate, setViewDate, viewMode, setViewMode, yearRangeStart, setYearRangeStart, selectedDate, onSelectDate, alignRight = false
   ) => (
-    <div style={{
+    <div className="jr-pop" style={{
       position: "absolute", top: "calc(100% + 4px)",
       ...(alignRight ? { right: 0 } : { left: 0 }),
       zIndex: 1000,
@@ -217,7 +229,7 @@ export default function Jurnal() {
   ];
 
   return (
-    <div style={{
+    <div className={isDark ? "dash-dark jr-root" : "jr-root"} style={{
       margin: isFullscreen ? 0 : "-24px",
       minHeight: "100vh",
       backgroundColor: "#ffffff",
@@ -241,9 +253,9 @@ export default function Jurnal() {
 
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <div style={{ position: "relative" }}>
-            
+
             {showFeedbackDropdown && (
-              <div style={{
+              <div className="jr-dd" style={{
                 position: "absolute", top: "38px", right: 0, zIndex: 50,
                 width: "160px", backgroundColor: "#ffffff", border: "1px solid #cbd5e1",
                 borderRadius: "6px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: "4px 0",
@@ -350,7 +362,7 @@ export default function Jurnal() {
                 </svg>
               </div>
               {showPeriodeDropdown && (
-                <div style={{
+                <div className="jr-dd" style={{
                   position: "absolute", top: "calc(100% + 4px)", left: 0, zIndex: 1000,
                   width: "170px", backgroundColor: "#ffffff", border: "1px solid #cbd5e1",
                   borderRadius: "6px", boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
@@ -378,6 +390,7 @@ export default function Jurnal() {
             {/* Filter Button */}
             <button
               type="button"
+              className="jr-btn"
               style={{
                 height: "36px", padding: "0 22px", backgroundColor: "#216b88",
                 color: "#ffffff", fontSize: "13px", fontWeight: 600, border: "none",
@@ -414,6 +427,7 @@ export default function Jurnal() {
             <div style={{ position: "relative" }}>
               <button
                 type="button"
+                className="jr-btn"
                 onClick={() => setShowEksporDropdown(!showEksporDropdown)}
                 style={{
                   height: "36px", padding: "0 14px", backgroundColor: "#216b88",
@@ -431,7 +445,7 @@ export default function Jurnal() {
                 </svg>
               </button>
               {showEksporDropdown && (
-                <div style={{
+                <div className="jr-dd" style={{
                   position: "absolute", top: "42px", right: 0, zIndex: 50,
                   width: "140px", backgroundColor: "#ffffff", border: "1px solid #cbd5e1",
                   borderRadius: "6px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: "4px 0",
@@ -480,6 +494,7 @@ export default function Jurnal() {
             {/* Buat Jurnal Umum Button */}
             <button
               type="button"
+              className="jr-btn"
               style={{
                 display: "inline-flex", alignItems: "center", gap: "6px",
                 padding: "8px 18px", backgroundColor: "#216b88", color: "#ffffff",
@@ -622,7 +637,7 @@ export default function Jurnal() {
                   </svg>
                 </div>
                 {showDrawerPeriodeDropdown && (
-                  <div style={{
+                  <div className="jr-dd" style={{
                     position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 1000,
                     backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "4px",
                     boxShadow: "0 10px 25px -5px rgba(0,0,0,0.12), 0 8px 10px -6px rgba(0,0,0,0.08)",
@@ -717,7 +732,7 @@ export default function Jurnal() {
                   </svg>
                 </div>
                 {showDrawerSortByDropdown && (
-                  <div style={{
+                  <div className="jr-dd" style={{
                     position: "absolute", top: "calc(100% - 46px)", left: 0, right: 0, zIndex: 1000,
                     backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "4px",
                     boxShadow: "0 10px 25px -5px rgba(0,0,0,0.12), 0 8px 10px -6px rgba(0,0,0,0.08)",
@@ -770,6 +785,7 @@ export default function Jurnal() {
                 <button
                   type="button"
                   onClick={closeFilterDrawer}
+                  className="jr-btn"
                   style={{
                     minWidth: "115px", height: "38px", padding: "0 20px",
                     backgroundColor: "#ffffff", border: "1px solid #94a3b8", borderRadius: "4px",
@@ -794,6 +810,65 @@ export default function Jurnal() {
           </aside>
         </div>
       )}
+      <style>{`
+  .dash-dark.jr-root { background-color: #121212 !important; color: #f1f5f9 !important; color-scheme: dark; }
+  .dash-dark h1, .dash-dark h2 { color: #ffffff !important; }
+  .dash-dark label { color: #cbd5e1 !important; }
+
+  /* Permukaan putih / abu inline -> gelap */
+  .dash-dark [style*="background-color: rgb(255, 255, 255)"] { background-color: #121212 !important; }
+  .dash-dark [style*="background-color: rgb(248, 250, 252)"] { background-color: #1a1a1a !important; }
+  .dash-dark [style*="background-color: rgb(246, 247, 249)"] { background-color: #1a1a1a !important; }
+  .dash-dark [style*="background-color: rgb(244, 246, 255)"] { background-color: #2d2d2d !important; }
+  .dash-dark input[type="text"] { color: #f1f5f9 !important; }
+  .dash-dark input[type="radio"] { accent-color: #E5B85C !important; }
+
+  /* Border */
+  .dash-dark [style*="border: 1px solid"],
+  .dash-dark [style*="border-bottom: 1px solid"],
+  .dash-dark [style*="border-top: 1px solid"] { border-color: #634f27 !important; }
+  .dash-dark [style*="border: 1px solid rgb(33, 107, 136)"] { border-color: #E5B85C !important; }
+
+  /* Teks gelap -> terang */
+  .dash-dark [style*="color: rgb(30, 41, 59)"],
+  .dash-dark [style*="color: rgb(51, 65, 85)"],
+  .dash-dark [style*="color: rgb(15, 23, 42)"],
+  .dash-dark [style*="color: rgb(45, 55, 72)"] { color: #f1f5f9 !important; }
+  .dash-dark [style*="color: rgb(71, 85, 105)"],
+  .dash-dark [style*="color: rgb(100, 116, 139)"] { color: #cbd5e1 !important; }
+  .dash-dark [style*="color: rgb(148, 163, 184)"],
+  .dash-dark [style*="color: rgb(113, 130, 146)"] { color: #94a3b8 !important; }
+
+  /* Teal -> emas */
+  .dash-dark [style*="color: rgb(33, 107, 136)"],
+  .dash-dark [style*="color: rgb(79, 103, 201)"] { color: #E5B85C !important; }
+  .dash-dark svg[stroke="#64748b"],
+  .dash-dark svg[stroke="#334155"] { stroke: #cbd5e1; }
+  .dash-dark svg[fill="#475569"] { fill: #cbd5e1; }
+
+  /* Tombol utama emas */
+  .dash-dark .jr-btn { background-color: #E5B85C !important; color: #121212 !important; border-color: #E5B85C !important; }
+  .dash-dark .jr-btn:hover { background-color: #f0c978 !important; }
+  .dash-dark .jr-btn svg { color: #121212 !important; fill: #121212 !important; }
+  .dash-dark .jr-btn svg[stroke="currentColor"] { fill: none !important; stroke: #121212 !important; }
+
+  /* Dropdown & kalender */
+  .dash-dark .jr-dd, .dash-dark .jr-pop { background-color: #1e1e1e !important; border-color: #634f27 !important; }
+  .dash-dark .jr-dd div { color: #f1f5f9 !important; }
+  .dash-dark .jr-dd [style*="background-color: rgb(239, 246, 255)"],
+  .dash-dark .jr-dd [style*="background-color: rgb(241, 245, 249)"] { background-color: rgba(229,184,92,0.2) !important; }
+  .dash-dark .jr-dd [style*="background-color: rgb(248, 250, 252)"] { background-color: #2d2d2d !important; }
+  .dash-dark .jr-pop button { color: #f1f5f9 !important; }
+  .dash-dark .jr-pop span { color: #94a3b8 !important; }
+  .dash-dark .jr-pop [style*="background-color: rgb(248, 250, 252)"] { background-color: #262626 !important; }
+  .dash-dark .jr-pop [style*="background-color: rgb(79, 103, 201)"] { background-color: #E5B85C !important; color: #121212 !important; }
+
+  /* Badge ? di drawer */
+  .dash-dark [style*="border-radius: 50%"][style*="background-color: rgb(37, 99, 235)"] { background-color: #E5B85C !important; color: #121212 !important; }
+
+  /* Backdrop */
+  .dash-dark [style*="rgba(15, 23, 42, 0.3)"] { background-color: rgba(0,0,0,0.7) !important; }
+`}</style>
     </div>
   );
 }

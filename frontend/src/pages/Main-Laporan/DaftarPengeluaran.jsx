@@ -10,6 +10,77 @@ export default function DaftarPengeluaran() {
 
   const isFullscreen = outletContext ? outletContext.isFullscreen : localFullscreen;
 
+  // Dark Mode
+  const [themeMode, setThemeMode] = useState(() => localStorage.getItem("app_theme") || "light");
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+  const isDark = themeMode === "dark";
+
+  // Palet halaman
+  const t = isDark
+    ? {
+      pageBg: "#121212", text: "#f1f5f9", title: "#ffffff", muted: "#94a3b8",
+      headerBg: "#121212", headerBorder: "#634f27", headerShadow: "0 1px 2px rgba(0,0,0,0.4)",
+      label: "#e2e8f0", labelAlt: "#e2e8f0", drawerLabel: "#e2e8f0",
+      inputText: "#f1f5f9", inputBorder: "#634f27", icon: "#E5B85C", iconMuted: "#94a3b8",
+      primary: "#E5B85C", primaryHover: "#f0c978", primaryText: "#121212",
+      outlineText: "#E5B85C", outlineBorder: "#634f27", outlineBg: "#262626", outlineHover: "#2d2d2d",
+      ddBg: "#1e1e1e", ddBorder: "#634f27", ddText: "#f1f5f9", ddHover: "#2d2d2d",
+      ddShadow: "0 10px 25px -5px rgba(0,0,0,0.6)", tableShadow: "0 2px 15px -6px rgba(241, 133, 10, 0.86)",
+      tableHeadText: "#94a3b8", tableBorder: "#3a3326",
+      linkText: "#94a3b8", linkHover: "#E5B85C",
+      drawerBg: "#1a1a1a", drawerBorder: "#3a3326", drawerLine: "#3a3326", drawerText: "#f1f5f9",
+      overlay: "rgba(0, 0, 0, 0.7)",
+      chipBg: "#262626", chipBorder: "#634f27", chipText: "#f1f5f9", chipClose: "#94a3b8",
+      radioText: "#cbd5e1", accent: "#E5B85C", helpBg: "#E5B85C", helpText: "#121212",
+      cancelText: "#cbd5e1", cancelBorder: "#634f27", cancelBg: "transparent", cancelHover: "#2d2d2d",
+      applyBg: "#E5B85C", applyHover: "#f0c978", applyText: "#121212",
+      checkText: "#f1f5f9",
+    }
+    : {
+      pageBg: "#ffffff", tableShadow: "0 2px 15px -6px rgba(58, 58, 58, 0.86)", text: "#1e293b", title: "#0f172a", muted: "#94a3b8",
+      headerBg: "#ffffff", headerBorder: "#e2e8f0", headerShadow: "0 1px 2px rgba(0,0,0,0.03)",
+      label: "#475569", labelAlt: "#6b7280", drawerLabel: "#52525b",
+      inputText: "#0f172a", inputBorder: "#cbd5e1", icon: "#64748b", iconMuted: "#64748b",
+      primary: "#20667d", primaryHover: "#195265", primaryText: "#ffffff",
+      outlineText: "#20667d", outlineBorder: "#20667d", outlineBg: "#ffffff", outlineHover: "#f8fafc",
+      ddBg: "#ffffff", ddBorder: "#d4d4d8", ddText: "#1e3a8a", ddHover: "#f1f5f9",
+      ddShadow: "0 4px 16px rgba(0,0,0,0.12)",
+      tableHeadText: "#94a3b8", tableBorder: "#e2e8f0",
+      linkText: "#64748b", linkHover: "#20667d",
+      drawerBg: "#ffffff", drawerBorder: "#e4e4e7", drawerLine: "#e4e4e7", drawerText: "#000000",
+      overlay: "rgba(15, 23, 42, 0.4)",
+      chipBg: "#ffffff", chipBorder: "#d4d4d8", chipText: "#3f3f46", chipClose: "#71717a",
+      radioText: "#27272a", accent: "#2563eb", helpBg: "#2563eb", helpText: "#ffffff",
+      cancelText: "#71717a", cancelBorder: "#d4d4d8", cancelBg: "#ffffff", cancelHover: "#f8fafc",
+      applyBg: "#4eaf54", applyHover: "#439648", applyText: "#ffffff",
+      checkText: "#000000",
+    };
+
+  // Palet kalender
+  const c = isDark
+    ? {
+      popBg: "#1a1a1a", popBorder: "#634f27",
+      shadow: "0 10px 25px -5px rgba(0,0,0,0.6)",
+      nav: "#f1f5f9", accent: "#E5B85C", weekday: "#94a3b8",
+      selBg: "#E5B85C", selText: "#121212",
+      dayText: "#f1f5f9", monthBg: "#262626", hoverBg: "#2d2d2d", divider: "#3a3326",
+    }
+    : {
+      popBg: "#ffffff", popBorder: "#cbd5e1",
+      shadow: "0 10px 25px -5px rgba(0,0,0,0.12)",
+      nav: "#64748b", accent: "#0284c7", weekday: "#94a3b8",
+      selBg: "#0284c7", selText: "#ffffff",
+      dayText: "#1e293b", monthBg: "#f1f5f9", hoverBg: "#f1f5f9", divider: "#f1f5f9",
+    };
+
   // Start Date Picker State
   const startDatePickerRef = useRef(null);
   const [startSelectedDate, setStartSelectedDate] = useState(() => new Date(2026, 8, 18));
@@ -142,12 +213,82 @@ export default function DaftarPengeluaran() {
     setStartCalendarViewDate(new Date(s));
   };
 
-  // // Calendar
+  // ---------- Helper tampilan ----------
+  const hoverBg = (normal, hover) => ({
+    onMouseEnter: (e) => (e.currentTarget.style.backgroundColor = hover),
+    onMouseLeave: (e) => (e.currentTarget.style.backgroundColor = normal),
+  });
+
+  const primaryBtnStyle = {
+    backgroundColor: t.primary, color: t.primaryText, border: "none", borderRadius: "4px", cursor: "pointer",
+    fontWeight: 500, boxShadow: "0 1px 2px rgba(0,0,0,0.08)", transition: "background-color 0.15s ease",
+  };
+
+  const ddPanelStyle = {
+    backgroundColor: t.ddBg,
+    border: `1px solid ${t.ddBorder}`,
+    borderRadius: "4px",
+    boxShadow: t.ddShadow,
+    padding: "4px 0",
+  };
+
+  const calIcon = (
+    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+      <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M16 15h.01M12 15h.01M8 15h.01M16 18h.01M12 18h.01M8 18h.01" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+
+  const mainLabelStyle = { fontSize: "12px", fontWeight: 600, color: t.label, marginBottom: "4px" };
+  const mainInputStyle = {
+    border: "none", outline: "none", fontSize: "14px", fontWeight: 600, color: t.inputText,
+    backgroundColor: "transparent", width: "100%", cursor: "pointer", paddingLeft: "2px", paddingRight: "24px",
+  };
+  const mainIconStyle = { position: "absolute", right: "4px", color: t.icon, pointerEvents: "none", display: "flex", alignItems: "center" };
+
+  const drawerLabelStyle = { fontSize: "13px", fontWeight: 600, color: t.drawerLabel };
+  const drawerUnderline = { position: "relative", borderBottom: `1px solid ${t.drawerLine}`, paddingBottom: "4px" };
+  const drawerInputStyle = {
+    border: "none", outline: "none", fontSize: "14px", fontWeight: 700, color: t.drawerText,
+    backgroundColor: "transparent", width: "100%",
+  };
+  const drawerSelectBtnStyle = {
+    ...drawerInputStyle, textAlign: "left", cursor: "pointer", display: "flex",
+    justifyContent: "space-between", alignItems: "center", padding: 0,
+  };
+  const chipStyle = {
+    display: "inline-flex", alignItems: "center", gap: "6px", padding: "2px 8px", backgroundColor: t.chipBg,
+    border: `1px solid ${t.chipBorder}`, borderRadius: "4px", fontSize: "13px", color: t.chipText, fontWeight: 500,
+  };
+
+  const renderDropdownItem = (item, onClick, fontSize = "13.5px", padding = "8px 16px") => (
+    <div
+      key={item}
+      onClick={onClick}
+      style={{ padding, fontSize, color: t.ddText, cursor: "pointer", transition: "background-color 0.15s ease" }}
+      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = t.ddHover)}
+      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+    >
+      {item}
+    </div>
+  );
+
+  const renderRadio = (name, value, checked, onChange, label, withHelp = false) => (
+    <label key={value} style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", fontSize: "13.5px", color: t.radioText }}>
+      <input type="radio" name={name} value={value} checked={checked} onChange={onChange} style={{ accentColor: t.accent, width: "16px", height: "16px", cursor: "pointer" }} />
+      <span>{label}</span>
+      {withHelp && (
+        <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "15px", height: "15px", borderRadius: "50%", backgroundColor: t.helpBg, color: t.helpText, fontSize: "10px", fontWeight: 700, marginLeft: "2px" }}>?</span>
+      )}
+    </label>
+  );
+
+  // Calendar
   const renderCalendarPicker = (
-    selDate, setSelDate, 
-    viewDate, setViewDate, 
-    viewMode, setViewMode, 
-    yrRangeStart, setYrRangeStart, 
+    selDate, setSelDate,
+    viewDate, setViewDate,
+    viewMode, setViewMode,
+    yrRangeStart, setYrRangeStart,
     closePicker,
     alignRight = false
   ) => {
@@ -168,44 +309,46 @@ export default function DaftarPengeluaran() {
       else if (viewMode === "years") setYrRangeStart(yrRangeStart + 12);
     };
 
+    const navBtn = { border: "none", background: "none", cursor: "pointer", padding: "4px", borderRadius: "4px", color: c.nav, display: "flex" };
+
     return (
-      <div 
-        style={{ 
-          position: "absolute", 
-          top: "calc(100% + 6px)", 
+      <div
+        style={{
+          position: "absolute",
+          top: "calc(100% + 6px)",
           ...(alignRight ? { right: 0 } : { left: 0 }),
-          zIndex: 1000, 
-          backgroundColor: "#ffffff", 
-          border: "1px solid #cbd5e1", 
-          borderRadius: "8px", 
-          boxShadow: "0 10px 25px -5px rgba(0,0,0,0.12)", 
-          padding: "14px 16px", 
-          width: "280px", 
-          userSelect: "none" 
+          zIndex: 1000,
+          backgroundColor: c.popBg,
+          border: `1px solid ${c.popBorder}`,
+          borderRadius: "8px",
+          boxShadow: c.shadow,
+          padding: "14px 16px",
+          width: "280px",
+          userSelect: "none",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-          <button type="button" onClick={handlePrev} style={{ border: "none", background: "none", cursor: "pointer", padding: "4px", borderRadius: "4px", color: "#64748b" }}>
+          <button type="button" onClick={handlePrev} style={navBtn} {...hoverBg("transparent", c.hoverBg)}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6" /></svg>
           </button>
           <div style={{ display: "flex", gap: "6px", fontSize: "14px", fontWeight: 700 }}>
             {viewMode === "days" && (
               <>
-                <span onClick={() => setViewMode("months")} style={{ cursor: "pointer", color: "#0284c7" }}>{MONTH_NAMES[month]}</span>
-                <span onClick={() => setViewMode("years")} style={{ cursor: "pointer", color: "#0284c7" }}>{year}</span>
+                <span onClick={() => setViewMode("months")} style={{ cursor: "pointer", color: c.accent }}>{MONTH_NAMES[month]}</span>
+                <span onClick={() => setViewMode("years")} style={{ cursor: "pointer", color: c.accent }}>{year}</span>
               </>
             )}
-            {viewMode === "months" && <span onClick={() => setViewMode("years")} style={{ cursor: "pointer", color: "#0284c7" }}>{year}</span>}
-            {viewMode === "years" && <span style={{ color: "#0284c7" }}>{yrRangeStart} - {yrRangeStart + 11}</span>}
+            {viewMode === "months" && <span onClick={() => setViewMode("years")} style={{ cursor: "pointer", color: c.accent }}>{year}</span>}
+            {viewMode === "years" && <span style={{ color: c.accent }}>{yrRangeStart} - {yrRangeStart + 11}</span>}
           </div>
-          <button type="button" onClick={handleNext} style={{ border: "none", background: "none", cursor: "pointer", padding: "4px", borderRadius: "4px", color: "#64748b" }}>
+          <button type="button" onClick={handleNext} style={navBtn} {...hoverBg("transparent", c.hoverBg)}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
           </button>
         </div>
 
         {viewMode === "days" && (
           <>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", textAlign: "center", fontSize: "11px", fontWeight: 600, color: "#94a3b8", marginBottom: "6px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", textAlign: "center", fontSize: "11px", fontWeight: 600, color: c.weekday, marginBottom: "6px" }}>
               {["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"].map((d) => <div key={d}>{d}</div>)}
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "2px", textAlign: "center" }}>
@@ -214,8 +357,19 @@ export default function DaftarPengeluaran() {
                 const dayNum = i + 1;
                 const isSelected = selDate && selDate.getDate() === dayNum && selDate.getMonth() === month && selDate.getFullYear() === year;
                 return (
-                  <button key={dayNum} type="button" onClick={() => { setSelDate(new Date(year, month, dayNum)); closePicker(); }}
-                    style={{ fontSize: "12.5px", padding: "6px 0", border: "none", borderRadius: "4px", cursor: "pointer", backgroundColor: isSelected ? "#0284c7" : "transparent", color: isSelected ? "#ffffff" : "#1e293b", fontWeight: isSelected ? 700 : 400 }}>
+                  <button
+                    key={dayNum}
+                    type="button"
+                    onClick={() => { setSelDate(new Date(year, month, dayNum)); closePicker(); }}
+                    style={{
+                      fontSize: "12.5px", padding: "6px 0", border: "none", borderRadius: "4px", cursor: "pointer",
+                      backgroundColor: isSelected ? c.selBg : "transparent",
+                      color: isSelected ? c.selText : c.dayText,
+                      fontWeight: isSelected ? 700 : 400,
+                    }}
+                    onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = c.hoverBg; }}
+                    onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = "transparent"; }}
+                  >
                     {dayNum}
                   </button>
                 );
@@ -230,7 +384,7 @@ export default function DaftarPengeluaran() {
               const isSelected = selDate && selDate.getMonth() === idx && selDate.getFullYear() === year;
               return (
                 <button key={mn} type="button" onClick={() => { setViewDate(new Date(year, idx, 1)); setViewMode("days"); }}
-                  style={{ fontSize: "12px", padding: "8px 4px", border: "none", borderRadius: "4px", cursor: "pointer", backgroundColor: isSelected ? "#0284c7" : "#f1f5f9", color: isSelected ? "#ffffff" : "#1e293b", fontWeight: isSelected ? 700 : 400 }}>
+                  style={{ fontSize: "12px", padding: "8px 4px", border: "none", borderRadius: "4px", cursor: "pointer", backgroundColor: isSelected ? c.selBg : c.monthBg, color: isSelected ? c.selText : c.dayText, fontWeight: isSelected ? 700 : 400 }}>
                   {mn.slice(0, 3)}
                 </button>
               );
@@ -245,7 +399,7 @@ export default function DaftarPengeluaran() {
               const isSelected = selDate && selDate.getFullYear() === yr;
               return (
                 <button key={yr} type="button" onClick={() => { setViewDate(new Date(yr, viewDate.getMonth(), 1)); setViewMode("months"); }}
-                  style={{ fontSize: "12px", padding: "8px 4px", border: "none", borderRadius: "4px", cursor: "pointer", backgroundColor: isSelected ? "#0284c7" : "#f1f5f9", color: isSelected ? "#ffffff" : "#1e293b", fontWeight: isSelected ? 700 : 400 }}>
+                  style={{ fontSize: "12px", padding: "8px 4px", border: "none", borderRadius: "4px", cursor: "pointer", backgroundColor: isSelected ? c.selBg : c.monthBg, color: isSelected ? c.selText : c.dayText, fontWeight: isSelected ? 700 : 400 }}>
                   {yr}
                 </button>
               );
@@ -254,7 +408,7 @@ export default function DaftarPengeluaran() {
         )}
 
         {/* Tombol Today */}
-        <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid #f1f5f9", textAlign: "center" }}>
+        <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: `1px solid ${c.divider}`, textAlign: "center" }}>
           <button
             type="button"
             onClick={(e) => {
@@ -266,7 +420,7 @@ export default function DaftarPengeluaran() {
             }}
             style={{
               background: "none", border: "none", fontSize: "13px", fontWeight: 600,
-              color: "#0284c7", cursor: "pointer", padding: "4px 8px", borderRadius: "4px",
+              color: c.accent, cursor: "pointer", padding: "4px 8px", borderRadius: "4px",
             }}
           >
             Hari ini
@@ -277,13 +431,23 @@ export default function DaftarPengeluaran() {
   };
 
   return (
-    <div style={{ margin: "-24px", display: "flex", flexDirection: "column", minHeight: "100vh", backgroundColor: "#ffffff", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif", color: "#1e293b" }}>
+    <div
+      className={isDark ? "dp-dark" : ""}
+      style={{
+        margin: "-24px", display: "flex", flexDirection: "column", minHeight: "100vh",
+        backgroundColor: t.pageBg,
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+        color: t.text,
+        colorScheme: isDark ? "dark" : "light",
+        transition: "background-color 0.3s ease, color 0.3s ease",
+      }}
+    >
       {/* Header */}
-      <header style={{ backgroundColor: "#ffffff", borderBottom: "1px solid #e2e8f0", padding: "24px 32px 20px 32px", boxShadow: "0 1px 2px rgba(0,0,0,0.03)" }}>
+      <header style={{ backgroundColor: t.headerBg, borderBottom: `1px solid ${t.headerBorder}`, padding: "24px 32px 20px 32px", boxShadow: t.headerShadow }}>
         {/* Title Row */}
         <div style={{ display: "flex", alignItems: "baseline", marginBottom: "24px" }}>
-          <h1 style={{ fontSize: "24px", fontWeight: 700, color: "#0f172a", margin: 0, letterSpacing: "-0.02em" }}>{pageTitle}</h1>
-          <span style={{ fontSize: "16px", color: "#94a3b8", fontWeight: 400, marginLeft: "8px" }}>(dalam IDR)</span>
+          <h1 style={{ fontSize: "24px", fontWeight: 700, color: t.title, margin: 0, letterSpacing: "-0.02em" }}>{pageTitle}</h1>
+          <span style={{ fontSize: "16px", color: t.muted, fontWeight: 400, marginLeft: "8px" }}>(dalam IDR)</span>
         </div>
 
         {/* Filters & Action Bar */}
@@ -293,57 +457,40 @@ export default function DaftarPengeluaran() {
 
             {/* Tanggal Mulai */}
             <div style={{ display: "flex", flexDirection: "column", width: "144px", position: "relative" }} ref={startDatePickerRef}>
-              <label style={{ fontSize: "12px", fontWeight: 600, color: "#475569", marginBottom: "4px" }} htmlFor="start-date">Tanggal Mulai</label>
-              <div style={{ display: "flex", alignItems: "center", borderBottom: "1px solid #cbd5e1", paddingBottom: "2px", position: "relative" }}>
-                <input id="start-date" readOnly type="text" value={startDateStr} onClick={() => setShowStartCalendar(!showStartCalendar)}
-                  style={{ border: "none", outline: "none", fontSize: "14px", fontWeight: 600, color: "#0f172a", backgroundColor: "transparent", width: "100%", cursor: "pointer", paddingLeft: "2px", paddingRight: "24px" }} />
-                <span style={{ position: "absolute", right: "4px", color: "#64748b", pointerEvents: "none", display: "flex", alignItems: "center" }}>
-                  <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-                    <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M16 15h.01M12 15h.01M8 15h.01M16 18h.01M12 18h.01M8 18h.01" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </span>
+              <label style={mainLabelStyle} htmlFor="start-date">Tanggal Mulai</label>
+              <div style={{ display: "flex", alignItems: "center", borderBottom: `1px solid ${t.inputBorder}`, paddingBottom: "2px", position: "relative" }}>
+                <input id="start-date" readOnly type="text" value={startDateStr} onClick={() => setShowStartCalendar(!showStartCalendar)} style={mainInputStyle} />
+                <span style={mainIconStyle}>{calIcon}</span>
                 {showStartCalendar && renderCalendarPicker(startSelectedDate, setStartSelectedDate, startCalendarViewDate, setStartCalendarViewDate, startCalendarViewMode, setStartCalendarViewMode, startYearRangeStart, setStartYearRangeStart, () => setShowStartCalendar(false))}
               </div>
             </div>
 
             {/* Tanggal Selesai */}
             <div style={{ display: "flex", flexDirection: "column", width: "144px", position: "relative" }} ref={endDatePickerRef}>
-              <label style={{ fontSize: "12px", fontWeight: 600, color: "#475569", marginBottom: "4px" }} htmlFor="end-date">Tanggal Selesai</label>
-              <div style={{ display: "flex", alignItems: "center", borderBottom: "1px solid #cbd5e1", paddingBottom: "2px", position: "relative" }}>
-                <input id="end-date" readOnly type="text" value={endDateStr} onClick={() => setShowEndCalendar(!showEndCalendar)}
-                  style={{ border: "none", outline: "none", fontSize: "14px", fontWeight: 600, color: "#0f172a", backgroundColor: "transparent", width: "100%", cursor: "pointer", paddingLeft: "2px", paddingRight: "24px" }} />
-                <span style={{ position: "absolute", right: "4px", color: "#64748b", pointerEvents: "none", display: "flex", alignItems: "center" }}>
-                  <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-                    <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M16 15h.01M12 15h.01M8 15h.01M16 18h.01M12 18h.01M8 18h.01" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </span>
+              <label style={mainLabelStyle} htmlFor="end-date">Tanggal Selesai</label>
+              <div style={{ display: "flex", alignItems: "center", borderBottom: `1px solid ${t.inputBorder}`, paddingBottom: "2px", position: "relative" }}>
+                <input id="end-date" readOnly type="text" value={endDateStr} onClick={() => setShowEndCalendar(!showEndCalendar)} style={mainInputStyle} />
+                <span style={mainIconStyle}>{calIcon}</span>
                 {showEndCalendar && renderCalendarPicker(endSelectedDate, setEndSelectedDate, endCalendarViewDate, setEndCalendarViewDate, endCalendarViewMode, setEndCalendarViewMode, endYearRangeStart, setEndYearRangeStart, () => setShowEndCalendar(false), true)}
               </div>
             </div>
 
             {/* Filter sesuai periode */}
             <div style={{ display: "flex", flexDirection: "column", width: "192px" }} ref={mainPeriodRef}>
-              <label style={{ fontSize: "13px", fontWeight: 700, color: "#6b7280", marginBottom: "6px", lineHeight: 1 }}>Filter sesuai periode</label>
-              <div style={{ position: "relative", display: "flex", alignItems: "center", borderBottom: "1px solid #cbd5e1", paddingBottom: "2px" }}>
+              <label style={{ fontSize: "13px", fontWeight: 700, color: t.labelAlt, marginBottom: "6px", lineHeight: 1 }}>Filter sesuai periode</label>
+              <div style={{ position: "relative", display: "flex", alignItems: "center", borderBottom: `1px solid ${t.inputBorder}`, paddingBottom: "2px" }}>
                 <button type="button" onClick={() => setShowMainPeriodDropdown(!showMainPeriodDropdown)}
-                  style={{ border: "none", outline: "none", fontSize: "14px", fontWeight: 500, color: "#1e293b", backgroundColor: "transparent", width: "100%", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", padding: 0 }}>
+                  style={{ border: "none", outline: "none", fontSize: "14px", fontWeight: 500, color: t.inputText, backgroundColor: "transparent", width: "100%", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", padding: 0 }}>
                   <span>{periodePreset || "Hari ini"}</span>
-                  <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor" style={{ color: "#64748b", flexShrink: 0 }}>
+                  <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor" style={{ color: t.iconMuted, flexShrink: 0 }}>
                     <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
                   </svg>
                 </button>
                 {showMainPeriodDropdown && (
-                  <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, width: "180px", maxHeight: "220px", overflowY: "auto", backgroundColor: "#ffffff", border: "1px solid #d4d4d8", borderRadius: "4px", boxShadow: "0 4px 16px rgba(0,0,0,0.12)", zIndex: 1000, padding: "4px 0" }}>
-                    {["Tanggal", "Hari ini", "Minggu ini", "Bulan ini", "Tahun ini", "Bulan lalu", "Tahun lalu"].map((item) => (
-                      <div key={item} onClick={() => { setPeriodePreset(item); handleQuickPeriodSelect(item); setShowMainPeriodDropdown(false); }}
-                        style={{ padding: "8px 16px", fontSize: "13.5px", color: "#1e3a8a", cursor: "pointer", transition: "background-color 0.15s ease" }}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f1f5f9")}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}>
-                        {item}
-                      </div>
-                    ))}
+                  <div style={{ ...ddPanelStyle, position: "absolute", top: "calc(100% + 4px)", left: 0, width: "180px", maxHeight: "220px", overflowY: "auto", zIndex: 1000 }}>
+                    {["Tanggal", "Hari ini", "Minggu ini", "Bulan ini", "Tahun ini", "Bulan lalu", "Tahun lalu"].map((item) =>
+                      renderDropdownItem(item, () => { setPeriodePreset(item); handleQuickPeriodSelect(item); setShowMainPeriodDropdown(false); })
+                    )}
                   </div>
                 )}
               </div>
@@ -352,15 +499,13 @@ export default function DaftarPengeluaran() {
             {/* Action Buttons */}
             <div style={{ display: "flex", alignItems: "center", gap: "12px", paddingBottom: "2px" }}>
               <button type="button"
-                style={{ height: "34px", padding: "0 28px", backgroundColor: "#20667d", color: "#ffffff", fontSize: "14px", fontWeight: 500, borderRadius: "4px", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 1px 2px rgba(0,0,0,0.08)", transition: "background-color 0.15s ease" }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#195265")}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#20667d")}>
+                style={{ ...primaryBtnStyle, height: "34px", padding: "0 28px", fontSize: "14px", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                {...hoverBg(t.primary, t.primaryHover)}>
                 Filter
               </button>
               <button type="button" onClick={openFilterDrawer}
-                style={{ height: "34px", padding: "0 16px", backgroundColor: "#ffffff", color: "#20667d", fontSize: "14px", fontWeight: 500, borderRadius: "4px", border: "1px solid #20667d", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background-color 0.15s ease" }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f8fafc")}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#ffffff")}>
+                style={{ height: "34px", padding: "0 16px", backgroundColor: t.outlineBg, color: t.outlineText, fontSize: "14px", fontWeight: 500, borderRadius: "4px", border: `1px solid ${t.outlineBorder}`, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background-color 0.15s ease" }}
+                {...hoverBg(t.outlineBg, t.outlineHover)}>
                 Filter lebih lanjut
               </button>
             </div>
@@ -369,9 +514,8 @@ export default function DaftarPengeluaran() {
           {/* Right Action: Ekspor */}
           <div style={{ paddingBottom: "2px", position: "relative" }} ref={eksporDropdownRef}>
             <button type="button" onClick={() => setShowEksporDropdown(!showEksporDropdown)}
-              style={{ height: "34px", padding: "0 14px", backgroundColor: "#20667d", color: "#ffffff", fontSize: "14px", fontWeight: 500, borderRadius: "4px", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "8px", boxShadow: "0 1px 2px rgba(0,0,0,0.08)", transition: "background-color 0.15s ease" }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#195265")}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#20667d")}>
+              style={{ ...primaryBtnStyle, height: "34px", padding: "0 14px", fontSize: "14px", display: "inline-flex", alignItems: "center", gap: "8px" }}
+              {...hoverBg(t.primary, t.primaryHover)}>
               <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
                 <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0-12L8 8m4-4l4 4" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
@@ -381,10 +525,10 @@ export default function DaftarPengeluaran() {
               </svg>
             </button>
             {showEksporDropdown && (
-              <div style={{ position: "absolute", right: 0, top: "calc(100% + 4px)", zIndex: 50, width: "176px", backgroundColor: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "4px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: "4px 0", fontSize: "13px", color: "#374151" }}>
-                <button type="button" onClick={() => setShowEksporDropdown(false)} style={{ width: "100%", textAlign: "left", padding: "8px 16px", border: "none", backgroundColor: "transparent", cursor: "pointer" }} onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f3f4f6")} onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}>Export Excel (.xlsx)</button>
-                <button type="button" onClick={() => setShowEksporDropdown(false)} style={{ width: "100%", textAlign: "left", padding: "8px 16px", border: "none", backgroundColor: "transparent", cursor: "pointer" }} onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f3f4f6")} onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}>Export PDF (.pdf)</button>
-                <button type="button" onClick={() => setShowEksporDropdown(false)} style={{ width: "100%", textAlign: "left", padding: "8px 16px", border: "none", backgroundColor: "transparent", cursor: "pointer" }} onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f3f4f6")} onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}>Export CSV (.csv)</button>
+              <div style={{ ...ddPanelStyle, position: "absolute", right: 0, top: "calc(100% + 4px)", zIndex: 50, width: "176px" }}>
+                {["Export Excel (.xlsx)", "Export PDF (.pdf)", "Export CSV (.csv)"].map((item) =>
+                  renderDropdownItem(item, () => setShowEksporDropdown(false), "13px")
+                )}
               </div>
             )}
           </div>
@@ -392,10 +536,10 @@ export default function DaftarPengeluaran() {
       </header>
 
       {/* Main Content: Table */}
-      <section style={{ flex: 1, padding: "32px 32px 64px 32px", backgroundColor: "#ffffff" }}>
-        <div style={{ width: "100%", backgroundColor: "#ffffff", borderTop: "1px solid #e2e8f0" }}>
+      <section style={{ flex: 1, padding: "32px 32px 64px 32px", backgroundColor: t.pageBg }}>
+        <div style={{ width: "100%", backgroundColor: t.pageBg, borderTop: `1px solid ${t.tableBorder}`, border: `1px solid ${t.tableBorder}`, boxShadow: t.tableShadow }}>
           {/* Table Header Bar */}
-          <div style={{ display: "grid", gridTemplateColumns: "2fr 2fr 2fr 3fr 2fr 1fr", backgroundColor: "#ffffff", borderBottom: "1px solid #e2e8f0", padding: "10px 16px", fontSize: "12px", fontWeight: 600, color: "#94a3b8", userSelect: "none" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 2fr 2fr 3fr 2fr 1fr", backgroundColor: t.pageBg, borderBottom: `1px solid ${t.tableBorder}`, padding: "10px 16px", fontSize: "12px", fontWeight: 600, color: t.tableHeadText, userSelect: "none" }}>
             <div>Tanggal</div>
             <div>Nomor</div>
             <div>Kategori</div>
@@ -406,20 +550,19 @@ export default function DaftarPengeluaran() {
 
           {/* Empty State */}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", paddingTop: "96px", paddingBottom: "128px", textAlign: "center" }}>
-            <h2 style={{ fontSize: "20px", fontWeight: 700, color: "#0f172a", marginBottom: "24px" }}>
+            <h2 style={{ fontSize: "20px", fontWeight: 700, color: t.title, marginBottom: "24px" }}>
               Anda belum memiliki transaksi biaya.
             </h2>
             <button type="button"
-              style={{ height: "40px", padding: "0 20px", backgroundColor: "#20667d", color: "#ffffff", fontSize: "14px", fontWeight: 600, borderRadius: "4px", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px", boxShadow: "0 1px 2px rgba(0,0,0,0.08)", transition: "background-color 0.15s ease" }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#195265")}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#20667d")}>
+              style={{ ...primaryBtnStyle, height: "40px", padding: "0 20px", fontSize: "14px", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "6px" }}
+              {...hoverBg(t.primary, t.primaryHover)}>
               <span style={{ fontSize: "18px", fontWeight: 700, lineHeight: 1 }}>+</span>
               <span>Buat Biaya</span>
             </button>
-            <span style={{ fontSize: "14px", color: "#94a3b8", margin: "16px 0 8px 0" }}>atau</span>
-            <a href="#sample" style={{ fontSize: "14px", color: "#64748b", textDecoration: "none", transition: "color 0.15s ease" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "#20667d")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "#64748b")}>
+            <span style={{ fontSize: "14px", color: t.muted, margin: "16px 0 8px 0" }}>atau</span>
+            <a href="#sample" style={{ fontSize: "14px", color: t.linkText, textDecoration: "none", transition: "color 0.15s ease" }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = t.linkHover)}
+              onMouseLeave={(e) => (e.currentTarget.style.color = t.linkText)}>
               Lihat Sample
             </a>
           </div>
@@ -427,18 +570,24 @@ export default function DaftarPengeluaran() {
       </section>
 
       {/* Bottom spacer */}
-      <div style={{ width: "100%", height: "64px", backgroundColor: "#ffffff", borderTop: "1px solid #e2e8f0", flexShrink: 0 }} />
+      <div style={{ width: "100%", height: "64px", backgroundColor: t.pageBg, borderTop: `1px solid ${t.tableBorder}`, flexShrink: 0 }} />
 
       {/* Drawer Sidebar: Filter Laporan */}
       {showFilterDrawer && (
         <div style={{ position: "fixed", inset: 0, zIndex: 9999, display: "flex", justifyContent: "flex-end" }}>
           <div onClick={closeFilterDrawer}
-            style={{ position: "fixed", inset: 0, backgroundColor: "rgba(15, 23, 42, 0.4)", transition: "opacity 0.3s ease", opacity: drawerOpen ? 1 : 0 }} />
+            style={{ position: "fixed", inset: 0, backgroundColor: t.overlay, transition: "opacity 0.3s ease", opacity: drawerOpen ? 1 : 0 }} />
 
-          <div style={{ position: "relative", width: "360px", maxWidth: "100%", height: "100%", backgroundColor: "#ffffff", boxShadow: "-4px 0 24px rgba(0, 0, 0, 0.15)", display: "flex", flexDirection: "column", zIndex: 10000, transform: drawerOpen ? "translateX(0)" : "translateX(100%)", transition: "transform 0.3s ease" }}>
+          <div style={{
+            position: "relative", width: "360px", maxWidth: "100%", height: "100%", backgroundColor: t.drawerBg,
+            borderLeft: isDark ? `1px solid ${t.headerBorder}` : "none",
+            boxShadow: "-4px 0 24px rgba(0, 0, 0, 0.15)", display: "flex", flexDirection: "column", zIndex: 10000,
+            colorScheme: isDark ? "dark" : "light",
+            transform: drawerOpen ? "translateX(0)" : "translateX(100%)", transition: "transform 0.3s ease",
+          }}>
             {/* Drawer Header */}
             <div style={{ padding: "20px 24px 12px 24px" }}>
-              <h2 style={{ fontSize: "18px", fontWeight: 700, color: "#1e293b", margin: 0 }}>Filter Laporan</h2>
+              <h2 style={{ fontSize: "18px", fontWeight: 700, color: t.title, margin: 0 }}>Filter Laporan</h2>
             </div>
 
             {/* Drawer Body */}
@@ -446,23 +595,17 @@ export default function DaftarPengeluaran() {
 
               {/* Filter sesuai periode */}
               <div style={{ display: "flex", flexDirection: "column", gap: "4px" }} ref={drawerPeriodRef}>
-                <label style={{ fontSize: "13px", fontWeight: 600, color: "#52525b" }}>Filter sesuai periode</label>
-                <div style={{ position: "relative", borderBottom: "1px solid #e4e4e7", paddingBottom: "4px" }}>
-                  <button type="button" onClick={() => setShowDrawerPeriodDropdown(!showDrawerPeriodDropdown)}
-                    style={{ border: "none", outline: "none", fontSize: "14px", fontWeight: 700, color: "#000000", backgroundColor: "transparent", width: "100%", textAlign: "left", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", padding: 0 }}>
+                <label style={drawerLabelStyle}>Filter sesuai periode</label>
+                <div style={drawerUnderline}>
+                  <button type="button" onClick={() => setShowDrawerPeriodDropdown(!showDrawerPeriodDropdown)} style={drawerSelectBtnStyle}>
                     <span>{drawerPeriod || "Hari ini"}</span>
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="#27272a"><polygon points="12,16 6,8 18,8" /></svg>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill={t.drawerText}><polygon points="12,16 6,8 18,8" /></svg>
                   </button>
                   {showDrawerPeriodDropdown && (
-                    <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, maxHeight: "180px", overflowY: "auto", backgroundColor: "#ffffff", border: "1px solid #d4d4d8", borderRadius: "4px", boxShadow: "0 4px 16px rgba(0,0,0,0.12)", zIndex: 100, padding: "4px 0" }}>
-                      {["Tanggal", "Hari ini", "Minggu ini", "Bulan ini", "Tahun ini", "Bulan lalu", "Tahun lalu"].map((item) => (
-                        <div key={item} onClick={() => { setDrawerPeriod(item); setPeriodePreset(item); handleQuickPeriodSelect(item); setShowDrawerPeriodDropdown(false); }}
-                          style={{ padding: "8px 16px", fontSize: "13.5px", color: "#1e3a8a", cursor: "pointer", transition: "background-color 0.15s ease" }}
-                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f1f5f9")}
-                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}>
-                          {item}
-                        </div>
-                      ))}
+                    <div style={{ ...ddPanelStyle, position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, maxHeight: "180px", overflowY: "auto", zIndex: 100 }}>
+                      {["Tanggal", "Hari ini", "Minggu ini", "Bulan ini", "Tahun ini", "Bulan lalu", "Tahun lalu"].map((item) =>
+                        renderDropdownItem(item, () => { setDrawerPeriod(item); setPeriodePreset(item); handleQuickPeriodSelect(item); setShowDrawerPeriodDropdown(false); })
+                      )}
                     </div>
                   )}
                 </div>
@@ -470,124 +613,109 @@ export default function DaftarPengeluaran() {
 
               {/* Tanggal Mulai */}
               <div style={{ display: "flex", flexDirection: "column", gap: "4px" }} ref={drawerStartDatePickerRef}>
-                <label style={{ fontSize: "13px", fontWeight: 600, color: "#52525b" }}>Tanggal Mulai</label>
-                <div style={{ position: "relative", borderBottom: "1px solid #e4e4e7", paddingBottom: "4px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <label style={drawerLabelStyle}>Tanggal Mulai</label>
+                <div style={{ ...drawerUnderline, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <input type="text" readOnly value={drawerStartDate} onClick={() => setShowDrawerStartCalendar(!showDrawerStartCalendar)}
-                    style={{ border: "none", outline: "none", fontSize: "14px", fontWeight: 700, color: "#000000", backgroundColor: "transparent", width: "100%", cursor: "pointer" }} />
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#27272a" strokeWidth="1.8" onClick={() => setShowDrawerStartCalendar(!showDrawerStartCalendar)} style={{ cursor: "pointer", flexShrink: 0 }}>
-                    <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                    style={{ ...drawerInputStyle, cursor: "pointer" }} />
+                  <span onClick={() => setShowDrawerStartCalendar(!showDrawerStartCalendar)} style={{ cursor: "pointer", flexShrink: 0, display: "flex", color: t.icon }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                      <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </span>
                   {showDrawerStartCalendar && renderCalendarPicker(drawerStartSelectedDate, (date) => { setDrawerStartSelectedDate(date); setDrawerStartDate(formatDateDDMMYYYY(date)); setStartSelectedDate(date); setStartDateStr(formatDateDDMMYYYY(date)); }, drawerStartCalendarViewDate, setDrawerStartCalendarViewDate, drawerStartCalendarViewMode, setDrawerStartCalendarViewMode, drawerStartYearRangeStart, setDrawerStartYearRangeStart, () => setShowDrawerStartCalendar(false))}
                 </div>
               </div>
 
               {/* Tanggal Selesai */}
               <div style={{ display: "flex", flexDirection: "column", gap: "4px" }} ref={drawerEndDatePickerRef}>
-                <label style={{ fontSize: "13px", fontWeight: 600, color: "#52525b" }}>Tanggal Selesai</label>
-                <div style={{ position: "relative", borderBottom: "1px solid #e4e4e7", paddingBottom: "4px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <label style={drawerLabelStyle}>Tanggal Selesai</label>
+                <div style={{ ...drawerUnderline, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <input type="text" readOnly value={drawerEndDate} onClick={() => setShowDrawerEndCalendar(!showDrawerEndCalendar)}
-                    style={{ border: "none", outline: "none", fontSize: "14px", fontWeight: 700, color: "#000000", backgroundColor: "transparent", width: "100%", cursor: "pointer" }} />
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#27272a" strokeWidth="1.8" onClick={() => setShowDrawerEndCalendar(!showDrawerEndCalendar)} style={{ cursor: "pointer", flexShrink: 0 }}>
-                    <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                    style={{ ...drawerInputStyle, cursor: "pointer" }} />
+                  <span onClick={() => setShowDrawerEndCalendar(!showDrawerEndCalendar)} style={{ cursor: "pointer", flexShrink: 0, display: "flex", color: t.icon }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                      <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </span>
                   {showDrawerEndCalendar && renderCalendarPicker(drawerEndSelectedDate, (date) => { setDrawerEndSelectedDate(date); setDrawerEndDate(formatDateDDMMYYYY(date)); setEndSelectedDate(date); setEndDateStr(formatDateDDMMYYYY(date)); }, drawerEndCalendarViewDate, setDrawerEndCalendarViewDate, drawerEndCalendarViewMode, setDrawerEndCalendarViewMode, drawerEndYearRangeStart, setDrawerEndYearRangeStart, () => setShowDrawerEndCalendar(false), true)}
                 </div>
               </div>
 
               {/* Filter sesuai kategori */}
               <div style={{ display: "flex", flexDirection: "column", gap: "4px" }} ref={drawerKategoriRef}>
-                <label style={{ fontSize: "13px", fontWeight: 600, color: "#52525b" }}>Filter sesuai kategori</label>
-                <div style={{ borderBottom: "1px solid #e4e4e7", paddingBottom: "6px", display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "2px 8px", backgroundColor: "#ffffff", border: "1px solid #d4d4d8", borderRadius: "4px", fontSize: "13px", color: "#3f3f46", fontWeight: 500 }}>
+                <label style={drawerLabelStyle}>Filter sesuai kategori</label>
+                <div style={{ borderBottom: `1px solid ${t.drawerLine}`, paddingBottom: "6px", display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+                  <span style={chipStyle}>
                     {drawerKategori || "Semua"}
-                    <span onClick={() => setDrawerKategori("")} style={{ cursor: "pointer", color: "#71717a", fontSize: "12px", fontWeight: 700 }}>✕</span>
+                    <span onClick={() => setDrawerKategori("")} style={{ cursor: "pointer", color: t.chipClose, fontSize: "12px", fontWeight: 700 }}>✕</span>
                   </span>
                 </div>
               </div>
 
               {/* Filter sesuai supplier */}
               <div style={{ display: "flex", flexDirection: "column", gap: "4px" }} ref={drawerSupplierRef}>
-                <label style={{ fontSize: "13px", fontWeight: 600, color: "#52525b" }}>Filter sesuai supplier</label>
-                <div style={{ borderBottom: "1px solid #e4e4e7", paddingBottom: "6px", display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "2px 8px", backgroundColor: "#ffffff", border: "1px solid #d4d4d8", borderRadius: "4px", fontSize: "13px", color: "#3f3f46", fontWeight: 500 }}>
+                <label style={drawerLabelStyle}>Filter sesuai supplier</label>
+                <div style={{ borderBottom: `1px solid ${t.drawerLine}`, paddingBottom: "6px", display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+                  <span style={chipStyle}>
                     {drawerSupplier || "Semua"}
-                    <span onClick={() => setDrawerSupplier("")} style={{ cursor: "pointer", color: "#71717a", fontSize: "12px", fontWeight: 700 }}>✕</span>
+                    <span onClick={() => setDrawerSupplier("")} style={{ cursor: "pointer", color: t.chipClose, fontSize: "12px", fontWeight: 700 }}>✕</span>
                   </span>
                 </div>
               </div>
 
               {/* Grup dengan Tag */}
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                <label style={{ fontSize: "13px", fontWeight: 600, color: "#52525b" }}>Grup dengan Tag</label>
-                <div style={{ borderBottom: "1px solid #e4e4e7", paddingBottom: "4px" }}>
-                  <input type="text" value={drawerTag} onChange={(e) => setDrawerTag(e.target.value)}
-                    style={{ border: "none", outline: "none", fontSize: "14px", fontWeight: 700, color: "#000000", backgroundColor: "transparent", width: "100%" }} />
+                <label style={drawerLabelStyle}>Grup dengan Tag</label>
+                <div style={{ borderBottom: `1px solid ${t.drawerLine}`, paddingBottom: "4px" }}>
+                  <input type="text" value={drawerTag} onChange={(e) => setDrawerTag(e.target.value)} style={drawerInputStyle} />
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "2px" }}>
-                  <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", fontSize: "13.5px", color: "#27272a" }}>
-                    <input type="radio" name="drawerTagMatchPengeluaran" value="Mencakup Semua" checked={drawerTagMatch === "Mencakup Semua"} onChange={() => setDrawerTagMatch("Mencakup Semua")} style={{ accentColor: "#2563eb", width: "16px", height: "16px", cursor: "pointer" }} />
-                    <span>Mencakup Semua</span>
-                  </label>
-                  <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", fontSize: "13.5px", color: "#27272a" }}>
-                    <input type="radio" name="drawerTagMatchPengeluaran" value="Salah Satu" checked={drawerTagMatch === "Salah Satu"} onChange={() => setDrawerTagMatch("Salah Satu")} style={{ accentColor: "#2563eb", width: "16px", height: "16px", cursor: "pointer" }} />
-                    <span>Salah Satu</span>
-                    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "15px", height: "15px", borderRadius: "50%", backgroundColor: "#2563eb", color: "#ffffff", fontSize: "10px", fontWeight: 700, marginLeft: "2px" }}>?</span>
-                  </label>
+                  {renderRadio("drawerTagMatchPengeluaran", "Mencakup Semua", drawerTagMatch === "Mencakup Semua", () => setDrawerTagMatch("Mencakup Semua"), "Mencakup Semua")}
+                  {renderRadio("drawerTagMatchPengeluaran", "Salah Satu", drawerTagMatch === "Salah Satu", () => setDrawerTagMatch("Salah Satu"), "Salah Satu", true)}
                 </div>
               </div>
 
               {/* Urutkan sesuai kolom */}
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }} ref={drawerUrutkanRef}>
-                <label style={{ fontSize: "13px", fontWeight: 600, color: "#52525b" }}>Urutkan sesuai kolom</label>
-                <div style={{ position: "relative", borderBottom: "1px solid #e4e4e7", paddingBottom: "4px" }}>
-                  <button type="button" onClick={() => setShowDrawerUrutkanDropdown(!showDrawerUrutkanDropdown)}
-                    style={{ border: "none", outline: "none", fontSize: "14px", fontWeight: 700, color: "#000000", backgroundColor: "transparent", width: "100%", textAlign: "left", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", padding: 0 }}>
+                <label style={drawerLabelStyle}>Urutkan sesuai kolom</label>
+                <div style={drawerUnderline}>
+                  <button type="button" onClick={() => setShowDrawerUrutkanDropdown(!showDrawerUrutkanDropdown)} style={drawerSelectBtnStyle}>
                     <span>{drawerUrutkan || "Tanggal"}</span>
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="#27272a"><polygon points="12,16 6,8 18,8" /></svg>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill={t.drawerText}><polygon points="12,16 6,8 18,8" /></svg>
                   </button>
                   {showDrawerUrutkanDropdown && (
-                    <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 100, backgroundColor: "#ffffff", border: "1px solid #e4e4e7", borderRadius: "6px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: "4px 0" }}>
-                      {["Tanggal", "Nomor", "Kategori", "Supplier", "Jumlah"].map((item) => (
-                        <div key={item} onClick={() => { setDrawerUrutkan(item); setShowDrawerUrutkanDropdown(false); }}
-                          style={{ padding: "8px 12px", fontSize: "13.5px", color: "#334155", cursor: "pointer" }}
-                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f1f5f9")}
-                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}>
-                          {item}
-                        </div>
-                      ))}
+                    <div style={{ ...ddPanelStyle, position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 100 }}>
+                      {["Tanggal", "Nomor", "Kategori", "Supplier", "Jumlah"].map((item) =>
+                        renderDropdownItem(item, () => { setDrawerUrutkan(item); setShowDrawerUrutkanDropdown(false); }, "13.5px", "8px 12px")
+                      )}
                     </div>
                   )}
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "2px" }}>
-                  <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", fontSize: "13.5px", color: "#27272a" }}>
-                    <input type="radio" name="drawerSortOrderPengeluaran" value="asc" checked={drawerSortOrder === "asc"} onChange={() => setDrawerSortOrder("asc")} style={{ accentColor: "#2563eb", width: "16px", height: "16px", cursor: "pointer" }} />
-                    <span>Urutan Naik</span>
-                  </label>
-                  <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", fontSize: "13.5px", color: "#27272a" }}>
-                    <input type="radio" name="drawerSortOrderPengeluaran" value="desc" checked={drawerSortOrder === "desc"} onChange={() => setDrawerSortOrder("desc")} style={{ accentColor: "#2563eb", width: "16px", height: "16px", cursor: "pointer" }} />
-                    <span>Urutan Turun</span>
-                  </label>
+                  {renderRadio("drawerSortOrderPengeluaran", "asc", drawerSortOrder === "asc", () => setDrawerSortOrder("asc"), "Urutan Naik")}
+                  {renderRadio("drawerSortOrderPengeluaran", "desc", drawerSortOrder === "desc", () => setDrawerSortOrder("desc"), "Urutan Turun")}
                 </div>
               </div>
 
               {/* Perlihatkan Lebih Detail */}
               <div style={{ marginTop: "4px" }}>
                 <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
-                  {/* // Checkbox */}
                   <input type="checkbox" checked={drawerShowDetail} onChange={(e) => setDrawerShowDetail(e.target.checked)}
-                    style={{ width: "16px", height: "16px", accentColor: "#2563eb", borderRadius: "4px", cursor: "pointer", outline: "none", boxShadow: "none" }} />
-                  <span style={{ fontSize: "13.5px", fontWeight: 700, color: "#000000" }}>Perlihatkan Lebih Detail</span>
+                    style={{ width: "16px", height: "16px", accentColor: t.accent, borderRadius: "4px", cursor: "pointer", outline: "none", boxShadow: "none" }} />
+                  <span style={{ fontSize: "13.5px", fontWeight: 700, color: t.checkText }}>Perlihatkan Lebih Detail</span>
                 </label>
               </div>
 
               {/* Action Buttons */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-start", gap: "12px", marginTop: "16px" }}>
                 <button type="button" onClick={closeFilterDrawer}
-                  style={{ padding: "8px 24px", fontSize: "13.5px", fontWeight: 500, color: "#71717a", backgroundColor: "#ffffff", border: "1px solid #d4d4d8", borderRadius: "4px", cursor: "pointer", minWidth: "110px" }}>
+                  style={{ padding: "8px 24px", fontSize: "13.5px", fontWeight: 500, color: t.cancelText, backgroundColor: t.cancelBg, border: `1px solid ${t.cancelBorder}`, borderRadius: "4px", cursor: "pointer", minWidth: "110px", transition: "background-color 0.15s ease" }}
+                  {...hoverBg(t.cancelBg, t.cancelHover)}>
                   Batalkan
                 </button>
                 <button type="button" onClick={closeFilterDrawer}
-                  style={{ padding: "8px 24px", fontSize: "13.5px", fontWeight: 500, color: "#ffffff", backgroundColor: "#4eaf54", border: "none", borderRadius: "4px", cursor: "pointer", minWidth: "110px" }}>
+                  style={{ padding: "8px 24px", fontSize: "13.5px", fontWeight: 500, color: t.applyText, backgroundColor: t.applyBg, border: "none", borderRadius: "4px", cursor: "pointer", minWidth: "110px", transition: "background-color 0.15s ease" }}
+                  {...hoverBg(t.applyBg, t.applyHover)}>
                   Filter
                 </button>
               </div>
@@ -595,6 +723,10 @@ export default function DaftarPengeluaran() {
           </div>
         </div>
       )}
+
+      <style>{`
+        .dp-dark input::placeholder { color: #94a3b8; }
+      `}</style>
     </div>
   );
 }

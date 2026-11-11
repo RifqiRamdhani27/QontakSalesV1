@@ -7,6 +7,19 @@ export default function PengirimanPenjualan() {
 
   const isFullscreen = outletContext ? outletContext.isFullscreen : localFullscreen;
 
+  // Dark Mode
+  const [themeMode, setThemeMode] = useState(() => localStorage.getItem("app_theme") || "light");
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+  const isDark = themeMode === "dark";
+
   // Tanggal Awal State & Popover
   const startDatePickerRef = useRef(null);
   const [startSelectedDate, setStartSelectedDate] = useState(() => new Date(2026, 8, 16));
@@ -147,7 +160,7 @@ export default function PengirimanPenjualan() {
   const renderCalendarPopover = (
     viewDate, setViewDate, viewMode, setViewMode, yearRangeStart, setYearRangeStart, selectedDate, onSelectDate, alignRight = false
   ) => (
-    <div style={{
+    <div className="pg-pop" style={{
       position: "absolute", top: "calc(100% + 4px)",
       ...(alignRight ? { right: 0 } : { left: 0 }),
       zIndex: 1000,
@@ -156,27 +169,27 @@ export default function PengirimanPenjualan() {
       padding: "16px", width: "280px", userSelect: "none",
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-        <button type="button" style={{ background: "none", border: "none", fontSize: "16px", fontWeight: "bold", cursor: "pointer", color: "#334155", padding: "4px 8px", borderRadius: "4px" }}
+        <button type="button" className="pg-nav" style={{ background: "none", border: "none", fontSize: "16px", fontWeight: "bold", cursor: "pointer", color: "#334155", padding: "4px 8px", borderRadius: "4px" }}
           onClick={(e) => { e.stopPropagation(); if (viewMode === "days") setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1)); else if (viewMode === "months") setViewDate(new Date(viewDate.getFullYear() - 1, viewDate.getMonth(), 1)); else setYearRangeStart(p => p - 12); }}>«</button>
-        <button type="button" style={{ background: "none", border: "none", fontSize: "14px", fontWeight: "700", color: "#4f67c9", cursor: "pointer", padding: "4px 8px" }}
+        <button type="button" className="pg-nav" style={{ background: "none", border: "none", fontSize: "14px", fontWeight: "700", color: "#4f67c9", cursor: "pointer", padding: "4px 8px" }}
           onClick={(e) => { e.stopPropagation(); if (viewMode === "days") setViewMode("months"); else if (viewMode === "months") setViewMode("years"); }}>
           {viewMode === "days" && `${MONTH_NAMES[viewDate.getMonth()]} ${viewDate.getFullYear()}`}
           {viewMode === "months" && `${viewDate.getFullYear()}`}
           {viewMode === "years" && `${yearRangeStart} - ${yearRangeStart + 11}`}
         </button>
-        <button type="button" style={{ background: "none", border: "none", fontSize: "16px", fontWeight: "bold", cursor: "pointer", color: "#334155", padding: "4px 8px", borderRadius: "4px" }}
+        <button type="button" className="pg-nav" style={{ background: "none", border: "none", fontSize: "16px", fontWeight: "bold", cursor: "pointer", color: "#334155", padding: "4px 8px", borderRadius: "4px" }}
           onClick={(e) => { e.stopPropagation(); if (viewMode === "days") setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1)); else if (viewMode === "months") setViewDate(new Date(viewDate.getFullYear() + 1, viewDate.getMonth(), 1)); else setYearRangeStart(p => p + 12); }}>»</button>
       </div>
       {viewMode === "days" && (
         <>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", textAlign: "center", fontWeight: "600", fontSize: "11px", color: "#64748b", marginBottom: "6px" }}>
-            <span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span>
+            <span className="pg-weekday">Min</span><span className="pg-weekday">Sen</span><span className="pg-weekday">Sel</span><span className="pg-weekday">Rab</span><span className="pg-weekday">Kam</span><span className="pg-weekday">Jum</span><span className="pg-weekday">Sab</span>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "2px", textAlign: "center", fontSize: "12px" }}>
             {getCalendarDays(viewDate.getFullYear(), viewDate.getMonth()).map((d, idx) => {
               const isSelected = selectedDate && d.day === selectedDate.getDate() && d.month === selectedDate.getMonth() && d.year === selectedDate.getFullYear();
               return (
-                <button key={idx} type="button" onClick={(e) => { e.stopPropagation(); onSelectDate(new Date(d.year, d.month, d.day)); }}
+                <button key={idx} type="button" className={`pg-cell ${isSelected ? "pg-selected" : ""}`} onClick={(e) => { e.stopPropagation(); onSelectDate(new Date(d.year, d.month, d.day)); }}
                   style={{ padding: "6px 0", border: "none", borderRadius: "4px", cursor: "pointer", backgroundColor: isSelected ? "#4f67c9" : "transparent", color: isSelected ? "#ffffff" : d.isCurrentMonth ? "#1e293b" : "#94a3b8", fontWeight: isSelected ? "bold" : "normal" }}>
                   {d.day}
                 </button>
@@ -188,7 +201,7 @@ export default function PengirimanPenjualan() {
       {viewMode === "months" && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", textAlign: "center", fontSize: "12px", paddingTop: "8px" }}>
           {MONTH_NAMES.map((mName, idx) => (
-            <button key={mName} type="button" onClick={(e) => { e.stopPropagation(); setViewDate(new Date(viewDate.getFullYear(), idx, 1)); setViewMode("days"); }}
+            <button key={mName} type="button" className={`pg-cell ${viewDate.getMonth() === idx ? "pg-selected" : ""}`} onClick={(e) => { e.stopPropagation(); setViewDate(new Date(viewDate.getFullYear(), idx, 1)); setViewMode("days"); }}
               style={{ padding: "10px 4px", border: "none", borderRadius: "4px", cursor: "pointer", backgroundColor: viewDate.getMonth() === idx ? "#4f67c9" : "#f8fafc", color: viewDate.getMonth() === idx ? "#ffffff" : "#1e293b", fontWeight: viewDate.getMonth() === idx ? "bold" : "normal" }}>
               {mName.substring(0, 3)}
             </button>
@@ -198,7 +211,7 @@ export default function PengirimanPenjualan() {
       {viewMode === "years" && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", textAlign: "center", fontSize: "12px", paddingTop: "8px" }}>
           {Array.from({ length: 12 }, (_, i) => yearRangeStart + i).map((yr) => (
-            <button key={yr} type="button" onClick={(e) => { e.stopPropagation(); setViewDate(new Date(yr, viewDate.getMonth(), 1)); setViewMode("days"); }}
+            <button key={yr} type="button" className={`pg-cell ${viewDate.getFullYear() === yr ? "pg-selected" : ""}`} onClick={(e) => { e.stopPropagation(); setViewDate(new Date(yr, viewDate.getMonth(), 1)); setViewMode("days"); }}
               style={{ padding: "10px 4px", border: "none", borderRadius: "4px", cursor: "pointer", backgroundColor: viewDate.getFullYear() === yr ? "#4f67c9" : "#f8fafc", color: viewDate.getFullYear() === yr ? "#ffffff" : "#1e293b", fontWeight: viewDate.getFullYear() === yr ? "bold" : "normal" }}>
               {yr}
             </button>
@@ -214,7 +227,7 @@ export default function PengirimanPenjualan() {
   ];
 
   return (
-    <div style={{
+    <div className={`pg-root ${isDark ? "pg-dark" : ""}`} style={{
       margin: isFullscreen ? 0 : "-24px",
       minHeight: "100vh",
       backgroundColor: "#f4f6f8",
@@ -222,7 +235,7 @@ export default function PengirimanPenjualan() {
       color: "#1e293b",
     }}>
       {/* Top Header */}
-      <div style={{
+      <div className="pg-header" style={{
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
@@ -231,10 +244,10 @@ export default function PengirimanPenjualan() {
       }}>
         {/* Left Title */}
         <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
-          <h1 style={{ fontSize: "20px", fontWeight: 700, color: "#1e293b", margin: 0 }}>
+          <h1 className="pg-title" style={{ fontSize: "20px", fontWeight: 700, color: "#1e293b", margin: 0 }}>
             Pengiriman penjualan
           </h1>
-          <span style={{ fontSize: "13px", color: "#64748b", fontWeight: 400 }}>(dalam IDR)</span>
+          <span className="pg-muted" style={{ fontSize: "13px", color: "#64748b", fontWeight: 400 }}>(dalam IDR)</span>
         </div>
 
         {/* Right Header Buttons */}
@@ -243,6 +256,7 @@ export default function PengirimanPenjualan() {
           <div style={{ position: "relative" }}>
             <button
               type="button"
+              className="pg-btn-outline"
               onClick={() => setShowFeedbackDropdown(!showFeedbackDropdown)}
               style={{
                 height: "32px",
@@ -262,17 +276,17 @@ export default function PengirimanPenjualan() {
               }}
             >
               <span>Beri masukan</span>
-              <svg width="8" height="6" viewBox="0 0 10 7" fill="#4f66ee">
+              <svg className="pg-icon-fill" width="8" height="6" viewBox="0 0 10 7" fill="#4f66ee">
                 <polygon points="0,0 10,0 5,7" />
               </svg>
             </button>
             {showFeedbackDropdown && (
-              <div style={{
+              <div className="pg-dd" style={{
                 position: "absolute", top: "38px", right: 0, zIndex: 50,
                 width: "160px", backgroundColor: "#ffffff", border: "1px solid #cbd5e1",
                 borderRadius: "6px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: "4px 0",
               }}>
-                <div onClick={() => setShowFeedbackDropdown(false)} style={{ padding: "8px 12px", fontSize: "13px", color: "#334155", cursor: "pointer" }}>
+                <div className="pg-dd-item" onClick={() => setShowFeedbackDropdown(false)} style={{ padding: "8px 12px", fontSize: "13px", color: "#334155", cursor: "pointer" }}>
                   Kirim Saran
                 </div>
               </div>
@@ -283,7 +297,7 @@ export default function PengirimanPenjualan() {
 
       {/* Main Card Container */}
       <div style={{ padding: "0 24px 24px 24px" }}>
-        <div style={{
+        <div className="pg-card" style={{
           backgroundColor: "#ffffff",
           borderRadius: "8px",
           border: "1px solid #e2e8f0",
@@ -302,14 +316,15 @@ export default function PengirimanPenjualan() {
             gap: "16px",
             marginBottom: "32px",
           }}>
-            {/* Left Controls: Tanggal awal, Tanggal akhir, Periode, Tampilkan, Filter */}
+            {/* Left Controls */}
             <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", gap: "12px" }}>
               {/* Tanggal awal */}
               <div style={{ position: "relative" }} ref={startDatePickerRef}>
-                <label style={{ display: "block", fontSize: "12px", fontWeight: 500, color: "#475569", marginBottom: "6px" }}>
+                <label className="pg-label" style={{ display: "block", fontSize: "12px", fontWeight: 500, color: "#475569", marginBottom: "6px" }}>
                   Tanggal awal
                 </label>
                 <div
+                  className="pg-field"
                   onClick={() => setShowStartCalendar(!showStartCalendar)}
                   style={{
                     height: "36px",
@@ -325,8 +340,8 @@ export default function PengirimanPenjualan() {
                     boxShadow: "0 1px 2px rgba(16, 24, 40, 0.05)",
                   }}
                 >
-                  <span style={{ fontSize: "13px", color: "#1e293b", fontWeight: 400 }}>{startDate}</span>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <span className="pg-field-text" style={{ fontSize: "13px", color: "#1e293b", fontWeight: 400 }}>{startDate}</span>
+                  <svg className="pg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                     <line x1="16" y1="2" x2="16" y2="6" />
                     <line x1="8" y1="2" x2="8" y2="6" />
@@ -344,10 +359,11 @@ export default function PengirimanPenjualan() {
 
               {/* Tanggal akhir */}
               <div style={{ position: "relative" }} ref={endDatePickerRef}>
-                <label style={{ display: "block", fontSize: "12px", fontWeight: 500, color: "#475569", marginBottom: "6px" }}>
+                <label className="pg-label" style={{ display: "block", fontSize: "12px", fontWeight: 500, color: "#475569", marginBottom: "6px" }}>
                   Tanggal akhir
                 </label>
                 <div
+                  className="pg-field"
                   onClick={() => setShowEndCalendar(!showEndCalendar)}
                   style={{
                     height: "36px",
@@ -363,8 +379,8 @@ export default function PengirimanPenjualan() {
                     boxShadow: "0 1px 2px rgba(16, 24, 40, 0.05)",
                   }}
                 >
-                  <span style={{ fontSize: "13px", color: "#1e293b", fontWeight: 400 }}>{endDate}</span>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <span className="pg-field-text" style={{ fontSize: "13px", color: "#1e293b", fontWeight: 400 }}>{endDate}</span>
+                  <svg className="pg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                     <line x1="16" y1="2" x2="16" y2="6" />
                     <line x1="8" y1="2" x2="8" y2="6" />
@@ -382,10 +398,11 @@ export default function PengirimanPenjualan() {
 
               {/* Periode */}
               <div style={{ position: "relative" }} ref={periodeDropdownRef}>
-                <label style={{ display: "block", fontSize: "12px", fontWeight: 500, color: "#475569", marginBottom: "6px" }}>
+                <label className="pg-label" style={{ display: "block", fontSize: "12px", fontWeight: 500, color: "#475569", marginBottom: "6px" }}>
                   Periode
                 </label>
                 <div
+                  className="pg-field"
                   onClick={() => setShowPeriodeDropdown(!showPeriodeDropdown)}
                   style={{
                     height: "36px",
@@ -401,14 +418,14 @@ export default function PengirimanPenjualan() {
                     boxShadow: "0 1px 2px rgba(16, 24, 40, 0.05)",
                   }}
                 >
-                  <span style={{ fontSize: "13px", color: "#1e293b" }}>{filterPeriode}</span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                  <span className="pg-field-text" style={{ fontSize: "13px", color: "#1e293b" }}>{filterPeriode}</span>
+                  <svg className="pg-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
                     style={{ transition: "transform 0.2s", transform: showPeriodeDropdown ? "rotate(180deg)" : "rotate(0deg)" }}>
                     <polyline points="6 9 12 15 18 9" />
                   </svg>
                 </div>
                 {showPeriodeDropdown && (
-                  <div style={{
+                  <div className="pg-dd" style={{
                     position: "absolute", top: "calc(100% + 4px)", left: 0, zIndex: 1000,
                     width: "170px", backgroundColor: "#ffffff", border: "1px solid #cbd5e1",
                     borderRadius: "6px", boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
@@ -417,6 +434,7 @@ export default function PengirimanPenjualan() {
                     {PERIODE_OPTIONS.map((opt) => (
                       <div
                         key={opt}
+                        className={`pg-dd-item ${filterPeriode === opt ? "pg-active" : ""}`}
                         onClick={() => { setFilterPeriode(opt); setShowPeriodeDropdown(false); }}
                         style={{
                           padding: "8px 12px", fontSize: "13px",
@@ -425,8 +443,6 @@ export default function PengirimanPenjualan() {
                           fontWeight: filterPeriode === opt ? 600 : 400,
                           cursor: "pointer",
                         }}
-                        onMouseEnter={(e) => { if (filterPeriode !== opt) e.currentTarget.style.backgroundColor = "#f8fafc"; }}
-                        onMouseLeave={(e) => { if (filterPeriode !== opt) e.currentTarget.style.backgroundColor = "transparent"; }}
                       >
                         {opt}
                       </div>
@@ -438,6 +454,7 @@ export default function PengirimanPenjualan() {
               {/* Tombol Tampilkan */}
               <button
                 type="button"
+                className="pg-btn-primary"
                 style={{
                   height: "36px",
                   padding: "0 20px",
@@ -454,8 +471,6 @@ export default function PengirimanPenjualan() {
                   justifyContent: "center",
                   transition: "background-color 0.15s ease",
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#3b52b4")}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#4f66ee")}
               >
                 Tampilkan
               </button>
@@ -463,6 +478,7 @@ export default function PengirimanPenjualan() {
               {/* Tombol Filter */}
               <button
                 type="button"
+                className="pg-btn-outline"
                 onClick={openFilterDrawer}
                 style={{
                   height: "36px",
@@ -481,10 +497,8 @@ export default function PengirimanPenjualan() {
                   boxShadow: "0 1px 2px rgba(16, 24, 40, 0.05)",
                   transition: "all 0.15s ease",
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f4f6ff")}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#ffffff")}
               >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4f66ee" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg className="pg-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4f66ee" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
                 </svg>
                 <span>Filter</span>
@@ -496,6 +510,7 @@ export default function PengirimanPenjualan() {
               <div style={{ position: "relative" }}>
                 <button
                   type="button"
+                  className="pg-btn-outline pg-btn-neutral"
                   onClick={() => setShowEksporDropdown(!showEksporDropdown)}
                   style={{
                     height: "36px",
@@ -513,23 +528,16 @@ export default function PengirimanPenjualan() {
                     boxShadow: "0 1px 2px rgba(0, 0, 0, 0.02)",
                     transition: "all 0.15s ease",
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "#f8fafc";
-                    e.currentTarget.style.borderColor = "#94a3b8";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "#ffffff";
-                    e.currentTarget.style.borderColor = "#cbd5e1";
-                  }}
                 >
                   <span>Ekspor</span>
-                  <svg width="10" height="7" viewBox="0 0 10 7" fill="#4f66ee">
+                  <svg className="pg-icon-fill" width="10" height="7" viewBox="0 0 10 7" fill="#4f66ee">
                     <polygon points="0,0 10,0 5,7" />
                   </svg>
                 </button>
 
                 {showEksporDropdown && (
                   <div
+                    className="pg-dd"
                     style={{
                       position: "absolute",
                       top: "42px",
@@ -545,18 +553,16 @@ export default function PengirimanPenjualan() {
                     }}
                   >
                     <div
+                      className="pg-dd-item"
                       onClick={() => setShowEksporDropdown(false)}
                       style={{ padding: "8px 14px", fontSize: "13px", color: "#334155", cursor: "pointer" }}
-                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f8fafc")}
-                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#ffffff")}
                     >
                       Ekspor PDF
                     </div>
                     <div
+                      className="pg-dd-item"
                       onClick={() => setShowEksporDropdown(false)}
                       style={{ padding: "8px 14px", fontSize: "13px", color: "#334155", cursor: "pointer" }}
-                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f8fafc")}
-                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#ffffff")}
                     >
                       Ekspor Excel
                     </div>
@@ -586,6 +592,7 @@ export default function PengirimanPenjualan() {
                   }}
                 >
                   <svg
+                    className="pg-icon"
                     style={{ width: "16px", height: "16px", color: "#64748b" }}
                     viewBox="0 0 24 24"
                     fill="none"
@@ -618,7 +625,7 @@ export default function PengirimanPenjualan() {
                     PDF
                   </span>
                 </span>
-                <span style={{ fontSize: "13px", color: "#4f66ee", fontWeight: 400 }}>Lihat contoh</span>
+                <span className="pg-link" style={{ fontSize: "13px", color: "#4f66ee", fontWeight: 400 }}>Lihat contoh</span>
               </div>
             </div>
           </div>
@@ -634,7 +641,7 @@ export default function PengirimanPenjualan() {
             textAlign: "center",
           }}>
             {/* 3D Graphic Illustration */}
-            <div style={{ position: "relative", width: "260px", height: "190px", marginBottom: "20px", display: "flex", alignItems: "center", justifyContent: "center", userSelect: "none" }}>
+            <div className="pg-illu" style={{ position: "relative", width: "260px", height: "190px", marginBottom: "20px", display: "flex", alignItems: "center", justifyContent: "center", userSelect: "none" }}>
               <svg style={{ width: "100%", height: "100%", overflow: "visible" }} fill="none" viewBox="0 0 320 230" xmlns="http://www.w3.org/2000/svg">
                 {/* Isometric Base / Pedestal */}
                 <g opacity="0.95">
@@ -721,7 +728,7 @@ export default function PengirimanPenjualan() {
             </div>
 
             {/* Primary Text */}
-            <h2 style={{
+            <h2 className="pg-title" style={{
               fontSize: "16px",
               fontWeight: 700,
               color: "#1e293b",
@@ -731,14 +738,14 @@ export default function PengirimanPenjualan() {
             </h2>
 
             {/* Subtext */}
-            <p style={{
+            <p className="pg-muted" style={{
               fontSize: "13.5px",
               color: "#64748b",
               margin: 0,
               maxWidth: "360px",
               lineHeight: 1.5,
             }}>
-              Pilih tanggal atau periode, lalu klik tombol <strong style={{ fontWeight: 700, color: "#1e293b" }}>Tampilkan</strong>.
+              Pilih tanggal atau periode, lalu klik tombol <strong className="pg-title" style={{ fontWeight: 700, color: "#1e293b" }}>Tampilkan</strong>.
             </p>
           </div>
         </div>
@@ -748,6 +755,7 @@ export default function PengirimanPenjualan() {
       {showFilterDrawer && (
         <div style={{ position: "fixed", inset: 0, zIndex: 99999, overflow: "hidden" }}>
           <div
+            className="pg-overlay"
             onClick={closeFilterDrawer}
             style={{
               position: "absolute",
@@ -758,6 +766,7 @@ export default function PengirimanPenjualan() {
             }}
           />
           <aside
+            className="pg-drawer"
             style={{
               position: "fixed",
               top: 0, right: 0, bottom: 0,
@@ -772,7 +781,7 @@ export default function PengirimanPenjualan() {
             }}
           >
             {/* Drawer Header */}
-            <div style={{
+            <div className="pg-drawer-bar" style={{
               padding: "16px 24px",
               backgroundColor: "#f8fafc",
               borderBottom: "1px solid #eaecf0",
@@ -780,11 +789,12 @@ export default function PengirimanPenjualan() {
               alignItems: "center",
               justifyContent: "space-between",
             }}>
-              <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#101828", margin: 0 }}>
+              <h2 className="pg-title" style={{ fontSize: "16px", fontWeight: 700, color: "#101828", margin: 0 }}>
                 Filter laporan
               </h2>
               <button
                 type="button"
+                className="pg-btn-ghost"
                 onClick={closeFilterDrawer}
                 style={{ background: "none", border: "none", color: "#667085", cursor: "pointer", padding: "4px", display: "flex" }}
               >
@@ -801,18 +811,19 @@ export default function PengirimanPenjualan() {
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                   {/* Tanggal awal */}
                   <div style={{ flex: 1, position: "relative" }} ref={drawerStartDatePickerRef}>
-                    <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#344054", marginBottom: "6px" }}>
+                    <label className="pg-label" style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#344054", marginBottom: "6px" }}>
                       Tanggal awal
                     </label>
                     <div
+                      className="pg-field"
                       onClick={() => setShowDrawerStartCalendar(!showDrawerStartCalendar)}
                       style={{
                         height: "38px", backgroundColor: "#ffffff", border: "1px solid #d0d5dd",
                         borderRadius: "6px", padding: "0 10px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer",
                       }}
                     >
-                      <span style={{ fontSize: "13px", color: "#101828" }}>{drawerStartDate}</span>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#667085" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <span className="pg-field-text" style={{ fontSize: "13px", color: "#101828" }}>{drawerStartDate}</span>
+                      <svg className="pg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#667085" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                         <line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
                       </svg>
@@ -826,22 +837,23 @@ export default function PengirimanPenjualan() {
                     )}
                   </div>
 
-                  <span style={{ color: "#667085", marginTop: "24px" }}>-</span>
+                  <span className="pg-muted" style={{ color: "#667085", marginTop: "24px" }}>-</span>
 
                   {/* Tanggal akhir */}
                   <div style={{ flex: 1, position: "relative" }} ref={drawerEndDatePickerRef}>
-                    <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#344054", marginBottom: "6px" }}>
+                    <label className="pg-label" style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#344054", marginBottom: "6px" }}>
                       Tanggal akhir
                     </label>
                     <div
+                      className="pg-field"
                       onClick={() => setShowDrawerEndCalendar(!showDrawerEndCalendar)}
                       style={{
                         height: "38px", backgroundColor: "#ffffff", border: "1px solid #d0d5dd",
                         borderRadius: "6px", padding: "0 10px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer",
                       }}
                     >
-                      <span style={{ fontSize: "13px", color: "#101828" }}>{drawerEndDate}</span>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#667085" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <span className="pg-field-text" style={{ fontSize: "13px", color: "#101828" }}>{drawerEndDate}</span>
+                      <svg className="pg-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#667085" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                         <line x1="16" y1="2" x2="16" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
                       </svg>
@@ -860,10 +872,11 @@ export default function PengirimanPenjualan() {
 
               {/* Periode */}
               <div style={{ position: "relative" }} ref={drawerPeriodeRef}>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#344054", marginBottom: "6px" }}>
+                <label className="pg-label" style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#344054", marginBottom: "6px" }}>
                   Periode
                 </label>
                 <div
+                  className="pg-field"
                   onClick={() => setShowDrawerPeriodeDropdown(!showDrawerPeriodeDropdown)}
                   style={{
                     height: "38px", backgroundColor: "#ffffff", border: "1px solid #d0d5dd",
@@ -871,14 +884,14 @@ export default function PengirimanPenjualan() {
                     justifyContent: "space-between", cursor: "pointer", userSelect: "none",
                   }}
                 >
-                  <span style={{ fontSize: "13.5px", color: "#101828" }}>{drawerPeriode}</span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#667085" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                  <span className="pg-field-text" style={{ fontSize: "13.5px", color: "#101828" }}>{drawerPeriode}</span>
+                  <svg className="pg-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#667085" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
                     style={{ transition: "transform 0.2s ease", transform: showDrawerPeriodeDropdown ? "rotate(180deg)" : "rotate(0deg)" }}>
                     <path d="M6 9l6 6 6-6" />
                   </svg>
                 </div>
                 {showDrawerPeriodeDropdown && (
-                  <div style={{
+                  <div className="pg-dd" style={{
                     position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 1000,
                     backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px",
                     boxShadow: "0 10px 25px -5px rgba(0,0,0,0.12)", padding: "4px 0", maxHeight: "200px", overflowY: "auto"
@@ -886,6 +899,7 @@ export default function PengirimanPenjualan() {
                     {PERIODE_OPTIONS.map((opt) => (
                       <div
                         key={opt}
+                        className={`pg-dd-item ${drawerPeriode === opt ? "pg-active" : ""}`}
                         onClick={() => {
                           setDrawerPeriode(opt);
                           setShowDrawerPeriodeDropdown(false);
@@ -907,11 +921,12 @@ export default function PengirimanPenjualan() {
 
               {/* Tag */}
               <div>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#344054", marginBottom: "6px" }}>
+                <label className="pg-label" style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#344054", marginBottom: "6px" }}>
                   Tag
                 </label>
                 <input
                   type="text"
+                  className="pg-input"
                   placeholder="Pilih tag"
                   value={drawerTagInput}
                   onChange={(e) => setDrawerTagInput(e.target.value)}
@@ -922,7 +937,7 @@ export default function PengirimanPenjualan() {
                   }}
                 />
                 <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-                  <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#344054", cursor: "pointer" }}>
+                  <label className="pg-label" style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#344054", cursor: "pointer" }}>
                     <input
                       type="radio"
                       name="drawerTagOption"
@@ -932,7 +947,7 @@ export default function PengirimanPenjualan() {
                     />
                     Mencakup semua
                   </label>
-                  <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#344054", cursor: "pointer" }}>
+                  <label className="pg-label" style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#344054", cursor: "pointer" }}>
                     <input
                       type="radio"
                       name="drawerTagOption"
@@ -941,7 +956,7 @@ export default function PengirimanPenjualan() {
                       style={{ accentColor: "#4f66ee" }}
                     />
                     Salah satu
-                    <span style={{
+                    <span className="pg-info" style={{
                       display: "inline-flex", alignItems: "center", justifyContent: "center",
                       width: "15px", height: "15px", borderRadius: "50%", border: "1px solid #94a3b8",
                       color: "#64748b", fontSize: "11px", fontWeight: "600", marginLeft: "2px"
@@ -954,10 +969,11 @@ export default function PengirimanPenjualan() {
 
               {/* Kategori produk */}
               <div style={{ position: "relative" }} ref={drawerKategoriRef}>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#344054", marginBottom: "6px" }}>
+                <label className="pg-label" style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#344054", marginBottom: "6px" }}>
                   Kategori produk
                 </label>
                 <div
+                  className="pg-field"
                   onClick={() => setShowDrawerKategoriDropdown(!showDrawerKategoriDropdown)}
                   style={{
                     height: "38px", backgroundColor: "#ffffff", border: "1px solid #d0d5dd",
@@ -966,16 +982,16 @@ export default function PengirimanPenjualan() {
                     marginBottom: "10px"
                   }}
                 >
-                  <span style={{ fontSize: "13.5px", color: drawerKategori ? "#101828" : "#94a3b8" }}>
+                  <span className="pg-field-text" style={{ fontSize: "13.5px", color: drawerKategori ? "#101828" : "#94a3b8" }}>
                     {drawerKategori || "Pilih kategori produk"}
                   </span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#667085" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                  <svg className="pg-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#667085" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
                     style={{ transition: "transform 0.2s ease", transform: showDrawerKategoriDropdown ? "rotate(180deg)" : "rotate(0deg)" }}>
                     <path d="M6 9l6 6 6-6" />
                   </svg>
                 </div>
                 {showDrawerKategoriDropdown && (
-                  <div style={{
+                  <div className="pg-dd" style={{
                     position: "absolute", top: "42px", left: 0, right: 0, zIndex: 1000,
                     backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px",
                     boxShadow: "0 10px 25px -5px rgba(0,0,0,0.12)", padding: "4px 0"
@@ -983,6 +999,7 @@ export default function PengirimanPenjualan() {
                     {["Semua Kategori", "Elektronik", "Pakaian", "Makanan & Minuman", "Lainnya"].map((opt) => (
                       <div
                         key={opt}
+                        className={`pg-dd-item ${drawerKategori === opt ? "pg-active" : ""}`}
                         onClick={() => {
                           setDrawerKategori(opt);
                           setShowDrawerKategoriDropdown(false);
@@ -1001,7 +1018,7 @@ export default function PengirimanPenjualan() {
                   </div>
                 )}
                 <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-                  <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#344054", cursor: "pointer" }}>
+                  <label className="pg-label" style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#344054", cursor: "pointer" }}>
                     <input
                       type="radio"
                       name="drawerKategoriOption"
@@ -1011,7 +1028,7 @@ export default function PengirimanPenjualan() {
                     />
                     Mencakup semua
                   </label>
-                  <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#344054", cursor: "pointer" }}>
+                  <label className="pg-label" style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#344054", cursor: "pointer" }}>
                     <input
                       type="radio"
                       name="drawerKategoriOption"
@@ -1020,7 +1037,7 @@ export default function PengirimanPenjualan() {
                       style={{ accentColor: "#4f66ee" }}
                     />
                     Salah satu
-                    <span style={{
+                    <span className="pg-info" style={{
                       display: "inline-flex", alignItems: "center", justifyContent: "center",
                       width: "15px", height: "15px", borderRadius: "50%", border: "1px solid #94a3b8",
                       color: "#64748b", fontSize: "11px", fontWeight: "600", marginLeft: "2px"
@@ -1033,10 +1050,11 @@ export default function PengirimanPenjualan() {
 
               {/* Urutkan berdasarkan */}
               <div style={{ position: "relative" }} ref={drawerUrutkanRef}>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#344054", marginBottom: "6px" }}>
+                <label className="pg-label" style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#344054", marginBottom: "6px" }}>
                   Urutkan berdasarkan
                 </label>
                 <div
+                  className="pg-field"
                   onClick={() => setShowDrawerUrutkanDropdown(!showDrawerUrutkanDropdown)}
                   style={{
                     height: "38px", backgroundColor: "#ffffff", border: "1px solid #d0d5dd",
@@ -1044,14 +1062,14 @@ export default function PengirimanPenjualan() {
                     justifyContent: "space-between", cursor: "pointer", userSelect: "none",
                   }}
                 >
-                  <span style={{ fontSize: "13.5px", color: "#101828" }}>{drawerUrutkan}</span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#667085" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                  <span className="pg-field-text" style={{ fontSize: "13.5px", color: "#101828" }}>{drawerUrutkan}</span>
+                  <svg className="pg-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#667085" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
                     style={{ transition: "transform 0.2s ease", transform: showDrawerUrutkanDropdown ? "rotate(180deg)" : "rotate(0deg)" }}>
                     <path d="M6 9l6 6 6-6" />
                   </svg>
                 </div>
                 {showDrawerUrutkanDropdown && (
-                  <div style={{
+                  <div className="pg-dd" style={{
                     position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 1000,
                     backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px",
                     boxShadow: "0 10px 25px -5px rgba(0,0,0,0.12)", padding: "4px 0"
@@ -1059,6 +1077,7 @@ export default function PengirimanPenjualan() {
                     {["Pelanggan", "Tanggal", "No. Pengiriman", "Status"].map((opt) => (
                       <div
                         key={opt}
+                        className={`pg-dd-item ${drawerUrutkan === opt ? "pg-active" : ""}`}
                         onClick={() => {
                           setDrawerUrutkan(opt);
                           setShowDrawerUrutkanDropdown(false);
@@ -1081,7 +1100,7 @@ export default function PengirimanPenjualan() {
             </div>
 
             {/* Drawer Footer */}
-            <div style={{
+            <div className="pg-drawer-bar" style={{
               padding: "16px 24px",
               borderTop: "1px solid #eaecf0",
               display: "flex",
@@ -1089,14 +1108,15 @@ export default function PengirimanPenjualan() {
               justifyContent: "space-between",
             }}>
               <div
+                className="pg-link"
                 onClick={handleResetDrawer}
                 style={{ display: "inline-flex", alignItems: "center", gap: "6px", cursor: "pointer", userSelect: "none" }}
               >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4f66ee" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg className="pg-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4f66ee" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21.5 2v6h-6" />
                   <path d="M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
                 </svg>
-                <span style={{ fontSize: "13.5px", fontWeight: 600, color: "#4f66ee", textDecoration: "underline" }}>
+                <span className="pg-link" style={{ fontSize: "13.5px", fontWeight: 600, color: "#4f66ee", textDecoration: "underline" }}>
                   Reset filter
                 </span>
               </div>
@@ -1104,6 +1124,7 @@ export default function PengirimanPenjualan() {
               <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
                 <button
                   type="button"
+                  className="pg-btn-ghost"
                   onClick={closeFilterDrawer}
                   style={{
                     background: "none", border: "none", fontSize: "13.5px", fontWeight: 600, color: "#475569", cursor: "pointer"
@@ -1113,14 +1134,13 @@ export default function PengirimanPenjualan() {
                 </button>
                 <button
                   type="button"
+                  className="pg-btn-primary"
                   onClick={closeFilterDrawer}
                   style={{
                     height: "38px", padding: "0 22px", backgroundColor: "#4f66ee", border: "none",
                     borderRadius: "6px", fontSize: "13.5px", fontWeight: 600, color: "#ffffff", cursor: "pointer",
                     boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)", transition: "background-color 0.15s ease"
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#3b52b4")}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#4f66ee")}
                 >
                   Terapkan
                 </button>
@@ -1129,6 +1149,70 @@ export default function PengirimanPenjualan() {
           </aside>
         </div>
       )}
+
+      <style>{`
+  /* ===== LIGHT: hanya hover (warna dasar tetap dari inline) ===== */
+  .pg-btn-primary { transition: background-color .15s ease; }
+  .pg-btn-primary:hover { background-color: #3b52b4 !important; }
+  .pg-btn-outline { transition: background-color .15s ease, border-color .15s ease; }
+  .pg-btn-outline:hover { background-color: #f4f6ff !important; }
+  .pg-btn-outline.pg-btn-neutral:hover { background-color: #f8fafc !important; border-color: #94a3b8 !important; }
+  .pg-dd-item:hover { background-color: #f8fafc !important; }
+  .pg-cell:not(.pg-selected):hover { background-color: #f1f5f9 !important; }
+
+  /* ===== DARK ===== */
+  .pg-dark.pg-root { background-color: #121212 !important; color: #f1f5f9 !important; color-scheme: dark; }
+  .pg-dark .pg-header { background-color: #121212 !important; }
+  .pg-dark .pg-title { color: #ffffff !important; }
+  .pg-dark .pg-muted { color: #94a3b8 !important; }
+  .pg-dark .pg-label { color: #cbd5e1 !important; }
+  .pg-dark input[type="radio"] { accent-color: #E5B85C !important; }
+
+  .pg-dark .pg-card { background-color: #1a1a1a !important; border-color: #634f27 !important; }
+
+  .pg-dark .pg-field { background-color: #262626 !important; border-color: #634f27 !important; }
+  .pg-dark .pg-field-text { color: #f1f5f9 !important; }
+  .pg-dark .pg-icon { stroke: #cbd5e1 !important; }
+  .pg-dark .pg-icon-fill { fill: #E5B85C !important; }
+
+  .pg-dark .pg-input { background-color: #262626 !important; color: #f1f5f9 !important; border-color: #634f27 !important; }
+  .pg-dark .pg-input::placeholder { color: #94a3b8; }
+  .pg-dark .pg-input:focus { border-color: #E5B85C !important; }
+
+  /* Tombol: background + teks + border satu paket */
+  .pg-dark .pg-btn-primary { background-color: #E5B85C !important; color: #121212 !important; border-color: #E5B85C !important; }
+  .pg-dark .pg-btn-primary:hover { background-color: #f0c978 !important; color: #121212 !important; }
+  .pg-dark .pg-btn-outline { background-color: transparent !important; color: #E5B85C !important; border-color: #E5B85C !important; }
+  .pg-dark .pg-btn-outline:hover,
+  .pg-dark .pg-btn-outline.pg-btn-neutral:hover { background-color: rgba(229,184,92,.15) !important; color: #E5B85C !important; border-color: #E5B85C !important; }
+  .pg-dark .pg-btn-outline .pg-icon { stroke: #E5B85C !important; }
+  .pg-dark .pg-btn-ghost { color: #cbd5e1 !important; }
+  .pg-dark .pg-link { color: #E5B85C !important; }
+  .pg-dark .pg-link .pg-icon { stroke: #E5B85C !important; }
+
+  /* Dropdown */
+  .pg-dark .pg-dd { background-color: #1e1e1e !important; border-color: #634f27 !important; }
+  .pg-dark .pg-dd-item { background-color: transparent !important; color: #f1f5f9 !important; }
+  .pg-dark .pg-dd-item:hover { background-color: #2d2d2d !important; }
+  .pg-dark .pg-dd-item.pg-active { background-color: rgba(229,184,92,.2) !important; color: #E5B85C !important; }
+
+  /* Kalender */
+  .pg-dark .pg-pop { background-color: #1e1e1e !important; border-color: #634f27 !important; }
+  .pg-dark .pg-weekday { color: #94a3b8 !important; }
+  .pg-dark .pg-nav { background-color: transparent !important; color: #E5B85C !important; }
+  .pg-dark .pg-cell { background-color: transparent !important; color: #f1f5f9 !important; }
+  .pg-dark .pg-cell:not(.pg-selected):hover { background-color: #2d2d2d !important; }
+  .pg-dark .pg-cell.pg-selected { background-color: #E5B85C !important; color: #121212 !important; }
+
+  /* Drawer */
+  .pg-dark .pg-drawer { background-color: #1a1a1a !important; }
+  .pg-dark .pg-drawer-bar { background-color: #242424 !important; border-color: #634f27 !important; }
+  .pg-dark .pg-overlay { background-color: rgba(0,0,0,.7) !important; }
+  .pg-dark .pg-info { border-color: #94a3b8 !important; color: #94a3b8 !important; }
+
+  /* Ilustrasi: redupkan supaya tidak terlalu silau */
+  .pg-dark .pg-illu { filter: brightness(.8) saturate(.9); }
+`}</style>
     </div>
   );
 }

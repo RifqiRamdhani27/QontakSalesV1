@@ -8,6 +8,38 @@ export default function DaftarFakturProforma() {
 
   const isFullscreen = outletContext ? outletContext.isFullscreen : localFullscreen;
 
+  // Dark Mode
+  const [themeMode, setThemeMode] = useState(() => localStorage.getItem("app_theme") || "light");
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+  const isDark = themeMode === "dark";
+
+  // Palet kalender
+  const c = isDark
+    ? {
+        popBg: "#1a1a1a", popBorder: "#634f27",
+        shadow: "0 10px 25px -5px rgba(0,0,0,0.6)",
+        nav: "#f1f5f9", accent: "#E5B85C", weekday: "#94a3b8",
+        selBg: "#E5B85C", selText: "#121212",
+        dayText: "#f1f5f9", dayMuted: "#4b5563",
+        monthBg: "#262626", hoverBg: "#2d2d2d", divider: "#3a3326",
+      }
+    : {
+        popBg: "#ffffff", popBorder: "#cbd5e1",
+        shadow: "0 10px 25px -5px rgba(0,0,0,0.12)",
+        nav: "#334155", accent: "#0284c7", weekday: "#64748b",
+        selBg: "#0284c7", selText: "#ffffff",
+        dayText: "#1e293b", dayMuted: "#cbd5e1",
+        monthBg: "#f8fafc", hoverBg: "#f1f5f9", divider: "#f1f5f9",
+      };
+
   // Date Pickers State
   const startDatePickerRef = useRef(null);
   const [startSelectedDate, setStartSelectedDate] = useState(() => new Date(2026, 8, 18));
@@ -80,6 +112,24 @@ export default function DaftarFakturProforma() {
     return `${dd}/${mm}/${yyyy}`;
   };
 
+  const getCalendarDays = (year, month) => {
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const daysInPrevMonth = new Date(year, month, 0).getDate();
+    const days = [];
+    for (let i = firstDay - 1; i >= 0; i--) {
+      days.push({ day: daysInPrevMonth - i, month: month - 1, year: month === 0 ? year - 1 : year, isCurrentMonth: false });
+    }
+    for (let i = 1; i <= daysInMonth; i++) {
+      days.push({ day: i, month, year, isCurrentMonth: true });
+    }
+    const remaining = 42 - days.length;
+    for (let i = 1; i <= remaining; i++) {
+      days.push({ day: i, month: month + 1, year: month === 11 ? year + 1 : year, isCurrentMonth: false });
+    }
+    return days;
+  };
+
   useEffect(() => { setStartDate(formatDateDDMMYYYY(startSelectedDate)); }, [startSelectedDate]);
   useEffect(() => { setEndDate(formatDateDDMMYYYY(endSelectedDate)); }, [endSelectedDate]);
   useEffect(() => { setDrawerStartDate(formatDateDDMMYYYY(drawerStartSelectedDate)); }, [drawerStartSelectedDate]);
@@ -112,24 +162,28 @@ export default function DaftarFakturProforma() {
   };
 
   const handleQuickPeriodSelect = (periodType, setStartSel, setStartView, setEndSel, setEndView, setShowPeriod) => {
+    const type = (periodType || "").toLowerCase();
     const today = new Date(2026, 8, 18);
     let s = new Date(today);
     let e = new Date(today);
 
-    if (periodType === "Hari Ini") {
+    if (type === "hari ini") {
       s = new Date(today);
       e = new Date(today);
-    } else if (periodType === "Minggu Ini") {
+    } else if (type === "minggu ini") {
       const day = today.getDay();
       const diffToMon = today.getDate() - day + (day === 0 ? -6 : 1);
       s = new Date(today.getFullYear(), today.getMonth(), diffToMon);
       e = new Date(s.getFullYear(), s.getMonth(), s.getDate() + 6);
-    } else if (periodType === "Bulan Ini") {
+    } else if (type === "bulan ini") {
       s = new Date(today.getFullYear(), today.getMonth(), 1);
       e = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-    } else if (periodType === "Tahun Ini") {
+    } else if (type === "tahun ini") {
       s = new Date(today.getFullYear(), 0, 1);
       e = new Date(today.getFullYear(), 11, 31);
+    } else {
+      if (setShowPeriod) setShowPeriod(false);
+      return;
     }
 
     setStartSel(s);
@@ -139,181 +193,243 @@ export default function DaftarFakturProforma() {
     if (setShowPeriod) setShowPeriod(false);
   };
 
-  // // Calendar
+  // Calendar (gaya baru, mendukung hari / bulan / tahun)
   const renderCalendarPicker = (
-    selectedDate, setSelectedDate, 
-    viewDate, setViewDate, 
-    viewMode, setViewMode, 
-    yearRangeStart, setYearRangeStart, 
+    selectedDate, setSelectedDate,
+    viewDate, setViewDate,
+    viewMode, setViewMode,
+    yearRangeStart, setYearRangeStart,
     closePicker,
-    alignRight = false // Parameter baru untuk posisi
-  ) => {
-    const year = viewDate.getFullYear();
-    const month = viewDate.getMonth();
+    alignRight = false
+  ) => (
+    <div
+      style={{
+        position: "absolute", top: "calc(100% + 6px)",
+        ...(alignRight ? { right: 0 } : { left: 0 }),
+        zIndex: 1000, backgroundColor: c.popBg, border: `1px solid ${c.popBorder}`,
+        borderRadius: "8px", boxShadow: c.shadow,
+        padding: "14px 16px", width: "280px", userSelect: "none",
+      }}
+    >
+      {/* Header navigasi */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+        <button
+          type="button"
+          style={{ background: "none", border: "none", fontSize: "16px", fontWeight: "bold", cursor: "pointer", color: c.nav, padding: "4px 8px", borderRadius: "4px" }}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (viewMode === "days") setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1));
+            else if (viewMode === "months") setViewDate(new Date(viewDate.getFullYear() - 1, viewDate.getMonth(), 1));
+            else setYearRangeStart((prev) => prev - 12);
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = c.hoverBg)}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+        >
+          «
+        </button>
 
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const firstDayOfWeek = new Date(year, month, 1).getDay();
+        <button
+          type="button"
+          style={{ background: "none", border: "none", fontSize: "14px", fontWeight: "700", color: c.accent, cursor: "pointer", padding: "4px 8px", borderRadius: "4px", display: "flex", alignItems: "center", gap: "5px" }}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (viewMode === "days") setViewMode("months");
+            else if (viewMode === "months") {
+              setYearRangeStart(Math.floor(viewDate.getFullYear() / 12) * 12);
+              setViewMode("years");
+            } else setViewMode("days");
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = c.hoverBg)}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+          title="Klik untuk memilih bulan / tahun"
+        >
+          <span>
+            {viewMode === "days" && `${MONTH_NAMES[viewDate.getMonth()]} ${viewDate.getFullYear()}`}
+            {viewMode === "months" && `${viewDate.getFullYear()}`}
+            {viewMode === "years" && `${yearRangeStart} - ${yearRangeStart + 11}`}
+          </span>
+          <span style={{ fontSize: "10px" }}>▼</span>
+        </button>
 
-    const handlePrev = () => {
-      if (viewMode === "days") setViewDate(new Date(year, month - 1, 1));
-      else if (viewMode === "months") setViewDate(new Date(year - 1, month, 1));
-      else if (viewMode === "years") setYearRangeStart(yearRangeStart - 12);
-    };
+        <button
+          type="button"
+          style={{ background: "none", border: "none", fontSize: "16px", fontWeight: "bold", cursor: "pointer", color: c.nav, padding: "4px 8px", borderRadius: "4px" }}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (viewMode === "days") setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1));
+            else if (viewMode === "months") setViewDate(new Date(viewDate.getFullYear() + 1, viewDate.getMonth(), 1));
+            else setYearRangeStart((prev) => prev + 12);
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = c.hoverBg)}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+        >
+          »
+        </button>
+      </div>
 
-    const handleNext = () => {
-      if (viewMode === "days") setViewDate(new Date(year, month + 1, 1));
-      else if (viewMode === "months") setViewDate(new Date(year + 1, month, 1));
-      else if (viewMode === "years") setYearRangeStart(yearRangeStart + 12);
-    };
-
-    return (
-      <div 
-        style={{ 
-          position: "absolute", 
-          top: "calc(100% + 6px)", 
-          ...(alignRight ? { right: 0 } : { left: 0 }), // Pengecekan posisi
-          zIndex: 1000, 
-          backgroundColor: "#ffffff", 
-          border: "1px solid #cbd5e1", 
-          borderRadius: "8px", 
-          boxShadow: "0 10px 25px -5px rgba(0,0,0,0.12)", 
-          padding: "14px 16px", 
-          width: "280px", 
-          userSelect: "none" 
-        }}
-      >
-        {/* Calendar Header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-          <button type="button" onClick={handlePrev} style={{ border: "none", background: "none", cursor: "pointer", padding: "4px", borderRadius: "4px", color: "#64748b" }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6" /></svg>
-          </button>
-          <div style={{ display: "flex", gap: "6px", fontSize: "14px", fontWeight: 700 }}>
-            {viewMode === "days" && (
-              <>
-                <span onClick={() => setViewMode("months")} style={{ cursor: "pointer", color: "#0284c7" }}>{MONTH_NAMES[month]}</span>
-                <span onClick={() => setViewMode("years")} style={{ cursor: "pointer", color: "#0284c7" }}>{year}</span>
-              </>
-            )}
-            {viewMode === "months" && <span onClick={() => setViewMode("years")} style={{ cursor: "pointer", color: "#0284c7" }}>{year}</span>}
-            {viewMode === "years" && <span style={{ color: "#0284c7" }}>{yearRangeStart} - {yearRangeStart + 11}</span>}
+      {/* View: Hari */}
+      {viewMode === "days" && (
+        <>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", textAlign: "center", fontWeight: 600, fontSize: "11px", color: c.weekday, marginBottom: "6px" }}>
+            <span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span>
           </div>
-          <button type="button" onClick={handleNext} style={{ border: "none", background: "none", cursor: "pointer", padding: "4px", borderRadius: "4px", color: "#64748b" }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
-          </button>
-        </div>
-
-        {/* Days View */}
-        {viewMode === "days" && (
-          <>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", textAlign: "center", fontSize: "11px", fontWeight: 600, color: "#94a3b8", marginBottom: "6px" }}>
-              {["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"].map((d) => <div key={d}>{d}</div>)}
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "2px", textAlign: "center" }}>
-              {Array.from({ length: firstDayOfWeek }).map((_, i) => <div key={`empty-${i}`} />)}
-              {Array.from({ length: daysInMonth }).map((_, i) => {
-                const dayNum = i + 1;
-                const isSelected = selectedDate && selectedDate.getDate() === dayNum && selectedDate.getMonth() === month && selectedDate.getFullYear() === year;
-                return (
-                  <button
-                    key={dayNum}
-                    type="button"
-                    onClick={() => {
-                      setSelectedDate(new Date(year, month, dayNum));
-                      closePicker();
-                    }}
-                    style={{
-                      padding: "6px 0", fontSize: "12px", border: "none", borderRadius: "4px", cursor: "pointer",
-                      backgroundColor: isSelected ? "#0284c7" : "transparent",
-                      color: isSelected ? "#ffffff" : "#334155",
-                      fontWeight: isSelected ? 600 : 400,
-                    }}
-                  >
-                    {dayNum}
-                  </button>
-                );
-              })}
-            </div>
-          </>
-        )}
-
-        {/* Months View */}
-        {viewMode === "months" && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", padding: "6px 0" }}>
-            {MONTH_NAMES.map((mName, idx) => (
-              <button key={mName} type="button" onClick={() => { setViewDate(new Date(year, idx, 1)); setViewMode("days"); }} style={{ padding: "8px 4px", fontSize: "12px", border: "none", borderRadius: "4px", cursor: "pointer", backgroundColor: idx === month ? "#0284c7" : "#f1f5f9", color: idx === month ? "#ffffff" : "#334155" }}>
-                {mName.slice(0, 3)}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Years View */}
-        {viewMode === "years" && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", padding: "6px 0" }}>
-            {Array.from({ length: 12 }).map((_, idx) => {
-              const yNum = yearRangeStart + idx;
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "2px", textAlign: "center", fontSize: "12px" }}>
+            {getCalendarDays(viewDate.getFullYear(), viewDate.getMonth()).map((d, idx) => {
+              const isSelected =
+                !!selectedDate &&
+                d.day === selectedDate.getDate() &&
+                d.month === selectedDate.getMonth() &&
+                d.year === selectedDate.getFullYear();
               return (
-                <button key={yNum} type="button" onClick={() => { setViewDate(new Date(yNum, month, 1)); setViewMode("months"); }} style={{ padding: "8px 4px", fontSize: "12px", border: "none", borderRadius: "4px", cursor: "pointer", backgroundColor: yNum === year ? "#0284c7" : "#f1f5f9", color: yNum === year ? "#ffffff" : "#334155" }}>
-                  {yNum}
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newDate = new Date(d.year, d.month, d.day);
+                    setSelectedDate(newDate);
+                    setViewDate(newDate);
+                    setViewMode("days");
+                    closePicker();
+                  }}
+                  style={{
+                    padding: "6px 0", border: "none", borderRadius: "4px", cursor: "pointer",
+                    backgroundColor: isSelected ? c.selBg : "transparent",
+                    color: isSelected ? c.selText : d.isCurrentMonth ? c.dayText : c.dayMuted,
+                    fontWeight: isSelected ? "bold" : "normal",
+                  }}
+                  onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = c.hoverBg; }}
+                  onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = "transparent"; }}
+                >
+                  {d.day}
                 </button>
               );
             })}
           </div>
-        )}
+        </>
+      )}
 
-        {/* Tombol Today */}
-        <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid #f1f5f9", textAlign: "center" }}>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              const today = new Date();
-              setSelectedDate(today);
-              setViewDate(today);
-              closePicker();
-            }}
-            style={{
-              background: "none", border: "none", fontSize: "13px", fontWeight: 600,
-              color: "#0284c7", cursor: "pointer", padding: "4px 8px", borderRadius: "4px",
-            }}
-          >
-            Hari ini
-          </button>
+      {/* View: Bulan */}
+      {viewMode === "months" && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", textAlign: "center", fontSize: "12px", paddingTop: "8px" }}>
+          {MONTH_NAMES.map((mName, idx) => {
+            const sel = viewDate.getMonth() === idx;
+            return (
+              <button
+                key={mName}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setViewDate(new Date(viewDate.getFullYear(), idx, 1));
+                  setViewMode("days");
+                }}
+                style={{
+                  padding: "10px 4px", border: "none", borderRadius: "4px", cursor: "pointer",
+                  backgroundColor: sel ? c.selBg : c.monthBg,
+                  color: sel ? c.selText : c.dayText,
+                  fontWeight: sel ? "bold" : "normal",
+                }}
+                onMouseEnter={(e) => { if (!sel) e.currentTarget.style.backgroundColor = c.hoverBg; }}
+                onMouseLeave={(e) => { if (!sel) e.currentTarget.style.backgroundColor = c.monthBg; }}
+              >
+                {mName.substring(0, 3)}
+              </button>
+            );
+          })}
         </div>
+      )}
+
+      {/* View: Tahun */}
+      {viewMode === "years" && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", textAlign: "center", fontSize: "12px", paddingTop: "8px" }}>
+          {Array.from({ length: 12 }).map((_, idx) => {
+            const yearVal = yearRangeStart + idx;
+            const sel = viewDate.getFullYear() === yearVal;
+            return (
+              <button
+                key={yearVal}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setViewDate(new Date(yearVal, viewDate.getMonth(), 1));
+                  setViewMode("months");
+                }}
+                style={{
+                  padding: "10px 4px", border: "none", borderRadius: "4px", cursor: "pointer",
+                  backgroundColor: sel ? c.selBg : c.monthBg,
+                  color: sel ? c.selText : c.dayText,
+                  fontWeight: sel ? "bold" : "normal",
+                }}
+                onMouseEnter={(e) => { if (!sel) e.currentTarget.style.backgroundColor = c.hoverBg; }}
+                onMouseLeave={(e) => { if (!sel) e.currentTarget.style.backgroundColor = c.monthBg; }}
+              >
+                {yearVal}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Tombol hari ini */}
+      <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: `1px solid ${c.divider}`, textAlign: "center" }}>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            const today = new Date();
+            setSelectedDate(today);
+            setViewDate(today);
+            setViewMode("days");
+            closePicker();
+          }}
+          style={{ background: "none", border: "none", fontSize: "13px", fontWeight: 600, color: c.accent, cursor: "pointer", padding: "4px 8px", borderRadius: "4px" }}
+        >
+          Hari ini
+        </button>
       </div>
-    );
-  };
+    </div>
+  );
 
   return (
-    // // bg
-    <div style={{ backgroundColor: "#ffffff", minHeight: "100vh", fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif', color: "#1f2937", display: "flex", flexDirection: "column" }}>
+    <div
+      className={isDark ? "fp-dark" : ""}
+      style={{
+        backgroundColor: isDark ? "#121212" : "#ffffff",
+        minHeight: "100vh",
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+        color: isDark ? "#f1f5f9" : "#1f2937",
+        display: "flex",
+        flexDirection: "column",
+        transition: "background-color 0.3s ease, color 0.3s ease",
+      }}
+    >
       {/* Main Content */}
       <main className="w-full px-6 py-5 flex-1">
         {/* Breadcrumb & Title */}
         <header className="mb-5">
           <nav aria-label="Breadcrumb" className="flex items-center space-x-1.5 text-[13px] mb-1.5">
-            <button type="button" onClick={() => navigate("/laporan")} className="text-blue-600 hover:text-blue-700 transition-colors bg-transparent border-none p-0 cursor-pointer">
+            <button type="button" onClick={() => navigate("/laporan")} className="fp-crumb text-blue-600 hover:text-blue-700 transition-colors bg-transparent border-none p-0 cursor-pointer">
               Laporan
             </button>
-            <span className="text-gray-400">/</span>
-            <span className="text-blue-600 hover:text-blue-700 transition-colors cursor-pointer">
+            <span className="fp-sep text-gray-400">/</span>
+            <span className="fp-crumb text-blue-600 hover:text-blue-700 transition-colors cursor-pointer">
               Penjualan
             </span>
           </nav>
-          <h1 className="text-[24px] font-bold text-gray-900 tracking-tight">
+          <h1 className="fp-title text-[24px] font-bold text-gray-900 tracking-tight">
             Proforma Invoice List
           </h1>
         </header>
 
         {/* Report Card */}
-        <section className="bg-white border border-gray-200/90 rounded-[3px] shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+        <section className="fp-card bg-white border border-gray-200/90 rounded-[3px] shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
           {/* Filter Bar */}
           <div className="p-6 pb-7 border-b border-transparent flex flex-wrap items-end justify-between gap-4">
             {/* Left Filter Controls */}
             <div className="flex flex-wrap items-end gap-3.5">
               {/* Start Date */}
               <div className="flex flex-col" ref={startDatePickerRef}>
-                <label className="text-[13px] text-gray-800 mb-1.5 font-normal" htmlFor="start-date">
+                <label className="fp-label text-[13px] text-gray-800 mb-1.5 font-normal" htmlFor="start-date">
                   Tanggal awal
                 </label>
                 <div className="relative flex items-center">
@@ -323,9 +439,9 @@ export default function DaftarFakturProforma() {
                     readOnly
                     value={startDate}
                     onClick={() => { setShowStartCalendar(!showStartCalendar); setShowEndCalendar(false); }}
-                    className="w-[172px] h-[36px] px-3 pr-8 text-[13.5px] text-gray-700 bg-white border border-gray-300 rounded-[3px] focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all cursor-pointer"
+                    className="fp-input w-[172px] h-[36px] px-3 pr-8 text-[13.5px] text-gray-700 bg-white border border-gray-300 rounded-[3px] focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all cursor-pointer"
                   />
-                  <span className="absolute right-2.5 pointer-events-none text-gray-400 flex items-center">
+                  <span className="fp-icon absolute right-2.5 pointer-events-none text-gray-400 flex items-center">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.6" viewBox="0 0 24 24">
                       <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
@@ -336,7 +452,7 @@ export default function DaftarFakturProforma() {
 
               {/* End Date */}
               <div className="flex flex-col" ref={endDatePickerRef}>
-                <label className="text-[13px] text-gray-800 mb-1.5 font-normal" htmlFor="end-date">
+                <label className="fp-label text-[13px] text-gray-800 mb-1.5 font-normal" htmlFor="end-date">
                   Tanggal akhir
                 </label>
                 <div className="relative flex items-center">
@@ -346,9 +462,9 @@ export default function DaftarFakturProforma() {
                     readOnly
                     value={endDate}
                     onClick={() => { setShowEndCalendar(!showEndCalendar); setShowStartCalendar(false); }}
-                    className="w-[172px] h-[36px] px-3 pr-8 text-[13.5px] text-gray-700 bg-white border border-gray-300 rounded-[3px] focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all cursor-pointer"
+                    className="fp-input w-[172px] h-[36px] px-3 pr-8 text-[13.5px] text-gray-700 bg-white border border-gray-300 rounded-[3px] focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all cursor-pointer"
                   />
-                  <span className="absolute right-2.5 pointer-events-none text-gray-400 flex items-center">
+                  <span className="fp-icon absolute right-2.5 pointer-events-none text-gray-400 flex items-center">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.6" viewBox="0 0 24 24">
                       <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
@@ -360,7 +476,7 @@ export default function DaftarFakturProforma() {
               {/* Primary Filter Button */}
               <button
                 type="button"
-                className="h-[36px] px-5 bg-[#0066cc] hover:bg-[#0055b3] text-white text-[13px] font-normal rounded-[3px] transition-colors inline-flex items-center justify-center shadow-sm cursor-pointer border-none"
+                className="fp-btn-primary h-[36px] px-5 bg-[#0066cc] hover:bg-[#0055b3] text-white text-[13px] font-normal rounded-[3px] transition-colors inline-flex items-center justify-center shadow-sm cursor-pointer border-none"
               >
                 Filter
               </button>
@@ -369,7 +485,7 @@ export default function DaftarFakturProforma() {
               <button
                 type="button"
                 onClick={openFilterDrawer}
-                className="h-[36px] px-3.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-600 text-[13px] font-normal rounded-[3px] transition-colors inline-flex items-center justify-center cursor-pointer"
+                className="fp-btn-outline h-[36px] px-3.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-600 text-[13px] font-normal rounded-[3px] transition-colors inline-flex items-center justify-center cursor-pointer"
               >
                 Filter lainnya
               </button>
@@ -380,7 +496,7 @@ export default function DaftarFakturProforma() {
               <button
                 type="button"
                 onClick={() => setShowEksporDropdown(!showEksporDropdown)}
-                className="h-[36px] px-3.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-600 text-[13px] font-normal rounded-[3px] transition-colors inline-flex items-center space-x-2 cursor-pointer"
+                className="fp-btn-outline h-[36px] px-3.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-600 text-[13px] font-normal rounded-[3px] transition-colors inline-flex items-center space-x-2 cursor-pointer"
               >
                 <span>Export</span>
                 <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -389,14 +505,14 @@ export default function DaftarFakturProforma() {
               </button>
 
               {showEksporDropdown && (
-                <div className="absolute right-0 top-[calc(100%+4px)] z-50 w-44 bg-white border border-gray-200 rounded-[3px] shadow-lg py-1 text-[13px] text-gray-700">
-                  <button type="button" onClick={() => setShowEksporDropdown(false)} className="w-full text-left px-4 py-2 hover:bg-gray-100 border-none bg-transparent cursor-pointer">
+                <div className="fp-dd absolute right-0 top-[calc(100%+4px)] z-50 w-44 bg-white border border-gray-200 rounded-[3px] shadow-lg py-1 text-[13px] text-gray-700">
+                  <button type="button" onClick={() => setShowEksporDropdown(false)} className="fp-dd-item w-full text-left px-4 py-2 hover:bg-gray-100 border-none bg-transparent cursor-pointer">
                     Export Excel (.xlsx)
                   </button>
-                  <button type="button" onClick={() => setShowEksporDropdown(false)} className="w-full text-left px-4 py-2 hover:bg-gray-100 border-none bg-transparent cursor-pointer">
+                  <button type="button" onClick={() => setShowEksporDropdown(false)} className="fp-dd-item w-full text-left px-4 py-2 hover:bg-gray-100 border-none bg-transparent cursor-pointer">
                     Export PDF (.pdf)
                   </button>
-                  <button type="button" onClick={() => setShowEksporDropdown(false)} className="w-full text-left px-4 py-2 hover:bg-gray-100 border-none bg-transparent cursor-pointer">
+                  <button type="button" onClick={() => setShowEksporDropdown(false)} className="fp-dd-item w-full text-left px-4 py-2 hover:bg-gray-100 border-none bg-transparent cursor-pointer">
                     Export CSV (.csv)
                   </button>
                 </div>
@@ -406,11 +522,11 @@ export default function DaftarFakturProforma() {
 
           {/* Table Container */}
           <div className="px-6 pb-6">
-            <div className="border border-gray-200 rounded-[2px] overflow-hidden">
-              <div className="border-b border-gray-200 bg-white overflow-x-auto">
+            <div className="fp-tablebox border border-gray-200 rounded-[2px] overflow-hidden">
+              <div className="fp-tablewrap border-b border-gray-200 bg-white overflow-x-auto">
                 <table className="w-full text-left border-collapse min-w-[700px]">
                   <thead>
-                    <tr className="text-[13px] font-semibold text-gray-800 bg-gray-50/50">
+                    <tr className="fp-thead text-[13px] font-semibold text-gray-800 bg-gray-50/50">
                       <th scope="col" className="py-3 px-4 font-semibold text-gray-800 tracking-tight w-[13%]">Tgl. transaksi</th>
                       <th scope="col" className="py-3 px-4 font-semibold text-gray-800 tracking-tight w-[16%]">Nomor transaksi</th>
                       <th scope="col" className="py-3 px-4 font-semibold text-gray-800 tracking-tight w-[15%]">Tgl. jatuh tempo</th>
@@ -425,9 +541,9 @@ export default function DaftarFakturProforma() {
               </div>
 
               {/* Table Empty State */}
-              <div className="min-h-[300px] flex flex-col items-center justify-center py-20 px-4 bg-white">
-                <p className="text-[13.5px] font-semibold text-gray-800 mb-1">Anda belum memiliki data.</p>
-                <p className="text-[13px] text-gray-500">Data transaksi anda akan muncul di sini</p>
+              <div className="fp-empty min-h-[300px] flex flex-col items-center justify-center py-20 px-4 bg-white">
+                <p className="fp-empty-title text-[13.5px] font-semibold text-gray-800 mb-1">Anda belum memiliki data.</p>
+                <p className="fp-empty-text text-[13px] text-gray-500">Data transaksi anda akan muncul di sini</p>
               </div>
             </div>
           </div>
@@ -443,7 +559,7 @@ export default function DaftarFakturProforma() {
             style={{
               position: "fixed",
               inset: 0,
-              backgroundColor: "rgba(15, 23, 42, 0.4)",
+              backgroundColor: isDark ? "rgba(0, 0, 0, 0.7)" : "rgba(15, 23, 42, 0.4)",
               transition: "opacity 0.3s ease",
               opacity: drawerOpen ? 1 : 0,
             }}
@@ -451,6 +567,7 @@ export default function DaftarFakturProforma() {
 
           {/* Drawer Container */}
           <div
+            className="fp-drawer"
             style={{
               position: "relative",
               width: "360px",
@@ -476,9 +593,10 @@ export default function DaftarFakturProforma() {
                       readOnly
                       value={drawerStartDate}
                       onClick={() => { setShowDrawerStartCalendar(!showDrawerStartCalendar); setShowDrawerEndCalendar(false); }}
+                      className="fp-field"
                       style={{ width: "100%", height: "38px", padding: "0 32px 0 12px", fontSize: "13.5px", color: "#1e293b", backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px", cursor: "pointer", boxSizing: "border-box" }}
                     />
-                    <span className="absolute right-2.5 pointer-events-none text-gray-400 flex items-center">
+                    <span className="fp-icon absolute right-2.5 pointer-events-none text-gray-400 flex items-center">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.6" viewBox="0 0 24 24">
                         <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
@@ -494,9 +612,10 @@ export default function DaftarFakturProforma() {
                       readOnly
                       value={drawerEndDate}
                       onClick={() => { setShowDrawerEndCalendar(!showDrawerEndCalendar); setShowDrawerStartCalendar(false); }}
+                      className="fp-field"
                       style={{ width: "100%", height: "38px", padding: "0 32px 0 12px", fontSize: "13.5px", color: "#1e293b", backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px", cursor: "pointer", boxSizing: "border-box" }}
                     />
-                    <span className="absolute right-2.5 pointer-events-none text-gray-400 flex items-center">
+                    <span className="fp-icon absolute right-2.5 pointer-events-none text-gray-400 flex items-center">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.6" viewBox="0 0 24 24">
                         <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
@@ -508,10 +627,11 @@ export default function DaftarFakturProforma() {
 
               {/* Periode */}
               <div style={{ display: "flex", flexDirection: "column", gap: "6px" }} ref={drawerPeriodRef}>
-                <label style={{ fontSize: "13.5px", fontWeight: 700, color: "#1e293b" }}>Periode</label>
+                <label className="fp-label" style={{ fontSize: "13.5px", fontWeight: 700, color: "#1e293b" }}>Periode</label>
                 <div style={{ position: "relative" }}>
                   <button
                     type="button"
+                    className="fp-field"
                     onClick={() => setShowDrawerPeriodDropdown(!showDrawerPeriodDropdown)}
                     style={{
                       width: "100%",
@@ -534,10 +654,11 @@ export default function DaftarFakturProforma() {
                   </button>
 
                   {showDrawerPeriodDropdown && (
-                    <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 100, backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: "4px 0" }}>
+                    <div className="fp-dd" style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 100, backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: "4px 0" }}>
                       {["Hari ini", "Minggu ini", "Bulan ini", "Tahun ini", "Custom"].map((item) => (
                         <div
                           key={item}
+                          className="fp-opt"
                           onClick={() => {
                             setDrawerPeriod(item);
                             handleQuickPeriodSelect(item, setDrawerStartSelectedDate, setDrawerStartCalendarViewDate, setDrawerEndSelectedDate, setDrawerEndCalendarViewDate, setShowDrawerPeriodDropdown);
@@ -554,10 +675,11 @@ export default function DaftarFakturProforma() {
 
               {/* Pelanggan */}
               <div style={{ display: "flex", flexDirection: "column", gap: "6px" }} ref={drawerPelangganRef}>
-                <label style={{ fontSize: "13.5px", fontWeight: 700, color: "#1e293b" }}>Pelanggan</label>
+                <label className="fp-label" style={{ fontSize: "13.5px", fontWeight: 700, color: "#1e293b" }}>Pelanggan</label>
                 <div style={{ position: "relative" }}>
                   <button
                     type="button"
+                    className="fp-field"
                     onClick={() => setShowDrawerPelangganDropdown(!showDrawerPelangganDropdown)}
                     style={{
                       width: "100%",
@@ -580,10 +702,11 @@ export default function DaftarFakturProforma() {
                   </button>
 
                   {showDrawerPelangganDropdown && (
-                    <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 100, backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: "4px 0" }}>
+                    <div className="fp-dd" style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 100, backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: "4px 0" }}>
                       {["Semua Pelanggan", "PT Maju Bersama", "CV Sejahtera", "PT Global Utama"].map((p) => (
                         <div
                           key={p}
+                          className="fp-opt"
                           onClick={() => {
                             setDrawerPelanggan(p === "Semua Pelanggan" ? "" : p);
                             setShowDrawerPelangganDropdown(false);
@@ -600,10 +723,11 @@ export default function DaftarFakturProforma() {
 
               {/* Status */}
               <div style={{ display: "flex", flexDirection: "column", gap: "6px" }} ref={drawerStatusRef}>
-                <label style={{ fontSize: "13.5px", fontWeight: 700, color: "#1e293b" }}>Status</label>
+                <label className="fp-label" style={{ fontSize: "13.5px", fontWeight: 700, color: "#1e293b" }}>Status</label>
                 <div style={{ position: "relative" }}>
                   <button
                     type="button"
+                    className="fp-field"
                     onClick={() => setShowDrawerStatusDropdown(!showDrawerStatusDropdown)}
                     style={{
                       width: "100%",
@@ -626,10 +750,11 @@ export default function DaftarFakturProforma() {
                   </button>
 
                   {showDrawerStatusDropdown && (
-                    <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 100, backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: "4px 0" }}>
+                    <div className="fp-dd" style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 100, backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: "4px 0" }}>
                       {["Semua Status", "Draft", "Disetujui", "Ditolak", "Dibatalkan"].map((st) => (
                         <div
                           key={st}
+                          className="fp-opt"
                           onClick={() => { setDrawerStatus(st); setShowDrawerStatusDropdown(false); }}
                           style={{ padding: "8px 12px", fontSize: "13.5px", color: "#334155", cursor: "pointer" }}
                         >
@@ -643,10 +768,11 @@ export default function DaftarFakturProforma() {
 
               {/* Urutkan sesuai kolom */}
               <div style={{ display: "flex", flexDirection: "column", gap: "6px" }} ref={drawerUrutkanKolomRef}>
-                <label style={{ fontSize: "13.5px", fontWeight: 700, color: "#1e293b" }}>Urutkan sesuai kolom</label>
+                <label className="fp-label" style={{ fontSize: "13.5px", fontWeight: 700, color: "#1e293b" }}>Urutkan sesuai kolom</label>
                 <div style={{ position: "relative" }}>
                   <button
                     type="button"
+                    className="fp-field"
                     onClick={() => setShowDrawerUrutkanKolomDropdown(!showDrawerUrutkanKolomDropdown)}
                     style={{
                       width: "100%",
@@ -669,10 +795,11 @@ export default function DaftarFakturProforma() {
                   </button>
 
                   {showDrawerUrutkanKolomDropdown && (
-                    <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 100, backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: "4px 0" }}>
+                    <div className="fp-dd" style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 100, backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: "4px 0" }}>
                       {["Tgl. transaksi", "Nomor transaksi", "Tgl. jatuh tempo", "Pelanggan", "Total", "Sisa tagihan"].map((col) => (
                         <div
                           key={col}
+                          className="fp-opt"
                           onClick={() => { setDrawerUrutkanKolom(col); setShowDrawerUrutkanKolomDropdown(false); }}
                           style={{ padding: "8px 12px", fontSize: "13.5px", color: "#334155", cursor: "pointer" }}
                         >
@@ -686,7 +813,7 @@ export default function DaftarFakturProforma() {
 
               {/* Radio options: Urutan naik / Urutan turun */}
               <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "-4px" }}>
-                <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", fontSize: "13.5px", color: "#1e293b" }}>
+                <label className="fp-label" style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", fontSize: "13.5px", color: "#1e293b" }}>
                   <input
                     type="radio"
                     name="drawerUrutanOrder"
@@ -697,7 +824,7 @@ export default function DaftarFakturProforma() {
                   />
                   <span>Urutan naik</span>
                 </label>
-                <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", fontSize: "13.5px", color: "#1e293b" }}>
+                <label className="fp-label" style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", fontSize: "13.5px", color: "#1e293b" }}>
                   <input
                     type="radio"
                     name="drawerUrutanOrder"
@@ -715,6 +842,7 @@ export default function DaftarFakturProforma() {
             <div style={{ padding: "20px 24px", borderTop: "none", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <button
                 type="button"
+                className="fp-link"
                 onClick={() => {
                   setDrawerPeriod("Hari ini");
                   setDrawerPelanggan("");
@@ -733,6 +861,7 @@ export default function DaftarFakturProforma() {
               <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
                 <button
                   type="button"
+                  className="fp-ghost"
                   onClick={closeFilterDrawer}
                   style={{ padding: "8px 16px", fontSize: "13.5px", fontWeight: 500, color: "#64748b", backgroundColor: "transparent", border: "none", borderRadius: "6px", cursor: "pointer" }}
                 >
@@ -740,9 +869,12 @@ export default function DaftarFakturProforma() {
                 </button>
                 <button
                   type="button"
+                  className="fp-btn-primary"
                   onClick={() => {
-                    setStartDate(drawerStartDate);
-                    setEndDate(drawerEndDate);
+                    setStartSelectedDate(drawerStartSelectedDate);
+                    setStartCalendarViewDate(drawerStartSelectedDate);
+                    setEndSelectedDate(drawerEndSelectedDate);
+                    setEndCalendarViewDate(drawerEndSelectedDate);
                     closeFilterDrawer();
                   }}
                   style={{ padding: "8px 24px", fontSize: "13.5px", fontWeight: 500, color: "#ffffff", backgroundColor: "#0066cc", border: "none", borderRadius: "6px", cursor: "pointer" }}
@@ -754,6 +886,71 @@ export default function DaftarFakturProforma() {
           </div>
         </div>
       )}
+
+      <style>{`
+        .fp-dark { color-scheme: dark; }
+
+        /* Header halaman */
+        .fp-dark .fp-crumb { color: #E5B85C !important; }
+        .fp-dark .fp-crumb:hover { color: #f0c978 !important; }
+        .fp-dark .fp-sep { color: #94a3b8 !important; }
+        .fp-dark .fp-title { color: #ffffff !important; }
+
+        /* Kartu laporan */
+        .fp-dark .fp-card { background-color: #1a1a1a !important; border-color: #634f27 !important; }
+        .fp-dark .fp-label { color: #e2e8f0 !important; }
+
+        /* Input tanggal & field drawer */
+        .fp-dark .fp-input,
+        .fp-dark .fp-field {
+          background-color: #262626 !important;
+          color: #f1f5f9 !important;
+          border-color: #634f27 !important;
+        }
+        .fp-dark .fp-input:focus,
+        .fp-dark .fp-field:focus {
+          border-color: #E5B85C !important;
+          box-shadow: 0 0 0 1px #E5B85C !important;
+        }
+        .fp-dark .fp-field svg { stroke: #E5B85C !important; }
+        .fp-dark .fp-icon { color: #E5B85C !important; }
+
+        /* Tombol utama -> emas */
+        .fp-dark .fp-btn-primary { background-color: #E5B85C !important; color: #121212 !important; }
+        .fp-dark .fp-btn-primary:hover { background-color: #f0c978 !important; }
+
+        /* Tombol outline */
+        .fp-dark .fp-btn-outline {
+          background-color: #262626 !important;
+          border-color: #634f27 !important;
+          color: #E5B85C !important;
+        }
+        .fp-dark .fp-btn-outline:hover { background-color: #2d2d2d !important; }
+        .fp-dark .fp-btn-outline svg { color: #E5B85C !important; }
+
+        /* Dropdown */
+        .fp-dark .fp-dd { background-color: #1e1e1e !important; border-color: #634f27 !important; }
+        .fp-dark .fp-dd-item { color: #f1f5f9 !important; }
+        .fp-dark .fp-dd-item:hover { background-color: #2d2d2d !important; }
+        .fp-dark .fp-opt { color: #f1f5f9 !important; }
+        .fp-dark .fp-opt:hover { background-color: #2d2d2d !important; }
+
+        /* Tabel */
+        .fp-dark .fp-tablebox { border-color: #634f27 !important; }
+        .fp-dark .fp-tablewrap { background-color: #121212 !important; border-color: #634f27 !important; }
+        .fp-dark .fp-thead { background-color: #d38e0d69 !important; }
+        .fp-dark .fp-thead th { color: #f1f5f9 !important; }
+        .fp-dark .fp-empty { background-color: #121212 !important; }
+        .fp-dark .fp-empty-title { color: #f1f5f9 !important; }
+        .fp-dark .fp-empty-text { color: #94a3b8 !important; }
+
+        /* Drawer */
+        .fp-dark .fp-drawer { background-color: #1a1a1a !important; border-left: 1px solid #634f27; }
+        .fp-dark .fp-drawer input[type="radio"] { accent-color: #E5B85C !important; }
+        .fp-dark .fp-link { color: #E5B85C !important; }
+        .fp-dark .fp-ghost { color: #cbd5e1 !important; }
+        .fp-dark .fp-ghost:hover { color: #E5B85C !important; }
+      `}</style>
     </div>
   );
 }

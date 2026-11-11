@@ -7,6 +7,19 @@ export default function PiutangPelanggan() {
 
   const isFullscreen = outletContext ? outletContext.isFullscreen : localFullscreen;
 
+  // Dark Mode
+  const [themeMode, setThemeMode] = useState(() => localStorage.getItem("app_theme") || "light");
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+  const isDark = themeMode === "dark";
+
   // Date Picker State
   const datePickerRef = useRef(null);
   const [selectedDate, setSelectedDate] = useState(() => new Date(2026, 8, 16));
@@ -126,6 +139,7 @@ export default function PiutangPelanggan() {
     viewDate, setViewDate, viewMode, setViewMode, selectedDate, onSelectDate, alignRight = false
   ) => (
     <div
+      className="dp-pop"
       style={{
         position: "absolute", top: "calc(100% + 6px)",
         ...(alignRight ? { right: 0 } : { left: 0 }),
@@ -146,7 +160,7 @@ export default function PiutangPelanggan() {
         >
           «
         </button>
-        
+
         <button
           type="button"
           style={{ background: "none", border: "none", fontSize: "14px", fontWeight: "700", color: "#0284c7", cursor: "pointer", padding: "4px 8px" }}
@@ -159,7 +173,7 @@ export default function PiutangPelanggan() {
           {viewMode === "days" && `${MONTH_NAMES[viewDate.getMonth()]} ${viewDate.getFullYear()}`}
           {viewMode === "months" && `${viewDate.getFullYear()}`}
         </button>
-        
+
         <button
           type="button"
           style={{ background: "none", border: "none", fontSize: "16px", fontWeight: "bold", cursor: "pointer", color: "#334155", padding: "4px 8px", borderRadius: "4px" }}
@@ -251,6 +265,7 @@ export default function PiutangPelanggan() {
 
   return (
     <div
+      className={isDark ? "dash-dark dp-root" : "dp-root"}
       style={{
         margin: isFullscreen ? 0 : "-24px",
         width: isFullscreen ? "100%" : "calc(100% + 48px)",
@@ -374,6 +389,7 @@ export default function PiutangPelanggan() {
 
                 {showPeriodeDropdown && (
                   <div
+                    className="dp-dd"
                     style={{
                       position: "absolute",
                       top: "calc(100% + 4px)",
@@ -415,6 +431,7 @@ export default function PiutangPelanggan() {
             <div style={{ marginLeft: "32px" }}>
               <button
                 type="button"
+                className="pp-btn"
                 style={{
                   height: "34px",
                   padding: "0 24px",
@@ -440,6 +457,7 @@ export default function PiutangPelanggan() {
               <button
                 type="button"
                 onClick={openFilterDrawer}
+                className="hover-btn"
                 style={{
                   height: "34px",
                   padding: "0 16px",
@@ -452,8 +470,6 @@ export default function PiutangPelanggan() {
                   cursor: "pointer",
                   transition: "all 0.15s ease",
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f8fafc")}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#ffffff")}
               >
                 Filter lebih lanjut
               </button>
@@ -465,12 +481,13 @@ export default function PiutangPelanggan() {
             <div style={{ position: "relative" }}>
               <button
                 type="button"
+                className="pp-btn"
                 onClick={() => setShowEksporDropdown(!showEksporDropdown)}
                 style={{
                   height: "34px",
                   padding: "0 14px",
                   backgroundColor: "#1e637e",
-                  color: "#ffffff",
+                  color: "isDark ? #0000 : #ffffff",
                   fontSize: "13px",
                   fontWeight: 500,
                   border: "none",
@@ -484,7 +501,7 @@ export default function PiutangPelanggan() {
                 onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#185268")}
                 onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#1e637e")}
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg className="pp-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
                 <span>Ekspor</span>
@@ -495,6 +512,7 @@ export default function PiutangPelanggan() {
 
               {showEksporDropdown && (
                 <div
+                  className="dp-dd"
                   style={{
                     position: "absolute",
                     top: "calc(100% + 4px)",
@@ -602,6 +620,7 @@ export default function PiutangPelanggan() {
 
             <button
               type="button"
+              className="pp-btn"
               style={{
                 height: "36px",
                 padding: "0 20px",
@@ -621,7 +640,7 @@ export default function PiutangPelanggan() {
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#185268")}
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#1e637e")}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg className="pp-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
@@ -701,7 +720,7 @@ export default function PiutangPelanggan() {
 
             {/* Drawer Content */}
             <div style={{ flex: 1, overflowY: "auto", padding: "12px 24px 24px 24px", display: "flex", flexDirection: "column", gap: "22px" }}>
-              
+
               {/* Field 1: Per */}
               <div style={{ position: "relative" }} ref={drawerPerCalRef}>
                 <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#595959", marginBottom: "6px" }}>
@@ -758,7 +777,7 @@ export default function PiutangPelanggan() {
                   </svg>
                 </div>
                 {showDrawerPeriodeDropdown && (
-                  <div style={{
+                  <div className="dp-dd" style={{
                     position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 1000,
                     backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px",
                     boxShadow: "0 10px 25px -5px rgba(0,0,0,0.12)", padding: "4px 0"
@@ -923,7 +942,7 @@ export default function PiutangPelanggan() {
                   </svg>
                 </div>
                 {showDrawerSortDropdown && (
-                  <div style={{
+                  <div className="dp-dd" style={{
                     position: "absolute", top: "42px", left: 0, right: 0, zIndex: 1000,
                     backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px",
                     boxShadow: "0 10px 25px -5px rgba(0,0,0,0.12)", padding: "4px 0"
@@ -980,10 +999,10 @@ export default function PiutangPelanggan() {
                     type="checkbox"
                     checked={drawerShowDetail}
                     onChange={(e) => setDrawerShowDetail(e.target.checked)}
-                    style={{ 
-                      width: "16px", 
-                      height: "16px", 
-                      accentColor: "#1890ff", 
+                    style={{
+                      width: "16px",
+                      height: "16px",
+                      accentColor: "#1890ff",
                       cursor: "pointer",
                       borderRadius: "4px", // Tambahan border radius
                       outline: "none",    // Menghilangkan outline biru bawaan browser
@@ -1041,6 +1060,78 @@ export default function PiutangPelanggan() {
           </aside>
         </div>
       )}
+      <style>{`
+  .dash-dark.dp-root { background-color: #121212 !important; color: #f1f5f9 !important; color-scheme: dark; }
+  .dash-dark h1, .dash-dark h2 { color: #ffffff !important; }
+  .dash-dark input[type="radio"], .dash-dark input[type="checkbox"] { accent-color: #E5B85C !important; }
+  .dash-dark input[type="text"] { color: #f1f5f9 !important; }
+
+  /* Permukaan */
+  .dash-dark [style*="background-color: rgb(255, 255, 255)"] { background-color: #1a1a1a !important; }
+  .dash-dark [style*="background-color: rgb(248, 249, 251)"] { background-color: #242424 !important; }
+  .dash-dark [style*="background-color: rgb(234, 246, 252)"] { background-color: #1a1a1a !important; }
+  .dash-dark [style*="background-color: rgb(241, 245, 249)"] { background-color: #2d2d2d !important; }
+
+  /* Border */
+  .dash-dark [style*="border: 1px solid"],
+  .dash-dark [style*="border-bottom: 1px solid"],
+  .dash-dark [style*="border-top: 1px solid"] { border-color: #634f27 !important; }
+
+  /* Teks gelap -> terang */
+  .dash-dark [style*="color: rgb(17, 24, 39)"],
+  .dash-dark [style*="color: rgb(31, 41, 55)"],
+  .dash-dark [style*="color: rgb(38, 38, 38)"],
+  .dash-dark [style*="color: rgb(0, 0, 0)"],
+  .dash-dark [style*="color: rgb(30, 41, 59)"] { color: #f1f5f9 !important; }
+  .dash-dark [style*="color: rgb(75, 85, 99)"],
+  .dash-dark [style*="color: rgb(89, 89, 89)"],
+  .dash-dark [style*="color: rgb(107, 114, 128)"] { color: #cbd5e1 !important; }
+  .dash-dark [style*="color: rgb(156, 163, 175)"],
+  .dash-dark [style*="color: rgb(140, 140, 140)"] { color: #94a3b8 !important; }
+
+  /* Ikon */
+  .dash-dark svg[stroke="#4b5563"],
+  .dash-dark svg[stroke="#262626"] { stroke: #cbd5e1; }
+  .dash-dark svg[fill="#6b7280"],
+  .dash-dark svg[fill="#595959"] { fill: #cbd5e1; }
+
+  /* Tombol utama (biru tua / hijau) -> emas */
+  .dash-dark [style*="background-color: rgb(30, 99, 126)"],
+  .dash-dark [style*="background-color: rgb(24, 82, 104)"],
+  .dash-dark [style*="background-color: rgb(92, 184, 92)"],
+  .dash-dark [style*="background-color: rgb(76, 174, 76)"] { background-color: #E5B85C !important; color: #121212 !important; }
+
+  /* Tombol outline & teks biru tua -> emas */
+  .dash-dark [style*="color: rgb(30, 99, 126)"] { color: #E5B85C !important; }
+  .dash-dark [style*="border: 1px solid rgb(30, 99, 126)"] { border-color: #E5B85C !important; }
+
+  /* Badge "?" */
+  .dash-dark [style*="background-color: rgb(24, 144, 255)"] { background-color: #E5B85C !important; color: #121212 !important; }
+
+  /* Dropdown & kalender */
+  .dash-dark .dp-dd, .dash-dark .dp-pop { background-color: #1e1e1e !important; border-color: #634f27 !important; }
+  .dash-dark .dp-dd div, .dash-dark .dp-dd button { color: #f1f5f9 !important; }
+  .dash-dark .dp-dd [style*="background-color: rgb(241, 245, 249)"] { background-color: rgba(229,184,92,0.2) !important; }
+  .dash-dark .dp-dd [style*="color: rgb(30, 99, 126)"] { color: #E5B85C !important; }
+  .dash-dark .dp-pop button { color: #f1f5f9 !important; }
+  .dash-dark .dp-pop span { color: #94a3b8 !important; }
+  .dash-dark .dp-pop [style*="background-color: rgb(248, 250, 252)"] { background-color: #262626 !important; }
+  .dash-dark .dp-pop [style*="background-color: rgb(2, 132, 199)"] { background-color: #E5B85C !important; color: #121212 !important; }
+  .dash-dark .dp-pop [style*="color: rgb(2, 132, 199)"]:not([style*="background-color: rgb(2, 132, 199)"]) { color: #E5B85C !important; }
+  .dash-dark .pp-btn { color: #000000ff !important; }
+  .dash-dark .pp-icon { color: #000000ff !important; }
+
+  /* Light */
+  .hover-btn { background-color: #ffffff !important; transition: background-color 0.15s ease; }
+  .hover-btn:hover { background-color: #f8fafc !important; }
+
+  /* Dark */
+  .dash-dark .hover-btn { background-color: transparent !important; color: #E5B85C !important; border-color: #E5B85C !important; }
+  .dash-dark .hover-btn:hover { background-color: rgba(63, 63, 63, 0.15) !important; }
+
+  /* Backdrop drawer */
+  .dash-dark [style*="rgba(15, 23, 42, 0.3)"] { background-color: rgba(0,0,0,0.7) !important; }
+`}</style>
     </div>
   );
 }

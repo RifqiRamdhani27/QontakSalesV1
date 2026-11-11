@@ -14,6 +14,45 @@ export default function RingkasanBisnis() {
     }
   };
 
+  const [themeMode, setThemeMode] = useState(() => localStorage.getItem("app_theme") || "light");
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+  const isDark = themeMode === "dark";
+
+  // Palet ilustrasi SVG (light = asli, dark = gelap + aksen emas)
+  const c = isDark
+    ? {
+      glow: "#E5B85C", glowOp: 0.18,
+      ped1: "#2a2a2a", ped2: "#1c1c1c", ped3: "#141414",
+      pedGrad: ["#3a3a3a", "#262626", "#1a1a1a"],
+      shadow: "#E5B85C", shadowOp: 0.12,
+      barA1: "#3a3a3a", barA2: "#2a2a2a", barA3: "#4a4a4a",
+      barB1: "#E5B85C", barB2: "#b8862b", barB3: "#f0c978",
+      barC1: "#2f2f2f", barC2: "#202020", barC3: "#454545",
+      donutHole: "#1a1a1a",
+      donutLight: "#fb7185", donutDark: "#f43f5e",
+      edge: "rgba(229,184,92,0.35)",
+    }
+    : {
+      glow: "#cbd5e1", glowOp: 0.3,
+      ped1: "#e2e8f0", ped2: "#cbd5e1", ped3: "#94a3b8",
+      pedGrad: ["#ffffff", "#f8fafc", "#e2e8f0"],
+      shadow: "#cbd5e1", shadowOp: 0.3,
+      barA1: "#e2e8f0", barA2: "#cbd5e1", barA3: "#f8fafc",
+      barB1: "#818cf8", barB2: "#6366f1", barB3: "#a5b4fc",
+      barC1: "#cbd5e1", barC2: "#94a3b8", barC3: "#f1f5f9",
+      donutHole: "#f8fafc",
+      donutLight: "#fb7185", donutDark: "#f43f5e",
+      edge: "none",
+    };
+
   // Date & Periode Mode States
   const datePickerRef = useRef(null);
   const [periodeType, setPeriodeType] = useState("per_hari"); // "per_hari" | "per_minggu" | "per_bulan" | "per_tahun"
@@ -168,7 +207,7 @@ export default function RingkasanBisnis() {
   const renderDrawerCalendar = (
     viewDate, setViewDate, viewMode, setViewMode, selectedDateVal, onSelectDate, alignRight = false
   ) => (
-    <div style={{
+    <div className="rb-pop" style={{
       position: "absolute", top: "calc(100% + 4px)",
       ...(alignRight ? { right: 0 } : { left: 0 }),
       zIndex: 10000,
@@ -179,17 +218,17 @@ export default function RingkasanBisnis() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
         <button type="button" style={{ background: "none", border: "none", fontSize: "16px", fontWeight: "bold", cursor: "pointer", color: "#334155", padding: "4px 8px", borderRadius: "4px" }}
           onClick={(e) => { e.stopPropagation(); if (viewMode === "days") setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1)); else setViewMode("days"); }}>«</button>
-        
+
         <button type="button" style={{ background: "none", border: "none", fontSize: "14px", fontWeight: "700", color: "#0284c7", cursor: "pointer", padding: "4px 8px" }}
           onClick={(e) => { e.stopPropagation(); if (viewMode === "days") setViewMode("months"); }}>
           {viewMode === "days" && `${MONTH_NAMES[viewDate.getMonth()]} ${viewDate.getFullYear()}`}
           {viewMode === "months" && `${viewDate.getFullYear()}`}
         </button>
-        
+
         <button type="button" style={{ background: "none", border: "none", fontSize: "16px", fontWeight: "bold", cursor: "pointer", color: "#334155", padding: "4px 8px", borderRadius: "4px" }}
           onClick={(e) => { e.stopPropagation(); if (viewMode === "days") setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1)); else setViewMode("days"); }}>»</button>
       </div>
-      
+
       {viewMode === "days" && (
         <>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", textAlign: "center", fontWeight: "600", fontSize: "11px", color: "#64748b", marginBottom: "6px" }}>
@@ -225,7 +264,7 @@ export default function RingkasanBisnis() {
     const { mon: weekMon, sun: weekSun } = getWeekRange(selectedDate);
 
     return (
-      <div style={{
+      <div className="rb-pop" style={{
         position: "absolute", top: "calc(100% + 6px)", left: 0,
         zIndex: 1000, backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "8px",
         boxShadow: "0 10px 25px -5px rgba(0,0,0,0.12), 0 8px 10px -6px rgba(0,0,0,0.08)",
@@ -297,15 +336,15 @@ export default function RingkasanBisnis() {
                       backgroundColor: isSelectedDay
                         ? "#4f66ee"
                         : isInSelectedWeek
-                        ? "#eff6ff"
-                        : "transparent",
+                          ? "#eff6ff"
+                          : "transparent",
                       color: isSelectedDay
                         ? "#ffffff"
                         : isInSelectedWeek
-                        ? "#1d4ed8"
-                        : d.isCurrentMonth
-                        ? "#1e293b"
-                        : "#94a3b8",
+                          ? "#1d4ed8"
+                          : d.isCurrentMonth
+                            ? "#1e293b"
+                            : "#94a3b8",
                       fontWeight: (isSelectedDay || isInSelectedWeek) ? "bold" : "normal",
                     }}
                   >
@@ -427,7 +466,7 @@ export default function RingkasanBisnis() {
   };
 
   return (
-    <div style={{
+    <div className={isDark ? "dash-dark rb-root" : "rb-root"} style={{
       margin: isFullscreen ? 0 : "-24px",
       minHeight: "100vh",
       backgroundColor: "#ffffff",
@@ -437,9 +476,9 @@ export default function RingkasanBisnis() {
       flexDirection: "column",
     }}>
       {/* Top Header */}
-      <div style={{
+      <div className="rb-head" style={{
         padding: "16px 28px",
-        backgroundColor: "#f4f6fa",
+        backgroundColor: "#ffffffff",
         borderBottom: "1px solid #e5e9ec",
       }}>
         {/* Category breadcrumb */}
@@ -512,6 +551,7 @@ export default function RingkasanBisnis() {
             {/* Tampilkan Button */}
             <button
               type="button"
+              className="rb-btn"
               style={{
                 height: "36px",
                 padding: "0 20px",
@@ -618,7 +658,7 @@ export default function RingkasanBisnis() {
                 </svg>
               </button>
               {showEksporDropdown && (
-                <div style={{
+                <div className="rb-dd" style={{
                   position: "absolute", top: "40px", right: 0, zIndex: 50,
                   width: "140px", backgroundColor: "#ffffff", border: "1px solid #cbd5e1",
                   borderRadius: "6px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: "4px 0",
@@ -651,69 +691,68 @@ export default function RingkasanBisnis() {
         }}>
           {/* 3D Financial Graph Illustration Vector (Matching LabaRugi & Reference Image) */}
           <div style={{ position: "relative", width: "288px", height: "208px", marginBottom: "20px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <svg style={{ width: "100%", height: "100%", overflow: "visible" }} fill="none" viewBox="0 0 320 230" xmlns="http://www.w3.org/2000/svg">
-              {/* Isometric Base / Pedestal */}
+            <svg style={{ width: "100%", height: "100%", overflow: "visible", filter: isDark ? "drop-shadow(0 0 22px rgba(229,184,92,0.25))" : "none" }} fill="none" viewBox="0 0 320 230" xmlns="http://www.w3.org/2000/svg">
+              {/* Pedestal */}
               <g opacity="0.95">
-                <ellipse cx="160" cy="192" fill="#cbd5e1" opacity="0.3" rx="90" ry="24" />
-                <path d="M72 178 L160 148 L248 178 L160 208 Z" fill="#e2e8f0" />
-                <path d="M72 178 L160 208 L160 216 L72 186 Z" fill="#cbd5e1" />
-                <path d="M160 208 L248 178 L248 186 L160 216 Z" fill="#94a3b8" />
-                <path d="M72 178 L160 148 L248 178 L160 208 Z" fill="url(#pedestal-gradient-ringkasan)" />
+                <ellipse cx="160" cy="192" fill={c.shadow} opacity={c.shadowOp} rx="90" ry="24" />
+                <path d="M72 178 L160 148 L248 178 L160 208 Z" fill={c.ped1} />
+                <path d="M72 178 L160 208 L160 216 L72 186 Z" fill={c.ped2} />
+                <path d="M160 208 L248 178 L248 186 L160 216 Z" fill={c.ped3} />
+                <path d="M72 178 L160 148 L248 178 L160 208 Z" fill="url(#pedestal-gradient-ringkasan)" stroke={c.edge} strokeWidth="1" />
               </g>
 
-              {/* Left Donut Chart Ring */}
+              {/* Left Donut */}
               <g transform="translate(68, 55)">
-                <ellipse cx="42" cy="65" fill="#fda4af" opacity="0.4" rx="38" ry="18" />
+                <ellipse cx="42" cy="65" fill="#fda4af" opacity={isDark ? 0.18 : 0.4} rx="38" ry="18" />
                 <path d="M8 44 C8 24 23 8 42 8 C61 8 76 24 76 44 L76 54 C76 74 61 90 42 90 C23 90 8 74 8 54 Z" fill="url(#pink-donut-depth-ringkasan)" />
                 <ellipse cx="42" cy="44" fill="url(#pink-donut-face-ringkasan)" rx="34" ry="34" />
-                <ellipse cx="42" cy="44" fill="#f8fafc" rx="14" ry="14" />
-                <path d="M42 10 A34 34 0 0 1 76 44 L62 44 A20 20 0 0 0 42 24 Z" fill="#fb7185" />
-                <path d="M18 55 A34 34 0 0 1 42 10 L42 24 A20 20 0 0 0 28 50 Z" fill="#f43f5e" opacity="0.9" />
+                <ellipse cx="42" cy="44" fill={c.donutHole} rx="14" ry="14" />
+                <path d="M42 10 A34 34 0 0 1 76 44 L62 44 A20 20 0 0 0 42 24 Z" fill={c.donutLight} />
+                <path d="M18 55 A34 34 0 0 1 42 10 L42 24 A20 20 0 0 0 28 50 Z" fill={c.donutDark} opacity="0.9" />
               </g>
 
-              {/* Bar Charts Group */}
+              {/* Bar A */}
               <g transform="translate(136, 118)">
-                <path d="M0 24 L14 19 L28 24 L28 65 L14 70 L0 65 Z" fill="#e2e8f0" />
-                <path d="M14 19 L28 24 L28 65 L14 70 Z" fill="#cbd5e1" />
-                <path d="M0 24 L14 19 L28 24 L14 29 Z" fill="#f8fafc" />
+                <path d="M0 24 L14 19 L28 24 L28 65 L14 70 L0 65 Z" fill={c.barA1} />
+                <path d="M14 19 L28 24 L28 65 L14 70 Z" fill={c.barA2} />
+                <path d="M0 24 L14 19 L28 24 L14 29 Z" fill={c.barA3} />
               </g>
 
-              {/* Bar 2: Purple Column */}
+              {/* Bar B (aksen) */}
               <g transform="translate(148, 90)">
-                <path d="M0 20 L16 14 L32 20 L32 75 L16 81 L0 75 Z" fill="#818cf8" />
-                <path d="M16 14 L32 20 L32 75 L16 81 Z" fill="#6366f1" />
-                <path d="M0 20 L16 14 L32 20 L16 26 Z" fill="#a5b4fc" />
+                <path d="M0 20 L16 14 L32 20 L32 75 L16 81 L0 75 Z" fill={c.barB1} />
+                <path d="M16 14 L32 20 L32 75 L16 81 Z" fill={c.barB2} />
+                <path d="M0 20 L16 14 L32 20 L16 26 Z" fill={c.barB3} />
               </g>
 
-              {/* Bar 3: Tall Slate Column Behind */}
+              {/* Bar C */}
               <g transform="translate(164, 68)">
-                <path d="M0 24 L16 17 L32 24 L32 95 L16 102 L0 95 Z" fill="#cbd5e1" />
-                <path d="M16 17 L32 24 L32 95 L16 102 Z" fill="#94a3b8" />
-                <path d="M0 24 L16 17 L32 24 L16 31 Z" fill="#f1f5f9" />
+                <path d="M0 24 L16 17 L32 24 L32 95 L16 102 L0 95 Z" fill={c.barC1} />
+                <path d="M16 17 L32 24 L32 95 L16 102 Z" fill={c.barC2} />
+                <path d="M0 24 L16 17 L32 24 L16 31 Z" fill={c.barC3} />
               </g>
 
-              {/* Ascending 3D Growth Trend Arrow */}
+              {/* Trend Arrow */}
               <g transform="translate(148, 92)">
                 <path d="M-8 48 C6 44 14 36 28 20 C34 14 38 4 48 -6" fill="none" stroke="url(#trend-arrow-stroke-ringkasan)" strokeLinecap="round" strokeWidth="9" />
                 <polygon fill="#db2777" points="46,-16 57,-4 42,0" />
                 <polygon fill="#f43f5e" points="46,-16 57,-4 52,-14" />
               </g>
 
-              {/* Right Donut Chart Ring */}
+              {/* Right Donut */}
               <g transform="translate(216, 92)">
-                <ellipse cx="30" cy="50" fill="#cbd5e1" opacity="0.3" rx="28" ry="14" />
+                <ellipse cx="30" cy="50" fill={c.shadow} opacity={c.shadowOp} rx="28" ry="14" />
                 <path d="M6 32 C6 18 17 6 30 6 C43 6 54 18 54 39 Z" fill="url(#pink-donut-depth-small-ringkasan)" />
                 <ellipse cx="30" cy="32" fill="url(#pink-donut-face-ringkasan)" rx="24" ry="24" />
-                <ellipse cx="30" cy="32" fill="#f8fafc" rx="10" ry="10" />
-                <path d="M30 8 A24 24 0 0 1 54 32 L44 32 A14 14 0 0 0 30 18 Z" fill="#fb7185" />
+                <ellipse cx="30" cy="32" fill={c.donutHole} rx="10" ry="10" />
+                <path d="M30 8 A24 24 0 0 1 54 32 L44 32 A14 14 0 0 0 30 18 Z" fill={c.donutLight} />
               </g>
 
-              {/* Gradients Definitions */}
               <defs>
                 <linearGradient gradientUnits="userSpaceOnUse" id="pedestal-gradient-ringkasan" x1="72" x2="248" y1="148" y2="208">
-                  <stop stopColor="#ffffff" />
-                  <stop offset="0.5" stopColor="#f8fafc" />
-                  <stop offset="1" stopColor="#e2e8f0" />
+                  <stop stopColor={c.pedGrad[0]} />
+                  <stop offset="0.5" stopColor={c.pedGrad[1]} />
+                  <stop offset="1" stopColor={c.pedGrad[2]} />
                 </linearGradient>
                 <linearGradient gradientUnits="userSpaceOnUse" id="pink-donut-face-ringkasan" x1="8" x2="76" y1="8" y2="76">
                   <stop stopColor="#fda4af" />
@@ -869,7 +908,7 @@ export default function RingkasanBisnis() {
                   </svg>
                 </div>
                 {showDrawerPeriodeDropdown && (
-                  <div style={{
+                  <div className="rb-dd" style={{
                     position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 1000,
                     backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px",
                     boxShadow: "0 10px 25px -5px rgba(0,0,0,0.12)", padding: "4px 0", maxHeight: "200px", overflowY: "auto"
@@ -993,6 +1032,7 @@ export default function RingkasanBisnis() {
                 </button>
                 <button
                   type="button"
+                  className="rb-btn"
                   onClick={closeFilterDrawer}
                   style={{
                     padding: "8px 20px", backgroundColor: "#4f66ee", border: "none",
@@ -1007,6 +1047,65 @@ export default function RingkasanBisnis() {
           </aside>
         </div>
       )}
+      <style>{`
+  .dash-dark.rb-root { background-color: #121212 !important; color: #f1f5f9 !important; color-scheme: dark; }
+  .dash-dark h1, .dash-dark h2 { color: #ffffff !important; }
+  .dash-dark label { color: #cbd5e1 !important; }
+  .dash-dark input[type="radio"] { accent-color: #E5B85C !important; }
+
+  /* Permukaan */
+  .dash-dark [style*="background-color: rgb(255, 255, 255)"] { background-color: #121212 !important; }
+  .dash-dark [style*="background-color: rgb(248, 250, 252)"] { background-color: #1a1a1a !important; }
+  .dash-dark [style*="background-color: rgb(241, 245, 249)"] { background-color: #1a1a1a !important; }
+  .dash-dark .rb-head { background-color: #1a1a1a !important; border-color: #634f27 !important; }
+
+  /* Border */
+  .dash-dark [style*="border: 1px solid"],
+  .dash-dark [style*="border-bottom: 1px solid"],
+  .dash-dark [style*="border-top: 1px solid"] { border-color: #634f27 !important; }
+
+  /* Teks gelap -> terang */
+  .dash-dark [style*="color: rgb(30, 41, 59)"],
+  .dash-dark [style*="color: rgb(51, 65, 85)"],
+  .dash-dark [style*="color: rgb(16, 24, 40)"],
+  .dash-dark [style*="color: rgb(52, 64, 84)"] { color: #f1f5f9 !important; }
+  .dash-dark [style*="color: rgb(71, 85, 105)"],
+  .dash-dark [style*="color: rgb(100, 116, 139)"],
+  .dash-dark [style*="color: rgb(102, 112, 133)"] { color: #cbd5e1 !important; }
+  .dash-dark [style*="color: rgb(148, 163, 184)"],
+  .dash-dark [style*="color: rgb(152, 162, 179)"] { color: #94a3b8 !important; }
+
+  /* Biru -> emas */
+  .dash-dark [style*="color: rgb(79, 102, 238)"],
+  .dash-dark [style*="color: rgb(2, 132, 199)"],
+  .dash-dark [style*="color: rgb(29, 78, 216)"] { color: #E5B85C !important; }
+  .dash-dark svg[fill="#4f66ee"] { fill: #E5B85C; }
+  .dash-dark svg[stroke="#4f66ee"] { stroke: #E5B85C; }
+  .dash-dark svg[stroke="#64748b"],
+  .dash-dark svg[stroke="#667085"] { stroke: #cbd5e1; }
+  .dash-dark button[title] { color: #cbd5e1 !important; }
+
+  /* Tombol utama emas */
+  .dash-dark .rb-btn { background-color: #E5B85C !important; color: #121212 !important; }
+  .dash-dark .rb-btn:hover { background-color: #f0c978 !important; }
+
+  /* Dropdown & kalender */
+  .dash-dark .rb-dd, .dash-dark .rb-pop { background-color: #1e1e1e !important; border-color: #634f27 !important; }
+  .dash-dark .rb-dd div { color: #f1f5f9 !important; }
+  .dash-dark .rb-dd [style*="background-color: rgb(241, 245, 249)"] { background-color: rgba(229,184,92,0.2) !important; }
+  .dash-dark .rb-dd [style*="background-color: rgb(248, 250, 252)"] { background-color: #2d2d2d !important; }
+  .dash-dark .rb-pop button { color: #f1f5f9 !important; }
+  .dash-dark .rb-pop span { color: #94a3b8 !important; }
+  .dash-dark .rb-pop [style*="background-color: rgb(241, 245, 249)"] { background-color: #262626 !important; }
+  .dash-dark .rb-pop [style*="background-color: rgb(248, 250, 252)"] { background-color: #262626 !important; }
+  .dash-dark .rb-pop [style*="background-color: rgb(255, 255, 255)"] { background-color: #3a3a3a !important; }
+  .dash-dark .rb-pop [style*="background-color: rgb(239, 246, 255)"] { background-color: rgba(229,184,92,0.2) !important; }
+  .dash-dark .rb-pop [style*="background-color: rgb(79, 102, 238)"],
+  .dash-dark .rb-pop [style*="background-color: rgb(2, 132, 199)"] { background-color: #E5B85C !important; color: #121212 !important; }
+
+  /* Backdrop */
+  .dash-dark [style*="rgba(15, 23, 42, 0.3)"] { background-color: rgba(0,0,0,0.7) !important; }
+`}</style>
     </div>
   );
 }

@@ -7,6 +7,45 @@ export default function DaftarPenjualan() {
 
   const isFullscreen = outletContext ? outletContext.isFullscreen : localFullscreen;
 
+  const [themeMode, setThemeMode] = useState(() => localStorage.getItem("app_theme") || "light");
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+  const isDark = themeMode === "dark";
+  const illu = isDark
+    ? {
+      sheetBg: "linear-gradient(135deg, #2b2b2b 0%, #1f1f1f 50%, #161616 100%)",
+      sheetShadow: "0 12px 32px -6px rgba(229,184,92,0.28), inset 0 0 0 1px rgba(229,184,92,0.25)",
+      foldBg: "linear-gradient(225deg, rgba(229,184,92,0.35) 0%, transparent 100%)",
+      ringBg: "linear-gradient(180deg, #4a4130 0%, #2a2418 50%, #17140d 100%)",
+      ringShadow: "0 14px 34px -4px rgba(229,184,92,0.38), inset 0 0 0 1px rgba(229,184,92,0.5)",
+      lensBg: "linear-gradient(180deg, rgba(229,184,92,0.18) 0%, rgba(229,184,92,0.05) 100%)",
+      lensRing: "inset 0 0 0 1px rgba(229,184,92,0.25)",
+      glare: "rgba(255,255,255,0.16)",
+      handleBg: "linear-gradient(180deg, #f0c978 0%, #E5B85C 50%, #b8862b 100%)",
+      handleShadow: "0 4px 12px rgba(229,184,92,0.4), inset 0 1px 0 rgba(255,255,255,0.4)",
+      xShadow: "0 5px 18px rgba(244,63,94,0.55), inset 0 0 0 1px rgba(255,255,255,0.35)",
+    }
+    : {
+      sheetBg: "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%)",
+      sheetShadow: "0 12px 28px -6px rgba(148, 163, 184, 0.45), inset 0 0 0 1px rgba(255,255,255,0.8)",
+      foldBg: "linear-gradient(225deg, rgba(255, 255, 255, 0.9) 0%, transparent 100%)",
+      ringBg: "linear-gradient(180deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%)",
+      ringShadow: "0 14px 28px -4px rgba(99, 102, 241, 0.22), inset 0 0 0 1px #ffffff",
+      lensBg: "linear-gradient(180deg, rgba(240, 244, 255, 0.8) 0%, rgba(219, 234, 254, 0.7) 100%)",
+      lensRing: "inset 0 0 0 1px rgba(255,255,255,0.6)",
+      glare: "rgba(255, 255, 255, 0.6)",
+      handleBg: "linear-gradient(180deg, #818cf8 0%, #6366f1 50%, #4f46e5 100%)",
+      handleShadow: "0 4px 6px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.4)",
+      xShadow: "0 5px 12px rgba(244, 63, 94, 0.4), inset 0 0 0 1px rgba(255,255,255,0.5)",
+    };
+
   // Tanggal Awal State & Popover
   const startDatePickerRef = useRef(null);
   const [startSelectedDate, setStartSelectedDate] = useState(() => new Date(2026, 8, 16));
@@ -137,6 +176,7 @@ export default function DaftarPenjualan() {
     viewDate, setViewDate, viewMode, setViewMode, selectedDate, onSelectDate, alignRight = false
   ) => (
     <div
+      className="dp-pop"
       style={{
         position: "absolute", top: "calc(100% + 6px)",
         ...(alignRight ? { right: 0 } : { left: 0 }),
@@ -158,7 +198,7 @@ export default function DaftarPenjualan() {
         >
           «
         </button>
-        
+
         <button
           type="button"
           style={{ background: "none", border: "none", fontSize: "14px", fontWeight: "700", color: "#0284c7", cursor: "pointer", padding: "4px 8px" }}
@@ -171,7 +211,7 @@ export default function DaftarPenjualan() {
           {viewMode === "days" && `${MONTH_NAMES[viewDate.getMonth()]} ${viewDate.getFullYear()}`}
           {viewMode === "months" && `${viewDate.getFullYear()}`}
         </button>
-        
+
         <button
           type="button"
           style={{ background: "none", border: "none", fontSize: "16px", fontWeight: "bold", cursor: "pointer", color: "#334155", padding: "4px 8px", borderRadius: "4px" }}
@@ -265,6 +305,7 @@ export default function DaftarPenjualan() {
 
   return (
     <div
+      className={isDark ? "dash-dark dp-root" : "dp-root"}
       style={{
         margin: isFullscreen ? 0 : "-24px",
         width: isFullscreen ? "100%" : "calc(100% + 48px)",
@@ -296,7 +337,7 @@ export default function DaftarPenjualan() {
         >
           {/* Left Controls: Date Filters & Action Buttons */}
           <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", gap: "14px" }}>
-            
+
             {/* Tanggal Awal Input */}
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }} ref={startDatePickerRef}>
               <label style={{ fontSize: "13px", fontWeight: 500, color: "#1e293b" }}>
@@ -387,7 +428,7 @@ export default function DaftarPenjualan() {
                 </div>
 
                 {showPeriodeDropdown && (
-                  <div style={{
+                  <div className="dp-dd" style={{
                     position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 1000,
                     backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px",
                     boxShadow: "0 10px 25px -5px rgba(0,0,0,0.12)", padding: "4px 0", maxHeight: "200px", overflowY: "auto",
@@ -418,6 +459,7 @@ export default function DaftarPenjualan() {
             <div>
               <button
                 type="button"
+                className="dp-btn"
                 style={{
                   height: "38px", padding: "0 20px", backgroundColor: "#4361ee", color: "#ffffff",
                   fontSize: "13.5px", fontWeight: 500, border: "none", borderRadius: "6px",
@@ -496,7 +538,7 @@ export default function DaftarPenjualan() {
               </button>
 
               {showEksporDropdown && (
-                <div style={{
+                <div className="dp-dd" style={{
                   position: "absolute", top: "calc(100% + 4px)", right: 0, zIndex: 1000,
                   backgroundColor: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "6px",
                   boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1)", width: "140px", padding: "4px 0",
@@ -530,12 +572,46 @@ export default function DaftarPenjualan() {
             paddingTop: "32px", paddingBottom: "64px",
           }}
         >
-          <div style={{ position: "relative", width: "288px", height: "208px", display: "flex", alignItems: "center", justifyContent: "center", userSelect: "none", pointerEvents: "none" }}>
-            <img
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfAdM7ygROqffT3IhCX2SEaCFYKuq4BvRqi8MPHHEg8N7Bo6CzCeu7uMT4GCMp5mNGXqTgBmf_MxTV7932Zca8gY8HRepPvW2PcNgyhILlKr-gKmVD_4VkhBypw_a620RPsHJ435vosAh6RDqe9jvBPALjN8YfUvc_W9NvdA4rWV5uMJlEP4zId1HkpzPL7hB3hstIU5r4KYEjYjGMfNsfr6xiNPLAp3jNsbYYyQLg-mlmNSzzpYygbJbkdyT4lZtELA"
-              alt="Ilustrasi Laporan Kosong"
-              style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
-            />
+
+
+          <div style={{ position: "relative", width: "190px", height: "195px", marginBottom: "16px", display: "flex", alignItems: "center", justifyContent: "center", userSelect: "none", pointerEvents: "none" }}>
+            <div style={{
+              position: "absolute", width: "122px", height: "142px",
+              background: illu.sheetBg, borderRadius: "16px", boxShadow: illu.sheetShadow,
+              transform: "rotate(-7deg) translateY(4px)",
+            }}>
+              <div style={{ position: "absolute", top: 0, right: 0, width: "24px", height: "24px", background: illu.foldBg, borderTopRightRadius: "16px" }} />
+            </div>
+
+            <div style={{ position: "relative", zIndex: 10, transform: "translateX(12px) translateY(-4px)" }}>
+              <div style={{
+                position: "relative", width: "86px", height: "86px", borderRadius: "50%",
+                background: illu.ringBg, padding: "6px", boxShadow: illu.ringShadow,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <div style={{
+                  width: "100%", height: "100%", borderRadius: "50%",
+                  background: illu.lensBg, boxShadow: illu.lensRing,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  position: "relative", overflow: "hidden",
+                }}>
+                  <div style={{ position: "absolute", top: "-12px", left: "-12px", width: "40px", height: "40px", backgroundColor: illu.glare, borderRadius: "50%", filter: "blur(2px)", transform: "rotate(45deg)" }} />
+                  <div style={{
+                    position: "relative", zIndex: 10, width: "48px", height: "48px", borderRadius: "50%",
+                    background: "linear-gradient(45deg, #f43f5e 0%, #fb7185 50%, #fda4af 100%)",
+                    display: "flex", alignItems: "center", justifyContent: "center", boxShadow: illu.xShadow,
+                  }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#ffffff" style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.2))" }}>
+                      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                    </svg>
+                  </div>
+                </div>
+                <div style={{
+                  position: "absolute", bottom: "-24px", right: "-20px", width: "14px", height: "34px",
+                  background: illu.handleBg, borderRadius: "9999px", transform: "rotate(-45deg)", boxShadow: illu.handleShadow,
+                }} />
+              </div>
+            </div>
           </div>
 
           <div style={{ textAlign: "center", marginTop: "12px" }}>
@@ -584,7 +660,7 @@ export default function DaftarPenjualan() {
               {/* Tanggal Awal & Akhir */}
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  
+
                   {/* Tanggal awal */}
                   <div style={{ flex: 1, position: "relative" }} ref={drawerStartCalRef}>
                     <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#344054", marginBottom: "6px" }}>
@@ -666,7 +742,7 @@ export default function DaftarPenjualan() {
                   </svg>
                 </div>
                 {showDrawerPeriodeDropdown && (
-                  <div style={{
+                  <div className="dp-dd" style={{
                     position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 1000,
                     backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px",
                     boxShadow: "0 10px 25px -5px rgba(0,0,0,0.12)", padding: "4px 0", maxHeight: "200px", overflowY: "auto"
@@ -711,7 +787,7 @@ export default function DaftarPenjualan() {
                   </svg>
                 </div>
                 {showDrawerTipeDropdown && (
-                  <div style={{
+                  <div className="dp-dd" style={{
                     position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 1000,
                     backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px",
                     boxShadow: "0 10px 25px -5px rgba(0,0,0,0.12)", padding: "4px 0", maxHeight: "200px", overflowY: "auto"
@@ -756,7 +832,7 @@ export default function DaftarPenjualan() {
                   </svg>
                 </div>
                 {showDrawerTglBerdasarkanDropdown && (
-                  <div style={{
+                  <div className="dp-dd" style={{
                     position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 1000,
                     backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px",
                     boxShadow: "0 10px 25px -5px rgba(0,0,0,0.12)", padding: "4px 0"
@@ -905,6 +981,7 @@ export default function DaftarPenjualan() {
                 <button
                   type="button"
                   onClick={closeFilterDrawer}
+                  className="dp-btn"
                   style={{
                     height: "38px", padding: "0 22px", backgroundColor: "#4361ee", border: "none",
                     borderRadius: "6px", fontSize: "13.5px", fontWeight: 600, color: "#ffffff", cursor: "pointer",
@@ -918,6 +995,63 @@ export default function DaftarPenjualan() {
           </aside>
         </div>
       )}
+      <style>{`
+  .dash-dark.dp-root { background-color: #121212 !important; color: #f1f5f9 !important; color-scheme: dark; }
+  .dash-dark h1, .dash-dark h2 { color: #ffffff !important; }
+  .dash-dark label { color: #cbd5e1 !important; }
+  .dash-dark input[type="radio"] { accent-color: #E5B85C !important; }
+  .dash-dark input[type="text"] { background-color: #262626 !important; color: #f1f5f9 !important; border-color: #634f27 !important; }
+  .dash-dark input[type="text"]:focus { border-color: #E5B85C !important; }
+  .dash-dark input::placeholder { color: #94a3b8; }
+
+  /* Permukaan */
+  .dash-dark [style*="background-color: rgb(255, 255, 255)"] { background-color: #121212 !important; }
+  .dash-dark [style*="background-color: rgb(248, 250, 252)"] { background-color: #1a1a1a !important; }
+  .dash-dark [style*="background-color: rgb(241, 245, 249)"] { background-color: #2d2d2d !important; }
+
+  /* Border */
+  .dash-dark [style*="border: 1px solid"],
+  .dash-dark [style*="border-bottom: 1px solid"],
+  .dash-dark [style*="border-top: 1px solid"] { border-color: #634f27 !important; }
+  .dash-dark [style*="border: 1px solid rgb(67, 97, 238)"] { border-color: #E5B85C !important; }
+
+  /* Teks gelap -> terang */
+  .dash-dark [style*="color: rgb(15, 23, 42)"],
+  .dash-dark [style*="color: rgb(30, 41, 59)"],
+  .dash-dark [style*="color: rgb(51, 65, 85)"],
+  .dash-dark [style*="color: rgb(52, 64, 84)"],
+  .dash-dark [style*="color: rgb(16, 24, 40)"] { color: #f1f5f9 !important; }
+  .dash-dark [style*="color: rgb(71, 85, 105)"],
+  .dash-dark [style*="color: rgb(100, 116, 139)"],
+  .dash-dark [style*="color: rgb(102, 112, 133)"] { color: #cbd5e1 !important; }
+  .dash-dark [style*="color: rgb(148, 163, 184)"] { color: #94a3b8 !important; }
+
+  /* Biru -> emas */
+  .dash-dark [style*="color: rgb(67, 97, 238)"],
+  .dash-dark [style*="color: rgb(2, 132, 199)"] { color: #E5B85C !important; }
+  .dash-dark svg[fill="#4361ee"] { fill: #E5B85C; }
+  .dash-dark svg[stroke="#4361ee"] { stroke: #E5B85C; }
+  .dash-dark svg[stroke="#64748b"],
+  .dash-dark svg[stroke="#667085"] { stroke: #cbd5e1; }
+
+  /* Tombol utama emas */
+  .dash-dark .dp-btn { background-color: #E5B85C !important; color: #121212 !important; }
+  .dash-dark .dp-btn:hover { background-color: #f0c978 !important; }
+
+  /* Dropdown & kalender */
+  .dash-dark .dp-dd, .dash-dark .dp-pop { background-color: #1e1e1e !important; border-color: #634f27 !important; }
+  .dash-dark .dp-dd div, .dash-dark .dp-dd button { color: #f1f5f9 !important; }
+  .dash-dark .dp-dd [style*="background-color: rgb(241, 245, 249)"] { background-color: rgba(229,184,92,0.2) !important; }
+  .dash-dark .dp-dd [style*="background-color: rgb(248, 250, 252)"] { background-color: #2d2d2d !important; }
+  .dash-dark .dp-pop button { color: #f1f5f9 !important; }
+  .dash-dark .dp-pop span { color: #94a3b8 !important; }
+  .dash-dark .dp-pop [style*="background-color: rgb(248, 250, 252)"] { background-color: #262626 !important; }
+  .dash-dark .dp-pop [style*="background-color: rgb(2, 132, 199)"] { background-color: #E5B85C !important; color: #121212 !important; }
+  .dash-dark .dp-pop [style*="color: rgb(2, 132, 199)"]:not([style*="background-color: rgb(2, 132, 199)"]) { color: #E5B85C !important; }
+
+  /* Backdrop */
+  .dash-dark [style*="rgba(15, 23, 42, 0.3)"] { background-color: rgba(0,0,0,0.7) !important; }
+`}</style>
     </div>
   );
 }
