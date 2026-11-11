@@ -15,6 +15,18 @@ export default function BukuBesar() {
     }
   };
 
+  const [themeMode, setThemeMode] = useState(() => localStorage.getItem("app_theme") || "light");
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+  const isDark = themeMode === "dark";
+
   // Top Bar Start Date Calendar State
   const startDatePickerRef = useRef(null);
   const [startSelectedDate, setStartSelectedDate] = useState(() => new Date(2026, 8, 16));
@@ -141,7 +153,7 @@ export default function BukuBesar() {
   const renderCalendarPopover = (
     viewDate, setViewDate, viewMode, setViewMode, yearRangeStart, setYearRangeStart, selectedDate, onSelectDate, alignRight = false
   ) => (
-    <div style={{
+    <div className="bb-pop" style={{
       position: "absolute", top: "calc(100% + 4px)",
       ...(alignRight ? { right: 0 } : { left: 0 }),
       zIndex: 1000,
@@ -208,13 +220,15 @@ export default function BukuBesar() {
   ];
 
   return (
-    <div style={{
-      margin: isFullscreen ? 0 : "-24px",
-      minHeight: "100vh",
-      backgroundColor: "#ffffff",
-      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-      color: "#1e293b",
-    }}>
+    <div
+      className={isDark ? "dash-dark bb-root" : "bb-root"}
+      style={{
+        margin: isFullscreen ? 0 : "-24px",
+        minHeight: "100vh",
+        backgroundColor: "#ffffff",
+        fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+        color: "#1e293b",
+      }}>
       {/* Top Header */}
       <div style={{
         display: "flex",
@@ -261,7 +275,7 @@ export default function BukuBesar() {
               </svg>
             </button>
             {showFeedbackDropdown && (
-              <div style={{
+              <div className="bb-dd" style={{
                 position: "absolute", top: "38px", right: 0, zIndex: 50,
                 width: "160px", backgroundColor: "#ffffff", border: "1px solid #cbd5e1",
                 borderRadius: "6px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: "4px 0",
@@ -392,7 +406,7 @@ export default function BukuBesar() {
                 </svg>
               </div>
               {showPeriodeDropdown && (
-                <div style={{
+                <div className="bb-dd" style={{
                   position: "absolute", top: "calc(100% + 4px)", left: 0, zIndex: 1000,
                   width: "170px", backgroundColor: "#ffffff", border: "1px solid #cbd5e1",
                   borderRadius: "6px", boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
@@ -422,6 +436,7 @@ export default function BukuBesar() {
             {/* Tombol Filter */}
             <button
               type="button"
+              className="bb-btn"
               style={{
                 height: "36px",
                 padding: "0 22px",
@@ -511,6 +526,7 @@ export default function BukuBesar() {
 
               {showEksporDropdown && (
                 <div
+                  className="bb-dd"
                   style={{
                     position: "absolute",
                     top: "42px",
@@ -886,6 +902,7 @@ export default function BukuBesar() {
                 <button
                   type="button"
                   onClick={closeFilterDrawer}
+                  className="bb-btn"
                   style={{
                     padding: "8px 18px", backgroundColor: "#4f66ee", border: "none", borderRadius: "6px", fontSize: "13.5px", fontWeight: 600, color: "#ffffff", cursor: "pointer",
                   }}
@@ -897,6 +914,66 @@ export default function BukuBesar() {
           </aside>
         </div>
       )}
+      <style>{`
+  .dash-dark.bb-root { background-color: #121212 !important; color: #f1f5f9 !important; color-scheme: dark; }
+  .dash-dark h1, .dash-dark h2 { color: #ffffff !important; }
+  .dash-dark label { color: #cbd5e1 !important; }
+
+  /* Permukaan putih / abu inline -> gelap */
+  .dash-dark [style*="background-color: rgb(255, 255, 255)"] { background-color: #121212 !important; }
+  .dash-dark [style*="background-color: rgb(248, 250, 252)"] { background-color: #1a1a1a !important; }
+  .dash-dark [style*="background-color: rgb(244, 246, 255)"] { background-color: #2d2d2d !important; }
+  .dash-dark select {
+    background-color: #262626 !important;
+    color: #f1f5f9 !important;
+    border-color: #634f27 !important;
+  }
+  .dash-dark select:focus { border-color: #E5B85C !important; }
+  .dash-dark select option { background: #262626; color: #f1f5f9; }
+
+  /* Border */
+  .dash-dark [style*="border: 1px solid"],
+  .dash-dark [style*="border-bottom: 1px solid"],
+  .dash-dark [style*="border-top: 1px solid"] { border-color: #634f27 !important; }
+  .dash-dark [style*="border: 1px solid rgb(79, 102, 238)"] { border-color: #E5B85C !important; }
+  .dash-dark [style*="border-color: rgb(148, 163, 184)"] { border-color: #E5B85C !important; }
+
+  /* Teks gelap -> terang */
+  .dash-dark [style*="color: rgb(30, 41, 59)"],
+  .dash-dark [style*="color: rgb(51, 65, 85)"],
+  .dash-dark [style*="color: rgb(16, 24, 40)"],
+  .dash-dark [style*="color: rgb(52, 64, 84)"] { color: #f1f5f9 !important; }
+  .dash-dark [style*="color: rgb(71, 85, 105)"],
+  .dash-dark [style*="color: rgb(100, 116, 139)"],
+  .dash-dark [style*="color: rgb(102, 112, 133)"] { color: #cbd5e1 !important; }
+  .dash-dark [style*="color: rgb(148, 163, 184)"] { color: #94a3b8 !important; }
+
+  /* Biru -> emas */
+  .dash-dark [style*="color: rgb(79, 102, 238)"],
+  .dash-dark [style*="color: rgb(59, 102, 245)"],
+  .dash-dark [style*="color: rgb(79, 103, 201)"] { color: #E5B85C !important; }
+  .dash-dark svg[fill="#4f66ee"] { fill: #E5B85C; }
+  .dash-dark svg[stroke="#64748b"],
+  .dash-dark svg[stroke="#667085"] { stroke: #cbd5e1; }
+
+  /* Tombol utama emas */
+  .dash-dark .bb-btn { background-color: #E5B85C !important; color: #121212 !important; }
+  .dash-dark .bb-btn:hover { background-color: #f0c978 !important; }
+
+  /* Dropdown & kalender */
+  .dash-dark .bb-dd, .dash-dark .bb-pop { background-color: #1e1e1e !important; border-color: #634f27 !important; }
+  .dash-dark .bb-dd div { color: #f1f5f9 !important; }
+  .dash-dark .bb-dd [style*="background-color: rgb(239, 246, 255)"] { background-color: rgba(229,184,92,0.2) !important; }
+  .dash-dark .bb-dd [style*="background-color: rgb(248, 250, 252)"] { background-color: #2d2d2d !important; }
+  .dash-dark .bb-pop button { color: #f1f5f9 !important; }
+  .dash-dark .bb-pop span { color: #94a3b8 !important; }
+  .dash-dark .bb-pop [style*="background-color: rgb(248, 250, 252)"] { background-color: #262626 !important; }
+  .dash-dark .bb-pop [style*="background-color: rgb(79, 103, 201)"] { background-color: #E5B85C !important; color: #121212 !important; }
+
+  /* Backdrop & ilustrasi */
+  .dash-dark [style*="rgba(15, 23, 42, 0.3)"] { background-color: rgba(0,0,0,0.7) !important; }
+  .dash-dark .bb-root svg[viewBox="0 0 320 230"] { opacity: 0.85; }
+`}</style>
     </div>
   );
 }

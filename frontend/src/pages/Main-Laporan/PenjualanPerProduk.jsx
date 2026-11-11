@@ -7,6 +7,67 @@ export default function PenjualanPerProduk() {
 
   const isFullscreen = outletContext ? outletContext.isFullscreen : localFullscreen;
 
+  // Dark Mode
+  const [themeMode, setThemeMode] = useState(() => localStorage.getItem("app_theme") || "light");
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+  const isDark = themeMode === "dark";
+
+  // Palet halaman
+  const t = isDark
+    ? {
+        pageBg: "#121212", text: "#f1f5f9", title: "#ffffff", muted: "#94a3b8", label: "#e2e8f0",
+        card: "#1a1a1a", cardBorder: "#634f27", cardShadow: "0 1px 3px rgba(0,0,0,0.4)",
+        field: "#262626", fieldBorder: "#634f27", fieldText: "#f1f5f9", fieldShadow: "none",
+        icon: "#E5B85C", accent: "#E5B85C", accentText: "#121212",
+        primary: "#E5B85C", primaryHover: "#f0c978",
+        btnBg: "#262626", btnHover: "#2d2d2d", btnBorder: "#634f27",
+        ddBg: "#1e1e1e", ddBorder: "#634f27", ddText: "#f1f5f9", ddHover: "#2d2d2d",
+        ddSel: "rgba(229,184,92,0.2)", ddSelText: "#E5B85C", ddShadow: "0 10px 25px -5px rgba(0,0,0,0.6)",
+        drawerBg: "#1a1a1a", drawerHead: "#242424", drawerBorder: "#3a3326",
+        overlay: "rgba(0, 0, 0, 0.7)", infoBorder: "#634f27",
+        hoverFilter: "rgba(229,184,92,0.12)",
+      }
+    : {
+        pageBg: "#f4f6f8", text: "#1e293b", title: "#1e293b", muted: "#64748b", label: "#475569",
+        card: "#ffffff", cardBorder: "#e2e8f0", cardShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+        field: "#ffffff", fieldBorder: "#d0d5dd", fieldText: "#1e293b", fieldShadow: "0 1px 2px rgba(16, 24, 40, 0.05)",
+        icon: "#64748b", accent: "#4f66ee", accentText: "#ffffff",
+        primary: "#4f66ee", primaryHover: "#3b52b4",
+        btnBg: "#ffffff", btnHover: "#f8fafc", btnBorder: "#d0d5dd",
+        ddBg: "#ffffff", ddBorder: "#cbd5e1", ddText: "#334155", ddHover: "#f8fafc",
+        ddSel: "#eff6ff", ddSelText: "#4f67c9", ddShadow: "0 10px 25px -5px rgba(0,0,0,0.12)",
+        drawerBg: "#ffffff", drawerHead: "#f8fafc", drawerBorder: "#eaecf0",
+        overlay: "rgba(15, 23, 42, 0.3)", infoBorder: "#94a3b8",
+        hoverFilter: "#f4f6ff",
+      };
+
+  // Palet kalender
+  const c = isDark
+    ? {
+        popBg: "#1a1a1a", popBorder: "#634f27",
+        shadow: "0 10px 25px -5px rgba(0,0,0,0.6)",
+        nav: "#f1f5f9", accent: "#E5B85C", weekday: "#94a3b8",
+        selBg: "#E5B85C", selText: "#121212",
+        dayText: "#f1f5f9", dayMuted: "#4b5563",
+        monthBg: "#262626", hoverBg: "#2d2d2d", divider: "#3a3326",
+      }
+    : {
+        popBg: "#ffffff", popBorder: "#cbd5e1",
+        shadow: "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+        nav: "#334155", accent: "#4f67c9", weekday: "#64748b",
+        selBg: "#4f67c9", selText: "#ffffff",
+        dayText: "#1e293b", dayMuted: "#cbd5e1",
+        monthBg: "#f8fafc", hoverBg: "#f1f5f9", divider: "#f1f5f9",
+      };
+
   // Tanggal Awal State & Popover
   const startDatePickerRef = useRef(null);
   const [startSelectedDate, setStartSelectedDate] = useState(() => new Date(2026, 8, 16));
@@ -167,40 +228,108 @@ export default function PenjualanPerProduk() {
     return days;
   };
 
+  // Calendar (gaya baru, mendukung hari / bulan / tahun)
   const renderCalendarPopover = (
     viewDate, setViewDate, viewMode, setViewMode, yearRangeStart, setYearRangeStart, selectedDate, onSelectDate, alignRight = false
   ) => (
-    <div style={{
-      position: "absolute", top: "calc(100% + 4px)",
-      ...(alignRight ? { right: 0 } : { left: 0 }),
-      zIndex: 1000,
-      backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "8px",
-      boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-      padding: "16px", width: "280px", userSelect: "none",
-    }}>
+    <div
+      style={{
+        position: "absolute", top: "calc(100% + 6px)",
+        ...(alignRight ? { right: 0 } : { left: 0 }),
+        zIndex: 1000, backgroundColor: c.popBg, border: `1px solid ${c.popBorder}`,
+        borderRadius: "8px", boxShadow: c.shadow,
+        padding: "14px 16px", width: "280px", userSelect: "none",
+      }}
+    >
+      {/* Header navigasi */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-        <button type="button" style={{ background: "none", border: "none", fontSize: "16px", fontWeight: "bold", cursor: "pointer", color: "#334155", padding: "4px 8px", borderRadius: "4px" }}
-          onClick={(e) => { e.stopPropagation(); if (viewMode === "days") setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1)); else if (viewMode === "months") setViewDate(new Date(viewDate.getFullYear() - 1, viewDate.getMonth(), 1)); else setYearRangeStart(p => p - 12); }}>«</button>
-        <button type="button" style={{ background: "none", border: "none", fontSize: "14px", fontWeight: "700", color: "#4f67c9", cursor: "pointer", padding: "4px 8px" }}
-          onClick={(e) => { e.stopPropagation(); if (viewMode === "days") setViewMode("months"); else if (viewMode === "months") setViewMode("years"); }}>
-          {viewMode === "days" && `${MONTH_NAMES[viewDate.getMonth()]} ${viewDate.getFullYear()}`}
-          {viewMode === "months" && `${viewDate.getFullYear()}`}
-          {viewMode === "years" && `${yearRangeStart} - ${yearRangeStart + 11}`}
+        <button
+          type="button"
+          style={{ background: "none", border: "none", fontSize: "16px", fontWeight: "bold", cursor: "pointer", color: c.nav, padding: "4px 8px", borderRadius: "4px" }}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (viewMode === "days") setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1));
+            else if (viewMode === "months") setViewDate(new Date(viewDate.getFullYear() - 1, viewDate.getMonth(), 1));
+            else setYearRangeStart((p) => p - 12);
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = c.hoverBg)}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+        >
+          «
         </button>
-        <button type="button" style={{ background: "none", border: "none", fontSize: "16px", fontWeight: "bold", cursor: "pointer", color: "#334155", padding: "4px 8px", borderRadius: "4px" }}
-          onClick={(e) => { e.stopPropagation(); if (viewMode === "days") setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1)); else if (viewMode === "months") setViewDate(new Date(viewDate.getFullYear() + 1, viewDate.getMonth(), 1)); else setYearRangeStart(p => p + 12); }}>»</button>
+
+        <button
+          type="button"
+          style={{ background: "none", border: "none", fontSize: "14px", fontWeight: "700", color: c.accent, cursor: "pointer", padding: "4px 8px", borderRadius: "4px", display: "flex", alignItems: "center", gap: "5px" }}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (viewMode === "days") setViewMode("months");
+            else if (viewMode === "months") {
+              setYearRangeStart(Math.floor(viewDate.getFullYear() / 12) * 12);
+              setViewMode("years");
+            } else setViewMode("days");
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = c.hoverBg)}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+          title="Klik untuk memilih bulan / tahun"
+        >
+          <span>
+            {viewMode === "days" && `${MONTH_NAMES[viewDate.getMonth()]} ${viewDate.getFullYear()}`}
+            {viewMode === "months" && `${viewDate.getFullYear()}`}
+            {viewMode === "years" && `${yearRangeStart} - ${yearRangeStart + 11}`}
+          </span>
+          <span style={{ fontSize: "10px" }}>▼</span>
+        </button>
+
+        <button
+          type="button"
+          style={{ background: "none", border: "none", fontSize: "16px", fontWeight: "bold", cursor: "pointer", color: c.nav, padding: "4px 8px", borderRadius: "4px" }}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (viewMode === "days") setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1));
+            else if (viewMode === "months") setViewDate(new Date(viewDate.getFullYear() + 1, viewDate.getMonth(), 1));
+            else setYearRangeStart((p) => p + 12);
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = c.hoverBg)}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+        >
+          »
+        </button>
       </div>
+
+      {/* View: Hari */}
       {viewMode === "days" && (
         <>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", textAlign: "center", fontWeight: "600", fontSize: "11px", color: "#64748b", marginBottom: "6px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", textAlign: "center", fontWeight: 600, fontSize: "11px", color: c.weekday, marginBottom: "6px" }}>
             <span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "2px", textAlign: "center", fontSize: "12px" }}>
             {getCalendarDays(viewDate.getFullYear(), viewDate.getMonth()).map((d, idx) => {
-              const isSelected = selectedDate && d.day === selectedDate.getDate() && d.month === selectedDate.getMonth() && d.year === selectedDate.getFullYear();
+              const isSelected =
+                !!selectedDate &&
+                d.day === selectedDate.getDate() &&
+                d.month === selectedDate.getMonth() &&
+                d.year === selectedDate.getFullYear();
               return (
-                <button key={idx} type="button" onClick={(e) => { e.stopPropagation(); onSelectDate(new Date(d.year, d.month, d.day)); }}
-                  style={{ padding: "6px 0", border: "none", borderRadius: "4px", cursor: "pointer", backgroundColor: isSelected ? "#4f67c9" : "transparent", color: isSelected ? "#ffffff" : d.isCurrentMonth ? "#1e293b" : "#94a3b8", fontWeight: isSelected ? "bold" : "normal" }}>
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newDate = new Date(d.year, d.month, d.day);
+                    setViewDate(newDate);
+                    setViewMode("days");
+                    onSelectDate(newDate);
+                  }}
+                  style={{
+                    padding: "6px 0", border: "none", borderRadius: "4px", cursor: "pointer",
+                    backgroundColor: isSelected ? c.selBg : "transparent",
+                    color: isSelected ? c.selText : d.isCurrentMonth ? c.dayText : c.dayMuted,
+                    fontWeight: isSelected ? "bold" : "normal",
+                  }}
+                  onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = c.hoverBg; }}
+                  onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = "transparent"; }}
+                >
                   {d.day}
                 </button>
               );
@@ -208,26 +337,83 @@ export default function PenjualanPerProduk() {
           </div>
         </>
       )}
+
+      {/* View: Bulan */}
       {viewMode === "months" && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", textAlign: "center", fontSize: "12px", paddingTop: "8px" }}>
-          {MONTH_NAMES.map((mName, idx) => (
-            <button key={mName} type="button" onClick={(e) => { e.stopPropagation(); setViewDate(new Date(viewDate.getFullYear(), idx, 1)); setViewMode("days"); }}
-              style={{ padding: "10px 4px", border: "none", borderRadius: "4px", cursor: "pointer", backgroundColor: viewDate.getMonth() === idx ? "#4f67c9" : "#f8fafc", color: viewDate.getMonth() === idx ? "#ffffff" : "#1e293b", fontWeight: viewDate.getMonth() === idx ? "bold" : "normal" }}>
-              {mName.substring(0, 3)}
-            </button>
-          ))}
+          {MONTH_NAMES.map((mName, idx) => {
+            const sel = viewDate.getMonth() === idx;
+            return (
+              <button
+                key={mName}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setViewDate(new Date(viewDate.getFullYear(), idx, 1));
+                  setViewMode("days");
+                }}
+                style={{
+                  padding: "10px 4px", border: "none", borderRadius: "4px", cursor: "pointer",
+                  backgroundColor: sel ? c.selBg : c.monthBg,
+                  color: sel ? c.selText : c.dayText,
+                  fontWeight: sel ? "bold" : "normal",
+                }}
+                onMouseEnter={(e) => { if (!sel) e.currentTarget.style.backgroundColor = c.hoverBg; }}
+                onMouseLeave={(e) => { if (!sel) e.currentTarget.style.backgroundColor = c.monthBg; }}
+              >
+                {mName.substring(0, 3)}
+              </button>
+            );
+          })}
         </div>
       )}
+
+      {/* View: Tahun */}
       {viewMode === "years" && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", textAlign: "center", fontSize: "12px", paddingTop: "8px" }}>
-          {Array.from({ length: 12 }, (_, i) => yearRangeStart + i).map((yr) => (
-            <button key={yr} type="button" onClick={(e) => { e.stopPropagation(); setViewDate(new Date(yr, viewDate.getMonth(), 1)); setViewMode("days"); }}
-              style={{ padding: "10px 4px", border: "none", borderRadius: "4px", cursor: "pointer", backgroundColor: viewDate.getFullYear() === yr ? "#4f67c9" : "#f8fafc", color: viewDate.getFullYear() === yr ? "#ffffff" : "#1e293b", fontWeight: viewDate.getFullYear() === yr ? "bold" : "normal" }}>
-              {yr}
-            </button>
-          ))}
+          {Array.from({ length: 12 }, (_, i) => yearRangeStart + i).map((yr) => {
+            const sel = viewDate.getFullYear() === yr;
+            return (
+              <button
+                key={yr}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setViewDate(new Date(yr, viewDate.getMonth(), 1));
+                  setViewMode("months");
+                }}
+                style={{
+                  padding: "10px 4px", border: "none", borderRadius: "4px", cursor: "pointer",
+                  backgroundColor: sel ? c.selBg : c.monthBg,
+                  color: sel ? c.selText : c.dayText,
+                  fontWeight: sel ? "bold" : "normal",
+                }}
+                onMouseEnter={(e) => { if (!sel) e.currentTarget.style.backgroundColor = c.hoverBg; }}
+                onMouseLeave={(e) => { if (!sel) e.currentTarget.style.backgroundColor = c.monthBg; }}
+              >
+                {yr}
+              </button>
+            );
+          })}
         </div>
       )}
+
+      {/* Tombol hari ini */}
+      <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: `1px solid ${c.divider}`, textAlign: "center" }}>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            const today = new Date();
+            setViewDate(today);
+            setViewMode("days");
+            onSelectDate(today);
+          }}
+          style={{ background: "none", border: "none", fontSize: "13px", fontWeight: 600, color: c.accent, cursor: "pointer", padding: "4px 8px", borderRadius: "4px" }}
+        >
+          Hari ini
+        </button>
+      </div>
     </div>
   );
 
@@ -236,28 +422,156 @@ export default function PenjualanPerProduk() {
     "Kemarin", "Pekan Lalu", "Bulan Lalu", "Tahun Lalu", "Custom",
   ];
 
-  return (
-    <div style={{
-      margin: isFullscreen ? 0 : "-24px",
-      minHeight: "100vh",
-      backgroundColor: "#f4f6f8",
-      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-      color: "#1e293b",
+  // ---------- Helper tampilan ----------
+  const renderCalIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={t.icon} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
+  );
+
+  const renderChevron = (open, size = 12) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={t.icon} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+      style={{ transition: "transform 0.2s ease", transform: open ? "rotate(180deg)" : "rotate(0deg)" }}>
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  );
+
+  const ddPanelStyle = {
+    backgroundColor: t.ddBg,
+    border: `1px solid ${t.ddBorder}`,
+    borderRadius: "6px",
+    boxShadow: t.ddShadow,
+    padding: "4px 0",
+  };
+
+  const renderOption = (opt, selected, onClick, fontSize = "13.5px") => (
+    <div
+      key={opt}
+      onClick={onClick}
+      style={{
+        padding: "8px 14px", fontSize,
+        color: selected ? t.ddSelText : t.ddText,
+        fontWeight: selected ? 600 : 400,
+        backgroundColor: selected ? t.ddSel : "transparent",
+        cursor: "pointer",
+      }}
+      onMouseEnter={(e) => { if (!selected) e.currentTarget.style.backgroundColor = t.ddHover; }}
+      onMouseLeave={(e) => { if (!selected) e.currentTarget.style.backgroundColor = "transparent"; }}
+    >
+      {opt}
+    </div>
+  );
+
+  const mainLabelStyle = { display: "block", fontSize: "12px", fontWeight: 500, color: t.label, marginBottom: "6px" };
+  const mainFieldStyle = {
+    height: "36px",
+    backgroundColor: t.field,
+    border: `1px solid ${t.fieldBorder}`,
+    borderRadius: "6px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    cursor: "pointer",
+    boxShadow: t.fieldShadow,
+  };
+
+  const drawerLabelStyle = { display: "block", fontSize: "13px", fontWeight: 600, color: t.label, marginBottom: "6px" };
+  const drawerFieldStyle = {
+    height: "38px",
+    backgroundColor: t.field,
+    border: `1px solid ${t.fieldBorder}`,
+    borderRadius: "6px",
+    padding: "0 12px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    cursor: "pointer",
+    userSelect: "none",
+  };
+
+  const renderInfoBadge = () => (
+    <span style={{
+      display: "inline-flex", alignItems: "center", justifyContent: "center",
+      width: "15px", height: "15px", borderRadius: "50%", border: `1px solid ${t.infoBorder}`,
+      color: t.muted, fontSize: "11px", fontWeight: "600", marginLeft: "2px",
     }}>
+      i
+    </span>
+  );
+
+  const renderRadioGroup = (name, current, setCurrent, values, labels, withInfo = false) => (
+    <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+      {values.map((val, i) => (
+        <label key={val} style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: t.label, cursor: "pointer" }}>
+          <input
+            type="radio"
+            name={name}
+            checked={current === val}
+            onChange={() => setCurrent(val)}
+            style={{ accentColor: t.accent }}
+          />
+          {labels[i]}
+          {withInfo && i === 1 && renderInfoBadge()}
+        </label>
+      ))}
+    </div>
+  );
+
+  // Select di drawer (label + field + dropdown, opsional children di bawahnya)
+  const renderDrawerSelect = ({ label, value, placeholder, open, setOpen, options, onPick, refEl, children }) => (
+    <div ref={refEl}>
+      <div style={{ position: "relative" }}>
+        <label style={drawerLabelStyle}>{label}</label>
+        <div onClick={() => setOpen(!open)} style={drawerFieldStyle}>
+          <span style={{ fontSize: "13.5px", color: value ? t.fieldText : t.muted }}>
+            {value || placeholder}
+          </span>
+          {renderChevron(open)}
+        </div>
+        {open && (
+          <div style={{
+            ...ddPanelStyle,
+            position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 1000,
+            maxHeight: "200px", overflowY: "auto",
+          }}>
+            {options.map((opt) => renderOption(opt, value === opt, () => onPick(opt)))}
+          </div>
+        )}
+      </div>
+      {children && <div style={{ marginTop: "10px" }}>{children}</div>}
+    </div>
+  );
+
+  return (
+    <div
+      className={isDark ? "pp-dark" : ""}
+      style={{
+        margin: isFullscreen ? 0 : "-24px",
+        minHeight: "100vh",
+        backgroundColor: t.pageBg,
+        fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+        color: t.text,
+        colorScheme: isDark ? "dark" : "light",
+        transition: "background-color 0.3s ease, color 0.3s ease",
+      }}
+    >
       {/* Top Header */}
       <div style={{
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
         padding: "16px 24px",
-        backgroundColor: "#f4f6f8",
+        backgroundColor: t.pageBg,
       }}>
         {/* Left Title */}
         <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
-          <h1 style={{ fontSize: "20px", fontWeight: 700, color: "#1e293b", margin: 0 }}>
+          <h1 style={{ fontSize: "20px", fontWeight: 700, color: t.title, margin: 0 }}>
             Penjualan Per Produk
           </h1>
-          <span style={{ fontSize: "13px", color: "#64748b", fontWeight: 400 }}>(dalam IDR)</span>
+          <span style={{ fontSize: "13px", color: t.muted, fontWeight: 400 }}>(dalam IDR)</span>
         </div>
 
         {/* Right Header Buttons */}
@@ -270,12 +584,12 @@ export default function PenjualanPerProduk() {
               style={{
                 height: "32px",
                 padding: "0 12px",
-                backgroundColor: "#ffffff",
-                border: "1px solid #d0d5dd",
+                backgroundColor: t.btnBg,
+                border: `1px solid ${t.btnBorder}`,
                 borderRadius: "6px",
                 fontSize: "13px",
                 fontWeight: 500,
-                color: "#4f66ee",
+                color: t.accent,
                 cursor: "pointer",
                 display: "inline-flex",
                 alignItems: "center",
@@ -283,21 +597,17 @@ export default function PenjualanPerProduk() {
                 boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
                 transition: "all 0.15s ease",
               }}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = t.btnHover)}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = t.btnBg)}
             >
               <span>Beri masukan</span>
-              <svg width="8" height="6" viewBox="0 0 10 7" fill="#4f66ee">
+              <svg width="8" height="6" viewBox="0 0 10 7" fill={t.accent}>
                 <polygon points="0,0 10,0 5,7" />
               </svg>
             </button>
             {showFeedbackDropdown && (
-              <div style={{
-                position: "absolute", top: "38px", right: 0, zIndex: 50,
-                width: "160px", backgroundColor: "#ffffff", border: "1px solid #cbd5e1",
-                borderRadius: "6px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: "4px 0",
-              }}>
-                <div onClick={() => setShowFeedbackDropdown(false)} style={{ padding: "8px 12px", fontSize: "13px", color: "#334155", cursor: "pointer" }}>
-                  Kirim Saran
-                </div>
+              <div style={{ ...ddPanelStyle, position: "absolute", top: "38px", right: 0, zIndex: 50, width: "160px" }}>
+                {renderOption("Kirim Saran", false, () => setShowFeedbackDropdown(false), "13px")}
               </div>
             )}
           </div>
@@ -307,10 +617,10 @@ export default function PenjualanPerProduk() {
       {/* Main Card Container */}
       <div style={{ padding: "0 24px 24px 24px" }}>
         <div style={{
-          backgroundColor: "#ffffff",
+          backgroundColor: t.card,
           borderRadius: "8px",
-          border: "1px solid #e2e8f0",
-          boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+          border: `1px solid ${t.cardBorder}`,
+          boxShadow: t.cardShadow,
           padding: "20px 24px 60px 24px",
           minHeight: "520px",
           display: "flex",
@@ -325,36 +635,17 @@ export default function PenjualanPerProduk() {
             gap: "16px",
             marginBottom: "32px",
           }}>
-            {/* Left Controls: Tanggal awal, Tanggal akhir, Periode, Tampilkan, Filter */}
+            {/* Left Controls */}
             <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", gap: "12px" }}>
               {/* Tanggal awal */}
               <div style={{ position: "relative" }} ref={startDatePickerRef}>
-                <label style={{ display: "block", fontSize: "12px", fontWeight: 500, color: "#475569", marginBottom: "6px" }}>
-                  Tanggal awal
-                </label>
+                <label style={mainLabelStyle}>Tanggal awal</label>
                 <div
                   onClick={() => setShowStartCalendar(!showStartCalendar)}
-                  style={{
-                    height: "36px",
-                    width: "140px",
-                    backgroundColor: "#ffffff",
-                    border: "1px solid #d0d5dd",
-                    borderRadius: "6px",
-                    padding: "0 10px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    cursor: "pointer",
-                    boxShadow: "0 1px 2px rgba(16, 24, 40, 0.05)",
-                  }}
+                  style={{ ...mainFieldStyle, width: "140px", padding: "0 10px" }}
                 >
-                  <span style={{ fontSize: "13px", color: "#1e293b", fontWeight: 400 }}>{startDate}</span>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                    <line x1="16" y1="2" x2="16" y2="6" />
-                    <line x1="8" y1="2" x2="8" y2="6" />
-                    <line x1="3" y1="10" x2="21" y2="10" />
-                  </svg>
+                  <span style={{ fontSize: "13px", color: t.fieldText, fontWeight: 400 }}>{startDate}</span>
+                  {renderCalIcon()}
                 </div>
                 {showStartCalendar && renderCalendarPopover(
                   startCalendarViewDate, setStartCalendarViewDate,
@@ -367,32 +658,13 @@ export default function PenjualanPerProduk() {
 
               {/* Tanggal akhir */}
               <div style={{ position: "relative" }} ref={endDatePickerRef}>
-                <label style={{ display: "block", fontSize: "12px", fontWeight: 500, color: "#475569", marginBottom: "6px" }}>
-                  Tanggal akhir
-                </label>
+                <label style={mainLabelStyle}>Tanggal akhir</label>
                 <div
                   onClick={() => setShowEndCalendar(!showEndCalendar)}
-                  style={{
-                    height: "36px",
-                    width: "140px",
-                    backgroundColor: "#ffffff",
-                    border: "1px solid #d0d5dd",
-                    borderRadius: "6px",
-                    padding: "0 10px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    cursor: "pointer",
-                    boxShadow: "0 1px 2px rgba(16, 24, 40, 0.05)",
-                  }}
+                  style={{ ...mainFieldStyle, width: "140px", padding: "0 10px" }}
                 >
-                  <span style={{ fontSize: "13px", color: "#1e293b", fontWeight: 400 }}>{endDate}</span>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                    <line x1="16" y1="2" x2="16" y2="6" />
-                    <line x1="8" y1="2" x2="8" y2="6" />
-                    <line x1="3" y1="10" x2="21" y2="10" />
-                  </svg>
+                  <span style={{ fontSize: "13px", color: t.fieldText, fontWeight: 400 }}>{endDate}</span>
+                  {renderCalIcon()}
                 </div>
                 {showEndCalendar && renderCalendarPopover(
                   endCalendarViewDate, setEndCalendarViewDate,
@@ -405,55 +677,23 @@ export default function PenjualanPerProduk() {
 
               {/* Periode */}
               <div style={{ position: "relative" }} ref={periodeDropdownRef}>
-                <label style={{ display: "block", fontSize: "12px", fontWeight: 500, color: "#475569", marginBottom: "6px" }}>
-                  Periode
-                </label>
+                <label style={mainLabelStyle}>Periode</label>
                 <div
                   onClick={() => setShowPeriodeDropdown(!showPeriodeDropdown)}
-                  style={{
-                    height: "36px",
-                    width: "150px",
-                    backgroundColor: "#ffffff",
-                    border: "1px solid #d0d5dd",
-                    borderRadius: "6px",
-                    padding: "0 12px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    cursor: "pointer",
-                    boxShadow: "0 1px 2px rgba(16, 24, 40, 0.05)",
-                  }}
+                  style={{ ...mainFieldStyle, width: "150px", padding: "0 12px" }}
                 >
-                  <span style={{ fontSize: "13px", color: "#1e293b" }}>{filterPeriode}</span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                    style={{ transition: "transform 0.2s", transform: showPeriodeDropdown ? "rotate(180deg)" : "rotate(0deg)" }}>
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
+                  <span style={{ fontSize: "13px", color: t.fieldText }}>{filterPeriode}</span>
+                  {renderChevron(showPeriodeDropdown)}
                 </div>
                 {showPeriodeDropdown && (
                   <div style={{
+                    ...ddPanelStyle,
                     position: "absolute", top: "calc(100% + 4px)", left: 0, zIndex: 1000,
-                    width: "170px", backgroundColor: "#ffffff", border: "1px solid #cbd5e1",
-                    borderRadius: "6px", boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
-                    padding: "4px 0", maxHeight: "200px", overflowY: "auto",
+                    width: "170px", maxHeight: "200px", overflowY: "auto",
                   }}>
-                    {PERIODE_OPTIONS.map((opt) => (
-                      <div
-                        key={opt}
-                        onClick={() => { setFilterPeriode(opt); setShowPeriodeDropdown(false); }}
-                        style={{
-                          padding: "8px 12px", fontSize: "13px",
-                          color: filterPeriode === opt ? "#4f67c9" : "#334155",
-                          backgroundColor: filterPeriode === opt ? "#eff6ff" : "transparent",
-                          fontWeight: filterPeriode === opt ? 600 : 400,
-                          cursor: "pointer",
-                        }}
-                        onMouseEnter={(e) => { if (filterPeriode !== opt) e.currentTarget.style.backgroundColor = "#f8fafc"; }}
-                        onMouseLeave={(e) => { if (filterPeriode !== opt) e.currentTarget.style.backgroundColor = "transparent"; }}
-                      >
-                        {opt}
-                      </div>
-                    ))}
+                    {PERIODE_OPTIONS.map((opt) =>
+                      renderOption(opt, filterPeriode === opt, () => { setFilterPeriode(opt); setShowPeriodeDropdown(false); }, "13px")
+                    )}
                   </div>
                 )}
               </div>
@@ -464,8 +704,8 @@ export default function PenjualanPerProduk() {
                 style={{
                   height: "36px",
                   padding: "0 20px",
-                  backgroundColor: "#4f66ee",
-                  color: "#ffffff",
+                  backgroundColor: t.primary,
+                  color: t.accentText,
                   fontSize: "13px",
                   fontWeight: 600,
                   border: "none",
@@ -477,8 +717,8 @@ export default function PenjualanPerProduk() {
                   justifyContent: "center",
                   transition: "background-color 0.15s ease",
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#3b52b4")}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#4f66ee")}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = t.primaryHover)}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = t.primary)}
               >
                 Tampilkan
               </button>
@@ -490,24 +730,24 @@ export default function PenjualanPerProduk() {
                 style={{
                   height: "36px",
                   padding: "0 14px",
-                  backgroundColor: "#ffffff",
-                  color: "#4f66ee",
+                  backgroundColor: "transparent",
+                  color: t.accent,
                   fontSize: "13px",
                   fontWeight: 500,
-                  border: "1px solid #4f66ee",
+                  border: `1px solid ${t.accent}`,
                   borderRadius: "6px",
                   cursor: "pointer",
                   display: "inline-flex",
                   alignItems: "center",
                   gap: "6px",
                   justifyContent: "center",
-                  boxShadow: "0 1px 2px rgba(16, 24, 40, 0.05)",
+                  boxShadow: t.fieldShadow,
                   transition: "all 0.15s ease",
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f4f6ff")}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#ffffff")}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = t.hoverFilter)}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
               >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4f66ee" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={t.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
                 </svg>
                 <span>Filter</span>
@@ -524,12 +764,12 @@ export default function PenjualanPerProduk() {
                   style={{
                     height: "36px",
                     padding: "0 14px",
-                    backgroundColor: "#ffffff",
-                    border: "1px solid #cbd5e1",
+                    backgroundColor: t.btnBg,
+                    border: `1px solid ${isDark ? t.btnBorder : "#cbd5e1"}`,
                     borderRadius: "6px",
                     fontSize: "13.5px",
                     fontWeight: 500,
-                    color: "#4f66ee",
+                    color: t.accent,
                     cursor: "pointer",
                     display: "inline-flex",
                     alignItems: "center",
@@ -538,52 +778,24 @@ export default function PenjualanPerProduk() {
                     transition: "all 0.15s ease",
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "#f8fafc";
-                    e.currentTarget.style.borderColor = "#94a3b8";
+                    e.currentTarget.style.backgroundColor = t.btnHover;
+                    e.currentTarget.style.borderColor = isDark ? t.accent : "#94a3b8";
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "#ffffff";
-                    e.currentTarget.style.borderColor = "#cbd5e1";
+                    e.currentTarget.style.backgroundColor = t.btnBg;
+                    e.currentTarget.style.borderColor = isDark ? t.btnBorder : "#cbd5e1";
                   }}
                 >
                   <span>Ekspor</span>
-                  <svg width="10" height="7" viewBox="0 0 10 7" fill="#4f66ee">
+                  <svg width="10" height="7" viewBox="0 0 10 7" fill={t.accent}>
                     <polygon points="0,0 10,0 5,7" />
                   </svg>
                 </button>
 
                 {showEksporDropdown && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: "42px",
-                      right: 0,
-                      zIndex: 50,
-                      width: "140px",
-                      backgroundColor: "#ffffff",
-                      border: "1px solid #cbd5e1",
-                      borderRadius: "6px",
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                      padding: "4px 0",
-                      userSelect: "none",
-                    }}
-                  >
-                    <div
-                      onClick={() => setShowEksporDropdown(false)}
-                      style={{ padding: "8px 14px", fontSize: "13px", color: "#334155", cursor: "pointer" }}
-                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f8fafc")}
-                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#ffffff")}
-                    >
-                      Ekspor PDF
-                    </div>
-                    <div
-                      onClick={() => setShowEksporDropdown(false)}
-                      style={{ padding: "8px 14px", fontSize: "13px", color: "#334155", cursor: "pointer" }}
-                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f8fafc")}
-                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#ffffff")}
-                    >
-                      Ekspor Excel
-                    </div>
+                  <div style={{ ...ddPanelStyle, position: "absolute", top: "42px", right: 0, zIndex: 50, width: "140px", userSelect: "none" }}>
+                    {renderOption("Ekspor PDF", false, () => setShowEksporDropdown(false), "13px")}
+                    {renderOption("Ekspor Excel", false, () => setShowEksporDropdown(false), "13px")}
                   </div>
                 )}
               </div>
@@ -610,7 +822,7 @@ export default function PenjualanPerProduk() {
                   }}
                 >
                   <svg
-                    style={{ width: "16px", height: "16px", color: "#64748b" }}
+                    style={{ width: "16px", height: "16px", color: t.icon }}
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -642,7 +854,7 @@ export default function PenjualanPerProduk() {
                     PDF
                   </span>
                 </span>
-                <span style={{ fontSize: "13px", color: "#4f66ee", fontWeight: 400 }}>Lihat contoh</span>
+                <span style={{ fontSize: "13px", color: t.accent, fontWeight: 400 }}>Lihat contoh</span>
               </div>
             </div>
           </div>
@@ -658,7 +870,11 @@ export default function PenjualanPerProduk() {
             textAlign: "center",
           }}>
             {/* 3D Graphic Illustration */}
-            <div style={{ position: "relative", width: "260px", height: "190px", marginBottom: "20px", display: "flex", alignItems: "center", justifyContent: "center", userSelect: "none" }}>
+            <div style={{
+              position: "relative", width: "260px", height: "190px", marginBottom: "20px",
+              display: "flex", alignItems: "center", justifyContent: "center", userSelect: "none",
+              filter: isDark ? "brightness(0.75)" : "none",
+            }}>
               <svg style={{ width: "100%", height: "100%", overflow: "visible" }} fill="none" viewBox="0 0 320 230" xmlns="http://www.w3.org/2000/svg">
                 <g opacity="0.95">
                   <ellipse cx="160" cy="192" fill="#cbd5e1" opacity="0.3" rx="90" ry="24" />
@@ -730,24 +946,14 @@ export default function PenjualanPerProduk() {
             </div>
 
             {/* Primary Text */}
-            <h2 style={{
-              fontSize: "16px",
-              fontWeight: 700,
-              color: "#1e293b",
-              margin: "0 0 8px 0",
-            }}>
+            <h2 style={{ fontSize: "16px", fontWeight: 700, color: t.title, margin: "0 0 8px 0" }}>
               Laporan akan muncul di sini
             </h2>
 
             {/* Subtext */}
-            <p style={{
-              fontSize: "13.5px",
-              color: "#64748b",
-              margin: 0,
-              maxWidth: "360px",
-              lineHeight: 1.5,
-            }}>
-              Pilih tanggal atau periode, lalu klik tombol <strong style={{ fontWeight: 700, color: "#1e293b" }}>Tampilkan</strong>.
+            <p style={{ fontSize: "13.5px", color: t.muted, margin: 0, maxWidth: "360px", lineHeight: 1.5 }}>
+              Pilih tanggal atau periode, lalu klik tombol{" "}
+              <strong style={{ fontWeight: 700, color: t.title }}>Tampilkan</strong>.
             </p>
           </div>
         </div>
@@ -761,7 +967,7 @@ export default function PenjualanPerProduk() {
             style={{
               position: "absolute",
               inset: 0,
-              backgroundColor: "rgba(15, 23, 42, 0.3)",
+              backgroundColor: t.overlay,
               transition: "opacity 280ms ease-in-out",
               opacity: drawerOpen ? 1 : 0,
             }}
@@ -771,31 +977,33 @@ export default function PenjualanPerProduk() {
               position: "fixed",
               top: 0, right: 0, bottom: 0,
               width: "380px", maxWidth: "90vw",
-              backgroundColor: "#ffffff",
+              backgroundColor: t.drawerBg,
+              borderLeft: isDark ? `1px solid ${t.cardBorder}` : "none",
               boxShadow: "-8px 0 24px rgba(0, 0, 0, 0.12)",
               display: "flex", flexDirection: "column",
               zIndex: 9999,
               transition: "transform 280ms cubic-bezier(0.16, 1, 0.3, 1)",
               transform: drawerOpen ? "translateX(0)" : "translateX(100%)",
               fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+              colorScheme: isDark ? "dark" : "light",
             }}
           >
             {/* Drawer Header */}
             <div style={{
               padding: "16px 24px",
-              backgroundColor: "#f8fafc",
-              borderBottom: "1px solid #eaecf0",
+              backgroundColor: t.drawerHead,
+              borderBottom: `1px solid ${t.drawerBorder}`,
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
             }}>
-              <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#101828", margin: 0 }}>
+              <h2 style={{ fontSize: "16px", fontWeight: 700, color: t.title, margin: 0 }}>
                 Filter laporan
               </h2>
               <button
                 type="button"
                 onClick={closeFilterDrawer}
-                style={{ background: "none", border: "none", color: "#667085", cursor: "pointer", padding: "4px", display: "flex" }}
+                style={{ background: "none", border: "none", color: t.icon, cursor: "pointer", padding: "4px", display: "flex" }}
               >
                 <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -806,384 +1014,120 @@ export default function PenjualanPerProduk() {
             {/* Drawer Content */}
             <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px", display: "flex", flexDirection: "column", gap: "20px" }}>
               {/* Tanggal awal & Tanggal akhir */}
-              <div>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  {/* Tanggal awal */}
-                  <div style={{ flex: 1, position: "relative" }} ref={drawerStartDatePickerRef}>
-                    <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#344054", marginBottom: "6px" }}>
-                      Tanggal awal
-                    </label>
-                    <div
-                      onClick={() => setShowDrawerStartCalendar(!showDrawerStartCalendar)}
-                      style={{
-                        height: "38px", backgroundColor: "#ffffff", border: "1px solid #d0d5dd",
-                        borderRadius: "6px", padding: "0 10px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer",
-                      }}
-                    >
-                      <span style={{ fontSize: "13px", color: "#101828" }}>{drawerStartDate}</span>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#667085" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                        <line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
-                      </svg>
-                    </div>
-                    {showDrawerStartCalendar && renderCalendarPopover(
-                      drawerStartCalendarViewDate, setDrawerStartCalendarViewDate,
-                      drawerStartCalendarViewMode, setDrawerStartCalendarViewMode,
-                      drawerStartYearRangeStart, setDrawerStartYearRangeStart,
-                      drawerStartSelectedDate,
-                      (date) => { setDrawerStartSelectedDate(date); setShowDrawerStartCalendar(false); }
-                    )}
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                {/* Tanggal awal */}
+                <div style={{ flex: 1, position: "relative" }} ref={drawerStartDatePickerRef}>
+                  <label style={drawerLabelStyle}>Tanggal awal</label>
+                  <div onClick={() => setShowDrawerStartCalendar(!showDrawerStartCalendar)} style={{ ...drawerFieldStyle, padding: "0 10px" }}>
+                    <span style={{ fontSize: "13px", color: t.fieldText }}>{drawerStartDate}</span>
+                    {renderCalIcon()}
                   </div>
+                  {showDrawerStartCalendar && renderCalendarPopover(
+                    drawerStartCalendarViewDate, setDrawerStartCalendarViewDate,
+                    drawerStartCalendarViewMode, setDrawerStartCalendarViewMode,
+                    drawerStartYearRangeStart, setDrawerStartYearRangeStart,
+                    drawerStartSelectedDate,
+                    (date) => { setDrawerStartSelectedDate(date); setShowDrawerStartCalendar(false); }
+                  )}
+                </div>
 
-                  <span style={{ color: "#667085", marginTop: "24px" }}>-</span>
+                <span style={{ color: t.muted, marginTop: "24px" }}>-</span>
 
-                  {/* Tanggal akhir */}
-                  <div style={{ flex: 1, position: "relative" }} ref={drawerEndDatePickerRef}>
-                    <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#344054", marginBottom: "6px" }}>
-                      Tanggal akhir
-                    </label>
-                    <div
-                      onClick={() => setShowDrawerEndCalendar(!showDrawerEndCalendar)}
-                      style={{
-                        height: "38px", backgroundColor: "#ffffff", border: "1px solid #d0d5dd",
-                        borderRadius: "6px", padding: "0 10px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer",
-                      }}
-                    >
-                      <span style={{ fontSize: "13px", color: "#101828" }}>{drawerEndDate}</span>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#667085" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                        <line x1="16" y1="2" x2="16" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
-                      </svg>
-                    </div>
-                    {showDrawerEndCalendar && renderCalendarPopover(
-                      drawerEndCalendarViewDate, setDrawerEndCalendarViewDate,
-                      drawerEndCalendarViewMode, setDrawerEndCalendarViewMode,
-                      drawerEndYearRangeStart, setDrawerEndYearRangeStart,
-                      drawerEndSelectedDate,
-                      (date) => { setDrawerEndSelectedDate(date); setShowDrawerEndCalendar(false); },
-                      true
-                    )}
+                {/* Tanggal akhir */}
+                <div style={{ flex: 1, position: "relative" }} ref={drawerEndDatePickerRef}>
+                  <label style={drawerLabelStyle}>Tanggal akhir</label>
+                  <div onClick={() => setShowDrawerEndCalendar(!showDrawerEndCalendar)} style={{ ...drawerFieldStyle, padding: "0 10px" }}>
+                    <span style={{ fontSize: "13px", color: t.fieldText }}>{drawerEndDate}</span>
+                    {renderCalIcon()}
                   </div>
+                  {showDrawerEndCalendar && renderCalendarPopover(
+                    drawerEndCalendarViewDate, setDrawerEndCalendarViewDate,
+                    drawerEndCalendarViewMode, setDrawerEndCalendarViewMode,
+                    drawerEndYearRangeStart, setDrawerEndYearRangeStart,
+                    drawerEndSelectedDate,
+                    (date) => { setDrawerEndSelectedDate(date); setShowDrawerEndCalendar(false); },
+                    true
+                  )}
                 </div>
               </div>
 
               {/* Periode */}
-              <div style={{ position: "relative" }} ref={drawerPeriodeRef}>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#344054", marginBottom: "6px" }}>
-                  Periode
-                </label>
-                <div
-                  onClick={() => setShowDrawerPeriodeDropdown(!showDrawerPeriodeDropdown)}
-                  style={{
-                    height: "38px", backgroundColor: "#ffffff", border: "1px solid #d0d5dd",
-                    borderRadius: "6px", padding: "0 12px", display: "flex", alignItems: "center",
-                    justifyContent: "space-between", cursor: "pointer", userSelect: "none",
-                  }}
-                >
-                  <span style={{ fontSize: "13.5px", color: "#101828" }}>{drawerPeriode}</span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#667085" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                    style={{ transition: "transform 0.2s ease", transform: showDrawerPeriodeDropdown ? "rotate(180deg)" : "rotate(0deg)" }}>
-                    <path d="M6 9l6 6 6-6" />
-                  </svg>
-                </div>
-                {showDrawerPeriodeDropdown && (
-                  <div style={{
-                    position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 1000,
-                    backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px",
-                    boxShadow: "0 10px 25px -5px rgba(0,0,0,0.12)", padding: "4px 0", maxHeight: "200px", overflowY: "auto"
-                  }}>
-                    {PERIODE_OPTIONS.map((opt) => (
-                      <div
-                        key={opt}
-                        onClick={() => {
-                          setDrawerPeriode(opt);
-                          setShowDrawerPeriodeDropdown(false);
-                        }}
-                        style={{
-                          padding: "8px 14px", fontSize: "13.5px",
-                          color: drawerPeriode === opt ? "#4f66ee" : "#1e293b",
-                          fontWeight: drawerPeriode === opt ? 600 : 400,
-                          backgroundColor: drawerPeriode === opt ? "#f1f5f9" : "transparent",
-                          cursor: "pointer",
-                        }}
-                      >
-                        {opt}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+              {renderDrawerSelect({
+                label: "Periode",
+                value: drawerPeriode,
+                placeholder: "",
+                open: showDrawerPeriodeDropdown,
+                setOpen: setShowDrawerPeriodeDropdown,
+                options: PERIODE_OPTIONS,
+                onPick: (opt) => { setDrawerPeriode(opt); setShowDrawerPeriodeDropdown(false); },
+                refEl: drawerPeriodeRef,
+              })}
 
               {/* Tipe transaksi */}
-              <div style={{ position: "relative" }} ref={drawerTipeRef}>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#344054", marginBottom: "6px" }}>
-                  Tipe transaksi
-                </label>
-                <div
-                  onClick={() => setShowDrawerTipeDropdown(!showDrawerTipeDropdown)}
-                  style={{
-                    height: "38px", backgroundColor: "#ffffff", border: "1px solid #d0d5dd",
-                    borderRadius: "6px", padding: "0 12px", display: "flex", alignItems: "center",
-                    justifyContent: "space-between", cursor: "pointer", userSelect: "none",
-                  }}
-                >
-                  <span style={{ fontSize: "13.5px", color: "#101828" }}>{drawerTipeTransaksi}</span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#667085" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                    style={{ transition: "transform 0.2s ease", transform: showDrawerTipeDropdown ? "rotate(180deg)" : "rotate(0deg)" }}>
-                    <path d="M6 9l6 6 6-6" />
-                  </svg>
-                </div>
-                {showDrawerTipeDropdown && (
-                  <div style={{
-                    position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 1000,
-                    backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px",
-                    boxShadow: "0 10px 25px -5px rgba(0,0,0,0.12)", padding: "4px 0", maxHeight: "200px", overflowY: "auto"
-                  }}>
-                    {["Faktur penjualan", "Penagihan penjualan", "Pemesanan penjualan", "Penawaran penjualan", "Retur penjualan"].map((opt) => (
-                      <div
-                        key={opt}
-                        onClick={() => {
-                          setDrawerTipeTransaksi(opt);
-                          setShowDrawerTipeDropdown(false);
-                        }}
-                        style={{
-                          padding: "8px 14px", fontSize: "13.5px",
-                          color: drawerTipeTransaksi === opt ? "#4f66ee" : "#1e293b",
-                          fontWeight: drawerTipeTransaksi === opt ? 600 : 400,
-                          backgroundColor: drawerTipeTransaksi === opt ? "#f1f5f9" : "transparent",
-                          cursor: "pointer",
-                        }}
-                      >
-                        {opt}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+              {renderDrawerSelect({
+                label: "Tipe transaksi",
+                value: drawerTipeTransaksi,
+                placeholder: "",
+                open: showDrawerTipeDropdown,
+                setOpen: setShowDrawerTipeDropdown,
+                options: ["Faktur penjualan", "Penagihan penjualan", "Pemesanan penjualan", "Penawaran penjualan", "Retur penjualan"],
+                onPick: (opt) => { setDrawerTipeTransaksi(opt); setShowDrawerTipeDropdown(false); },
+                refEl: drawerTipeRef,
+              })}
 
               {/* Tag */}
               <div>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#344054", marginBottom: "6px" }}>
-                  Tag
-                </label>
+                <label style={drawerLabelStyle}>Tag</label>
                 <input
                   type="text"
                   placeholder="Pilih tag"
                   value={drawerTagInput}
                   onChange={(e) => setDrawerTagInput(e.target.value)}
                   style={{
-                    width: "100%", height: "38px", border: "1px solid #d0d5dd", borderRadius: "6px",
-                    padding: "0 12px", fontSize: "13.5px", color: "#101828", outline: "none", boxSizing: "border-box",
-                    marginBottom: "10px"
+                    width: "100%", height: "38px", backgroundColor: t.field, border: `1px solid ${t.fieldBorder}`, borderRadius: "6px",
+                    padding: "0 12px", fontSize: "13.5px", color: t.fieldText, outline: "none", boxSizing: "border-box",
+                    marginBottom: "10px",
                   }}
                 />
-                <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-                  <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#344054", cursor: "pointer" }}>
-                    <input
-                      type="radio"
-                      name="drawerTagOption"
-                      checked={drawerTagOption === "all"}
-                      onChange={() => setDrawerTagOption("all")}
-                      style={{ accentColor: "#4f66ee" }}
-                    />
-                    Mencakup semua
-                  </label>
-                  <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#344054", cursor: "pointer" }}>
-                    <input
-                      type="radio"
-                      name="drawerTagOption"
-                      checked={drawerTagOption === "any"}
-                      onChange={() => setDrawerTagOption("any")}
-                      style={{ accentColor: "#4f66ee" }}
-                    />
-                    Salah satu
-                    <span style={{
-                      display: "inline-flex", alignItems: "center", justifyContent: "center",
-                      width: "15px", height: "15px", borderRadius: "50%", border: "1px solid #94a3b8",
-                      color: "#64748b", fontSize: "11px", fontWeight: "600", marginLeft: "2px"
-                    }}>
-                      i
-                    </span>
-                  </label>
-                </div>
+                {renderRadioGroup("drawerTagOption", drawerTagOption, setDrawerTagOption, ["all", "any"], ["Mencakup semua", "Salah satu"], true)}
               </div>
 
               {/* Pelanggan */}
-              <div style={{ position: "relative" }} ref={drawerPelangganRef}>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#344054", marginBottom: "6px" }}>
-                  Pelanggan
-                </label>
-                <div
-                  onClick={() => setShowDrawerPelangganDropdown(!showDrawerPelangganDropdown)}
-                  style={{
-                    height: "38px", backgroundColor: "#ffffff", border: "1px solid #d0d5dd",
-                    borderRadius: "6px", padding: "0 12px", display: "flex", alignItems: "center",
-                    justifyContent: "space-between", cursor: "pointer", userSelect: "none",
-                  }}
-                >
-                  <span style={{ fontSize: "13.5px", color: drawerPelanggan ? "#101828" : "#94a3b8" }}>
-                    {drawerPelanggan || "Pilih pelanggan"}
-                  </span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#667085" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                    style={{ transition: "transform 0.2s ease", transform: showDrawerPelangganDropdown ? "rotate(180deg)" : "rotate(0deg)" }}>
-                    <path d="M6 9l6 6 6-6" />
-                  </svg>
-                </div>
-                {showDrawerPelangganDropdown && (
-                  <div style={{
-                    position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 1000,
-                    backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px",
-                    boxShadow: "0 10px 25px -5px rgba(0,0,0,0.12)", padding: "4px 0", maxHeight: "200px", overflowY: "auto"
-                  }}>
-                    {["Semua Pelanggan", "PT. Maju Bersama", "CV. Abadi Jaya", "Toko Sejahtera"].map((opt) => (
-                      <div
-                        key={opt}
-                        onClick={() => {
-                          setDrawerPelanggan(opt);
-                          setShowDrawerPelangganDropdown(false);
-                        }}
-                        style={{
-                          padding: "8px 14px", fontSize: "13.5px",
-                          color: drawerPelanggan === opt ? "#4f66ee" : "#1e293b",
-                          fontWeight: drawerPelanggan === opt ? 600 : 400,
-                          backgroundColor: drawerPelanggan === opt ? "#f1f5f9" : "transparent",
-                          cursor: "pointer",
-                        }}
-                      >
-                        {opt}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+              {renderDrawerSelect({
+                label: "Pelanggan",
+                value: drawerPelanggan,
+                placeholder: "Pilih pelanggan",
+                open: showDrawerPelangganDropdown,
+                setOpen: setShowDrawerPelangganDropdown,
+                options: ["Semua Pelanggan", "PT. Maju Bersama", "CV. Abadi Jaya", "Toko Sejahtera"],
+                onPick: (opt) => { setDrawerPelanggan(opt); setShowDrawerPelangganDropdown(false); },
+                refEl: drawerPelangganRef,
+              })}
 
               {/* Kategori produk */}
-              <div style={{ position: "relative" }} ref={drawerKategoriRef}>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#344054", marginBottom: "6px" }}>
-                  Kategori produk
-                </label>
-                <div
-                  onClick={() => setShowDrawerKategoriDropdown(!showDrawerKategoriDropdown)}
-                  style={{
-                    height: "38px", backgroundColor: "#ffffff", border: "1px solid #d0d5dd",
-                    borderRadius: "6px", padding: "0 12px", display: "flex", alignItems: "center",
-                    justifyContent: "space-between", cursor: "pointer", userSelect: "none",
-                    marginBottom: "10px"
-                  }}
-                >
-                  <span style={{ fontSize: "13.5px", color: drawerKategori ? "#101828" : "#94a3b8" }}>
-                    {drawerKategori || "Pilih kategori produk"}
-                  </span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#667085" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                    style={{ transition: "transform 0.2s ease", transform: showDrawerKategoriDropdown ? "rotate(180deg)" : "rotate(0deg)" }}>
-                    <path d="M6 9l6 6 6-6" />
-                  </svg>
-                </div>
-                {showDrawerKategoriDropdown && (
-                  <div style={{
-                    position: "absolute", top: "42px", left: 0, right: 0, zIndex: 1000,
-                    backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px",
-                    boxShadow: "0 10px 25px -5px rgba(0,0,0,0.12)", padding: "4px 0"
-                  }}>
-                    {["Semua Kategori", "Elektronik", "Pakaian", "Makanan & Minuman", "Lainnya"].map((opt) => (
-                      <div
-                        key={opt}
-                        onClick={() => {
-                          setDrawerKategori(opt);
-                          setShowDrawerKategoriDropdown(false);
-                        }}
-                        style={{
-                          padding: "8px 14px", fontSize: "13.5px",
-                          color: drawerKategori === opt ? "#4f66ee" : "#1e293b",
-                          fontWeight: drawerKategori === opt ? 600 : 400,
-                          backgroundColor: drawerKategori === opt ? "#f1f5f9" : "transparent",
-                          cursor: "pointer",
-                        }}
-                      >
-                        {opt}
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-                  <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#344054", cursor: "pointer" }}>
-                    <input
-                      type="radio"
-                      name="drawerKategoriOption"
-                      checked={drawerKategoriOption === "all"}
-                      onChange={() => setDrawerKategoriOption("all")}
-                      style={{ accentColor: "#4f66ee" }}
-                    />
-                    Mencakup semua
-                  </label>
-                  <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#344054", cursor: "pointer" }}>
-                    <input
-                      type="radio"
-                      name="drawerKategoriOption"
-                      checked={drawerKategoriOption === "any"}
-                      onChange={() => setDrawerKategoriOption("any")}
-                      style={{ accentColor: "#4f66ee" }}
-                    />
-                    Salah satu
-                    <span style={{
-                      display: "inline-flex", alignItems: "center", justifyContent: "center",
-                      width: "15px", height: "15px", borderRadius: "50%", border: "1px solid #94a3b8",
-                      color: "#64748b", fontSize: "11px", fontWeight: "600", marginLeft: "2px"
-                    }}>
-                      i
-                    </span>
-                  </label>
-                </div>
-              </div>
+              {renderDrawerSelect({
+                label: "Kategori produk",
+                value: drawerKategori,
+                placeholder: "Pilih kategori produk",
+                open: showDrawerKategoriDropdown,
+                setOpen: setShowDrawerKategoriDropdown,
+                options: ["Semua Kategori", "Elektronik", "Pakaian", "Makanan & Minuman", "Lainnya"],
+                onPick: (opt) => { setDrawerKategori(opt); setShowDrawerKategoriDropdown(false); },
+                refEl: drawerKategoriRef,
+                children: renderRadioGroup("drawerKategoriOption", drawerKategoriOption, setDrawerKategoriOption, ["all", "any"], ["Mencakup semua", "Salah satu"], true),
+              })}
 
               {/* Produk */}
-              <div style={{ position: "relative" }} ref={drawerProdukRef}>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#344054", marginBottom: "6px" }}>
-                  Produk
-                </label>
-                <div
-                  onClick={() => setShowDrawerProdukDropdown(!showDrawerProdukDropdown)}
-                  style={{
-                    height: "38px", backgroundColor: "#ffffff", border: "1px solid #d0d5dd",
-                    borderRadius: "6px", padding: "0 12px", display: "flex", alignItems: "center",
-                    justifyContent: "space-between", cursor: "pointer", userSelect: "none",
-                  }}
-                >
-                  <span style={{ fontSize: "13.5px", color: drawerProduk ? "#101828" : "#94a3b8" }}>
-                    {drawerProduk || "Pilih produk"}
-                  </span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#667085" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                    style={{ transition: "transform 0.2s ease", transform: showDrawerProdukDropdown ? "rotate(180deg)" : "rotate(0deg)" }}>
-                    <path d="M6 9l6 6 6-6" />
-                  </svg>
-                </div>
-                {showDrawerProdukDropdown && (
-                  <div style={{
-                    position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 1000,
-                    backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px",
-                    boxShadow: "0 10px 25px -5px rgba(0,0,0,0.12)", padding: "4px 0", maxHeight: "200px", overflowY: "auto"
-                  }}>
-                    {["Semua Produk", "Produk A", "Produk B", "Produk C"].map((opt) => (
-                      <div
-                        key={opt}
-                        onClick={() => {
-                          setDrawerProduk(opt);
-                          setShowDrawerProdukDropdown(false);
-                        }}
-                        style={{
-                          padding: "8px 14px", fontSize: "13.5px",
-                          color: drawerProduk === opt ? "#4f66ee" : "#1e293b",
-                          fontWeight: drawerProduk === opt ? 600 : 400,
-                          backgroundColor: drawerProduk === opt ? "#f1f5f9" : "transparent",
-                          cursor: "pointer",
-                        }}
-                      >
-                        {opt}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+              {renderDrawerSelect({
+                label: "Produk",
+                value: drawerProduk,
+                placeholder: "Pilih produk",
+                open: showDrawerProdukDropdown,
+                setOpen: setShowDrawerProdukDropdown,
+                options: ["Semua Produk", "Produk A", "Produk B", "Produk C"],
+                onPick: (opt) => { setDrawerProduk(opt); setShowDrawerProdukDropdown(false); },
+                refEl: drawerProdukRef,
+              })}
 
               {/* Lihat versi lebih detail */}
               <div style={{ marginTop: "2px" }}>
@@ -1192,13 +1136,13 @@ export default function PenjualanPerProduk() {
                     type="checkbox"
                     checked={drawerDetailVersion}
                     onChange={(e) => setDrawerDetailVersion(e.target.checked)}
-                    style={{ marginTop: "3px", width: "16px", height: "16px", accentColor: "#4f66ee", cursor: "pointer" }}
+                    style={{ marginTop: "3px", width: "16px", height: "16px", accentColor: t.accent, cursor: "pointer" }}
                   />
                   <div>
-                    <span style={{ fontSize: "13.5px", fontWeight: 600, color: "#344054" }}>
+                    <span style={{ fontSize: "13.5px", fontWeight: 600, color: t.label }}>
                       Lihat versi lebih detail
                     </span>
-                    <p style={{ margin: "2px 0 0 0", fontSize: "12px", color: "#64748b", lineHeight: 1.4 }}>
+                    <p style={{ margin: "2px 0 0 0", fontSize: "12px", color: t.muted, lineHeight: 1.4 }}>
                       Menampilkan info nomor transaksi dan diskon dengan pengelompokan berdasarkan tipe produk.
                     </p>
                   </div>
@@ -1206,81 +1150,23 @@ export default function PenjualanPerProduk() {
               </div>
 
               {/* Urutkan berdasarkan */}
-              <div style={{ position: "relative" }} ref={drawerUrutkanRef}>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#344054", marginBottom: "6px" }}>
-                  Urutkan berdasarkan
-                </label>
-                <div
-                  onClick={() => setShowDrawerUrutkanDropdown(!showDrawerUrutkanDropdown)}
-                  style={{
-                    height: "38px", backgroundColor: "#ffffff", border: "1px solid #d0d5dd",
-                    borderRadius: "6px", padding: "0 12px", display: "flex", alignItems: "center",
-                    justifyContent: "space-between", cursor: "pointer", userSelect: "none",
-                    marginBottom: "10px"
-                  }}
-                >
-                  <span style={{ fontSize: "13.5px", color: "#101828" }}>{drawerUrutkan}</span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#667085" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                    style={{ transition: "transform 0.2s ease", transform: showDrawerUrutkanDropdown ? "rotate(180deg)" : "rotate(0deg)" }}>
-                    <path d="M6 9l6 6 6-6" />
-                  </svg>
-                </div>
-                {showDrawerUrutkanDropdown && (
-                  <div style={{
-                    position: "absolute", top: "42px", left: 0, right: 0, zIndex: 1000,
-                    backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px",
-                    boxShadow: "0 10px 25px -5px rgba(0,0,0,0.12)", padding: "4px 0"
-                  }}>
-                    {["Nama produk", "Kuantitas", "Penjualan bersih", "Pelanggan", "Tanggal", "Jumlah"].map((opt) => (
-                      <div
-                        key={opt}
-                        onClick={() => {
-                          setDrawerUrutkan(opt);
-                          setShowDrawerUrutkanDropdown(false);
-                        }}
-                        style={{
-                          padding: "8px 14px", fontSize: "13.5px",
-                          color: drawerUrutkan === opt ? "#4f66ee" : "#1e293b",
-                          fontWeight: drawerUrutkan === opt ? 600 : 400,
-                          backgroundColor: drawerUrutkan === opt ? "#f1f5f9" : "transparent",
-                          cursor: "pointer",
-                        }}
-                      >
-                        {opt}
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-                  <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#344054", cursor: "pointer" }}>
-                    <input
-                      type="radio"
-                      name="drawerUrutanOrder"
-                      checked={drawerUrutanOrder === "asc"}
-                      onChange={() => setDrawerUrutanOrder("asc")}
-                      style={{ accentColor: "#4f66ee" }}
-                    />
-                    Urutan naik
-                  </label>
-                  <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#344054", cursor: "pointer" }}>
-                    <input
-                      type="radio"
-                      name="drawerUrutanOrder"
-                      checked={drawerUrutanOrder === "desc"}
-                      onChange={() => setDrawerUrutanOrder("desc")}
-                      style={{ accentColor: "#4f66ee" }}
-                    />
-                    Urutan turun
-                  </label>
-                </div>
-              </div>
-
+              {renderDrawerSelect({
+                label: "Urutkan berdasarkan",
+                value: drawerUrutkan,
+                placeholder: "",
+                open: showDrawerUrutkanDropdown,
+                setOpen: setShowDrawerUrutkanDropdown,
+                options: ["Nama produk", "Kuantitas", "Penjualan bersih", "Pelanggan", "Tanggal", "Jumlah"],
+                onPick: (opt) => { setDrawerUrutkan(opt); setShowDrawerUrutkanDropdown(false); },
+                refEl: drawerUrutkanRef,
+                children: renderRadioGroup("drawerUrutanOrder", drawerUrutanOrder, setDrawerUrutanOrder, ["asc", "desc"], ["Urutan naik", "Urutan turun"]),
+              })}
             </div>
 
             {/* Drawer Footer */}
             <div style={{
               padding: "16px 24px",
-              borderTop: "1px solid #eaecf0",
+              borderTop: `1px solid ${t.drawerBorder}`,
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
@@ -1289,11 +1175,11 @@ export default function PenjualanPerProduk() {
                 onClick={handleResetDrawer}
                 style={{ display: "inline-flex", alignItems: "center", gap: "6px", cursor: "pointer", userSelect: "none" }}
               >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4f66ee" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={t.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21.5 2v6h-6" />
                   <path d="M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
                 </svg>
-                <span style={{ fontSize: "13.5px", fontWeight: 600, color: "#4f66ee", textDecoration: "underline" }}>
+                <span style={{ fontSize: "13.5px", fontWeight: 600, color: t.accent, textDecoration: "underline" }}>
                   Reset filter
                 </span>
               </div>
@@ -1302,9 +1188,9 @@ export default function PenjualanPerProduk() {
                 <button
                   type="button"
                   onClick={closeFilterDrawer}
-                  style={{
-                    background: "none", border: "none", fontSize: "13.5px", fontWeight: 600, color: "#475569", cursor: "pointer"
-                  }}
+                  style={{ background: "none", border: "none", fontSize: "13.5px", fontWeight: 600, color: isDark ? "#cbd5e1" : "#475569", cursor: "pointer" }}
+                  onMouseEnter={(e) => { if (isDark) e.currentTarget.style.color = "#E5B85C"; }}
+                  onMouseLeave={(e) => { if (isDark) e.currentTarget.style.color = "#cbd5e1"; }}
                 >
                   Batalkan
                 </button>
@@ -1312,12 +1198,12 @@ export default function PenjualanPerProduk() {
                   type="button"
                   onClick={closeFilterDrawer}
                   style={{
-                    height: "38px", padding: "0 22px", backgroundColor: "#4f66ee", border: "none",
-                    borderRadius: "6px", fontSize: "13.5px", fontWeight: 600, color: "#ffffff", cursor: "pointer",
-                    boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)", transition: "background-color 0.15s ease"
+                    height: "38px", padding: "0 22px", backgroundColor: t.primary, border: "none",
+                    borderRadius: "6px", fontSize: "13.5px", fontWeight: 600, color: t.accentText, cursor: "pointer",
+                    boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)", transition: "background-color 0.15s ease",
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#3b52b4")}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#4f66ee")}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = t.primaryHover)}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = t.primary)}
                 >
                   Terapkan
                 </button>
@@ -1326,6 +1212,10 @@ export default function PenjualanPerProduk() {
           </aside>
         </div>
       )}
+
+      <style>{`
+        .pp-dark input::placeholder { color: #94a3b8; }
+      `}</style>
     </div>
   );
 }

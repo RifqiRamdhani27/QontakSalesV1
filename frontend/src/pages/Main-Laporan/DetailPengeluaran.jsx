@@ -8,6 +8,57 @@ export default function DetailPengeluaran() {
 
   const isFullscreen = outletContext ? outletContext.isFullscreen : localFullscreen;
 
+  // Dark Mode
+  const [themeMode, setThemeMode] = useState(() => localStorage.getItem("app_theme") || "light");
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+  const isDark = themeMode === "dark";
+
+  // Palet halaman
+  const t = isDark
+    ? {
+      pageBg: "#121212", text: "#f1f5f9", title: "#ffffff", muted: "#94a3b8", faint: "#64748b",
+      label: "#e2e8f0", value: "#f1f5f9", link: "#94a3b8", linkHover: "#E5B85C",
+      panel: "#1a1a1a", panelBorder: "#634f27", headBorder: "#3a3326",
+      line: "#634f27", icon: "#E5B85C", iconMuted: "#94a3b8",
+      primary: "#E5B85C", primaryHover: "#f0c978", primaryText: "#121212",
+      ddBg: "#1e1e1e", ddBorder: "#634f27", ddText: "#f1f5f9", ddHover: "#2d2d2d",
+      ddShadow: "0 10px 25px -5px rgba(0,0,0,0.6)", tableShadow: "0 2px 15px -6px rgba(241, 133, 10, 0.86)",
+    }
+    : {
+      pageBg: "#ffffff", text: "#1e293b", title: "#111827", muted: "#6b7280", faint: "#cbd5e1",
+      label: "#334155", value: "#0f172a", link: "#64748b", linkHover: "#1e293b",
+      panel: "#ffffff", panelBorder: "#e2e8f0", headBorder: "rgba(226,232,240,0.9)",
+      line: "#cbd5e1", icon: "#475569", iconMuted: "#94a3b8",
+      primary: "#20667d", primaryHover: "#1a5568", primaryText: "#ffffff",
+      ddBg: "#ffffff", ddBorder: "#d4d4d8", ddText: "#1e3a8a", ddHover: "#f1f5f9",
+      ddShadow: "0 4px 16px rgba(0,0,0,0.12)", tableShadow: "0 2px 15px -6px rgba(58, 58, 58, 0.86)",
+    };
+
+  // Palet kalender
+  const c = isDark
+    ? {
+      popBg: "#1a1a1a", popBorder: "#634f27",
+      shadow: "0 10px 25px -5px rgba(0,0,0,0.6)",
+      nav: "#f1f5f9", accent: "#E5B85C", weekday: "#94a3b8",
+      selBg: "#E5B85C", selText: "#121212",
+      dayText: "#f1f5f9", monthBg: "#262626", hoverBg: "#2d2d2d", divider: "#3a3326",
+    }
+    : {
+      popBg: "#ffffff", popBorder: "#cbd5e1",
+      shadow: "0 10px 25px -5px rgba(0,0,0,0.12)",
+      nav: "#64748b", accent: "#0284c7", weekday: "#94a3b8",
+      selBg: "#0284c7", selText: "#ffffff",
+      dayText: "#1e293b", monthBg: "#f1f5f9", hoverBg: "#f1f5f9", divider: "#f1f5f9",
+    };
+
   // Start Date Picker State
   const startDatePickerRef = useRef(null);
   const [startSelectedDate, setStartSelectedDate] = useState(() => new Date(2026, 8, 20));
@@ -76,12 +127,60 @@ export default function DetailPengeluaran() {
     setStartCalendarViewDate(new Date(s));
   };
 
-  // // Calendar
+  // ---------- Helper tampilan ----------
+  const hoverBg = (normal, hover) => ({
+    onMouseEnter: (e) => (e.currentTarget.style.backgroundColor = hover),
+    onMouseLeave: (e) => (e.currentTarget.style.backgroundColor = normal),
+  });
+
+  const ddPanelStyle = {
+    backgroundColor: t.ddBg,
+    border: `1px solid ${t.ddBorder}`,
+    borderRadius: "4px",
+    boxShadow: t.ddShadow,
+    padding: "4px 0",
+  };
+
+  const mainLabelStyle = { fontSize: "12px", fontWeight: 600, color: t.label, marginBottom: "4px" };
+  const lineBox = { display: "flex", alignItems: "center", borderBottom: `1px solid ${t.line}`, paddingBottom: "2px", position: "relative" };
+  const dateInputStyle = {
+    border: "none", outline: "none", fontSize: "12px", fontWeight: 700, color: t.value,
+    backgroundColor: "transparent", width: "100%", cursor: "pointer", padding: 0,
+  };
+  const iconBtnStyle = { border: "none", background: "none", color: t.icon, cursor: "pointer", padding: 0, marginLeft: "4px", display: "flex", alignItems: "center" };
+
+  const primaryBtn = {
+    height: "36px", backgroundColor: t.primary, color: t.primaryText, fontSize: "12px", fontWeight: 500,
+    borderRadius: "4px", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center",
+    boxShadow: "0 1px 2px rgba(0,0,0,0.05)", transition: "background-color 0.15s ease",
+  };
+
+  const renderDdItem = (label, onClick, fontSize = "13.5px", asButton = false) => {
+    const common = {
+      padding: "8px 16px", fontSize, color: t.ddText, cursor: "pointer", transition: "background-color 0.15s ease",
+    };
+    if (asButton) {
+      return (
+        <button key={label} type="button" onClick={onClick}
+          style={{ ...common, width: "100%", textAlign: "left", border: "none", backgroundColor: "transparent" }}
+          {...hoverBg("transparent", t.ddHover)}>
+          {label}
+        </button>
+      );
+    }
+    return (
+      <div key={label} onClick={onClick} style={common} {...hoverBg("transparent", t.ddHover)}>
+        {label}
+      </div>
+    );
+  };
+
+  // Calendar
   const renderCalendarPicker = (
-    selDate, setSelDate, 
-    viewDate, setViewDate, 
-    viewMode, setViewMode, 
-    yrRangeStart, setYrRangeStart, 
+    selDate, setSelDate,
+    viewDate, setViewDate,
+    viewMode, setViewMode,
+    yrRangeStart, setYrRangeStart,
     closePicker,
     alignRight = false
   ) => {
@@ -102,44 +201,46 @@ export default function DetailPengeluaran() {
       else if (viewMode === "years") setYrRangeStart(yrRangeStart + 12);
     };
 
+    const navBtn = { border: "none", background: "none", cursor: "pointer", padding: "4px", borderRadius: "4px", color: c.nav, display: "flex" };
+
     return (
-      <div 
-        style={{ 
-          position: "absolute", 
-          top: "calc(100% + 6px)", 
+      <div
+        style={{
+          position: "absolute",
+          top: "calc(100% + 6px)",
           ...(alignRight ? { right: 0 } : { left: 0 }),
-          zIndex: 1000, 
-          backgroundColor: "#ffffff", 
-          border: "1px solid #cbd5e1", 
-          borderRadius: "8px", 
-          boxShadow: "0 10px 25px -5px rgba(0,0,0,0.12)", 
-          padding: "14px 16px", 
-          width: "280px", 
-          userSelect: "none" 
+          zIndex: 1000,
+          backgroundColor: c.popBg,
+          border: `1px solid ${c.popBorder}`,
+          borderRadius: "8px",
+          boxShadow: c.shadow,
+          padding: "14px 16px",
+          width: "280px",
+          userSelect: "none",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-          <button type="button" onClick={handlePrev} style={{ border: "none", background: "none", cursor: "pointer", padding: "4px", borderRadius: "4px", color: "#64748b" }}>
+          <button type="button" onClick={handlePrev} style={navBtn} {...hoverBg("transparent", c.hoverBg)}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6" /></svg>
           </button>
           <div style={{ display: "flex", gap: "6px", fontSize: "14px", fontWeight: 700 }}>
             {viewMode === "days" && (
               <>
-                <span onClick={() => setViewMode("months")} style={{ cursor: "pointer", color: "#0284c7" }}>{MONTH_NAMES[month]}</span>
-                <span onClick={() => setViewMode("years")} style={{ cursor: "pointer", color: "#0284c7" }}>{year}</span>
+                <span onClick={() => setViewMode("months")} style={{ cursor: "pointer", color: c.accent }}>{MONTH_NAMES[month]}</span>
+                <span onClick={() => setViewMode("years")} style={{ cursor: "pointer", color: c.accent }}>{year}</span>
               </>
             )}
-            {viewMode === "months" && <span onClick={() => setViewMode("years")} style={{ cursor: "pointer", color: "#0284c7" }}>{year}</span>}
-            {viewMode === "years" && <span style={{ color: "#0284c7" }}>{yrRangeStart} - {yrRangeStart + 11}</span>}
+            {viewMode === "months" && <span onClick={() => setViewMode("years")} style={{ cursor: "pointer", color: c.accent }}>{year}</span>}
+            {viewMode === "years" && <span style={{ color: c.accent }}>{yrRangeStart} - {yrRangeStart + 11}</span>}
           </div>
-          <button type="button" onClick={handleNext} style={{ border: "none", background: "none", cursor: "pointer", padding: "4px", borderRadius: "4px", color: "#64748b" }}>
+          <button type="button" onClick={handleNext} style={navBtn} {...hoverBg("transparent", c.hoverBg)}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
           </button>
         </div>
 
         {viewMode === "days" && (
           <>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", textAlign: "center", fontSize: "11px", fontWeight: 600, color: "#94a3b8", marginBottom: "6px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", textAlign: "center", fontSize: "11px", fontWeight: 600, color: c.weekday, marginBottom: "6px" }}>
               {["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"].map((d) => <div key={d}>{d}</div>)}
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "2px", textAlign: "center" }}>
@@ -148,8 +249,19 @@ export default function DetailPengeluaran() {
                 const dayNum = i + 1;
                 const isSelected = selDate && selDate.getDate() === dayNum && selDate.getMonth() === month && selDate.getFullYear() === year;
                 return (
-                  <button key={dayNum} type="button" onClick={() => { setSelDate(new Date(year, month, dayNum)); closePicker(); }}
-                    style={{ fontSize: "12.5px", padding: "6px 0", border: "none", borderRadius: "4px", cursor: "pointer", backgroundColor: isSelected ? "#0284c7" : "transparent", color: isSelected ? "#ffffff" : "#1e293b", fontWeight: isSelected ? 700 : 400 }}>
+                  <button
+                    key={dayNum}
+                    type="button"
+                    onClick={() => { setSelDate(new Date(year, month, dayNum)); closePicker(); }}
+                    style={{
+                      fontSize: "12.5px", padding: "6px 0", border: "none", borderRadius: "4px", cursor: "pointer",
+                      backgroundColor: isSelected ? c.selBg : "transparent",
+                      color: isSelected ? c.selText : c.dayText,
+                      fontWeight: isSelected ? 700 : 400,
+                    }}
+                    onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = c.hoverBg; }}
+                    onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = "transparent"; }}
+                  >
                     {dayNum}
                   </button>
                 );
@@ -163,8 +275,17 @@ export default function DetailPengeluaran() {
             {MONTH_NAMES.map((mn, idx) => {
               const isSelected = selDate && selDate.getMonth() === idx && selDate.getFullYear() === year;
               return (
-                <button key={mn} type="button" onClick={() => { setViewDate(new Date(year, idx, 1)); setViewMode("days"); }}
-                  style={{ fontSize: "12px", padding: "8px 4px", border: "none", borderRadius: "4px", cursor: "pointer", backgroundColor: isSelected ? "#0284c7" : "#f1f5f9", color: isSelected ? "#ffffff" : "#1e293b", fontWeight: isSelected ? 700 : 400 }}>
+                <button
+                  key={mn}
+                  type="button"
+                  onClick={() => { setViewDate(new Date(year, idx, 1)); setViewMode("days"); }}
+                  style={{
+                    fontSize: "12px", padding: "8px 4px", border: "none", borderRadius: "4px", cursor: "pointer",
+                    backgroundColor: isSelected ? c.selBg : c.monthBg,
+                    color: isSelected ? c.selText : c.dayText,
+                    fontWeight: isSelected ? 700 : 400,
+                  }}
+                >
                   {mn.slice(0, 3)}
                 </button>
               );
@@ -178,8 +299,17 @@ export default function DetailPengeluaran() {
               const yr = yrRangeStart + i;
               const isSelected = selDate && selDate.getFullYear() === yr;
               return (
-                <button key={yr} type="button" onClick={() => { setViewDate(new Date(yr, viewDate.getMonth(), 1)); setViewMode("months"); }}
-                  style={{ fontSize: "12px", padding: "8px 4px", border: "none", borderRadius: "4px", cursor: "pointer", backgroundColor: isSelected ? "#0284c7" : "#f1f5f9", color: isSelected ? "#ffffff" : "#1e293b", fontWeight: isSelected ? 700 : 400 }}>
+                <button
+                  key={yr}
+                  type="button"
+                  onClick={() => { setViewDate(new Date(yr, viewDate.getMonth(), 1)); setViewMode("months"); }}
+                  style={{
+                    fontSize: "12px", padding: "8px 4px", border: "none", borderRadius: "4px", cursor: "pointer",
+                    backgroundColor: isSelected ? c.selBg : c.monthBg,
+                    color: isSelected ? c.selText : c.dayText,
+                    fontWeight: isSelected ? 700 : 400,
+                  }}
+                >
                   {yr}
                 </button>
               );
@@ -188,7 +318,7 @@ export default function DetailPengeluaran() {
         )}
 
         {/* Tombol Today */}
-        <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid #f1f5f9", textAlign: "center" }}>
+        <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: `1px solid ${c.divider}`, textAlign: "center" }}>
           <button
             type="button"
             onClick={(e) => {
@@ -200,7 +330,7 @@ export default function DetailPengeluaran() {
             }}
             style={{
               background: "none", border: "none", fontSize: "13px", fontWeight: 600,
-              color: "#0284c7", cursor: "pointer", padding: "4px 8px", borderRadius: "4px",
+              color: c.accent, cursor: "pointer", padding: "4px 8px", borderRadius: "4px",
             }}
           >
             Hari ini
@@ -210,14 +340,32 @@ export default function DetailPengeluaran() {
     );
   };
 
+  const renderCalIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+      <path fillRule="evenodd" clipRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" />
+    </svg>
+  );
+
   return (
-    <div style={{ margin: "-24px", display: "flex", flexDirection: "column", minHeight: "100vh", backgroundColor: "#ffffff", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif", color: "#1e293b" }}>
+    <div
+      style={{
+        margin: "-24px",
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh",
+        backgroundColor: t.pageBg,
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+        color: t.text,
+        colorScheme: isDark ? "dark" : "light",
+        transition: "background-color 0.3s ease, color 0.3s ease",
+      }}
+    >
       {/* Top Header */}
-      <header style={{ backgroundColor: "#ffffff", borderBottom: "1px solid #e2e8f0" }}>
+      <header style={{ backgroundColor: t.panel, borderBottom: `1px solid ${t.panelBorder}` }}>
         {/* Page Title */}
         <div style={{ padding: "20px 32px 20px 32px" }}>
-          <h1 style={{ fontSize: "24px", fontWeight: 700, letterSpacing: "-0.025em", color: "#111827", margin: 0 }}>
-            Rincian Biaya <span style={{ fontWeight: 400, color: "#6b7280", fontSize: "18px", marginLeft: "2px" }}>(dalam IDR)</span>
+          <h1 style={{ fontSize: "24px", fontWeight: 700, letterSpacing: "-0.025em", color: t.title, margin: 0 }}>
+            Rincian Biaya <span style={{ fontWeight: 400, color: t.muted, fontSize: "18px", marginLeft: "2px" }}>(dalam IDR)</span>
           </h1>
         </div>
 
@@ -227,15 +375,11 @@ export default function DetailPengeluaran() {
           <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", gap: "20px" }}>
             {/* Tanggal Mulai */}
             <div style={{ display: "flex", flexDirection: "column", width: "160px", position: "relative" }} ref={startDatePickerRef}>
-              <label style={{ fontSize: "12px", fontWeight: 600, color: "#334155", marginBottom: "4px" }}>Tanggal Mulai</label>
-              <div style={{ display: "flex", alignItems: "center", borderBottom: "1px solid #cbd5e1", paddingBottom: "2px", position: "relative" }}>
-                <input readOnly type="text" value={startDateStr} onClick={() => setShowStartCalendar(!showStartCalendar)}
-                  style={{ border: "none", outline: "none", fontSize: "12px", fontWeight: 700, color: "#0f172a", backgroundColor: "transparent", width: "100%", cursor: "pointer", padding: 0 }} />
-                <button type="button" onClick={() => setShowStartCalendar(!showStartCalendar)} aria-label="Pilih Tanggal Mulai"
-                  style={{ border: "none", background: "none", color: "#475569", cursor: "pointer", padding: 0, marginLeft: "4px", display: "flex", alignItems: "center" }}>
-                  <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" clipRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" />
-                  </svg>
+              <label style={mainLabelStyle}>Tanggal Mulai</label>
+              <div style={lineBox}>
+                <input readOnly type="text" value={startDateStr} onClick={() => setShowStartCalendar(!showStartCalendar)} style={dateInputStyle} />
+                <button type="button" onClick={() => setShowStartCalendar(!showStartCalendar)} aria-label="Pilih Tanggal Mulai" style={iconBtnStyle}>
+                  {renderCalIcon()}
                 </button>
                 {showStartCalendar && renderCalendarPicker(startSelectedDate, setStartSelectedDate, startCalendarViewDate, setStartCalendarViewDate, startCalendarViewMode, setStartCalendarViewMode, startYearRangeStart, setStartYearRangeStart, () => setShowStartCalendar(false))}
               </div>
@@ -243,15 +387,11 @@ export default function DetailPengeluaran() {
 
             {/* Tanggal Selesai */}
             <div style={{ display: "flex", flexDirection: "column", width: "160px", position: "relative" }} ref={endDatePickerRef}>
-              <label style={{ fontSize: "12px", fontWeight: 600, color: "#334155", marginBottom: "4px" }}>Tanggal Selesai</label>
-              <div style={{ display: "flex", alignItems: "center", borderBottom: "1px solid #cbd5e1", paddingBottom: "2px", position: "relative" }}>
-                <input readOnly type="text" value={endDateStr} onClick={() => setShowEndCalendar(!showEndCalendar)}
-                  style={{ border: "none", outline: "none", fontSize: "12px", fontWeight: 700, color: "#0f172a", backgroundColor: "transparent", width: "100%", cursor: "pointer", padding: 0 }} />
-                <button type="button" onClick={() => setShowEndCalendar(!showEndCalendar)} aria-label="Pilih Tanggal Selesai"
-                  style={{ border: "none", background: "none", color: "#475569", cursor: "pointer", padding: 0, marginLeft: "4px", display: "flex", alignItems: "center" }}>
-                  <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" clipRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" />
-                  </svg>
+              <label style={mainLabelStyle}>Tanggal Selesai</label>
+              <div style={lineBox}>
+                <input readOnly type="text" value={endDateStr} onClick={() => setShowEndCalendar(!showEndCalendar)} style={dateInputStyle} />
+                <button type="button" onClick={() => setShowEndCalendar(!showEndCalendar)} aria-label="Pilih Tanggal Selesai" style={iconBtnStyle}>
+                  {renderCalIcon()}
                 </button>
                 {showEndCalendar && renderCalendarPicker(endSelectedDate, setEndSelectedDate, endCalendarViewDate, setEndCalendarViewDate, endCalendarViewMode, setEndCalendarViewMode, endYearRangeStart, setEndYearRangeStart, () => setShowEndCalendar(false), true)}
               </div>
@@ -259,28 +399,29 @@ export default function DetailPengeluaran() {
 
             {/* Filter sesuai periode */}
             <div style={{ display: "flex", flexDirection: "column", width: "160px" }} ref={mainPeriodRef}>
-              <label style={{ fontSize: "12px", fontWeight: 600, color: "#334155", marginBottom: "4px" }}>Filter sesuai periode</label>
-              <div style={{ position: "relative", display: "flex", alignItems: "center", borderBottom: "1px solid #cbd5e1", paddingBottom: "2px" }}>
-                <span onClick={() => setShowMainPeriodDropdown(!showMainPeriodDropdown)}
-                  style={{ fontSize: "12px", fontWeight: 700, color: "#0f172a", width: "100%", cursor: "pointer", userSelect: "none" }}>
+              <label style={mainLabelStyle}>Filter sesuai periode</label>
+              <div style={lineBox}>
+                <span
+                  onClick={() => setShowMainPeriodDropdown(!showMainPeriodDropdown)}
+                  style={{ fontSize: "12px", fontWeight: 700, color: t.value, width: "100%", cursor: "pointer", userSelect: "none" }}
+                >
                   {periodePreset || "Hari ini"}
                 </span>
-                <button type="button" onClick={() => setShowMainPeriodDropdown(!showMainPeriodDropdown)} aria-label="Buka Opsi Periode"
-                  style={{ border: "none", background: "none", color: "#94a3b8", cursor: "pointer", padding: 0, marginLeft: "4px", display: "flex", alignItems: "center" }}>
+                <button
+                  type="button"
+                  onClick={() => setShowMainPeriodDropdown(!showMainPeriodDropdown)}
+                  aria-label="Buka Opsi Periode"
+                  style={{ ...iconBtnStyle, color: t.iconMuted }}
+                >
                   <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
                     <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
                   </svg>
                 </button>
                 {showMainPeriodDropdown && (
-                  <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, width: "180px", maxHeight: "220px", overflowY: "auto", backgroundColor: "#ffffff", border: "1px solid #d4d4d8", borderRadius: "4px", boxShadow: "0 4px 16px rgba(0,0,0,0.12)", zIndex: 1000, padding: "4px 0" }}>
-                    {["Tanggal", "Hari ini", "Minggu ini", "Bulan ini", "Tahun ini", "Bulan lalu", "Tahun lalu"].map((item) => (
-                      <div key={item} onClick={() => { setPeriodePreset(item); handleQuickPeriodSelect(item); setShowMainPeriodDropdown(false); }}
-                        style={{ padding: "8px 16px", fontSize: "13.5px", color: "#1e3a8a", cursor: "pointer", transition: "background-color 0.15s ease" }}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f1f5f9")}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}>
-                        {item}
-                      </div>
-                    ))}
+                  <div style={{ ...ddPanelStyle, position: "absolute", top: "calc(100% + 4px)", left: 0, width: "180px", maxHeight: "220px", overflowY: "auto", zIndex: 1000 }}>
+                    {["Tanggal", "Hari ini", "Minggu ini", "Bulan ini", "Tahun ini", "Bulan lalu", "Tahun lalu"].map((item) =>
+                      renderDdItem(item, () => { setPeriodePreset(item); handleQuickPeriodSelect(item); setShowMainPeriodDropdown(false); })
+                    )}
                   </div>
                 )}
               </div>
@@ -288,10 +429,7 @@ export default function DetailPengeluaran() {
 
             {/* Filter Button */}
             <div style={{ display: "flex", alignItems: "flex-end", paddingLeft: "8px" }}>
-              <button type="button"
-                style={{ height: "36px", padding: "0 24px", backgroundColor: "#20667d", color: "#ffffff", fontSize: "12px", fontWeight: 500, borderRadius: "4px", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 1px 2px rgba(0,0,0,0.05)", transition: "background-color 0.15s ease" }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#1a5568")}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#20667d")}>
+              <button type="button" style={{ ...primaryBtn, padding: "0 24px", justifyContent: "center" }} {...hoverBg(t.primary, t.primaryHover)}>
                 Filter
               </button>
             </div>
@@ -299,10 +437,12 @@ export default function DetailPengeluaran() {
 
           {/* Right Export Button */}
           <div style={{ display: "flex", alignItems: "flex-end", position: "relative" }} ref={eksporDropdownRef}>
-            <button type="button" onClick={() => setShowEksporDropdown(!showEksporDropdown)}
-              style={{ height: "36px", padding: "0 14px", backgroundColor: "#20667d", color: "#ffffff", fontSize: "12px", fontWeight: 500, borderRadius: "4px", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px", boxShadow: "0 1px 2px rgba(0,0,0,0.05)", transition: "background-color 0.15s ease" }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#1a5568")}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#20667d")}>
+            <button
+              type="button"
+              onClick={() => setShowEksporDropdown(!showEksporDropdown)}
+              style={{ ...primaryBtn, padding: "0 14px", gap: "6px" }}
+              {...hoverBg(t.primary, t.primaryHover)}
+            >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0-12l-3.5 3.5M12 4l3.5 3.5" />
               </svg>
@@ -312,10 +452,10 @@ export default function DetailPengeluaran() {
               </svg>
             </button>
             {showEksporDropdown && (
-              <div style={{ position: "absolute", right: 0, top: "calc(100% + 4px)", zIndex: 50, width: "176px", backgroundColor: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "4px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: "4px 0", fontSize: "13px", color: "#374151" }}>
-                <button type="button" onClick={() => setShowEksporDropdown(false)} style={{ width: "100%", textAlign: "left", padding: "8px 16px", border: "none", backgroundColor: "transparent", cursor: "pointer" }} onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f3f4f6")} onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}>Export Excel (.xlsx)</button>
-                <button type="button" onClick={() => setShowEksporDropdown(false)} style={{ width: "100%", textAlign: "left", padding: "8px 16px", border: "none", backgroundColor: "transparent", cursor: "pointer" }} onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f3f4f6")} onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}>Export PDF (.pdf)</button>
-                <button type="button" onClick={() => setShowEksporDropdown(false)} style={{ width: "100%", textAlign: "left", padding: "8px 16px", border: "none", backgroundColor: "transparent", cursor: "pointer" }} onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f3f4f6")} onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}>Export CSV (.csv)</button>
+              <div style={{ ...ddPanelStyle, position: "absolute", right: 0, top: "calc(100% + 4px)", zIndex: 50, width: "176px" }}>
+                {renderDdItem("Export Excel (.xlsx)", () => setShowEksporDropdown(false), "13px", true)}
+                {renderDdItem("Export PDF (.pdf)", () => setShowEksporDropdown(false), "13px", true)}
+                {renderDdItem("Export CSV (.csv)", () => setShowEksporDropdown(false), "13px", true)}
               </div>
             )}
           </div>
@@ -324,10 +464,21 @@ export default function DetailPengeluaran() {
 
       {/* Main Content */}
       <main style={{ padding: "24px 32px", flex: 1 }}>
-        <div style={{ backgroundColor: "#ffffff", borderRadius: "0", border: "1px solid rgba(226,232,240,0.9)", minHeight: "460px", display: "flex", flexDirection: "column", justifyContent: "space-between", boxShadow: "0 1px 3px rgba(0,0,0,0.02)" }}>
+        <div
+          style={{
+            backgroundColor: t.panel,
+            borderRadius: 0,
+            border: `1px solid ${t.panelBorder}`,
+            minHeight: "460px",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            boxShadow: t.tableShadow,
+          }}
+        >
           {/* Table Header Bar */}
-          <div style={{ backgroundColor: "#ffffff", borderBottom: "1px solid rgba(226,232,240,0.9)", padding: "12px 24px" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", fontSize: "12px", letterSpacing: "0.05em", color: "#cbd5e1", fontWeight: 500 }}>
+          <div style={{ backgroundColor: t.panel, borderBottom: `1px solid ${t.headBorder}`, padding: "12px 24px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", fontSize: "12px", letterSpacing: "0.05em", color: t.faint, fontWeight: 500,  }}>
               <div style={{ gridColumn: "span 3" }}>Kategori / Tanggal</div>
               <div style={{ gridColumn: "span 3" }}>Transaksi</div>
               <div style={{ gridColumn: "span 2" }}>Nomor</div>
@@ -337,22 +488,34 @@ export default function DetailPengeluaran() {
           </div>
 
           {/* Empty State Body */}
-          <section aria-label="Pemberitahuan Transaksi Kosong" style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 16px", textAlign: "center" }}>
-            <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#1e293b", marginBottom: "24px" }}>
+          <section
+            aria-label="Pemberitahuan Transaksi Kosong"
+            style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 16px", textAlign: "center" }}
+          >
+            <h2 style={{ fontSize: "16px", fontWeight: 700, color: t.title, marginBottom: "24px" }}>
               Anda belum memiliki transaksi biaya.
             </h2>
-            <button type="button"
-              style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "8px 16px", backgroundColor: "#20667d", color: "#ffffff", fontSize: "12px", fontWeight: 600, borderRadius: "4px", border: "none", cursor: "pointer", transition: "background-color 0.15s ease", marginBottom: "16px", boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#1a5568")}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#20667d")}>
+            <button
+              type="button"
+              style={{
+                display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "8px 16px",
+                backgroundColor: t.primary, color: t.primaryText, fontSize: "12px", fontWeight: 600,
+                borderRadius: "4px", border: "none", cursor: "pointer", transition: "background-color 0.15s ease",
+                marginBottom: "16px", boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+              }}
+              {...hoverBg(t.primary, t.primaryHover)}
+            >
               <span style={{ marginRight: "6px", fontWeight: 700, fontSize: "14px", lineHeight: 1 }}>+</span> Buat Biaya
             </button>
-            <p style={{ fontSize: "12px", color: "#64748b", margin: "0 0 16px 0" }}>
+            <p style={{ fontSize: "12px", color: t.link, margin: "0 0 16px 0" }}>
               atau
             </p>
-            <a href="#sample" style={{ fontSize: "12px", color: "#64748b", textDecoration: "none", transition: "color 0.15s ease" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "#1e293b")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "#64748b")}>
+            <a
+              href="#sample"
+              style={{ fontSize: "12px", color: t.link, textDecoration: "none", transition: "color 0.15s ease" }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = t.linkHover)}
+              onMouseLeave={(e) => (e.currentTarget.style.color = t.link)}
+            >
               Lihat Sample
             </a>
           </section>

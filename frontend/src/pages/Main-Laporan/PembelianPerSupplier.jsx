@@ -8,6 +8,67 @@ export default function PembelianPerSupplier() {
 
   const isFullscreen = outletContext ? outletContext.isFullscreen : localFullscreen;
 
+  // Dark Mode
+  const [themeMode, setThemeMode] = useState(() => localStorage.getItem("app_theme") || "light");
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+  const isDark = themeMode === "dark";
+
+  // Palet halaman
+  const t = isDark
+    ? {
+      pageBg: "#121212", text: "#f1f5f9", title: "#ffffff", muted: "#94a3b8", label: "#e2e8f0", drawerLabel: "#e2e8f0",
+      strong: "#ffffff", radioText: "#cbd5e1",
+      panel: "#1a1a1a", panelBorder: "#634f27",
+      field: "#262626", fieldBorder: "#634f27", fieldText: "#f1f5f9",
+      icon: "#E5B85C", iconMuted: "#94a3b8",
+      accent: "#E5B85C", accentText: "#121212",
+      primary: "#E5B85C", primaryHover: "#f0c978",
+      btnBg: "#262626", btnHover: "#2d2d2d", btnBorder: "#634f27", btnText: "#E5B85C",
+      ddBg: "#1e1e1e", ddBorder: "#634f27", ddText: "#f1f5f9", ddHover: "#2d2d2d",
+      ddSel: "rgba(229,184,92,0.2)", ddSelText: "#E5B85C", ddShadow: "0 10px 25px -5px rgba(0,0,0,0.6)",
+      drawerBg: "#1a1a1a", drawerBorder: "#3a3326", overlay: "rgba(0, 0, 0, 0.7)", ghostText: "#cbd5e1",
+      infoBorder: "#64748b", infoText: "#94a3b8", pdfIcon: "#cbd5e1",
+    }
+    : {
+      pageBg: "#ffffff", text: "#1e293b", title: "#0f172a", muted: "#64748b", label: "#334155", drawerLabel: "#344054",
+      strong: "#334155", radioText: "#334155",
+      panel: "#ffffff", panelBorder: "#e2e8f0",
+      field: "#ffffff", fieldBorder: "#cbd5e1", fieldText: "#1e293b",
+      icon: "#94a3b8", iconMuted: "#64748b",
+      accent: "#4661E6", accentText: "#ffffff",
+      primary: "#4661E6", primaryHover: "#1d4ed8",
+      btnBg: "#ffffff", btnHover: "#f8fafc", btnBorder: "#cbd5e1", btnText: "#4661E6",
+      ddBg: "#ffffff", ddBorder: "#cbd5e1", ddText: "#334155", ddHover: "#f1f5f9",
+      ddSel: "#f1f5f9", ddSelText: "#4661E6", ddShadow: "0 4px 12px rgba(0,0,0,0.1)",
+      drawerBg: "#ffffff", drawerBorder: "#f1f5f9", overlay: "rgba(15, 23, 42, 0.4)", ghostText: "#64748b",
+      infoBorder: "#94a3b8", infoText: "#64748b", pdfIcon: "#475569",
+    };
+
+  // Palet kalender
+  const c = isDark
+    ? {
+      popBg: "#1a1a1a", popBorder: "#634f27",
+      shadow: "0 10px 25px -5px rgba(0,0,0,0.6)",
+      nav: "#f1f5f9", accent: "#E5B85C", weekday: "#94a3b8",
+      selBg: "#E5B85C", selText: "#121212",
+      dayText: "#f1f5f9", monthBg: "#262626", hoverBg: "#2d2d2d", divider: "#3a3326",
+    }
+    : {
+      popBg: "#ffffff", popBorder: "#cbd5e1",
+      shadow: "0 10px 25px -5px rgba(0,0,0,0.12)",
+      nav: "#64748b", accent: "#0284c7", weekday: "#94a3b8",
+      selBg: "#0284c7", selText: "#ffffff",
+      dayText: "#334155", monthBg: "#f1f5f9", hoverBg: "#f1f5f9", divider: "#f1f5f9",
+    };
+
   // Date Pickers State (Main Toolbar)
   const startDatePickerRef = useRef(null);
   const [startSelectedDate, setStartSelectedDate] = useState(() => new Date(2026, 8, 18));
@@ -168,12 +229,125 @@ export default function PembelianPerSupplier() {
     if (setShowPeriod) setShowPeriod(false);
   };
 
-  // // Calendar
+  // ---------- Helper tampilan ----------
+  const hoverBg = (normal, hover) => ({
+    onMouseEnter: (e) => (e.currentTarget.style.backgroundColor = hover),
+    onMouseLeave: (e) => (e.currentTarget.style.backgroundColor = normal),
+  });
+
+  const ddPanelStyle = {
+    backgroundColor: t.ddBg,
+    border: `1px solid ${t.ddBorder}`,
+    borderRadius: "6px",
+    boxShadow: t.ddShadow,
+    padding: "4px 0",
+  };
+
+  const renderOption = (opt, selected, onClick, fontSize = "13.5px") => (
+    <div
+      key={opt}
+      onClick={onClick}
+      style={{
+        padding: "8px 12px", fontSize,
+        color: selected ? t.ddSelText : t.ddText,
+        fontWeight: selected ? 600 : 400,
+        backgroundColor: selected ? t.ddSel : "transparent",
+        cursor: "pointer",
+      }}
+      onMouseEnter={(e) => { if (!selected) e.currentTarget.style.backgroundColor = t.ddHover; }}
+      onMouseLeave={(e) => { if (!selected) e.currentTarget.style.backgroundColor = "transparent"; }}
+    >
+      {opt}
+    </div>
+  );
+
+  const renderCalIcon = (size = 16) => (
+    <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+      <rect height="18" rx="2" ry="2" width="18" x="3" y="4" />
+      <line x1="16" x2="16" y1="2" y2="6" />
+      <line x1="8" x2="8" y1="2" y2="6" />
+      <line x1="3" x2="21" y1="10" y2="10" />
+    </svg>
+  );
+
+  const renderChevron = (size = 14) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={t.iconMuted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  );
+
+  const mainLabelStyle = { fontSize: "12px", fontWeight: 400, color: t.label };
+  const mainFieldStyle = {
+    width: "100%", height: "38px", padding: "0 32px 0 12px", fontSize: "12px", fontWeight: 400,
+    color: t.fieldText, backgroundColor: t.field, border: `1px solid ${t.fieldBorder}`, borderRadius: "6px",
+    cursor: "pointer", outline: "none", boxSizing: "border-box",
+  };
+  const iconWrap = (color) => ({
+    position: "absolute", top: 0, bottom: 0, right: 0, display: "flex", alignItems: "center",
+    paddingRight: "10px", pointerEvents: "none", color,
+  });
+  const outlineBtnStyle = {
+    height: "38px", padding: "0 14px", backgroundColor: t.btnBg, border: `1px solid ${t.btnBorder}`,
+    color: t.btnText, fontSize: "12px", fontWeight: 500, borderRadius: "6px", cursor: "pointer",
+    display: "flex", alignItems: "center", gap: "8px", transition: "background-color 0.15s ease",
+  };
+
+  const drawerLabelStyle = { fontSize: "13px", fontWeight: 600, color: t.drawerLabel };
+  const drawerFieldStyle = {
+    width: "100%", height: "38px", padding: "0 12px", fontSize: "13.5px",
+    backgroundColor: t.field, border: `1px solid ${t.fieldBorder}`, borderRadius: "6px",
+    boxSizing: "border-box",
+  };
+
+  const renderRadio = (name, value, checked, onChange, label, withInfo = false) => (
+    <label key={value} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13.5px", color: t.radioText }}>
+      <input
+        type="radio"
+        name={name}
+        value={value}
+        checked={checked}
+        onChange={onChange}
+        style={{ accentColor: t.accent, width: "16px", height: "16px", cursor: "pointer" }}
+      />
+      <span>{label}</span>
+      {withInfo && (
+        <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "14px", height: "14px", borderRadius: "50%", border: `1px solid ${t.infoBorder}`, fontSize: "10px", color: t.infoText, fontWeight: 600, marginLeft: "2px" }}>i</span>
+      )}
+    </label>
+  );
+
+  // Dropdown di drawer (label + field + panel + opsional children)
+  const renderDrawerSelect = ({ label, value, placeholder, open, setOpen, options, onPick, refEl, children }) => (
+    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }} ref={refEl}>
+      <label style={drawerLabelStyle}>{label}</label>
+      <div style={{ position: "relative" }}>
+        <button
+          type="button"
+          onClick={() => setOpen(!open)}
+          style={{
+            ...drawerFieldStyle, color: value ? t.fieldText : t.muted,
+            textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer",
+          }}
+        >
+          <span>{value || placeholder}</span>
+          {renderChevron()}
+        </button>
+        {open && (
+          <div style={{ ...ddPanelStyle, position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 100, maxHeight: "220px", overflowY: "auto" }}>
+            {options.map((opt) => renderOption(opt, value === opt, () => onPick(opt)))}
+          </div>
+        )}
+      </div>
+      {children}
+    </div>
+  );
+
+  // Calendar
   const renderCalendarPicker = (
-    selectedDate, setSelectedDate, 
-    viewDate, setViewDate, 
-    viewMode, setViewMode, 
-    yearRangeStart, setYearRangeStart, 
+    selectedDate, setSelectedDate,
+    viewDate, setViewDate,
+    viewMode, setViewMode,
+    yearRangeStart, setYearRangeStart,
     closePicker,
     alignRight = false
   ) => {
@@ -195,44 +369,46 @@ export default function PembelianPerSupplier() {
       else if (viewMode === "years") setYearRangeStart(yearRangeStart + 12);
     };
 
+    const navBtn = { border: "none", background: "none", cursor: "pointer", padding: "4px", borderRadius: "4px", color: c.nav, display: "flex" };
+
     return (
-      <div 
-        style={{ 
-          position: "absolute", 
-          top: "calc(100% + 6px)", 
+      <div
+        style={{
+          position: "absolute",
+          top: "calc(100% + 6px)",
           ...(alignRight ? { right: 0 } : { left: 0 }),
-          zIndex: 1000, 
-          backgroundColor: "#ffffff", 
-          border: "1px solid #cbd5e1", 
-          borderRadius: "8px", 
-          boxShadow: "0 10px 25px -5px rgba(0,0,0,0.12)", 
-          padding: "14px 16px", 
-          width: "280px", 
-          userSelect: "none" 
+          zIndex: 1000,
+          backgroundColor: c.popBg,
+          border: `1px solid ${c.popBorder}`,
+          borderRadius: "8px",
+          boxShadow: c.shadow,
+          padding: "14px 16px",
+          width: "280px",
+          userSelect: "none",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-          <button type="button" onClick={handlePrev} style={{ border: "none", background: "none", cursor: "pointer", padding: "4px", borderRadius: "4px", color: "#64748b" }}>
+          <button type="button" onClick={handlePrev} style={navBtn} {...hoverBg("transparent", c.hoverBg)}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6" /></svg>
           </button>
           <div style={{ display: "flex", gap: "6px", fontSize: "14px", fontWeight: 700 }}>
             {viewMode === "days" && (
               <>
-                <span onClick={() => setViewMode("months")} style={{ cursor: "pointer", color: "#0284c7" }}>{MONTH_NAMES[month]}</span>
-                <span onClick={() => setViewMode("years")} style={{ cursor: "pointer", color: "#0284c7" }}>{year}</span>
+                <span onClick={() => setViewMode("months")} style={{ cursor: "pointer", color: c.accent }}>{MONTH_NAMES[month]}</span>
+                <span onClick={() => setViewMode("years")} style={{ cursor: "pointer", color: c.accent }}>{year}</span>
               </>
             )}
-            {viewMode === "months" && <span onClick={() => setViewMode("years")} style={{ cursor: "pointer", color: "#0284c7" }}>{year}</span>}
-            {viewMode === "years" && <span style={{ color: "#0284c7" }}>{yearRangeStart} - {yearRangeStart + 11}</span>}
+            {viewMode === "months" && <span onClick={() => setViewMode("years")} style={{ cursor: "pointer", color: c.accent }}>{year}</span>}
+            {viewMode === "years" && <span style={{ color: c.accent }}>{yearRangeStart} - {yearRangeStart + 11}</span>}
           </div>
-          <button type="button" onClick={handleNext} style={{ border: "none", background: "none", cursor: "pointer", padding: "4px", borderRadius: "4px", color: "#64748b" }}>
+          <button type="button" onClick={handleNext} style={navBtn} {...hoverBg("transparent", c.hoverBg)}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
           </button>
         </div>
 
         {viewMode === "days" && (
           <>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", textAlign: "center", fontSize: "11px", fontWeight: 600, color: "#94a3b8", marginBottom: "6px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", textAlign: "center", fontSize: "11px", fontWeight: 600, color: c.weekday, marginBottom: "6px" }}>
               {["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"].map((d) => <div key={d}>{d}</div>)}
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "2px", textAlign: "center" }}>
@@ -250,10 +426,12 @@ export default function PembelianPerSupplier() {
                     }}
                     style={{
                       padding: "6px 0", fontSize: "12px", border: "none", borderRadius: "4px", cursor: "pointer",
-                      backgroundColor: isSelected ? "#0284c7" : "transparent",
-                      color: isSelected ? "#ffffff" : "#334155",
+                      backgroundColor: isSelected ? c.selBg : "transparent",
+                      color: isSelected ? c.selText : c.dayText,
                       fontWeight: isSelected ? 600 : 400,
                     }}
+                    onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = c.hoverBg; }}
+                    onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = "transparent"; }}
                   >
                     {dayNum}
                   </button>
@@ -266,7 +444,16 @@ export default function PembelianPerSupplier() {
         {viewMode === "months" && (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", padding: "6px 0" }}>
             {MONTH_NAMES.map((mName, idx) => (
-              <button key={mName} type="button" onClick={() => { setViewDate(new Date(year, idx, 1)); setViewMode("days"); }} style={{ padding: "8px 4px", fontSize: "12px", border: "none", borderRadius: "4px", cursor: "pointer", backgroundColor: idx === month ? "#0284c7" : "#f1f5f9", color: idx === month ? "#ffffff" : "#334155" }}>
+              <button
+                key={mName}
+                type="button"
+                onClick={() => { setViewDate(new Date(year, idx, 1)); setViewMode("days"); }}
+                style={{
+                  padding: "8px 4px", fontSize: "12px", border: "none", borderRadius: "4px", cursor: "pointer",
+                  backgroundColor: idx === month ? c.selBg : c.monthBg,
+                  color: idx === month ? c.selText : c.dayText,
+                }}
+              >
                 {mName.slice(0, 3)}
               </button>
             ))}
@@ -278,7 +465,16 @@ export default function PembelianPerSupplier() {
             {Array.from({ length: 12 }).map((_, idx) => {
               const yNum = yearRangeStart + idx;
               return (
-                <button key={yNum} type="button" onClick={() => { setViewDate(new Date(yNum, month, 1)); setViewMode("months"); }} style={{ padding: "8px 4px", fontSize: "12px", border: "none", borderRadius: "4px", cursor: "pointer", backgroundColor: yNum === year ? "#0284c7" : "#f1f5f9", color: yNum === year ? "#ffffff" : "#334155" }}>
+                <button
+                  key={yNum}
+                  type="button"
+                  onClick={() => { setViewDate(new Date(yNum, month, 1)); setViewMode("months"); }}
+                  style={{
+                    padding: "8px 4px", fontSize: "12px", border: "none", borderRadius: "4px", cursor: "pointer",
+                    backgroundColor: yNum === year ? c.selBg : c.monthBg,
+                    color: yNum === year ? c.selText : c.dayText,
+                  }}
+                >
                   {yNum}
                 </button>
               );
@@ -287,7 +483,7 @@ export default function PembelianPerSupplier() {
         )}
 
         {/* Tombol Today */}
-        <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid #f1f5f9", textAlign: "center" }}>
+        <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: `1px solid ${c.divider}`, textAlign: "center" }}>
           <button
             type="button"
             onClick={(e) => {
@@ -299,7 +495,7 @@ export default function PembelianPerSupplier() {
             }}
             style={{
               background: "none", border: "none", fontSize: "13px", fontWeight: 600,
-              color: "#0284c7", cursor: "pointer", padding: "4px 8px", borderRadius: "4px",
+              color: c.accent, cursor: "pointer", padding: "4px 8px", borderRadius: "4px",
             }}
           >
             Hari ini
@@ -310,20 +506,40 @@ export default function PembelianPerSupplier() {
   };
 
   return (
-    <div style={{ backgroundColor: "#ffffff", minHeight: "100vh", fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif", color: "#1e293b", display: "flex", flexDirection: "column" }}>
+    <div
+      className={isDark ? "ps-dark" : ""}
+      style={{
+        backgroundColor: t.pageBg,
+        minHeight: "100vh",
+        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+        color: t.text,
+        colorScheme: isDark ? "dark" : "light",
+        display: "flex",
+        flexDirection: "column",
+        transition: "background-color 0.3s ease, color 0.3s ease",
+      }}
+    >
       {/* Header Section */}
-      <header className="w-full px-6 pt-5 pb-3 flex items-center justify-between border-b border-transparent">
-        <div className="flex items-baseline gap-2">
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Pembelian per supplier</h1>
-          <span className="text-sm font-normal text-slate-500">(dalam IDR)</span>
+      <header style={{ width: "100%", padding: "20px 24px 12px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", boxSizing: "border-box" }}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
+          <h1 style={{ fontSize: "20px", fontWeight: 700, color: t.title, letterSpacing: "-0.01em", margin: 0 }}>Pembelian per supplier</h1>
+          <span style={{ fontSize: "14px", fontWeight: 400, color: t.muted }}>(dalam IDR)</span>
         </div>
-        <div className="inline-flex rounded-md shadow-sm border border-slate-300 overflow-hidden bg-white">
-          <button className="px-3.5 py-1.5 text-xs font-semibold text-[#4661E6] hover:bg-slate-50 transition-colors" type="button">
+        <div style={{ display: "inline-flex", borderRadius: "6px", boxShadow: "0 1px 2px rgba(0,0,0,0.05)", border: `1px solid ${t.btnBorder}`, overflow: "hidden", backgroundColor: t.btnBg }}>
+          <button
+            type="button"
+            style={{ padding: "6px 14px", fontSize: "12px", fontWeight: 600, color: t.btnText, background: "transparent", border: "none", cursor: "pointer", transition: "background-color 0.15s ease" }}
+            {...hoverBg("transparent", t.btnHover)}
+          >
             Beri masukan
           </button>
-          <div className="w-[1px] bg-slate-200" />
-          <button className="px-2 py-1.5 text-[#4661E6] hover:bg-slate-50 transition-colors flex items-center justify-center" type="button">
-            <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
+          <div style={{ width: "1px", backgroundColor: t.btnBorder }} />
+          <button
+            type="button"
+            style={{ padding: "6px 8px", color: t.btnText, background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "background-color 0.15s ease" }}
+            {...hoverBg("transparent", t.btnHover)}
+          >
+            <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20">
               <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
             </svg>
           </button>
@@ -331,92 +547,79 @@ export default function PembelianPerSupplier() {
       </header>
 
       {/* Filter Toolbar */}
-      <section className="w-full px-6 pt-3 pb-4">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div className="flex flex-wrap items-end gap-3.5">
+      <section style={{ width: "100%", padding: "12px 24px 16px 24px", boxSizing: "border-box" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", gap: "16px" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", gap: "14px" }}>
             {/* Field 1: Tanggal awal */}
-            <div className="flex flex-col gap-1.5" ref={startDatePickerRef}>
-              <label className="text-xs font-normal text-slate-700">Tanggal awal</label>
-              <div className="relative w-[150px]">
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }} ref={startDatePickerRef}>
+              <label style={mainLabelStyle}>Tanggal awal</label>
+              <div style={{ position: "relative", width: "150px" }}>
                 <input
                   type="text"
                   readOnly
                   value={startDate}
                   onClick={() => { setShowStartCalendar(!showStartCalendar); setShowEndCalendar(false); }}
-                  className="w-full h-[38px] pl-3 pr-8 text-xs font-normal text-slate-800 bg-white border border-slate-300 rounded-md focus:ring-1 focus:ring-[#4661E6] focus:border-[#4661E6] cursor-pointer"
+                  style={mainFieldStyle}
                 />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-slate-400">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <rect height="18" rx="2" ry="2" strokeWidth="2" width="18" x="3" y="4" />
-                    <line strokeWidth="2" x1="16" x2="16" y1="2" y2="6" />
-                    <line strokeWidth="2" x1="8" x2="8" y1="2" y2="6" />
-                    <line strokeWidth="2" x1="3" x2="21" y1="10" y2="10" />
-                  </svg>
-                </div>
+                <div style={iconWrap(t.icon)}>{renderCalIcon(16)}</div>
                 {showStartCalendar && renderCalendarPicker(startSelectedDate, setStartSelectedDate, startCalendarViewDate, setStartCalendarViewDate, startCalendarViewMode, setStartCalendarViewMode, startYearRangeStart, setStartYearRangeStart, () => setShowStartCalendar(false))}
               </div>
             </div>
 
             {/* Field 2: Tanggal akhir */}
-            <div className="flex flex-col gap-1.5" ref={endDatePickerRef}>
-              <label className="text-xs font-normal text-slate-700">Tanggal akhir</label>
-              <div className="relative w-[150px]">
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }} ref={endDatePickerRef}>
+              <label style={mainLabelStyle}>Tanggal akhir</label>
+              <div style={{ position: "relative", width: "150px" }}>
                 <input
                   type="text"
                   readOnly
                   value={endDate}
                   onClick={() => { setShowEndCalendar(!showEndCalendar); setShowStartCalendar(false); }}
-                  className="w-full h-[38px] pl-3 pr-8 text-xs font-normal text-slate-800 bg-white border border-slate-300 rounded-md focus:ring-1 focus:ring-[#4661E6] focus:border-[#4661E6] cursor-pointer"
+                  style={mainFieldStyle}
                 />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-slate-400">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <rect height="18" rx="2" ry="2" strokeWidth="2" width="18" x="3" y="4" />
-                    <line strokeWidth="2" x1="16" x2="16" y1="2" y2="6" />
-                    <line strokeWidth="2" x1="8" x2="8" y1="2" y2="6" />
-                    <line strokeWidth="2" x1="3" x2="21" y1="10" y2="10" />
-                  </svg>
-                </div>
+                <div style={iconWrap(t.icon)}>{renderCalIcon(16)}</div>
                 {showEndCalendar && renderCalendarPicker(endSelectedDate, setEndSelectedDate, endCalendarViewDate, setEndCalendarViewDate, endCalendarViewMode, setEndCalendarViewMode, endYearRangeStart, setEndYearRangeStart, () => setShowEndCalendar(false), true)}
               </div>
             </div>
 
             {/* Field 3: Periode */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-normal text-slate-700">Periode</label>
-              <div className="relative w-[140px]">
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <label style={mainLabelStyle}>Periode</label>
+              <div style={{ position: "relative", width: "140px" }}>
                 <select
                   value={periodePreset}
                   onChange={(e) => {
                     setPeriodePreset(e.target.value);
                     handleQuickPeriodSelect(e.target.value, setStartSelectedDate, setStartCalendarViewDate, setEndSelectedDate, setEndCalendarViewDate);
                   }}
-                  className="w-full h-[38px] pl-3 pr-8 text-xs font-normal text-slate-800 bg-white border border-slate-300 rounded-md appearance-none focus:ring-1 focus:ring-[#4661E6] focus:border-[#4661E6] cursor-pointer"
+                  style={{ ...mainFieldStyle, appearance: "none", WebkitAppearance: "none", MozAppearance: "none" }}
                 >
                   <option value="Hari ini">Hari ini</option>
                   <option value="Minggu ini">Minggu ini</option>
                   <option value="Bulan ini">Bulan ini</option>
                   <option value="Tahun ini">Tahun ini</option>
                 </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none text-slate-500">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-                  </svg>
-                </div>
+                <div style={iconWrap(t.iconMuted)}>{renderChevron(16)}</div>
               </div>
             </div>
 
             {/* Action: Tampilkan Button */}
-            <button className="h-[38px] px-5 text-xs font-medium text-white bg-[#4661E6] hover:bg-blue-700 rounded-md transition-colors shadow-sm flex items-center justify-center cursor-pointer" type="button">
+            <button
+              type="button"
+              style={{
+                height: "38px", padding: "0 20px", fontSize: "12px", fontWeight: 500,
+                color: t.accentText, backgroundColor: t.primary, borderRadius: "6px", border: "none",
+                cursor: "pointer", boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+                display: "flex", alignItems: "center", justifyContent: "center", transition: "background-color 0.15s ease",
+              }}
+              {...hoverBg(t.primary, t.primaryHover)}
+            >
               Tampilkan
             </button>
 
             {/* Action: Filter Outline Button */}
-            <button
-              onClick={openFilterDrawer}
-              className="h-[38px] px-3.5 text-xs font-medium text-[#4661E6] hover:bg-slate-50 border border-slate-300 rounded-md transition-colors flex items-center gap-2 cursor-pointer"
-              type="button"
-            >
-              <svg className="w-3.5 h-3.5 stroke-[#4661E6] fill-none" strokeWidth="2" viewBox="0 0 24 24">
+            <button type="button" onClick={openFilterDrawer} style={outlineBtnStyle} {...hoverBg(t.btnBg, t.btnHover)}>
+              <svg width="14" height="14" fill="none" stroke={t.btnText} strokeWidth="2" viewBox="0 0 24 24">
                 <path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               Filter
@@ -424,44 +627,54 @@ export default function PembelianPerSupplier() {
           </div>
 
           {/* Right Action Controls */}
-          <div className="flex flex-col items-end gap-2.5">
-            <div className="relative" ref={eksporDropdownRef}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "10px" }}>
+            <div style={{ position: "relative" }} ref={eksporDropdownRef}>
               <button
                 type="button"
                 onClick={() => setShowEksporDropdown(!showEksporDropdown)}
-                className="inline-flex items-center justify-between gap-2.5 px-3 py-1.5 bg-white border border-slate-300 rounded-md shadow-sm hover:bg-slate-50 transition-colors cursor-pointer"
-                style={{ color: "rgb(59, 102, 245)", minWidth: "96px" }}
+                style={{
+                  display: "inline-flex", alignItems: "center", justifyContent: "space-between", gap: "10px",
+                  padding: "6px 12px", minWidth: "96px", backgroundColor: t.btnBg, border: `1px solid ${t.btnBorder}`,
+                  borderRadius: "6px", boxShadow: "0 1px 2px rgba(0,0,0,0.05)", cursor: "pointer",
+                  transition: "background-color 0.15s ease",
+                }}
+                {...hoverBg(t.btnBg, t.btnHover)}
               >
-                <span className="text-xs font-semibold" style={{ color: "#3b66f5" }}>Ekspor</span>
-                <svg className="w-2.5 h-2.5 fill-current" style={{ color: "#3b66f5" }} viewBox="0 0 10 6">
+                <span style={{ fontSize: "12px", fontWeight: 600, color: t.btnText }}>Ekspor</span>
+                <svg width="10" height="10" viewBox="0 0 10 6" style={{ fill: t.btnText }}>
                   <path d="M0 0l5 5 5-5z" />
                 </svg>
               </button>
 
               {showEksporDropdown && (
-                <div className="absolute right-0 top-[calc(100%+4px)] z-50 w-44 bg-white border border-gray-200 rounded-[4px] shadow-lg py-1 text-[13px] text-gray-700">
-                  <button type="button" onClick={() => setShowEksporDropdown(false)} className="w-full text-left px-4 py-2 hover:bg-gray-100 border-none bg-transparent cursor-pointer">
-                    Export Excel (.xlsx)
-                  </button>
-                  <button type="button" onClick={() => setShowEksporDropdown(false)} className="w-full text-left px-4 py-2 hover:bg-gray-100 border-none bg-transparent cursor-pointer">
-                    Export PDF (.pdf)
-                  </button>
-                  <button type="button" onClick={() => setShowEksporDropdown(false)} className="w-full text-left px-4 py-2 hover:bg-gray-100 border-none bg-transparent cursor-pointer">
-                    Export CSV (.csv)
-                  </button>
+                <div style={{ ...ddPanelStyle, position: "absolute", right: 0, top: "calc(100% + 4px)", zIndex: 50, width: "176px" }}>
+                  {renderOption("Export Excel (.xlsx)", false, () => setShowEksporDropdown(false), "13px")}
+                  {renderOption("Export PDF (.pdf)", false, () => setShowEksporDropdown(false), "13px")}
+                  {renderOption("Export CSV (.csv)", false, () => setShowEksporDropdown(false), "13px")}
                 </div>
               )}
             </div>
 
-            <a className="inline-flex items-center gap-1.5 text-xs font-normal hover:underline mt-1" style={{ color: "rgb(59, 102, 245)" }} href="#">
-              <span className="relative inline-flex items-center justify-center flex-shrink-0 w-4 h-4">
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="#475569" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <a
+              href="#"
+              style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", fontWeight: 400, color: t.btnText, textDecoration: "none", marginTop: "4px" }}
+              onMouseEnter={(e) => (e.currentTarget.style.textDecoration = "underline")}
+              onMouseLeave={(e) => (e.currentTarget.style.textDecoration = "none")}
+            >
+              <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, width: "16px", height: "16px" }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={t.pdfIcon} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                   <polyline points="14 2 14 8 20 8" />
                   <line x1="16" y1="13" x2="8" y2="13" />
                   <line x1="16" y1="17" x2="8" y2="17" />
                 </svg>
-                <span className="absolute -left-1 top-1.5 flex items-center justify-center bg-red-600 text-white rounded-[2px] font-bold text-[8px] leading-none px-[1.5px] py-[0.5px] shadow-sm" style={{ transform: "scale(0.8)" }}>
+                <span
+                  style={{
+                    position: "absolute", left: "-4px", top: "6px", display: "flex", alignItems: "center", justifyContent: "center",
+                    backgroundColor: "#dc2626", color: "#ffffff", borderRadius: "2px", fontWeight: 700, fontSize: "8px",
+                    lineHeight: 1, padding: "0.5px 1.5px", boxShadow: "0 1px 2px rgba(0,0,0,0.2)", transform: "scale(0.8)",
+                  }}
+                >
                   PDF
                 </span>
               </span>
@@ -472,20 +685,120 @@ export default function PembelianPerSupplier() {
       </section>
 
       {/* Main Empty State Content */}
-      <main className="flex-1 flex flex-col items-center justify-center p-6 -mt-10">
-        <div className="flex flex-col items-center text-center max-w-md">
-          <div className="w-64 sm:w-72 md:w-80 flex items-center justify-center mb-6">
-            <img
-              alt="Grafik laporan"
-              className="w-full h-auto object-contain select-none pointer-events-none"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuDv3p1WNbxQbRDLiUMYGX8fvzHUTw4cW2PcQw-7AK5u-Wtc8upj4sOjnwx0odFeMJK1ux9U_iCxSNVyM2L3g3TotmYtPBTK2RYTNTkd-kGNDBy5L22FKZ7wKwwo_UZ1ofjhkSlb40JuQ-4dMXWW9E5A8GmrRHBTroe4ogh5tEj59Si_jkImohq8SCm3f4z3qf9fqbi-lPsPaEKcm7neGQ49alOB0MaeH1CDZDjiWkNiA8THXzpRFLJRVIQG3E8eEzDVew"
-            />
+      <main style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px", marginTop: "-40px" }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", maxWidth: "448px" }}>
+          {/* 3D Graphic Composition */}
+          <div
+            style={{
+              width: "224px",
+              height: "192px",
+              position: "relative",
+              marginBottom: "20px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              marginTop: "-100px",
+            }}
+          >
+            <svg
+              style={{ width: "100%", height: "100%" }}
+              fill="none"
+              viewBox="0 0 240 200"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <defs>
+                <linearGradient id="platGrad" x1="50" y1="130" x2="190" y2="175" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#edf4fc" />
+                  <stop offset="100%" stopColor="#dce9f8" />
+                </linearGradient>
+                <linearGradient id="donut1Grad" x1="20" y1="40" x2="100" y2="120" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#f687b3" />
+                  <stop offset="60%" stopColor="#e25d97" />
+                  <stop offset="100%" stopColor="#cc3e7f" />
+                </linearGradient>
+                <linearGradient id="donut2Grad" x1="160" y1="60" x2="220" y2="130" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#f687b3" />
+                  <stop offset="100%" stopColor="#db5792" />
+                </linearGradient>
+                <linearGradient id="barBlue" x1="95" y1="70" x2="125" y2="140" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#9aaee8" />
+                  <stop offset="100%" stopColor="#708be0" />
+                </linearGradient>
+                <linearGradient id="barTall" x1="120" y1="50" x2="145" y2="135" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#e9f0fc" />
+                  <stop offset="100%" stopColor="#ccd8f1" />
+                </linearGradient>
+                <linearGradient id="arrowGrad" x1="110" y1="130" x2="170" y2="70" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#ed5895" />
+                  <stop offset="100%" stopColor="#f673a9" />
+                </linearGradient>
+                <filter id="softShadow" x="-10%" y="-10%" width="130%" height="130%">
+                  <feDropShadow dx="0" dy="6" stdDeviation="6" floodColor="#a4b7d3" floodOpacity="0.25" />
+                </filter>
+              </defs>
+
+              {/* Shadow base beneath the platform */}
+              <ellipse cx="120" cy="165" rx="72" ry="18" fill="#d0dcf0" opacity="0.6" filter="url(#softShadow)" />
+
+              {/* Isometric Platform Top Base */}
+              <path d="M120 132 L185 152 L120 172 L55 152 Z" fill="url(#platGrad)" />
+              <path d="M55 152 L120 172 L120 177 L55 157 Z" fill="#c3d5ee" />
+              <path d="M120 172 L185 152 L185 157 L120 177 Z" fill="#b1c6e4" />
+
+              {/* Floating Pink Donut/Pie Chart - Left */}
+              <g transform="translate(18, 25)">
+                <ellipse cx="60" cy="60" rx="26" ry="34" fill="#be2e6f" transform="rotate(-25 60 60)" />
+                <ellipse cx="60" cy="56" rx="25" ry="33" fill="url(#donut1Grad)" transform="rotate(-25 60 56)" />
+                <ellipse cx="60" cy="56" rx="10" ry="15" fill="#fdf2f8" transform="rotate(-25 60 56)" />
+              </g>
+
+              {/* 3D Bar 1 - Front/Left Light White Column */}
+              <path d="M85 125 L98 120 L98 142 L85 147 Z" fill="#e2ebf7" />
+              <path d="M98 120 L108 124 L108 146 L98 142 Z" fill="#cbd7ec" />
+              <path d="M85 125 L98 120 L108 124 L95 129 Z" fill="#f4f8fe" />
+
+              {/* 3D Bar 2 - Blue Column (Medium) */}
+              <path d="M100 95 L116 88 L116 138 L100 144 Z" fill="url(#barBlue)" />
+              <path d="M116 88 L126 92 L126 142 L116 138 Z" fill="#5874cb" />
+              <path d="M100 95 L116 88 L126 92 L110 99 Z" fill="#b1c2f2" />
+
+              {/* 3D Bar 3 - Tallest Light Column */}
+              <path d="M118 70 L134 64 L134 135 L118 140 Z" fill="url(#barTall)" />
+              <path d="M134 64 L144 68 L144 138 L134 135 Z" fill="#b9cbed" />
+              <path d="M118 70 L134 64 L144 68 L128 74 Z" fill="#ffffff" />
+
+              {/* Upward Trending 3D Curved Arrow (Magenta/Pink) */}
+              <path
+                d="M102 140 C 114 132, 126 122, 140 102 C 146 92, 153 76, 160 68"
+                fill="none"
+                stroke="url(#arrowGrad)"
+                strokeWidth="12"
+                strokeLinecap="round"
+              />
+              <path d="M152 64 L168 62 L164 78 Z" fill="#ec4899" />
+              <path
+                d="M105 137 C 116 130, 126 120, 138 103 C 143 95, 148 83, 155 74"
+                fill="none"
+                stroke="#ff85bb"
+                strokeWidth="5"
+                strokeLinecap="round"
+                opacity="0.75"
+              />
+
+              {/* Floating Pink Donut/Pie Chart - Right */}
+              <g transform="translate(130, 48)">
+                <ellipse cx="48" cy="50" rx="19" ry="24" fill="#a8235f" transform="rotate(18 48 50)" />
+                <ellipse cx="48" cy="47" rx="18" ry="23" fill="url(#donut2Grad)" transform="rotate(18 48 47)" />
+                <ellipse cx="48" cy="47" rx="7" ry="10" fill="#fdf2f8" transform="rotate(18 48 47)" />
+              </g>
+            </svg>
           </div>
-          <h2 className="text-sm font-semibold text-slate-800 mb-1 tracking-tight">
+
+          <h2 style={{ fontSize: "14px", fontWeight: 600, color: t.title, margin: "0 0 4px 0", letterSpacing: "-0.01em" }}>
             Laporan akan muncul di sini
           </h2>
-          <p className="text-xs text-slate-500">
-            Pilih tanggal atau periode, lalu klik tombol <span className="font-semibold text-slate-700">Tampilkan</span>.
+          <p style={{ fontSize: "12px", color: t.muted, margin: 0 }}>
+            Pilih tanggal atau periode, lalu klik tombol <span style={{ fontWeight: 600, color: t.strong }}>Tampilkan</span>.
           </p>
         </div>
       </main>
@@ -498,7 +811,7 @@ export default function PembelianPerSupplier() {
             style={{
               position: "fixed",
               inset: 0,
-              backgroundColor: "rgba(15, 23, 42, 0.4)",
+              backgroundColor: t.overlay,
               transition: "opacity 0.3s ease",
               opacity: drawerOpen ? 1 : 0,
             }}
@@ -510,22 +823,24 @@ export default function PembelianPerSupplier() {
               width: "380px",
               maxWidth: "100%",
               height: "100%",
-              backgroundColor: "#ffffff",
+              backgroundColor: t.drawerBg,
+              borderLeft: isDark ? `1px solid ${t.panelBorder}` : "none",
               boxShadow: "-4px 0 24px rgba(0, 0, 0, 0.15)",
               display: "flex",
               flexDirection: "column",
               zIndex: 10000,
+              colorScheme: isDark ? "dark" : "light",
               transform: drawerOpen ? "translateX(0)" : "translateX(100%)",
               transition: "transform 0.3s ease",
             }}
           >
             {/* Drawer Header */}
-            <div style={{ padding: "18px 24px", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#1e293b", margin: 0 }}>Filter laporan</h2>
+            <div style={{ padding: "18px 24px", borderBottom: `1px solid ${t.drawerBorder}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <h2 style={{ fontSize: "16px", fontWeight: 700, color: t.title, margin: 0 }}>Filter laporan</h2>
               <button
                 type="button"
                 onClick={closeFilterDrawer}
-                style={{ background: "none", border: "none", color: "#64748b", cursor: "pointer", padding: "4px", display: "flex" }}
+                style={{ background: "none", border: "none", color: t.iconMuted, cursor: "pointer", padding: "4px", display: "flex" }}
               >
                 <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -537,44 +852,36 @@ export default function PembelianPerSupplier() {
             <div style={{ padding: "20px 24px", overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: "18px" }}>
               <div>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: "8px", marginBottom: "6px" }}>
-                  <label style={{ fontSize: "13px", fontWeight: 600, color: "#344054", flex: 1 }}>Tanggal awal</label>
-                  <label style={{ fontSize: "13px", fontWeight: 600, color: "#344054", flex: 1 }}>Tanggal akhir</label>
+                  <label style={{ ...drawerLabelStyle, flex: 1 }}>Tanggal awal</label>
+                  <label style={{ ...drawerLabelStyle, flex: 1 }}>Tanggal akhir</label>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                   <div style={{ flex: 1, position: "relative" }} ref={drawerStartDatePickerRef}>
-                    <div className="relative flex items-center">
+                    <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
                       <input
                         type="text"
                         readOnly
                         value={drawerStartDate}
                         onClick={() => { setShowDrawerStartCalendar(!showDrawerStartCalendar); setShowDrawerEndCalendar(false); }}
-                        style={{ width: "100%", height: "38px", padding: "0 30px 0 12px", fontSize: "13.5px", color: "#1e293b", backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px", cursor: "pointer", boxSizing: "border-box" }}
+                        style={{ ...drawerFieldStyle, padding: "0 30px 0 12px", color: t.fieldText, cursor: "pointer", outline: "none" }}
                       />
-                      <span className="absolute right-2.5 pointer-events-none text-gray-400 flex items-center">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.6" viewBox="0 0 24 24">
-                          <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </span>
+                      <span style={iconWrap(t.icon)}>{renderCalIcon(16)}</span>
                     </div>
                     {showDrawerStartCalendar && renderCalendarPicker(drawerStartSelectedDate, setDrawerStartSelectedDate, drawerStartCalendarViewDate, setDrawerStartCalendarViewDate, drawerStartCalendarViewMode, setDrawerStartCalendarViewMode, drawerStartYearRangeStart, setDrawerStartYearRangeStart, () => setShowDrawerStartCalendar(false))}
                   </div>
 
-                  <span style={{ color: "#64748b", fontWeight: 500 }}>-</span>
+                  <span style={{ color: t.muted, fontWeight: 500 }}>-</span>
 
                   <div style={{ flex: 1, position: "relative" }} ref={drawerEndDatePickerRef}>
-                    <div className="relative flex items-center">
+                    <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
                       <input
                         type="text"
                         readOnly
                         value={drawerEndDate}
                         onClick={() => { setShowDrawerEndCalendar(!showDrawerEndCalendar); setShowDrawerStartCalendar(false); }}
-                        style={{ width: "100%", height: "38px", padding: "0 30px 0 12px", fontSize: "13.5px", color: "#1e293b", backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px", cursor: "pointer", boxSizing: "border-box" }}
+                        style={{ ...drawerFieldStyle, padding: "0 30px 0 12px", color: t.fieldText, cursor: "pointer", outline: "none" }}
                       />
-                      <span className="absolute right-2.5 pointer-events-none text-gray-400 flex items-center">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.6" viewBox="0 0 24 24">
-                          <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </span>
+                      <span style={iconWrap(t.icon)}>{renderCalIcon(16)}</span>
                     </div>
                     {showDrawerEndCalendar && renderCalendarPicker(drawerEndSelectedDate, setDrawerEndSelectedDate, drawerEndCalendarViewDate, setDrawerEndCalendarViewDate, drawerEndCalendarViewMode, setDrawerEndCalendarViewMode, drawerEndYearRangeStart, setDrawerEndYearRangeStart, () => setShowDrawerEndCalendar(false), true)}
                   </div>
@@ -582,273 +889,105 @@ export default function PembelianPerSupplier() {
               </div>
 
               {/* Periode */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }} ref={drawerPeriodRef}>
-                <label style={{ fontSize: "13px", fontWeight: 600, color: "#344054" }}>Periode</label>
-                <div style={{ position: "relative" }}>
-                  <button
-                    type="button"
-                    onClick={() => setShowDrawerPeriodDropdown(!showDrawerPeriodDropdown)}
-                    style={{
-                      width: "100%", height: "38px", padding: "0 12px", fontSize: "13.5px", color: "#1e293b",
-                      backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px",
-                      textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer"
-                    }}
-                  >
-                    <span>{drawerPeriod || "Hari ini"}</span>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2"><polyline points="6 9 12 15 18 9" /></svg>
-                  </button>
-
-                  {showDrawerPeriodDropdown && (
-                    <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 100, backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: "4px 0" }}>
-                      {["Hari ini", "Kemarin", "Minggu ini", "Bulan ini", "Tahun ini"].map((item) => (
-                        <div
-                          key={item}
-                          onClick={() => {
-                            setDrawerPeriod(item);
-                            handleQuickPeriodSelect(item, setDrawerStartSelectedDate, setDrawerStartCalendarViewDate, setDrawerEndSelectedDate, setDrawerEndCalendarViewDate, setShowDrawerPeriodDropdown);
-                          }}
-                          style={{ padding: "8px 12px", fontSize: "13.5px", color: "#334155", cursor: "pointer" }}
-                        >
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
+              {renderDrawerSelect({
+                label: "Periode",
+                value: drawerPeriod,
+                placeholder: "Hari ini",
+                open: showDrawerPeriodDropdown,
+                setOpen: setShowDrawerPeriodDropdown,
+                options: ["Hari ini", "Kemarin", "Minggu ini", "Bulan ini", "Tahun ini"],
+                onPick: (item) => {
+                  setDrawerPeriod(item);
+                  handleQuickPeriodSelect(item, setDrawerStartSelectedDate, setDrawerStartCalendarViewDate, setDrawerEndSelectedDate, setDrawerEndCalendarViewDate, setShowDrawerPeriodDropdown);
+                },
+                refEl: drawerPeriodRef,
+              })}
 
               {/* Tipe transaksi */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }} ref={drawerTipeTransaksiRef}>
-                <label style={{ fontSize: "13px", fontWeight: 600, color: "#344054" }}>Tipe transaksi</label>
-                <div style={{ position: "relative" }}>
-                  <button
-                    type="button"
-                    onClick={() => setShowDrawerTipeTransaksiDropdown(!showDrawerTipeTransaksiDropdown)}
-                    style={{
-                      width: "100%", height: "38px", padding: "0 12px", fontSize: "13.5px", color: "#1e293b",
-                      backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px",
-                      textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer"
-                    }}
-                  >
-                    <span>{drawerTipeTransaksi || "Faktur pembelian"}</span>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2"><polyline points="6 9 12 15 18 9" /></svg>
-                  </button>
-
-                  {showDrawerTipeTransaksiDropdown && (
-                    <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 100, backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: "4px 0" }}>
-                      {["Faktur pembelian", "Pesanan pembelian", "Pengiriman pembelian", "Retur pembelian"].map((item) => (
-                        <div
-                          key={item}
-                          onClick={() => { setDrawerTipeTransaksi(item); setShowDrawerTipeTransaksiDropdown(false); }}
-                          style={{ padding: "8px 12px", fontSize: "13.5px", color: "#334155", cursor: "pointer" }}
-                        >
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
+              {renderDrawerSelect({
+                label: "Tipe transaksi",
+                value: drawerTipeTransaksi,
+                placeholder: "Faktur pembelian",
+                open: showDrawerTipeTransaksiDropdown,
+                setOpen: setShowDrawerTipeTransaksiDropdown,
+                options: ["Faktur pembelian", "Pesanan pembelian", "Pengiriman pembelian", "Retur pembelian"],
+                onPick: (item) => { setDrawerTipeTransaksi(item); setShowDrawerTipeTransaksiDropdown(false); },
+                refEl: drawerTipeTransaksiRef,
+              })}
 
               {/* Tag */}
               <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <label style={{ fontSize: "13px", fontWeight: 600, color: "#344054" }}>Tag</label>
+                <label style={drawerLabelStyle}>Tag</label>
                 <input
                   type="text"
                   placeholder="Pilih tag"
                   value={drawerTag}
                   onChange={(e) => setDrawerTag(e.target.value)}
-                  style={{
-                    width: "100%", height: "38px", padding: "0 12px", fontSize: "13.5px", color: "#1e293b",
-                    backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px", boxSizing: "border-box", outline: "none"
-                  }}
+                  style={{ ...drawerFieldStyle, color: t.fieldText, outline: "none" }}
                 />
                 <div style={{ display: "flex", gap: "20px", marginTop: "4px", alignItems: "center" }}>
-                  <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13.5px", color: "#334155" }}>
-                    <input
-                      type="radio"
-                      name="drawerTagMatch"
-                      value="Mencakup semua"
-                      checked={drawerTagMatch === "Mencakup semua"}
-                      onChange={() => setDrawerTagMatch("Mencakup semua")}
-                      style={{ accentColor: "#3b66f5", width: "16px", height: "16px", cursor: "pointer" }}
-                    />
-                    <span>Mencakup semua</span>
-                  </label>
-                  <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13.5px", color: "#334155" }}>
-                    <input
-                      type="radio"
-                      name="drawerTagMatch"
-                      value="Salah satu"
-                      checked={drawerTagMatch === "Salah satu"}
-                      onChange={() => setDrawerTagMatch("Salah satu")}
-                      style={{ accentColor: "#3b66f5", width: "16px", height: "16px", cursor: "pointer" }}
-                    />
-                    <span>Salah satu</span>
-                    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "14px", height: "14px", borderRadius: "50%", border: "1px solid #94a3b8", fontSize: "10px", color: "#64748b", fontWeight: 600, marginLeft: "2px" }}>i</span>
-                  </label>
+                  {renderRadio("drawerTagMatch", "Mencakup semua", drawerTagMatch === "Mencakup semua", () => setDrawerTagMatch("Mencakup semua"), "Mencakup semua")}
+                  {renderRadio("drawerTagMatch", "Salah satu", drawerTagMatch === "Salah satu", () => setDrawerTagMatch("Salah satu"), "Salah satu", true)}
                 </div>
               </div>
 
               {/* Supplier */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }} ref={drawerSupplierRef}>
-                <label style={{ fontSize: "13px", fontWeight: 600, color: "#344054" }}>Supplier</label>
-                <div style={{ position: "relative" }}>
-                  <button
-                    type="button"
-                    onClick={() => setShowDrawerSupplierDropdown(!showDrawerSupplierDropdown)}
-                    style={{
-                      width: "100%", height: "38px", padding: "0 12px", fontSize: "13.5px",
-                      color: drawerSupplier ? "#1e293b" : "#94a3b8",
-                      backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px",
-                      textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer"
-                    }}
-                  >
-                    <span>{drawerSupplier || "Pilih supplier"}</span>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2"><polyline points="6 9 12 15 18 9" /></svg>
-                  </button>
-
-                  {showDrawerSupplierDropdown && (
-                    <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 100, backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: "4px 0" }}>
-                      {["Semua Supplier", "PT Supplier Utama", "CV Bahan Baku", "PT Distribusi Abadi"].map((item) => (
-                        <div
-                          key={item}
-                          onClick={() => { setDrawerSupplier(item === "Semua Supplier" ? "" : item); setShowDrawerSupplierDropdown(false); }}
-                          style={{ padding: "8px 12px", fontSize: "13.5px", color: "#334155", cursor: "pointer" }}
-                        >
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
+              {renderDrawerSelect({
+                label: "Supplier",
+                value: drawerSupplier,
+                placeholder: "Pilih supplier",
+                open: showDrawerSupplierDropdown,
+                setOpen: setShowDrawerSupplierDropdown,
+                options: ["Semua Supplier", "PT Supplier Utama", "CV Bahan Baku", "PT Distribusi Abadi"],
+                onPick: (item) => { setDrawerSupplier(item === "Semua Supplier" ? "" : item); setShowDrawerSupplierDropdown(false); },
+                refEl: drawerSupplierRef,
+              })}
 
               {/* Kategori produk */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }} ref={drawerKategoriProdukRef}>
-                <label style={{ fontSize: "13px", fontWeight: 600, color: "#344054" }}>Kategori produk</label>
-                <div style={{ position: "relative" }}>
-                  <button
-                    type="button"
-                    onClick={() => setShowDrawerKategoriProdukDropdown(!showDrawerKategoriProdukDropdown)}
-                    style={{
-                      width: "100%", height: "38px", padding: "0 12px", fontSize: "13.5px",
-                      color: drawerKategoriProduk ? "#1e293b" : "#94a3b8",
-                      backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px",
-                      textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer"
-                    }}
-                  >
-                    <span>{drawerKategoriProduk || "Pilih kategori produk"}</span>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2"><polyline points="6 9 12 15 18 9" /></svg>
-                  </button>
-
-                  {showDrawerKategoriProdukDropdown && (
-                    <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 100, backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: "4px 0" }}>
-                      {["Semua Kategori", "Elektronik", "Bahan Kimia", "Suku Cadang", "Peralatan"].map((item) => (
-                        <div
-                          key={item}
-                          onClick={() => { setDrawerKategoriProduk(item === "Semua Kategori" ? "" : item); setShowDrawerKategoriProdukDropdown(false); }}
-                          style={{ padding: "8px 12px", fontSize: "13.5px", color: "#334155", cursor: "pointer" }}
-                        >
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <div style={{ display: "flex", gap: "20px", marginTop: "4px", alignItems: "center" }}>
-                  <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13.5px", color: "#334155" }}>
-                    <input
-                      type="radio"
-                      name="drawerKategoriProdukMatch"
-                      value="Mencakup semua"
-                      checked={drawerKategoriProdukMatch === "Mencakup semua"}
-                      onChange={() => setDrawerKategoriProdukMatch("Mencakup semua")}
-                      style={{ accentColor: "#3b66f5", width: "16px", height: "16px", cursor: "pointer" }}
-                    />
-                    <span>Mencakup semua</span>
-                  </label>
-                  <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13.5px", color: "#334155" }}>
-                    <input
-                      type="radio"
-                      name="drawerKategoriProdukMatch"
-                      value="Salah satu"
-                      checked={drawerKategoriProdukMatch === "Salah satu"}
-                      onChange={() => setDrawerKategoriProdukMatch("Salah satu")}
-                      style={{ accentColor: "#3b66f5", width: "16px", height: "16px", cursor: "pointer" }}
-                    />
-                    <span>Salah satu</span>
-                    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "14px", height: "14px", borderRadius: "50%", border: "1px solid #94a3b8", fontSize: "10px", color: "#64748b", fontWeight: 600, marginLeft: "2px" }}>i</span>
-                  </label>
-                </div>
-              </div>
+              {renderDrawerSelect({
+                label: "Kategori produk",
+                value: drawerKategoriProduk,
+                placeholder: "Pilih kategori produk",
+                open: showDrawerKategoriProdukDropdown,
+                setOpen: setShowDrawerKategoriProdukDropdown,
+                options: ["Semua Kategori", "Elektronik", "Bahan Kimia", "Suku Cadang", "Peralatan"],
+                onPick: (item) => { setDrawerKategoriProduk(item === "Semua Kategori" ? "" : item); setShowDrawerKategoriProdukDropdown(false); },
+                refEl: drawerKategoriProdukRef,
+                children: (
+                  <div style={{ display: "flex", gap: "20px", marginTop: "4px", alignItems: "center" }}>
+                    {renderRadio("drawerKategoriProdukMatch", "Mencakup semua", drawerKategoriProdukMatch === "Mencakup semua", () => setDrawerKategoriProdukMatch("Mencakup semua"), "Mencakup semua")}
+                    {renderRadio("drawerKategoriProdukMatch", "Salah satu", drawerKategoriProdukMatch === "Salah satu", () => setDrawerKategoriProdukMatch("Salah satu"), "Salah satu", true)}
+                  </div>
+                ),
+              })}
 
               {/* Urutkan berdasarkan */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }} ref={drawerUrutkanBerdasarkanRef}>
-                <label style={{ fontSize: "13px", fontWeight: 600, color: "#344054" }}>Urutkan berdasarkan</label>
-                <div style={{ position: "relative" }}>
-                  <button
-                    type="button"
-                    onClick={() => setShowDrawerUrutkanBerdasarkanDropdown(!showDrawerUrutkanBerdasarkanDropdown)}
-                    style={{
-                      width: "100%", height: "38px", padding: "0 12px", fontSize: "13.5px", color: "#1e293b",
-                      backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px",
-                      textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer"
-                    }}
-                  >
-                    <span>{drawerUrutkanBerdasarkan || "Supplier"}</span>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2"><polyline points="6 9 12 15 18 9" /></svg>
-                  </button>
-
-                  {showDrawerUrutkanBerdasarkanDropdown && (
-                    <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 100, backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "6px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: "4px 0" }}>
-                      {["Supplier", "Tgl. transaksi", "Total kuantitas", "Total pembelian"].map((item) => (
-                        <div
-                          key={item}
-                          onClick={() => { setDrawerUrutkanBerdasarkan(item); setShowDrawerUrutkanBerdasarkanDropdown(false); }}
-                          style={{ padding: "8px 12px", fontSize: "13.5px", color: "#334155", cursor: "pointer" }}
-                        >
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <div style={{ display: "flex", gap: "20px", marginTop: "4px" }}>
-                  <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13.5px", color: "#334155" }}>
-                    <input
-                      type="radio"
-                      name="drawerUrutanOrder"
-                      value="asc"
-                      checked={drawerUrutanOrder === "asc"}
-                      onChange={() => setDrawerUrutanOrder("asc")}
-                      style={{ accentColor: "#3b66f5", width: "16px", height: "16px", cursor: "pointer" }}
-                    />
-                    <span>Urutan naik</span>
-                  </label>
-                  <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13.5px", color: "#334155" }}>
-                    <input
-                      type="radio"
-                      name="drawerUrutanOrder"
-                      value="desc"
-                      checked={drawerUrutanOrder === "desc"}
-                      onChange={() => setDrawerUrutanOrder("desc")}
-                      style={{ accentColor: "#3b66f5", width: "16px", height: "16px", cursor: "pointer" }}
-                    />
-                    <span>Urutan turun</span>
-                  </label>
-                </div>
-              </div>
+              {renderDrawerSelect({
+                label: "Urutkan berdasarkan",
+                value: drawerUrutkanBerdasarkan,
+                placeholder: "Supplier",
+                open: showDrawerUrutkanBerdasarkanDropdown,
+                setOpen: setShowDrawerUrutkanBerdasarkanDropdown,
+                options: ["Supplier", "Tgl. transaksi", "Total kuantitas", "Total pembelian"],
+                onPick: (item) => { setDrawerUrutkanBerdasarkan(item); setShowDrawerUrutkanBerdasarkanDropdown(false); },
+                refEl: drawerUrutkanBerdasarkanRef,
+                children: (
+                  <div style={{ display: "flex", gap: "20px", marginTop: "4px" }}>
+                    {renderRadio("drawerUrutanOrder", "asc", drawerUrutanOrder === "asc", () => setDrawerUrutanOrder("asc"), "Urutan naik")}
+                    {renderRadio("drawerUrutanOrder", "desc", drawerUrutanOrder === "desc", () => setDrawerUrutanOrder("desc"), "Urutan turun")}
+                  </div>
+                ),
+              })}
             </div>
 
             {/* Drawer Footer Buttons */}
-            <div style={{ padding: "16px 24px", borderTop: "none", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ padding: "16px 24px", borderTop: `1px solid ${t.drawerBorder}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <button
                 type="button"
                 onClick={handleResetFilter}
-                style={{ fontSize: "13.5px", fontWeight: 500, color: "#3b66f5", backgroundColor: "transparent", border: "none", cursor: "pointer", padding: 0, display: "inline-flex", alignItems: "center", gap: "6px" }}
+                style={{ fontSize: "13.5px", fontWeight: 500, color: t.accent, backgroundColor: "transparent", border: "none", cursor: "pointer", padding: 0, display: "inline-flex", alignItems: "center", gap: "6px" }}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b66f5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={t.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
                 </svg>
                 <span>Reset filter</span>
@@ -858,7 +997,9 @@ export default function PembelianPerSupplier() {
                 <button
                   type="button"
                   onClick={closeFilterDrawer}
-                  style={{ padding: "8px 16px", fontSize: "13.5px", fontWeight: 600, color: "#64748b", backgroundColor: "transparent", border: "none", borderRadius: "6px", cursor: "pointer" }}
+                  style={{ padding: "8px 16px", fontSize: "13.5px", fontWeight: 600, color: t.ghostText, backgroundColor: "transparent", border: "none", borderRadius: "6px", cursor: "pointer" }}
+                  onMouseEnter={(e) => { if (isDark) e.currentTarget.style.color = "#E5B85C"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = t.ghostText; }}
                 >
                   Batalkan
                 </button>
@@ -869,7 +1010,13 @@ export default function PembelianPerSupplier() {
                     setEndDate(drawerEndDate);
                     closeFilterDrawer();
                   }}
-                  style={{ padding: "8px 24px", fontSize: "13.5px", fontWeight: 600, color: "#ffffff", backgroundColor: "#3b66f5", border: "none", borderRadius: "6px", cursor: "pointer" }}
+                  style={{
+                    padding: "8px 24px", fontSize: "13.5px", fontWeight: 600,
+                    color: t.accentText, backgroundColor: t.primary,
+                    border: "none", borderRadius: "6px", cursor: "pointer",
+                    transition: "background-color 0.15s ease",
+                  }}
+                  {...hoverBg(t.primary, t.primaryHover)}
                 >
                   Terapkan
                 </button>
@@ -878,6 +1025,10 @@ export default function PembelianPerSupplier() {
           </div>
         </div>
       )}
+
+      <style>{`
+        .ps-dark input::placeholder { color: #94a3b8; }
+      `}</style>
     </div>
   );
 }

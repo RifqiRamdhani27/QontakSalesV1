@@ -14,6 +14,18 @@ export default function PerubahanModal() {
     }
   };
 
+  const [themeMode, setThemeMode] = useState(() => localStorage.getItem("app_theme") || "light");
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+  const isDark = themeMode === "dark";
+
   // Start Date Calendar State (Top Bar)
   const startDatePickerRef = useRef(null);
   const [startSelectedDate, setStartSelectedDate] = useState(() => new Date(2026, 8, 16));
@@ -132,7 +144,7 @@ export default function PerubahanModal() {
   };
 
   const renderCalendarPopover = (viewDate, setViewDate, viewMode, setViewMode, yearRangeStart, setYearRangeStart, selectedDate, onSelectDate, alignRight = false) => (
-    <div style={{
+    <div className="pm-pop" style={{
       position: "absolute", top: "calc(100% + 8px)",
       ...(alignRight ? { right: 0 } : { left: 0 }),
       zIndex: 10000,
@@ -203,7 +215,7 @@ export default function PerubahanModal() {
   );
 
   return (
-    <div style={{
+    <div className={isDark ? "dash-dark pm-root" : "pm-root"} style={{
       margin: isFullscreen ? 0 : "-24px",
       minHeight: "100vh",
       backgroundColor: "#ffffff",
@@ -330,13 +342,15 @@ export default function PerubahanModal() {
               </div>
 
               {showPeriodeDropdown && (
-                <div style={{
-                  position: "absolute", top: "calc(100% + 8px)", left: 0,
-                  zIndex: 50, width: "180px", backgroundColor: "#ffffff",
-                  border: "1px solid #e2e8f0", borderRadius: "6px",
-                  boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)",
-                  padding: "4px 0", maxHeight: "220px", overflowY: "auto", userSelect: "none",
-                }}>
+                <div
+                  className="pm-dd"
+                  style={{
+                    position: "absolute", top: "calc(100% + 8px)", left: 0,
+                    zIndex: 50, width: "180px", backgroundColor: "#ffffff",
+                    border: "1px solid #e2e8f0", borderRadius: "6px",
+                    boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)",
+                    padding: "4px 0", maxHeight: "220px", overflowY: "auto", userSelect: "none",
+                  }}>
                   {PERIODE_OPTIONS.map((opt) => (
                     <div
                       key={opt}
@@ -363,6 +377,7 @@ export default function PerubahanModal() {
               {/* Filter Button */}
               <button
                 type="button"
+                className="pm-btn"
                 style={{
                   backgroundColor: "#226987",
                   color: "#ffffff",
@@ -409,6 +424,7 @@ export default function PerubahanModal() {
           <div style={{ position: "relative" }} ref={eksporRef}>
             <button
               type="button"
+              className="pm-btn"
               onClick={() => setShowEksporDropdown(p => !p)}
               style={{
                 display: "inline-flex", alignItems: "center", gap: "8px",
@@ -427,22 +443,23 @@ export default function PerubahanModal() {
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#226987")}
             >
               {/* Upload/Export Icon */}
-              <svg style={{ width: "16px", height: "16px" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg style={{ width: "16px", height: "16px" }} fill="none" stroke={isDark ? "#121212" : "#ffffff"} viewBox="0 0 24 24">
                 <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
               </svg>
               <span>Ekspor</span>
-              <svg style={{ width: "10px", height: "10px" }} fill="currentColor" viewBox="0 0 20 20">
+              <svg style={{ width: "10px", height: "10px" }} fill={isDark ? "#121212" : "#ffffff"} viewBox="0 0 20 20">
                 <path clipRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" fillRule="evenodd" />
               </svg>
             </button>
 
             {showEksporDropdown && (
-              <div style={{
-                position: "absolute", top: "42px", right: 0, zIndex: 50,
-                width: "150px", backgroundColor: "#ffffff",
-                border: "1px solid #e2e8f0", borderRadius: "6px",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: "4px 0",
-              }}>
+              <div
+                className="pm-dd" style={{
+                  position: "absolute", top: "42px", right: 0, zIndex: 50,
+                  width: "150px", backgroundColor: "#ffffff",
+                  border: "1px solid #e2e8f0", borderRadius: "6px",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: "4px 0",
+                }}>
                 {["Ekspor PDF", "Ekspor Excel (XLSX)", "Ekspor CSV"].map(opt => (
                   <div key={opt} onClick={() => setShowEksporDropdown(false)}
                     style={{ padding: "8px 14px", fontSize: "13px", color: "#334155", cursor: "pointer" }}
@@ -513,6 +530,7 @@ export default function PerubahanModal() {
             {/* CTA Button */}
             <button
               type="button"
+              className="pm-btn"
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -532,7 +550,7 @@ export default function PerubahanModal() {
               onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#1a546d")}
               onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#226987")}
             >
-              <svg style={{ width: "16px", height: "16px", strokeWidth: "3" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg style={{ width: "16px", height: "16px", strokeWidth: "3" }} fill="none" stroke={isDark ? "#121212" : "#ffffff"} viewBox="0 0 24 24">
                 <path d="M12 4v16m8-8H4" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               <span>Top Up Share Capital</span>
@@ -679,7 +697,7 @@ export default function PerubahanModal() {
                   </svg>
                 </div>
                 {showDrawerPeriodeDropdown && (
-                  <div style={{
+                  <div className="pm-dd" style={{
                     position: "absolute", top: "calc(100% + 4px)", left: 0, zIndex: 50,
                     width: "100%", backgroundColor: "#ffffff", border: "1px solid #e2e8f0",
                     borderRadius: "6px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: "4px 0", maxHeight: "180px", overflowY: "auto",
@@ -720,7 +738,7 @@ export default function PerubahanModal() {
                   </svg>
                 </div>
                 {showDrawerBandingkanDropdown && (
-                  <div style={{
+                  <div className="pm-dd" style={{
                     position: "absolute", top: "calc(100% + 4px)", left: 0, zIndex: 50,
                     width: "100%", backgroundColor: "#ffffff", border: "1px solid #e2e8f0",
                     borderRadius: "6px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: "4px 0",
@@ -768,6 +786,7 @@ export default function PerubahanModal() {
                 {/* Filter Button (Vibrant Green) */}
                 <button
                   type="button"
+                  className="pm-btn"
                   onClick={closeFilterDrawer}
                   style={{
                     flex: 1,
@@ -793,6 +812,53 @@ export default function PerubahanModal() {
           </aside>
         </div>
       )}
+      <style>{`
+  .dash-dark.pm-root { background-color: #121212 !important; color: #f1f5f9 !important; color-scheme: dark; }
+  .dash-dark h1, .dash-dark h2 { color: #ffffff !important; }
+  .dash-dark label { color: #cbd5e1 !important; }
+
+  /* Permukaan putih / abu inline -> gelap */
+  .dash-dark [style*="background-color: rgb(255, 255, 255)"] { background-color: #121212 !important; }
+  .dash-dark [style*="background-color: rgb(250, 251, 252)"] { background-color: #1a1a1a !important; }
+  .dash-dark [style*="background-color: rgb(248, 250, 252)"] { background-color: #1a1a1a !important; }
+
+  /* Border */
+  .dash-dark [style*="border-bottom: 1px solid"],
+  .dash-dark [style*="border: 1px solid"],
+  .dash-dark [style*="border-top: 1px solid"] { border-color: #634f27 !important; }
+  .dash-dark [style*="border: 1px solid rgb(34, 105, 135)"] { border-color: #E5B85C !important; }
+
+  /* Teks gelap -> terang */
+  .dash-dark [style*="color: rgb(15, 23, 42)"],
+  .dash-dark [style*="color: rgb(30, 41, 59)"],
+  .dash-dark [style*="color: rgb(51, 65, 85)"] { color: #f1f5f9 !important; }
+  .dash-dark [style*="color: rgb(71, 85, 105)"],
+  .dash-dark [style*="color: rgb(100, 116, 139)"] { color: #cbd5e1 !important; }
+  .dash-dark [style*="color: rgb(148, 163, 184)"] { color: #94a3b8 !important; }
+  .dash-dark [style*="color: rgb(203, 213, 225)"] { color: #94a3b8 !important; }
+
+  /* Teal -> emas */
+  .dash-dark [style*="color: rgb(34, 105, 135)"],
+  .dash-dark [style*="color: rgb(2, 132, 199)"] { color: #E5B85C !important; }
+
+  /* Tombol utama (teal / hijau) -> emas */
+  .dash-dark .pm-btn { background-color: #E5B85C !important; color: #121212 !important; }
+  .dash-dark .pm-btn:hover { background-color: #f0c978 !important; }
+
+  /* Dropdown & kalender */
+  .dash-dark .pm-dd, .dash-dark .pm-pop { background-color: #1e1e1e !important; border-color: #634f27 !important; }
+  .dash-dark .pm-dd div { color: #f1f5f9 !important; }
+  .dash-dark .pm-dd [style*="background-color: rgb(232, 244, 248)"] { background-color: rgba(229,184,92,0.2) !important; }
+  .dash-dark .pm-dd [style*="background-color: rgb(248, 250, 252)"] { background-color: #2d2d2d !important; }
+  .dash-dark .pm-pop button { color: #f1f5f9 !important; }
+  .dash-dark .pm-pop span { color: #94a3b8 !important; }
+  .dash-dark .pm-pop [style*="background-color: rgb(248, 250, 252)"] { background-color: #262626 !important; }
+  .dash-dark .pm-pop [style*="background-color: rgb(34, 105, 135)"] { background-color: #E5B85C !important; color: #121212 !important; }
+
+  /* Ikon & backdrop */
+  .dash-dark svg { color: #cbd5e1; }
+  .dash-dark [style*="rgba(15, 23, 42, 0.25)"] { background-color: rgba(0,0,0,0.7) !important; }
+`}</style>
     </div>
   );
 }

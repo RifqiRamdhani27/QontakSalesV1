@@ -14,6 +14,45 @@ export default function NeracaSaldo() {
     }
   };
 
+  const [themeMode, setThemeMode] = useState(() => localStorage.getItem("app_theme") || "light");
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+  const isDark = themeMode === "dark";
+  const illu = isDark
+    ? {
+      sheetBg: "linear-gradient(135deg, #2b2b2b 0%, #1f1f1f 50%, #161616 100%)",
+      sheetShadow: "0 12px 32px -6px rgba(229,184,92,0.28), inset 0 0 0 1px rgba(229,184,92,0.25)",
+      foldBg: "linear-gradient(225deg, rgba(229,184,92,0.35) 0%, transparent 100%)",
+      ringBg: "linear-gradient(180deg, #4a4130 0%, #2a2418 50%, #17140d 100%)",
+      ringShadow: "0 14px 34px -4px rgba(229,184,92,0.38), inset 0 0 0 1px rgba(229,184,92,0.5)",
+      lensBg: "linear-gradient(180deg, rgba(229,184,92,0.18) 0%, rgba(229,184,92,0.05) 100%)",
+      lensRing: "inset 0 0 0 1px rgba(229,184,92,0.25)",
+      glare: "rgba(255,255,255,0.16)",
+      handleBg: "linear-gradient(180deg, #f0c978 0%, #E5B85C 50%, #b8862b 100%)",
+      handleShadow: "0 4px 12px rgba(229,184,92,0.4), inset 0 1px 0 rgba(255,255,255,0.4)",
+      xShadow: "0 5px 18px rgba(244,63,94,0.55), inset 0 0 0 1px rgba(255,255,255,0.35)",
+    }
+    : {
+      sheetBg: "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%)",
+      sheetShadow: "0 12px 28px -6px rgba(148, 163, 184, 0.45), inset 0 0 0 1px rgba(255,255,255,0.8)",
+      foldBg: "linear-gradient(225deg, rgba(255, 255, 255, 0.9) 0%, transparent 100%)",
+      ringBg: "linear-gradient(180deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%)",
+      ringShadow: "0 14px 28px -4px rgba(99, 102, 241, 0.22), inset 0 0 0 1px #ffffff",
+      lensBg: "linear-gradient(180deg, rgba(240, 244, 255, 0.8) 0%, rgba(219, 234, 254, 0.7) 100%)",
+      lensRing: "inset 0 0 0 1px rgba(255,255,255,0.6)",
+      glare: "rgba(255, 255, 255, 0.6)",
+      handleBg: "linear-gradient(180deg, #818cf8 0%, #6366f1 50%, #4f46e5 100%)",
+      handleShadow: "0 4px 6px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.4)",
+      xShadow: "0 5px 12px rgba(244, 63, 94, 0.4), inset 0 0 0 1px rgba(255,255,255,0.5)",
+    };
+
   // Top Bar Start Date Calendar State
   const startDatePickerRef = useRef(null);
   const [startSelectedDate, setStartSelectedDate] = useState(() => new Date(2026, 8, 16));
@@ -87,7 +126,7 @@ export default function NeracaSaldo() {
   const renderCalendarPopover = (
     viewDate, setViewDate, viewMode, setViewMode, yearRangeStart, setYearRangeStart, selectedDate, onSelectDate, alignRight = false
   ) => (
-    <div style={{
+    <div className="ns-pop" style={{
       position: "absolute", top: "calc(100% + 4px)",
       ...(alignRight ? { right: 0 } : { left: 0 }),
       zIndex: 1000,
@@ -151,15 +190,17 @@ export default function NeracaSaldo() {
   const PERIODE_OPTIONS = ["Hari ini", "Minggu ini", "Bulan ini", "Tahun ini"];
 
   return (
-    <div style={{
-      margin: isFullscreen ? 0 : "-24px",
-      minHeight: "100vh",
-      backgroundColor: "#ffffff",
-      fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-      color: "#1e293b",
-      display: "flex",
-      flexDirection: "column",
-    }}>
+    <div
+      className={isDark ? "dash-dark ns-root" : "ns-root"}
+      style={{
+        margin: isFullscreen ? 0 : "-24px",
+        minHeight: "100vh",
+        backgroundColor: "#ffffff",
+        fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+        color: "#1e293b",
+        display: "flex",
+        flexDirection: "column",
+      }}>
       {/* Page Header */}
       <div style={{
         display: "flex",
@@ -219,7 +260,7 @@ export default function NeracaSaldo() {
           </div>
 
           {showFeedbackDropdown && (
-            <div style={{
+            <div className="ns-dd" style={{
               position: "absolute", top: "38px", right: 0, zIndex: 50,
               width: "160px", backgroundColor: "#ffffff", border: "1px solid #cbd5e1",
               borderRadius: "6px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: "4px 0",
@@ -333,7 +374,7 @@ export default function NeracaSaldo() {
                 </svg>
               </div>
               {showPeriodeDropdown && (
-                <div style={{
+                <div className="ns-dd" style={{
                   position: "absolute", top: "calc(100% + 4px)", left: 0, zIndex: 1000,
                   width: "150px", backgroundColor: "#ffffff", border: "1px solid #cbd5e1",
                   borderRadius: "4px", boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
@@ -361,6 +402,7 @@ export default function NeracaSaldo() {
             {/* Filter Button */}
             <button
               type="button"
+              className="ns-btn"
               style={{
                 height: "36px", padding: "0 16px", backgroundColor: "#4a58cf",
                 color: "#ffffff", fontSize: "13px", fontWeight: 500, border: "none",
@@ -427,7 +469,7 @@ export default function NeracaSaldo() {
                   </svg>
                 </button>
                 {showEksporDropdown && (
-                  <div style={{
+                  <div className="ns-dd" style={{
                     position: "absolute", top: "40px", right: 0, zIndex: 50,
                     width: "140px", backgroundColor: "#ffffff", border: "1px solid #cbd5e1",
                     borderRadius: "6px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: "4px 0",
@@ -513,39 +555,40 @@ export default function NeracaSaldo() {
           padding: "32px 16px 80px 16px", userSelect: "none",
         }}>
           {/* 3D Style Illustration */}
+          {/* 3D Style Illustration */}
           <div style={{ position: "relative", width: "190px", height: "175px", marginBottom: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}>
             {/* Tilted Document Sheet */}
             <div style={{
               position: "absolute", width: "122px", height: "142px",
-              background: "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%)",
-              borderRadius: "16px", boxShadow: "0 12px 28px -6px rgba(148, 163, 184, 0.45)",
-              transform: "rotate(-7deg) translateY(4px)", border: "1px solid rgba(255, 255, 255, 0.8)",
+              background: illu.sheetBg,
+              borderRadius: "16px", boxShadow: illu.sheetShadow,
+              transform: "rotate(-7deg) translateY(4px)",
             }}>
               <div style={{
                 position: "absolute", top: 0, right: 0, width: "24px", height: "24px",
-                background: "linear-gradient(225deg, rgba(255, 255, 255, 0.9) 0%, transparent 100%)",
+                background: illu.foldBg,
                 borderTopRightRadius: "16px",
               }} />
             </div>
 
-            {/* Magnifying Glass with Red Circle & White X */}
+            {/* Magnifying Glass */}
             <div style={{ position: "relative", zIndex: 10, transform: "translateX(12px) translateY(-4px)" }}>
               <div style={{
                 position: "relative", width: "86px", height: "86px", borderRadius: "50%",
-                background: "linear-gradient(180deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%)",
-                padding: "6px", boxShadow: "0 14px 28px -4px rgba(99, 102, 241, 0.22)",
-                border: "1px solid #ffffff", display: "flex", alignItems: "center", justifyContent: "center",
+                background: illu.ringBg,
+                padding: "6px", boxShadow: illu.ringShadow,
+                display: "flex", alignItems: "center", justifyContent: "center",
               }}>
                 <div style={{
                   width: "100%", height: "100%", borderRadius: "50%",
-                  background: "linear-gradient(180deg, rgba(240, 244, 255, 0.8) 0%, rgba(219, 234, 254, 0.7) 100%)",
+                  background: illu.lensBg, boxShadow: illu.lensRing,
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  position: "relative", overflow: "hidden", border: "1px solid rgba(255, 255, 255, 0.6)",
+                  position: "relative", overflow: "hidden",
                 }}>
                   {/* Lens Glare */}
                   <div style={{
                     position: "absolute", top: "-12px", left: "-12px", width: "40px", height: "40px",
-                    backgroundColor: "rgba(255, 255, 255, 0.6)", borderRadius: "50%", filter: "blur(2px)",
+                    backgroundColor: illu.glare, borderRadius: "50%", filter: "blur(2px)",
                     transform: "rotate(45deg)",
                   }} />
 
@@ -554,20 +597,19 @@ export default function NeracaSaldo() {
                     position: "relative", zIndex: 10, width: "48px", height: "48px", borderRadius: "50%",
                     background: "linear-gradient(45deg, #f43f5e 0%, #fb7185 50%, #fda4af 100%)",
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    boxShadow: "0 5px 12px rgba(244, 63, 94, 0.4)", border: "1px solid rgba(255, 255, 255, 0.5)",
+                    boxShadow: illu.xShadow,
                   }}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={{ color: "#ffffff", filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.2))" }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#ffffff" style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.2))" }}>
                       <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
                     </svg>
                   </div>
                 </div>
 
-                {/* 3D Handle */}
+                {/* Handle */}
                 <div style={{
                   position: "absolute", bottom: "-24px", right: "-20px", width: "14px", height: "34px",
-                  background: "linear-gradient(180deg, #818cf8 0%, #6366f1 50%, #4f46e5 100%)",
-                  borderRadius: "9999px", transform: "rotate(-45deg)", boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-                  borderTop: "1px solid rgba(255, 255, 255, 0.4)",
+                  background: illu.handleBg,
+                  borderRadius: "9999px", transform: "rotate(-45deg)", boxShadow: illu.handleShadow,
                 }} />
               </div>
             </div>
@@ -582,6 +624,48 @@ export default function NeracaSaldo() {
           </p>
         </div>
       </div>
+      <style>{`
+  .dash-dark.ns-root { background-color: #121212 !important; color: #f1f5f9 !important; color-scheme: dark; }
+  .dash-dark h1, .dash-dark h2 { color: #ffffff !important; }
+  .dash-dark label { color: #cbd5e1 !important; }
+
+  /* Permukaan putih / abu inline -> gelap */
+  .dash-dark [style*="background-color: rgb(255, 255, 255)"] { background-color: #121212 !important; }
+  .dash-dark [style*="background-color: rgb(248, 250, 252)"] { background-color: #1a1a1a !important; }
+
+  /* Border */
+  .dash-dark [style*="border: 1px solid"],
+  .dash-dark [style*="border-top: 1px solid"] { border-color: #634f27 !important; }
+  .dash-dark [style*="background-color: rgb(207, 214, 228)"] { background-color: #634f27 !important; }
+
+  /* Teks gelap -> terang */
+  .dash-dark [style*="color: rgb(30, 41, 59)"],
+  .dash-dark [style*="color: rgb(51, 65, 85)"] { color: #f1f5f9 !important; }
+  .dash-dark [style*="color: rgb(100, 116, 139)"] { color: #cbd5e1 !important; }
+  .dash-dark [style*="color: rgb(148, 163, 184)"] { color: #94a3b8 !important; }
+
+  /* Biru -> emas */
+  .dash-dark [style*="color: rgb(59, 102, 245)"],
+  .dash-dark [style*="color: rgb(79, 103, 201)"] { color: #E5B85C !important; }
+  .dash-dark svg[fill="#3b66f5"] { fill: #E5B85C; }
+  .dash-dark svg[stroke="#94a3b8"],
+  .dash-dark svg[stroke="#64748b"] { stroke: #cbd5e1; }
+  .dash-dark button[title] { color: #cbd5e1 !important; }
+
+  /* Tombol utama emas */
+  .dash-dark .ns-btn { background-color: #E5B85C !important; color: #121212 !important; }
+  .dash-dark .ns-btn:hover { background-color: #f0c978 !important; }
+
+  /* Dropdown & kalender */
+  .dash-dark .ns-dd, .dash-dark .ns-pop { background-color: #1e1e1e !important; border-color: #634f27 !important; }
+  .dash-dark .ns-dd div { color: #f1f5f9 !important; }
+  .dash-dark .ns-dd [style*="background-color: rgb(239, 246, 255)"] { background-color: rgba(229,184,92,0.2) !important; }
+  .dash-dark .ns-dd [style*="background-color: rgb(248, 250, 252)"] { background-color: #2d2d2d !important; }
+  .dash-dark .ns-pop button { color: #f1f5f9 !important; }
+  .dash-dark .ns-pop span { color: #94a3b8 !important; }
+  .dash-dark .ns-pop [style*="background-color: rgb(248, 250, 252)"] { background-color: #262626 !important; }
+  .dash-dark .ns-pop [style*="background-color: rgb(79, 103, 201)"] { background-color: #E5B85C !important; color: #121212 !important; }
+`}</style>
     </div>
   );
 }
