@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   CaretDown,
   Check,
@@ -9,7 +9,8 @@ import {
   X,
 } from "@phosphor-icons/react";
 import Pagination from "@/components/ui/Pagination";
-import PopoverSelect from "@/components/ui/PopoverSelect";
+import PopoverSelect, { useOutsideClose } from "@/components/ui/PopoverSelect";
+import { DropdownPanel } from "@/components/ui/PopoverSelect";
 import MultiSelect from "@/components/ui/MultiSelect";
 import {
   tableWrapper,
@@ -37,34 +38,15 @@ import {
   approvalTransactionTypes,
   approvalApproverTypes,
   approvalCriteriaOptions,
-  dummyApprovalRules,
-  dummyApprovalChangelogs,
-  dummyCustomers,
+  ruleLabel,
 } from "@/data/ruleData";
-import { dummyUsers } from "@/data/dummy";
+import { useApprovalRules } from "@/services/useSetting";
 
 const PAGE_SIZE = 5;
 const MAX_APPROVAL_STEPS = 4;
 const RULE_NAME_MAX = 60;
 const DESCRIPTION_MAX = 200;
 
-function useOutsideClose() {
-  const ref = useRef(null);
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    const handleClick = (event) => {
-      if (ref.current && !ref.current.contains(event.target)) {
-        setOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
-
-  return { ref, open, setOpen };
-}
 
 const formatAmount = (value) =>
   new Intl.NumberFormat("id-ID", {
@@ -92,20 +74,20 @@ const displayName = (username) =>
   username ? titleCase(String(username).replace(/\./g, " ")) : "";
 
 function productScopeLabel(type) {
-  if (type === "Product conversion") return "Product conversion in";
-  if (type === "Warehouse transfer") return "Warehouse transfer from";
-  if (type === "Stock adjustment") return "Adjustment category";
-  return "Warehouse";
+  if (type === "Product conversion") return "Konversi produk di";
+  if (type === "Warehouse transfer") return "Transfer gudang dari";
+  if (type === "Stock adjustment") return "Kategori penyesuaian";
+  return "Gudang";
 }
 
 function productScopeAllLabel(type) {
-  if (type === "Stock adjustment") return "All adjustment categories";
-  return "All warehouses";
+  if (type === "Stock adjustment") return "Semua kategori penyesuaian";
+  return "Semua gudang";
 }
 
 function productScopeSomeLabel(type) {
-  if (type === "Stock adjustment") return "Some adjustment categories";
-  return "Some warehouses";
+  if (type === "Stock adjustment") return "Kategori penyesuaian tertentu";
+  return "Gudang tertentu";
 }
 
 function TransactionTypeSelect({
@@ -121,16 +103,22 @@ function TransactionTypeSelect({
   return (
     <div className="flex flex-col gap-2.5">
       <PopoverSelect
+        floating
         value={group}
-        placeholder="Select transaction type"
+        getOptionLabel={ruleLabel}
+        emptyText="Tidak ada pilihan"
+        placeholder="Pilih jenis transaksi"
         groups={[{ label: "", options: groupOptions }]}
         onSelect={onGroupChange}
       />
       {group && subOptions.length > 0 && (
         <PopoverSelect
+          floating
           value={type}
-          placeholder="Select transaction type"
-          groups={[{ label: group, options: subOptions }]}
+          getOptionLabel={ruleLabel}
+          emptyText="Tidak ada pilihan"
+          placeholder="Pilih jenis transaksi"
+          groups={[{ label: ruleLabel(group), options: subOptions }]}
           onSelect={onTypeChange}
         />
       )}
@@ -138,7 +126,7 @@ function TransactionTypeSelect({
   );
 }
 
-function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
+function ApprovalRuleForm({ initialRule, users, customers, onSubmit, onClose }) {
   const [ruleName, setRuleName] = useState(initialRule?.ruleName || "");
   const [description, setDescription] = useState(initialRule?.description || "");
   const [transactionGroup, setTransactionGroup] = useState(
@@ -169,18 +157,13 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
   const [steps, setSteps] = useState(
     initialRule?.levels || [{ approverType: "All must approve", approvers: [] }]
   );
-  const [showCriteriaPopover, setShowCriteriaPopover] = useState(false);
-  const criteriaRef = useRef(null);
-
-  useEffect(() => {
-    const handleClick = (event) => {
-      if (criteriaRef.current && !criteriaRef.current.contains(event.target)) {
-        setShowCriteriaPopover(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
+  const {
+    ref: criteriaRef,
+    menuRef: criteriaMenuRef,
+    open: showCriteriaPopover,
+    setOpen: setShowCriteriaPopover,
+  } = useOutsideClose();
+  const criteriaButtonRef = useRef(null);
 
   const submit = (event) => {
     event.preventDefault();
@@ -218,19 +201,6 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
       )
     );
 
-  const toggleStepApprover = (index, user) =>
-    setSteps((current) =>
-      current.map((step, idx) => {
-        if (idx !== index) return step;
-        const exists = step.approvers.includes(user);
-        return {
-          ...step,
-          approvers: exists
-            ? step.approvers.filter((item) => item !== user)
-            : [...step.approvers, user],
-        };
-      })
-    );
 
   const addApproverToStep = (index) =>
     setSteps((current) =>
@@ -296,13 +266,13 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
     <form className={modalPanel} onSubmit={submit}>
       <div className={modalHeader}>
         <h3 className={modalTitle}>
-          {initialRule ? "Edit approval rule" : "Create approval rule"}
+          {initialRule ? "Ubah aturan persetujuan" : "Buat aturan persetujuan"}
         </h3>
         <button
           type="button"
           className={modalCloseButton}
           onClick={onClose}
-          aria-label="Close"
+          aria-label="Tutup"
         >
           <X size={20} />
         </button>
@@ -311,7 +281,7 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
       <div className="max-h-[calc(90vh-140px)] overflow-y-auto px-[22px] py-5">
         <div className="mb-5 rounded-lg border border-blue-100 bg-blue-50 p-3.5">
           <p className="m-0 mb-1.5 text-[13px] font-semibold text-blue-900">
-            New approval criteria activated. Need more information?
+            Kriteria persetujuan baru telah diaktifkan. Perlu informasi lebih lanjut?
           </p>
           <div className="flex flex-wrap gap-x-4 gap-y-1">
             <button
@@ -319,25 +289,25 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
               className="cursor-pointer border-0 bg-transparent p-0 text-[12px] font-medium text-brand hover:underline"
               onClick={() => addCriteria("maxReceivable")}
             >
-              Learn about maximum receivable
+              Pelajari batas maksimal piutang
             </button>
             <button
               type="button"
               className="cursor-pointer border-0 bg-transparent p-0 text-[12px] font-medium text-brand hover:underline"
               onClick={() => addCriteria("overdue")}
             >
-              Learn about overdue
+              Pelajari keterlambatan pembayaran
             </button>
           </div>
         </div>
 
         <div className="mb-5">
           <h4 className="m-0 mb-3 text-[15px] font-bold text-gray-900">
-            Rule information
+            Informasi aturan
           </h4>
           <div className={formGroup}>
             <label className={formLabel} htmlFor="approval_rule_name">
-              Rule name <span className="text-red-600">*</span>
+              Nama aturan <span className="text-red-600">*</span>
             </label>
             <input
               id="approval_rule_name"
@@ -354,7 +324,7 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
           </div>
           <div className={formGroup}>
             <label className={formLabel} htmlFor="approval_description">
-              Description
+              Deskripsi
             </label>
             <textarea
               id="approval_description"
@@ -370,7 +340,7 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
           </div>
           <div className={formGroup}>
             <label className={formLabel} htmlFor="approval_transaction_type">
-              Transaction type <span className="text-red-600">*</span>
+              Jenis transaksi <span className="text-red-600">*</span>
             </label>
             <TransactionTypeSelect
               group={transactionGroup}
@@ -418,7 +388,7 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
           )}
           <div className="mb-4">
             <span className={formLabel}>
-              Transaction created by <span className="text-red-600">*</span>
+              Transaksi dibuat oleh <span className="text-red-600">*</span>
             </span>
             <div className="flex flex-col gap-2.5">
               <label className="flex cursor-pointer select-none items-center gap-2.5 text-sm text-gray-900">
@@ -430,7 +400,7 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
                   checked={createdBy === "all"}
                   onChange={(event) => setCreatedBy(event.target.value)}
                 />
-                All users
+                Semua pengguna
               </label>
               <label className="flex cursor-pointer select-none items-center gap-2.5 text-sm text-gray-900">
                 <input
@@ -441,17 +411,20 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
                   checked={createdBy === "some"}
                   onChange={(event) => setCreatedBy(event.target.value)}
                 />
-                Some users
+                Pengguna tertentu
               </label>
             </div>
             {createdBy === "some" && (
               <div className="mt-3">
-                <span className={formLabel}>Select user</span>
+                <span className={formLabel}>Pilih pengguna</span>
                 <MultiSelect
+                  floating
                   selected={createdByUsers}
+                  emptyText="Belum ada pengguna"
+                  removeLabel="Hapus"
                   onToggle={toggleCreatedByUser}
-                  options={dummyUsers.map((user) => user.username)}
-                  placeholder="Select user"
+                  options={users.map((user) => user.username)}
+                  placeholder="Pilih pengguna"
                 />
               </div>
             )}
@@ -459,7 +432,7 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
           {transactionGroup === "Sales" && (
             <div>
               <span className={formLabel}>
-                Transaction created for <span className="text-red-600">*</span>
+                Transaksi dibuat untuk <span className="text-red-600">*</span>
               </span>
               <div className="flex flex-col gap-2.5">
                 <label className="flex cursor-pointer select-none items-center gap-2.5 text-sm text-gray-900">
@@ -471,7 +444,7 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
                     checked={createdFor === "all"}
                     onChange={(event) => setCreatedFor(event.target.value)}
                   />
-                  All customers
+                  Semua pelanggan
                 </label>
                 <label className="flex cursor-pointer select-none items-center gap-2.5 text-sm text-gray-900">
                   <input
@@ -482,17 +455,20 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
                     checked={createdFor === "some"}
                     onChange={(event) => setCreatedFor(event.target.value)}
                   />
-                  Some customers
+                  Pelanggan tertentu
                 </label>
               </div>
               {createdFor === "some" && (
                 <div className="mt-3">
-                  <span className={formLabel}>Select customer</span>
+                  <span className={formLabel}>Pilih pelanggan</span>
                   <MultiSelect
+                    floating
                     selected={createdForCustomers}
+                    emptyText="Belum ada pelanggan"
+                    removeLabel="Hapus"
                     onToggle={toggleCreatedForCustomer}
-                    options={dummyCustomers.map((customer) => customer.name)}
-                    placeholder="Select customer"
+                    options={customers.map((customer) => customer.name)}
+                    placeholder="Pilih pelanggan"
                   />
                 </div>
               )}
@@ -503,10 +479,10 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
         {transactionGroup !== "Products" && (
           <div className="mb-5 border-t border-gray-200 pt-5">
             <h4 className="m-0 mb-1 text-[15px] font-bold text-gray-900">
-              Approval criteria
+              Kriteria persetujuan
             </h4>
             <p className="m-0 mb-4 text-[13px] text-slate-500">
-              Define transaction conditions that require approval.
+              Tentukan kondisi transaksi yang memerlukan persetujuan.
             </p>
 
             {criteria.map((value, index) => {
@@ -518,7 +494,7 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
                 <div key={value} className="mt-3">
                   {index > 0 && (
                     <p className="m-0 mb-2 text-center text-[13px] font-medium text-slate-500">
-                      or
+                      atau
                     </p>
                   )}
                   <div className="rounded-lg border border-gray-200 bg-slate-50/60 p-4">
@@ -531,14 +507,14 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
                         className="inline-flex cursor-pointer items-center gap-1 text-[12px] font-semibold text-red-600 hover:text-red-700"
                         onClick={() => removeCriteria(value)}
                       >
-                        <Trash size={13} /> Remove
+                        <Trash size={13} /> Hapus
                       </button>
                     </div>
                     {value === "specificValue" ? (
                       <div className="flex flex-col gap-2">
                         <div className="flex items-center gap-2">
                           <span className="text-[13px] text-slate-600">
-                            More than
+                            Lebih dari
                           </span>
                           <span className="text-red-600">*</span>
                           <span className="text-[13px] font-medium text-gray-900">
@@ -554,11 +530,10 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
                           />
                         </div>
                         <p className="m-0 text-[12px] text-slate-500">
-                          Tip: Enter the smallest value if you want to create
-                          more than one rule for the same transaction type.
+                          Tips: Masukkan nilai terkecil jika Anda ingin membuat lebih dari satu aturan untuk jenis transaksi yang sama.
                         </p>
                         <p className="m-0 cursor-pointer text-[12px] font-medium text-brand hover:underline">
-                          View example
+                          Lihat contoh
                         </p>
                       </div>
                     ) : (
@@ -568,7 +543,7 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
                           <>
                             {" "}
                             <span className="whitespace-nowrap">
-                              More than <span className="text-red-600">*</span>
+                              Lebih dari <span className="text-red-600">*</span>
                             </span>
                             <input
                               type="text"
@@ -578,7 +553,7 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
                                 setOverdueDays(parseAmount(event.target.value))
                               }
                             />
-                            days
+                            hari
                           </>
                         )}
                         {value === "maxReceivable" && (
@@ -586,7 +561,7 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
                             type="button"
                             className="ml-1.5 cursor-pointer border-0 bg-transparent p-0 font-medium text-brand hover:underline"
                           >
-                            See how to enter receivable
+                            Lihat cara memasukkan piutang
                           </button>
                         )}
                       </p>
@@ -600,12 +575,21 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
               <button
                 type="button"
                 className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-dashed border-gray-300 bg-white px-3 py-2 text-[13px] font-semibold text-gray-700 transition-colors hover:bg-slate-50"
+                ref={criteriaButtonRef}
                 onClick={() => setShowCriteriaPopover((current) => !current)}
               >
-                <Plus size={14} /> Add criteria
+                <Plus size={14} /> Tambah kriteria
               </button>
               {showCriteriaPopover && (
-                <div className="absolute left-0 top-full z-30 mt-1 w-full max-w-[340px] overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+                <DropdownPanel
+                  rect={criteriaButtonRef.current?.getBoundingClientRect()}
+                  triggerRef={criteriaButtonRef}
+                  contentRef={criteriaMenuRef}
+                  onClose={() => setShowCriteriaPopover(false)}
+                  width={340}
+                  variant="settings"
+                  className="rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
+                >
                   {approvalCriteriaOptions
                     .filter((option) => !criteria.includes(option.value))
                     .map((option) => (
@@ -625,10 +609,10 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
                     criteria.includes(option.value)
                   ) && (
                     <p className="m-0 px-4 py-2.5 text-[12px] text-slate-400">
-                      All criteria have been added.
+                      Semua kriteria telah ditambahkan.
                     </p>
                   )}
-                </div>
+                </DropdownPanel>
               )}
             </div>
           </div>
@@ -636,14 +620,13 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
 
         <div className="mb-5 border-t border-gray-200 pt-5">
           <h4 className="m-0 mb-1 text-[15px] font-bold text-gray-900">
-            Approval steps
+            Tahapan persetujuan
           </h4>
           <p className="m-0 mb-1 text-[13px] text-slate-500">
-            Define approvers and how approval is given.
+            Tentukan penyetuju dan cara persetujuan diberikan.
           </p>
           <p className="m-0 mb-4 text-[12px] text-slate-500">
-            A user with the owner role can directly approve any transactions,
-            without going through the approval steps.
+            Pengguna dengan peran pemilik dapat langsung menyetujui transaksi tanpa melalui tahapan persetujuan.
           </p>
 
           {steps.map((step, index) => (
@@ -653,7 +636,7 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
             >
               <div className="mb-3 flex items-center justify-between">
                 <span className="text-[13px] font-bold text-gray-900">
-                  Approval step {index + 1}
+                  Tahap persetujuan {index + 1}
                 </span>
                 {steps.length > 1 && (
                   <button
@@ -661,13 +644,13 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
                     className="inline-flex cursor-pointer items-center gap-1 text-[12px] font-semibold text-red-600 hover:text-red-700"
                     onClick={() => removeStep(index)}
                   >
-                    <Trash size={13} /> Remove
+                    <Trash size={13} /> Hapus
                   </button>
                 )}
               </div>
               <div className={formGroup}>
                 <label className={formLabel} htmlFor={`approval_type_${index}`}>
-                  Approval type <span className="text-red-600">*</span>
+                  Jenis persetujuan <span className="text-red-600">*</span>
                 </label>
                 <select
                   id={`approval_type_${index}`}
@@ -680,19 +663,19 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
                 >
                   {approvalApproverTypes.map((option) => (
                     <option key={option} value={option}>
-                      {option}
+                      {ruleLabel(option)}
                     </option>
                   ))}
                 </select>
               </div>
               <div>
                 <span className={formLabel}>
-                  Approver <span className="text-red-600">*</span>
+                  Penyetuju <span className="text-red-600">*</span>
                 </span>
                 <div className="flex flex-col gap-2">
                   {step.approvers.length === 0 && (
                     <span className="text-[12px] text-slate-400">
-                      No approver selected
+                      Belum ada penyetuju dipilih
                     </span>
                   )}
                   {step.approvers.map((user, position) => (
@@ -702,10 +685,12 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
                     >
                       <div className="flex-1">
                         <PopoverSelect
+                          floating
                           value={user}
-                          placeholder="Select approver"
+                          emptyText="Belum ada pengguna"
+                          placeholder="Pilih penyetuju"
                           groups={[
-                            { label: "", options: dummyUsers.map((item) => item.username) },
+                            { label: "", options: users.map((item) => item.username) },
                           ]}
                           onSelect={(value) =>
                             setStepApprover(index, position, value)
@@ -716,7 +701,7 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
                         type="button"
                         className="cursor-pointer rounded-sm p-1 text-gray-400 hover:bg-slate-100 hover:text-gray-700"
                         onClick={() => removeStepApprover(index, position)}
-                        aria-label={`Remove approver ${position + 1}`}
+                        aria-label={`Hapus penyetuju ${position + 1}`}
                       >
                         <X size={13} weight="bold" />
                       </button>
@@ -727,7 +712,7 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
                     className="inline-flex w-fit cursor-pointer items-center gap-1.5 rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-[12px] font-semibold text-gray-700 transition-colors hover:bg-slate-50"
                     onClick={() => addApproverToStep(index)}
                   >
-                    <Plus size={13} /> Add approver
+                    <Plus size={13} /> Tambah penyetuju
                   </button>
                 </div>
               </div>
@@ -740,14 +725,14 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
               className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-dashed border-gray-300 bg-white px-3 py-2 text-[13px] font-semibold text-gray-700 transition-colors hover:bg-slate-50"
               onClick={addStep}
             >
-              <Plus size={14} /> Add approval step
+              <Plus size={14} /> Tambah tahap persetujuan
             </button>
           )}
         </div>
 
         <div className="border-t border-gray-200 pt-5">
           <h4 className="m-0 mb-3 text-[15px] font-bold text-gray-900">
-            Rule implementation
+            Penerapan aturan
           </h4>
           <label className="flex cursor-pointer select-none items-start gap-2.5 text-sm text-gray-900">
             <input
@@ -758,11 +743,9 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
               onChange={(event) => setApplyToDraft(event.target.checked)}
             />
             <span>
-              Apply this rule to draft transactions (awaiting approval)
+              Terapkan aturan ini pada draf transaksi yang menunggu persetujuan
               <span className="mt-1 block text-[12px] text-slate-500">
-                If this new rule has identical criteria (transaction type,
-                creator, and customer) as an ongoing rule, it will automatically
-                replace the ongoing rule once activated.
+                Jika kriteria aturan baru ini (jenis transaksi, pembuat, dan pelanggan) sama dengan aturan yang sedang berlaku, aturan baru akan menggantikannya secara otomatis saat diaktifkan.
               </span>
             </span>
           </label>
@@ -771,10 +754,10 @@ function ApprovalRuleForm({ initialRule, onSubmit, onClose }) {
 
       <div className={modalFooter}>
         <button type="button" className={btnModalCancel} onClick={onClose}>
-          Cancel
+          Batal
         </button>
         <button type="submit" className={btnModalSubmit}>
-          Save
+          Simpan
         </button>
       </div>
 
@@ -788,28 +771,28 @@ function DeleteApprovalModal({ onConfirm, onClose }) {
       <div className="w-full max-w-[420px] overflow-hidden rounded-xl bg-white shadow-[0_20px_50px_rgba(0,0,0,0.2)]">
         <div className="flex items-center justify-between border-b border-slate-100 px-[22px] py-4">
           <h3 className="m-0 text-base font-semibold text-gray-900">
-            Delete this rule?
+            Hapus aturan ini?
           </h3>
           <button
             type="button"
             className={modalCloseButton}
             onClick={onClose}
-            aria-label="Close"
+            aria-label="Tutup"
           >
             <X size={20} />
           </button>
         </div>
         <div className="px-[22px] py-5">
           <p className="m-0 text-sm leading-relaxed text-slate-600">
-            The deleted approval rule cannot be restored.
+            Aturan persetujuan yang dihapus tidak dapat dipulihkan.
           </p>
         </div>
         <div className={modalFooter}>
           <button type="button" className={btnModalCancel} onClick={onClose}>
-            Cancel
+            Batal
           </button>
           <button type="button" className={btnModalDelete} onClick={onConfirm}>
-            Delete
+            Hapus
           </button>
         </div>
       </div>
@@ -817,25 +800,27 @@ function DeleteApprovalModal({ onConfirm, onClose }) {
   );
 }
 
-function ChangelogModal({ onClose }) {
+function ChangelogModal({ rule, onClose }) {
   const [currentPage, setCurrentPage] = useState(1);
-  const logs = dummyApprovalChangelogs[4] || [];
-  const totalPages = Math.ceil(logs.length / PAGE_SIZE);
+  const [pageSize, setPageSize] = useState(PAGE_SIZE);
+  const logs = rule.changelog || [];
+  const totalPages = Math.max(1, Math.ceil(logs.length / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
   const pageLogs = logs.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE
+    (safePage - 1) * pageSize,
+    safePage * pageSize
   );
 
   return (
     <div className={modalOverlay}>
       <div className="w-full max-w-[640px] overflow-hidden rounded-xl bg-white shadow-[0_20px_50px_rgba(0,0,0,0.2)]">
         <div className={modalHeader}>
-          <h3 className={modalTitle}>Changelog</h3>
+          <h3 className={modalTitle}>Riwayat perubahan</h3>
           <button
             type="button"
             className={modalCloseButton}
             onClick={onClose}
-            aria-label="Close"
+            aria-label="Tutup"
           >
             <X size={20} />
           </button>
@@ -846,10 +831,10 @@ function ChangelogModal({ onClose }) {
               <table className={tableBase}>
                 <thead>
                   <tr>
-                    <th className={th}>Change time</th>
-                    <th className={th}>User</th>
-                    <th className={th}>Action</th>
-                    <th className={th}>Description</th>
+                    <th className={th}>Waktu perubahan</th>
+                    <th className={th}>Pengguna</th>
+                    <th className={th}>Tindakan</th>
+                    <th className={th}>Deskripsi</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -857,7 +842,7 @@ function ChangelogModal({ onClose }) {
                     <tr key={index} className={trHover}>
                       <td className={td}>{log.changeTime}</td>
                       <td className={td}>{log.user}</td>
-                      <td className={td}>{log.action}</td>
+                      <td className={td}>{ruleLabel(log.action)}</td>
                       <td className={td}>{log.description}</td>
                     </tr>
                   ))}
@@ -867,11 +852,15 @@ function ChangelogModal({ onClose }) {
           </div>
           <div className="mt-4">
             <Pagination
-              currentPage={currentPage}
+              currentPage={safePage}
               totalPages={totalPages}
               totalItems={logs.length}
-              pageSize={PAGE_SIZE}
+              pageSize={pageSize}
               onPageChange={setCurrentPage}
+              onPageSizeChange={(size) => {
+                setPageSize(size);
+                setCurrentPage(1);
+              }}
             />
           </div>
         </div>
@@ -880,27 +869,23 @@ function ChangelogModal({ onClose }) {
   );
 }
 
-function RuleDetailModal({ rule, onEdit, onDelete, onClose }) {
-  const { ref, open, setOpen } = useOutsideClose();
-  const [showAllUsers, setShowAllUsers] = useState(false);
-  const allUsersRef = useRef(null);
-
-  useEffect(() => {
-    const handleClick = (event) => {
-      if (allUsersRef.current && !allUsersRef.current.contains(event.target)) {
-        setShowAllUsers(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
+function RuleDetailModal({ rule, users, onEdit, onDelete, onClose }) {
+  const { ref, menuRef, open, setOpen } = useOutsideClose();
+  const actionTriggerRef = useRef(null);
+  const {
+    ref: allUsersRef,
+    menuRef: allUsersMenuRef,
+    open: showAllUsers,
+    setOpen: setShowAllUsers,
+  } = useOutsideClose();
+  const allUsersButtonRef = useRef(null);
 
   const criteriaRows = [
     ...(rule.criteria || []).includes("specificValue")
       ? [
           {
-            label: "Transaction exceeds specific value",
-            value: `More than Rp${formatAmount(getRuleAmount(rule))}`,
+            label: "Transaksi melebihi nilai tertentu",
+            value: `Lebih dari Rp${formatAmount(getRuleAmount(rule))}`,
           },
         ]
       : [],
@@ -915,7 +900,7 @@ function RuleDetailModal({ rule, onEdit, onDelete, onClose }) {
           label: option?.label || value,
           value:
             value === "overdue"
-              ? `${option?.description || "Overdue"} ${rule.overdueDays || 0} days`
+              ? `${option?.description || "Terlambat dibayar selama"} ${rule.overdueDays || 0} hari`
               : option?.description || value,
         };
       }),
@@ -931,12 +916,22 @@ function RuleDetailModal({ rule, onEdit, onDelete, onClose }) {
               <button
                 type="button"
                 className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-slate-50"
+                ref={actionTriggerRef}
                 onClick={() => setOpen((current) => !current)}
               >
-                Actions <CaretDown size={12} />
+                Tindakan <CaretDown size={12} />
               </button>
               {open && (
-                <div className="absolute right-0 top-full z-30 mt-1 w-40 overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+                <DropdownPanel
+                  rect={actionTriggerRef.current?.getBoundingClientRect()}
+                  triggerRef={actionTriggerRef}
+                  contentRef={menuRef}
+                  onClose={() => setOpen(false)}
+                  width={160}
+                  align="right"
+                  variant="settings"
+                  className="rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
+                >
                   <button
                     type="button"
                     className="flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-left text-[13px] text-gray-700 hover:bg-slate-50"
@@ -945,7 +940,7 @@ function RuleDetailModal({ rule, onEdit, onDelete, onClose }) {
                       onEdit(rule);
                     }}
                   >
-                    <PencilSimple size={14} /> Edit
+                    <PencilSimple size={14} /> Ubah
                   </button>
                   <button
                     type="button"
@@ -955,16 +950,16 @@ function RuleDetailModal({ rule, onEdit, onDelete, onClose }) {
                       onDelete(rule);
                     }}
                   >
-                    <Trash size={14} /> Delete
+                    <Trash size={14} /> Hapus
                   </button>
-                </div>
+                </DropdownPanel>
               )}
             </div>
             <button
               type="button"
               className={modalCloseButton}
               onClick={onClose}
-              aria-label="Close"
+              aria-label="Tutup"
             >
               <X size={20} />
             </button>
@@ -973,7 +968,7 @@ function RuleDetailModal({ rule, onEdit, onDelete, onClose }) {
 
         <div className="max-h-[60vh] overflow-y-auto px-[22px] py-5">
           <h4 className="m-0 mb-3 text-[15px] font-bold text-gray-900">
-            Rule information
+            Informasi aturan
           </h4>
           <div className="mb-5 overflow-hidden rounded-lg border border-gray-200">
             <div className={tableWrapper}>
@@ -981,30 +976,30 @@ function RuleDetailModal({ rule, onEdit, onDelete, onClose }) {
                 <tbody>
                   <tr>
                     <td className="w-[180px] bg-slate-50/60 font-medium text-gray-700">
-                      Rule name
+                      Nama aturan
                     </td>
                     <td className={td}>{rule.ruleName}</td>
                   </tr>
                   <tr>
                     <td className="bg-slate-50/60 font-medium text-gray-700">
-                      Description
+                      Deskripsi
                     </td>
                     <td className={td}>{rule.description}</td>
                   </tr>
                   <tr>
                     <td className="bg-slate-50/60 font-medium text-gray-700">
-                      Transaction type
+                      Jenis transaksi
                     </td>
-                    <td className={td}>{titleCase(rule.transactionType)}</td>
+                    <td className={td}>{titleCase(ruleLabel(rule.transactionType))}</td>
                   </tr>
                   <tr>
                     <td className="bg-slate-50/60 font-medium text-gray-700">
-                      Transaction created by
+                      Transaksi dibuat oleh
                     </td>
                     <td className={td}>
                       <div className="flex flex-wrap items-center gap-2">
                         {rule.createdBy === "all" ? (
-                          <span>All users.</span>
+                          <span>Semua pengguna.</span>
                         ) : (
                           (rule.createdByUsers || []).map((user) => (
                             <span
@@ -1019,13 +1014,22 @@ function RuleDetailModal({ rule, onEdit, onDelete, onClose }) {
                           <button
                             type="button"
                             className="cursor-pointer border-0 bg-transparent p-0 text-[13px] font-medium text-brand hover:underline"
+                            ref={allUsersButtonRef}
                             onClick={() => setShowAllUsers((current) => !current)}
                           >
-                            View all
+                            Lihat semua
                           </button>
                           {showAllUsers && (
-                            <div className="absolute left-0 top-full z-30 mt-1 w-[220px] overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
-                              {dummyUsers.map((user) => (
+                            <DropdownPanel
+                              rect={allUsersButtonRef.current?.getBoundingClientRect()}
+                              triggerRef={allUsersButtonRef}
+                              contentRef={allUsersMenuRef}
+                              onClose={() => setShowAllUsers(false)}
+                              width={220}
+                              variant="settings"
+                              className="rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
+                            >
+                              {users.map((user) => (
                                 <p
                                   key={user.id}
                                   className="m-0 cursor-pointer px-4 py-2 text-[13px] text-gray-700 hover:bg-slate-50"
@@ -1033,7 +1037,7 @@ function RuleDetailModal({ rule, onEdit, onDelete, onClose }) {
                                   {displayName(user.username)}
                                 </p>
                               ))}
-                            </div>
+                            </DropdownPanel>
                           )}
                         </div>
                       </div>
@@ -1041,11 +1045,11 @@ function RuleDetailModal({ rule, onEdit, onDelete, onClose }) {
                   </tr>
                   <tr>
                     <td className="bg-slate-50/60 font-medium text-gray-700">
-                      Transaction created for
+                      Transaksi dibuat untuk
                     </td>
                     <td className={td}>
                       {rule.createdFor === "all" ? (
-                        "All customers."
+                        "Semua pelanggan."
                       ) : (
                         <div className="flex flex-wrap items-center gap-2">
                           {(rule.createdForCustomers || []).map((customer) => (
@@ -1066,15 +1070,15 @@ function RuleDetailModal({ rule, onEdit, onDelete, onClose }) {
           </div>
 
           <h4 className="m-0 mb-3 text-[15px] font-bold text-gray-900">
-            Approval criteria
+            Kriteria persetujuan
           </h4>
           <p className="m-0 mb-3 text-[13px] text-slate-500">
-            Transaction conditions that require approval.
+            Kondisi transaksi yang memerlukan persetujuan.
           </p>
           {criteriaRows.length > 0 && (
             <>
               <p className="m-0 mb-2 text-[13px] font-medium text-slate-600">
-                Details
+                Rincian
               </p>
               <div className="mb-5 overflow-hidden rounded-lg border border-gray-200">
                 <div className={tableWrapper}>
@@ -1096,14 +1100,13 @@ function RuleDetailModal({ rule, onEdit, onDelete, onClose }) {
           )}
 
           <h4 className="m-0 mb-3 text-[15px] font-bold text-gray-900">
-            Approval steps
+            Tahapan persetujuan
           </h4>
           <p className="m-0 mb-3 text-[13px] text-slate-500">
-            Transaction conditions that require approval.
+            Kondisi transaksi yang memerlukan persetujuan.
           </p>
           <p className="m-0 mb-3 text-[12px] text-slate-500">
-            A user with Owner role can directly approve any transactions without
-            passing approval steps.
+            Pengguna dengan peran Pemilik dapat langsung menyetujui transaksi tanpa melalui tahapan persetujuan.
           </p>
           <div className="space-y-3">
             {(rule.levels || []).map((step, index) => (
@@ -1112,15 +1115,15 @@ function RuleDetailModal({ rule, onEdit, onDelete, onClose }) {
                 className="rounded-lg border border-gray-200 bg-slate-50/60 p-4"
               >
                 <span className="mb-2 block text-[13px] font-bold text-gray-900">
-                  Step {index + 1}
+                  Tahap {index + 1}
                 </span>
                 <p className="m-0 text-[13px] text-slate-600">
                   {step.approvers.map(displayName).join(", ")}
                 </p>
                 <p className="m-0 mt-1 text-[12px] text-slate-500">
                   {step.approverType === "All must approve"
-                    ? "All mentioned approvers must approve."
-                    : "Either mentioned approver must approve."}
+                    ? "Semua penyetuju yang disebutkan harus menyetujui."
+                    : "Salah satu penyetuju yang disebutkan harus menyetujui."}
                 </p>
               </div>
             ))}
@@ -1129,7 +1132,7 @@ function RuleDetailModal({ rule, onEdit, onDelete, onClose }) {
 
         <div className="border-t border-gray-200 px-[22px] py-3.5">
           <p className="m-0 text-[12px] text-slate-500">
-            Last edited by {rule.lastEditedBy} on {rule.lastEdited} (GMT+7)
+            Terakhir diubah oleh {rule.lastEditedBy} pada {rule.lastEdited} (GMT+7)
           </p>
         </div>
       </div>
@@ -1145,6 +1148,7 @@ function ActionsMenu({
   onDelete,
   onChangelog,
 }) {
+  const triggerRef = useRef(null);
   const isOpen = openActionId === rule.id;
 
   return (
@@ -1152,12 +1156,21 @@ function ActionsMenu({
       <button
         type="button"
         className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-slate-50"
+        ref={triggerRef}
         onClick={() => setOpenActionId(isOpen ? null : rule.id)}
       >
-        Actions <CaretDown size={12} />
+        Tindakan <CaretDown size={12} />
       </button>
       {isOpen && (
-        <div className="absolute right-0 top-full z-20 mt-1 w-44 overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+        <DropdownPanel
+          rect={triggerRef.current?.getBoundingClientRect()}
+          triggerRef={triggerRef}
+          onClose={() => setOpenActionId(null)}
+          width={176}
+          align="right"
+          variant="settings"
+          className="rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
+        >
           <button
             type="button"
             className="flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-left text-[13px] text-gray-700 hover:bg-slate-50"
@@ -1166,7 +1179,7 @@ function ActionsMenu({
               onEdit(rule);
             }}
           >
-            <PencilSimple size={14} /> Edit
+            <PencilSimple size={14} /> Ubah
           </button>
           <button
             type="button"
@@ -1176,7 +1189,7 @@ function ActionsMenu({
               onDelete(rule);
             }}
           >
-            <Trash size={14} /> Delete
+            <Trash size={14} /> Hapus
           </button>
           <button
             type="button"
@@ -1186,16 +1199,17 @@ function ActionsMenu({
               onChangelog(rule);
             }}
           >
-            <Clock size={14} /> View changelog
+            <Clock size={14} /> Lihat riwayat perubahan
           </button>
-        </div>
+        </DropdownPanel>
       )}
     </div>
   );
 }
 
 export default function ApprovalRulesPage() {
-  const [rules, setRules] = useState(dummyApprovalRules);
+  const { rules, options, loading, error, create, update, remove } =
+    useApprovalRules();
   const [filterType, setFilterType] = useState("");
   const [searchName, setSearchName] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -1205,6 +1219,7 @@ export default function ApprovalRulesPage() {
   const [detailRule, setDetailRule] = useState(null);
   const [openActionId, setOpenActionId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(PAGE_SIZE);
 
   const filtered = rules.filter((rule) => {
     const matchType = filterType ? rule.transactionType === filterType : true;
@@ -1214,14 +1229,15 @@ export default function ApprovalRulesPage() {
     return matchType && matchName;
   });
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
   const pageItems = filtered.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE
+    (safePage - 1) * pageSize,
+    safePage * pageSize
   );
 
   const stamp = () =>
-    new Date().toLocaleString("en-GB", {
+    new Date().toLocaleString("id-ID", {
       day: "2-digit",
       month: "short",
       year: "numeric",
@@ -1229,36 +1245,47 @@ export default function ApprovalRulesPage() {
       minute: "2-digit",
     });
 
-  const handleSubmit = (values) => {
-    if (editingRule) {
-      setRules((current) =>
-        current.map((rule) =>
-          rule.id === editingRule.id
-            ? { ...rule, ...values, lastEdited: stamp(), lastEditedBy: "Fathan Hilmi" }
-            : rule
-        )
-      );
+  const handleSubmit = async (values) => {
+    const change = {
+      changeTime: stamp(),
+      user: "Anda",
+      action: editingRule ? "Edit" : "Buat",
+      description: editingRule ? "Aturan persetujuan diperbarui" : "Aturan persetujuan dibuat",
+    };
+    const payload = {
+      ...values,
+      lastEdited: change.changeTime,
+      lastEditedBy: change.user,
+      changelog: [...(editingRule?.changelog || []), change],
+    };
+    try {
+      if (editingRule) {
+        await update(editingRule.id, payload);
+      } else {
+        await create(payload);
+      }
       setEditingRule(null);
-    } else {
-      setRules((current) => [
-        ...current,
-        { id: Date.now(), ...values, lastEdited: stamp(), lastEditedBy: "Fathan Hilmi" },
-      ]);
+      setShowForm(false);
+    } catch (requestError) {
+      window.alert(requestError.response?.data?.detail || "Gagal menyimpan aturan persetujuan.");
     }
-    setShowForm(false);
   };
 
-  const handleDelete = () => {
-    setRules((current) => current.filter((rule) => rule.id !== deletingRule.id));
-    setDeletingRule(null);
-    setCurrentPage((page) => Math.max(1, page));
+  const handleDelete = async () => {
+    try {
+      await remove(deletingRule.id);
+      setDeletingRule(null);
+      setCurrentPage((page) => Math.max(1, page));
+    } catch (requestError) {
+      window.alert(requestError.response?.data?.detail || "Gagal menghapus aturan persetujuan.");
+    }
   };
 
   return (
     <div className="p-7 max-md:p-[18px]">
       <div className="mb-6 flex items-center justify-between gap-4">
         <h2 className="m-0 text-[28px] font-bold text-gray-900">
-          Approval rules
+          Aturan persetujuan
         </h2>
         <button
           type="button"
@@ -1268,15 +1295,24 @@ export default function ApprovalRulesPage() {
             setShowForm(true);
           }}
         >
-          Create approval rule
+          Buat aturan persetujuan
         </button>
       </div>
+
+      {(error || loading) && (
+        <p className="m-0 mb-4 text-sm text-slate-500">
+          {loading ? "Memuat aturan persetujuan..." : error}
+        </p>
+      )}
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="w-full max-w-[240px]">
           <PopoverSelect
+            floating
             value={filterType}
-            placeholder="Transaction type"
+            getOptionLabel={ruleLabel}
+            emptyText="Tidak ada pilihan"
+            placeholder="Jenis transaksi"
             groups={approvalTransactionTypes}
             onSelect={(value) => {
               setFilterType(value === "All transaction types" ? "" : value);
@@ -1288,7 +1324,7 @@ export default function ApprovalRulesPage() {
         <div className="w-full max-w-[240px]">
           <input
             type="text"
-            placeholder="Search rule name"
+            placeholder="Cari nama aturan"
             className={inputBase}
             value={searchName}
             onChange={(event) => {
@@ -1303,10 +1339,10 @@ export default function ApprovalRulesPage() {
         <div className={tableCard}>
           <div className="flex flex-col items-center justify-center gap-2 px-6 py-16 text-center">
             <p className="m-0 text-[15px] font-semibold text-gray-900">
-              There are no approval rules yet
+              Belum ada aturan persetujuan
             </p>
             <p className="m-0 text-sm text-slate-500">
-              The approval rules will appear here.
+              Aturan persetujuan akan tampil di sini.
             </p>
           </div>
         </div>
@@ -1316,14 +1352,14 @@ export default function ApprovalRulesPage() {
             <table className={tableBase}>
               <thead>
                 <tr>
-                  <th className={th}>Rule name</th>
-                  <th className={th}>Transaction type</th>
-                  <th className={th}>Exceeds specific value</th>
-                  <th className={th}>Exceeds maximum receivable</th>
-                  <th className={th}>Is overdue</th>
-                  <th className={th}>Last edited</th>
+                  <th className={th}>Nama aturan</th>
+                  <th className={th}>Jenis transaksi</th>
+                  <th className={th}>Melebihi nilai tertentu</th>
+                  <th className={th}>Melebihi batas maksimal piutang</th>
+                  <th className={th}>Terlambat dibayar</th>
+                  <th className={th}>Terakhir diubah</th>
                   <th className="bg-slate-50 px-[18px] py-3.5 text-right">
-                    Actions
+                    Tindakan
                   </th>
                 </tr>
               </thead>
@@ -1344,7 +1380,7 @@ export default function ApprovalRulesPage() {
                         </span>
                       )}
                     </td>
-                    <td className={td}>{rule.transactionType}</td>
+                    <td className={td}>{ruleLabel(rule.transactionType)}</td>
                     <td className={td}>
                       {(rule.criteria || []).includes("specificValue") &&
                       getRuleAmount(rule) > 0
@@ -1353,19 +1389,19 @@ export default function ApprovalRulesPage() {
                     </td>
                     <td className={td}>
                       {(rule.criteria || []).includes("maxReceivable")
-                        ? "Active"
+                        ? "Aktif"
                         : "-"}
                     </td>
                     <td className={td}>
                       {(rule.criteria || []).includes("overdue")
-                        ? `${rule.overdueDays || 0} days`
+                        ? `${rule.overdueDays || 0} hari`
                         : "-"}
                     </td>
                     <td className={td}>
                       {rule.lastEdited}
                       {rule.lastEditedBy && (
                         <span className="block text-[12px] text-slate-500">
-                          By {rule.lastEditedBy}
+                          Oleh {rule.lastEditedBy}
                         </span>
                       )}
                     </td>
@@ -1396,17 +1432,22 @@ export default function ApprovalRulesPage() {
 
       <div className="mt-4">
         <Pagination
-          currentPage={currentPage}
+          currentPage={safePage}
           totalPages={totalPages}
           totalItems={filtered.length}
-          pageSize={PAGE_SIZE}
+          pageSize={pageSize}
           onPageChange={setCurrentPage}
+          onPageSizeChange={(size) => {
+            setPageSize(size);
+            setCurrentPage(1);
+          }}
         />
       </div>
 
       {detailRule && (
         <RuleDetailModal
           rule={detailRule}
+          users={options.users}
           onEdit={(rule) => {
             setDetailRule(null);
             setEditingRule(rule);
@@ -1424,6 +1465,8 @@ export default function ApprovalRulesPage() {
         <div className={modalOverlay}>
           <ApprovalRuleForm
             initialRule={editingRule}
+            users={options.users}
+            customers={options.customers}
             onSubmit={handleSubmit}
             onClose={() => {
               setShowForm(false);
@@ -1441,7 +1484,10 @@ export default function ApprovalRulesPage() {
       )}
 
       {viewingChangelog && (
-        <ChangelogModal rule={viewingChangelog} onClose={() => setViewingChangelog(null)} />
+        <ChangelogModal
+          rule={viewingChangelog}
+          onClose={() => setViewingChangelog(null)}
+        />
       )}
     </div>
   );
