@@ -1,6 +1,11 @@
+import { createContext, useContext } from "react";
+
+const PdfSignerContext = createContext(null);
+const PdfGeneralContext = createContext(null);
+
 const PdfCustomFieldRows = [
-  { label: "PIC SALES", value: "Bambang Suryanto" },
-  { label: "CHANNEL PENJUALAN", value: "Online" },
+  { label: "PENANGGUNG JAWAB PENJUALAN", value: "Bambang Suryanto" },
+  { label: "SALURAN PENJUALAN", value: "Daring" },
   { label: "NO. SERTIFIKASI", value: "2236-102990-111" },
   { label: "DOKUMEN NDA", value: "Ya" },
   {
@@ -15,7 +20,7 @@ const PdfPaperData = {
   companyPhone: "021-1234567",
   companyEmail: "admin@perusahaan.com",
   documentNumber: "10001",
-  term: "Net 30",
+  term: "30 hari",
   shippingDate: "21-02-2020",
   deliveryVia: "SiCepat Express",
   trackingNo: "WH-99120-3301",
@@ -26,22 +31,24 @@ const PdfPaperData = {
   customerRefSalesInvoice: "PO-90125",
   customerRefSalesOrder: "ref-4521",
   recipientName: "Vinson Masif",
-  recipientCompanyName: "Test Company",
+  recipientCompanyName: "Perusahaan Contoh",
   recipientFullName: "Vinson Masif Pratama",
   recipientPhone: "0812-3456-7890",
   recipientEmail: "vinson@perusahaan-customer.com",
   recipientBillAddress: "Jl. Alamat Penagihan No. 1",
   recipientShipAddress: "Jl. Cihampelas No. 27, Bandung",
   itemOneCode: "KB-101",
-  itemOneName: "Keyboard Logitech - Wireless",
+  itemOneName: "Papan Ketik Logitech - Nirkabel",
   itemTwoCode: "MN-330",
-  itemTwoName: "Monitor Benq - 17 inch",
-  qtyText: "1 Pcs",
+  itemTwoName: "Monitor Benq - 17 inci",
+  qtyText: "1 unit",
   itemOnePrice: "215.000,00",
+  itemOneAmount: "215.000,00",
   itemTwoPrice: "1.500.000,00",
   itemTwoDiscount: "10%",
   itemTwoAmount: "1.500.000,00",
   subtotal: "1.715.000,00",
+  otherDpp: "1.478.500,00",
   discount: "86.500,00",
   discountPerItem: "150.000,00",
   tax: "20.311,66",
@@ -63,7 +70,7 @@ const PdfPaperData = {
   bankAccountNumber: "123-01-00078-50",
   bankAccountName: "PT Nama Perusahaan",
   signerName: "Andi Pratama",
-  signerRoleOne: "Finance Manager",
+  signerRoleOne: "Manajer Keuangan",
   signerRoleTwo: "Kepala Operasional",
 };
 
@@ -73,12 +80,12 @@ function paperLabel(value, fallback) {
 
 function formatPdfDate(day, monthIndex, year, pattern) {
   const monthsShort = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+    "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
+    "Jul", "Agu", "Sep", "Okt", "Nov", "Des",
   ];
   const monthsFull = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
+    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+    "Juli", "Agustus", "September", "Oktober", "November", "Desember",
   ];
   const dayText = day < 10 ? `0${day}` : `${day}`;
   const monthNumber = monthIndex + 1;
@@ -96,65 +103,274 @@ function paperTextClass(contentSize) {
   return "text-[13px]";
 }
 
-function paperLogoBox(logoPosition) {
+const pdfDocumentLabels = {
+  "Sales Invoice": "Faktur Penjualan",
+  "Sales Order": "Pesanan Penjualan",
+  "Purchase Invoice": "Faktur Pembelian",
+};
+
+function pdfDocumentLabel(documentType) {
+  return pdfDocumentLabels[documentType] || documentType;
+}
+
+function pdfDocumentTitle(header, documentType) {
+  const title = header.applyForBoth
+    ? header.titleId || header.titleEn
+    : header.titleEn || header.titleId;
+  return title || pdfDocumentLabel(documentType).toUpperCase();
+}
+
+function pdfTableLabels(content) {
+  return {
+    description: "Deskripsi",
+    quantity: content.labelTableQty || "Jumlah",
+    price: content.labelTablePrice || "Harga Satuan (Rp.)",
+    discount: content.labelTableDiscount || "Diskon",
+    tax: content.labelTableTax || "Pajak",
+  };
+}
+
+function pdfCompanyLabels(header) {
+  return {
+    phone: paperLabel(header.labelCompanyPhone, "Telepon"),
+    email: paperLabel(header.labelCompanyEmail, "Email"),
+  };
+}
+
+function pdfCustomerRefLabel(content) {
+  return paperLabel(content.labelCustomerRef, "Referensi Pelanggan");
+}
+
+function PdfDocumentTitle({ header, documentType, className = "" }) {
   return (
-    <span
-      className={
-        logoPosition === "Center"
-          ? "mx-auto mb-2 block h-8 w-24 rounded border border-slate-200 bg-slate-100 text-center text-[10px] font-semibold leading-8 text-slate-400"
-          : logoPosition === "Right"
-            ? "ml-auto mb-2 block h-8 w-24 rounded border border-slate-200 bg-slate-100 text-center text-[10px] font-semibold leading-8 text-slate-400"
-            : "mb-2 block h-8 w-24 rounded border border-slate-200 bg-slate-100 text-center text-[10px] font-semibold leading-8 text-slate-400"
-      }
+    <p
+      className={`m-0 text-[22px] font-bold uppercase leading-none tracking-[0.08em] text-slate-900 ${className}`}
     >
-      LOGO
-    </span>
+      {pdfDocumentTitle(header, documentType)}
+    </p>
+  );
+}
+
+const PdfCompanyDefaults = {
+  name: "PT Nama Perusahaan",
+  address: "",
+  phone: "021-1234567",
+  email: "admin@perusahaan.com",
+  website: "",
+  fax: "",
+  tax: "",
+  logoUrl: "",
+  bankName: "Bank BCA",
+  bankSwift: "CBCNIDJA",
+  bankBranch: "KCU Thamrin",
+  bankAccountNumber: "123-01-00078-50",
+  bankAccountName: "PT Nama Perusahaan",
+};
+
+function resolveCompany(company) {
+  return { ...PdfCompanyDefaults, ...(company || {}) };
+}
+
+function PdfLogo({ logoUrl, position, companyName }) {
+  const alignment =
+    position === "Center"
+      ? "justify-center"
+      : position === "Right"
+        ? "justify-end"
+        : "justify-start";
+  return (
+    <div className={`mb-2.5 flex ${alignment}`}>
+      {logoUrl ? (
+        <img
+          src={logoUrl}
+          alt={companyName ? `Logo ${companyName}` : "Logo perusahaan"}
+          className="h-10 w-auto max-w-[140px] object-contain"
+        />
+      ) : (
+        <div className="flex h-10 w-28 items-center justify-center rounded border border-dashed border-slate-300 bg-slate-50 text-[9px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+          Logo
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PdfPageLogo({ header, company }) {
+  if (!header.showLogo) return null;
+  return (
+    <PdfLogo
+      logoUrl={company.logoUrl}
+      position={header.logoPosition}
+      companyName={company.name}
+    />
+  );
+}
+
+function PdfCompanyHeader({ header, company, labels = {}, showLogo = true }) {
+  const details = [
+    header.showCompanyPhone && company.phone
+      ? labels.phone
+        ? `${labels.phone}: ${company.phone}`
+        : company.phone
+      : "",
+    header.showCompanyEmail && company.email
+      ? labels.email
+        ? `${labels.email}: ${company.email}`
+        : company.email
+      : "",
+    header.showCompanyWeb && company.website
+      ? labels.website
+        ? `${labels.website}: ${company.website}`
+        : company.website
+      : "",
+    header.showCompanyFax && company.fax
+      ? labels.fax
+        ? `${labels.fax}: ${company.fax}`
+        : company.fax
+      : "",
+    header.showCompanyTax && company.tax
+      ? labels.tax
+        ? `${labels.tax}: ${company.tax}`
+        : company.tax
+      : "",
+  ].filter(Boolean);
+
+  return (
+    <div>
+      {showLogo && header.showLogo && (
+        <PdfLogo
+          logoUrl={company.logoUrl}
+          position={header.logoPosition}
+          companyName={company.name}
+        />
+      )}
+      {header.showCompanyName && company.name && (
+        <p className="m-0 text-[17px] font-bold leading-tight tracking-tight text-slate-900">
+          {company.name}
+        </p>
+      )}
+      {header.showCompanyAddress && company.address && (
+        <p className="m-0 mt-1 leading-snug text-slate-600">
+          {company.address}
+        </p>
+      )}
+      {details.length > 0 && (
+        <div className="mt-1 space-y-0.5 leading-snug text-slate-600">
+          {details.map((line) => (
+            <p key={line} className="m-0">
+              {line}
+            </p>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
 function PdfLineRow({ label, value }) {
   return (
-    <div className="flex">
-      <span className="w-[46%] shrink-0 pr-1">{label}</span>
-      <span className="w-3 shrink-0">:</span>
-      <span>{value}</span>
+    <div className="flex gap-1">
+      <span className="w-[46%] shrink-0">{label}</span>
+      <span className="shrink-0">:</span>
+      <span className="min-w-0">{value}</span>
     </div>
   );
 }
 
 function PdfTotalLine({ label, value, bold }) {
   return (
-    <div className={bold ? "flex justify-between font-bold" : "flex justify-between"}>
+    <div
+      className={
+        bold
+          ? "mt-1 flex items-baseline justify-between gap-6 border-t border-slate-300 pt-1 font-bold text-slate-900"
+          : "flex items-baseline justify-between gap-6 text-slate-600"
+      }
+    >
       <span>{label}</span>
-      <span>{value}</span>
+      <span className="tabular-nums">{value}</span>
     </div>
   );
 }
 
 function PdfSignatureBlock({ documentType, data, bestRegards }) {
+  const signer = useContext(PdfSignerContext);
+  const general = useContext(PdfGeneralContext);
+  const custom =
+    general &&
+    general.useSignature &&
+    general.signatureTypes.includes(documentType)
+      ? general
+      : null;
+  if (custom) {
+    const lines = custom.signatureRows
+      .map((row) => {
+        if (row.option === "[User Name]") return signer?.signerName || "";
+        if (row.option === "[Company Name]") return signer?.name || "";
+        return row.text || "";
+      })
+      .filter(Boolean);
+    return (
+      <div className="mt-10 ml-auto w-[45%] text-slate-700">
+        {bestRegards && <p className="m-0 mb-4">Hormat kami,</p>}
+        {custom.signatureImageUrl ? (
+          <img
+            src={custom.signatureImageUrl}
+            alt="Tanda tangan"
+            className="mb-2 h-[100px] w-[100px] object-contain"
+          />
+        ) : (
+          <div className="mb-10" />
+        )}
+        <div className="mb-2 w-52 border-b border-slate-400" />
+        {lines.map((line, index) => (
+          <p
+            key={index}
+            className={
+              index === 0 ? "m-0 font-semibold text-slate-900" : "m-0"
+            }
+          >
+            {line}
+          </p>
+        ))}
+      </div>
+    );
+  }
   if (documentType === "Purchase Invoice") return null;
+  const hasSigner = Boolean(signer?.signerName);
+  const name = hasSigner ? signer.signerName : data.signerName;
+  const roleOne = hasSigner ? signer.signerRole : data.signerRoleOne;
+  const roleTwo = hasSigner ? signer.name : data.signerRoleTwo;
   return (
-    <div className="mt-8 ml-auto w-[45%]">
-      {bestRegards && <p className="m-0">Best Regards,</p>}
-      <p className="m-0">______________________________________</p>
-      <p className="m-0">{data.signerName}</p>
-      <p className="m-0">{data.signerRoleOne}</p>
-      <p className="m-0">{data.signerRoleTwo}</p>
+    <div className="mt-10 ml-auto w-[45%] text-slate-700">
+      {bestRegards && <p className="m-0 mb-10">Hormat kami,</p>}
+      <div className="mb-2 w-52 border-b border-slate-400" />
+      <p className="m-0 font-semibold text-slate-900">{name}</p>
+      {roleOne && <p className="m-0">{roleOne}</p>}
+      {roleTwo && <p className="m-0">{roleTwo}</p>}
     </div>
   );
 }
 
 function PdfDocumentFooter({ documentType, numberLabel, content }) {
+  const general = useContext(PdfGeneralContext);
+  const showFooter = (!general || general.useFooter) && content.showFooter;
+  const footnote = content.showFootnote ? content.footnoteText : "";
+  if (!showFooter && !footnote) return null;
   return (
-    <div className="mt-6 flex items-center justify-between gap-3 border-t border-slate-200 pt-2 text-[11px] text-slate-500">
-      <span>
-        {documentType} {numberLabel}
-        {PdfPaperData.documentNumber}
-      </span>
-      <span className="flex-1 text-center">
-        {content.showFootnote ? content.footnoteText : ""}
-      </span>
-      <span>Page 1 of 1</span>
+    <div className="mt-auto pt-8">
+      {footnote && !showFooter && (
+        <p className="m-0 text-center text-[10px] text-slate-400">{footnote}</p>
+      )}
+      {showFooter && (
+        <div className="flex items-center justify-between gap-3 border-t border-slate-200 pt-2 text-[10px] text-slate-400">
+          <span>
+            {pdfDocumentLabel(documentType)} {numberLabel}
+            {PdfPaperData.documentNumber}
+          </span>
+          <span className="flex-1 text-center">{footnote}</span>
+          <span className="whitespace-nowrap">Halaman 1 dari 1</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -176,82 +392,89 @@ function PdfAmountTotals({ documentType, content, uppercase }) {
       ? PdfPaperData.shippingNoDecimals
       : PdfPaperData.shipping;
   return (
-    <div className="ml-auto w-[55%]">
+    <div className="mt-4 ml-auto w-[55%] space-y-0.5">
       <PdfTotalLine
         label={uppercase ? "SUBTOTAL" : "Subtotal"}
         value={PdfPaperData.subtotal}
       />
       <PdfTotalLine
-        label={uppercase ? "DISCOUNT" : "Discount"}
+        label={uppercase ? "DISKON" : "Diskon"}
         value={PdfPaperData.discount}
       />
       <PdfTotalLine
-        label={uppercase ? "DISCOUNT PER ITEM" : "Discount per Item"}
+        label={uppercase ? "DISKON PER BARANG" : "Diskon per Barang"}
         value={PdfPaperData.discountPerItem}
       />
+      {content.showOtherDpp && (
+        <PdfTotalLine
+          label={uppercase ? "DPP NILAI LAIN" : "DPP Nilai Lain"}
+          value={PdfPaperData.otherDpp}
+        />
+      )}
       <PdfTotalLine label="PPN 10%" value={PdfPaperData.tax} />
-      <PdfTotalLine label={uppercase ? "SHIPPING" : "Shipping"} value={shippingValue} />
+      <PdfTotalLine label={uppercase ? "PENGIRIMAN" : "Pengiriman"} value={shippingValue} />
       <PdfTotalLine label="TOTAL" value={PdfPaperData.total} bold />
       {documentType !== "Sales Order" && (
         <PdfTotalLine
-          label={uppercase ? "WITHOLDING AMOUNT" : "Witholding Amount"}
+          label={uppercase ? "JUMLAH POTONGAN" : "Jumlah Potongan"}
           value={PdfPaperData.witholding}
         />
       )}
       <PdfTotalLine
-        label={uppercase ? "AMOUNT RECEIVED" : "Amount Received"}
+        label={uppercase ? "JUMLAH DITERIMA" : "Jumlah Diterima"}
         value={PdfPaperData.amountReceived}
       />
       <PdfTotalLine
-        label={uppercase ? "BALANCE DUE" : "Balance Due"}
+        label={uppercase ? "SISA TAGIHAN" : "Sisa Tagihan"}
         value={PdfPaperData.balanceDue}
       />
     </div>
   );
 }
 
-export function PdfPaperTemplate1({ documentType, header, content }) {
-  const numberLabel = documentType === "Sales Order" ? "ORDER #" : "INVOICE #";
+export function PdfPaperTemplate1({ documentType, header, content, company }) {
+  const profile = resolveCompany(company);
+  const numberLabel = documentType === "Sales Order" ? "PESANAN #" : "FAKTUR #";
   const dateText = formatPdfDate(11, 1, 2020, content.dateFormat);
   const dueDateText = formatPdfDate(12, 2, 2020, content.dateFormat);
   const customerRefLabel =
     content.labelCustomerRef !== ""
       ? content.labelCustomerRef.toUpperCase()
-      : "CUSTOMER'S REFERENCE";
+      : "REFERENSI PELANGGAN";
   const quantityLabel =
     content.labelTableQty !== ""
       ? content.labelTableQty.toUpperCase()
-      : "QUANTITY";
+      : "JUMLAH";
   const priceLabel =
     content.labelTablePrice !== ""
       ? content.labelTablePrice.toUpperCase()
-      : "UNIT PRICE (RP.)";
+      : "HARGA SATUAN (RP.)";
   const discountLabel =
     content.labelTableDiscount !== ""
       ? content.labelTableDiscount.toUpperCase()
-      : "DISCOUNT";
+      : "DISKON";
   const taxLabel =
     content.labelTableTax !== ""
       ? content.labelTableTax.toUpperCase()
-      : "TAXED";
-  const phoneLabel = paperLabel(header.labelCompanyPhone, "Phone");
+      : "PAJAK";
+  const phoneLabel = paperLabel(header.labelCompanyPhone, "Telepon");
   const emailLabel = paperLabel(header.labelCompanyEmail, "Email");
-  const recipientNameLabel = paperLabel(header.labelRecipientName, "NAME");
+  const recipientNameLabel = paperLabel(header.labelRecipientName, "NAMA");
   const recipientCompanyLabel = paperLabel(
     header.labelRecipientCompany,
-    "COMPANY NAME"
+    "NAMA PERUSAHAAN"
   );
   const recipientFullNameLabel = paperLabel(
     header.labelRecipientFullName,
-    "FULL NAME"
+    "NAMA LENGKAP"
   );
   const recipientAddressLabel = paperLabel(
     header.labelRecipientAddress,
-    "ADDRESS"
+    "ALAMAT"
   );
   const recipientTelephoneLabel = paperLabel(
     header.labelRecipientTelephone,
-    "PHONE"
+    "TELEPON"
   );
   const recipientEmailLabel = paperLabel(
     header.labelRecipientEmail,
@@ -263,36 +486,38 @@ export function PdfPaperTemplate1({ documentType, header, content }) {
       : PdfPaperData.amountInWordsTotal;
 
   return (
-    <div className={paperTextClass(header.contentSize)}>
+    <div className={`${paperTextClass(header.contentSize)} flex flex-1 flex-col text-slate-800`}>
+      <PdfPageLogo header={header} company={profile} />
       <div className="flex gap-6">
         <div className="w-[45%]">
-          {header.showLogo && paperLogoBox(header.logoPosition)}
-          {header.showCompanyName && (
-            <p className="m-0 text-[17px] font-bold">
-              {PdfPaperData.companyName}
-            </p>
-          )}
-          {header.showCompanyPhone && (
-            <p className="m-0">
-              {phoneLabel}: {PdfPaperData.companyPhone}
-            </p>
-          )}
-          {header.showCompanyEmail && (
-            <p className="m-0">
-              {emailLabel}: {PdfPaperData.companyEmail}
-            </p>
-          )}
+          <PdfCompanyHeader
+            header={header}
+            company={profile}
+            showLogo={false}
+            labels={{
+              phone: phoneLabel,
+              email: emailLabel,
+              website: "Situs Web",
+              fax: "Faks",
+              tax: "NPWP",
+            }}
+          />
         </div>
         <div className="w-[55%]">
+          <PdfDocumentTitle
+            header={header}
+            documentType={documentType}
+            className="mb-2 text-right"
+          />
           <PdfLineRow label={numberLabel} value={PdfPaperData.documentNumber} />
-          <PdfLineRow label="DATE" value={dateText} />
+          <PdfLineRow label="TANGGAL" value={dateText} />
         </div>
       </div>
-      <hr className="my-3 border-slate-200" />
+      <hr className="my-4 border-slate-200" />
       <div className="flex gap-6">
         <div className="w-[45%]">
           <p className="m-0 font-semibold">
-            {documentType === "Purchase Invoice" ? "VENDOR" : "CUSTOMER"}
+            {documentType === "Purchase Invoice" ? "PEMASOK" : "PELANGGAN"}
           </p>
           {header.showRecipientName && (
             <PdfLineRow label={recipientNameLabel} value={PdfPaperData.recipientName} />
@@ -330,11 +555,11 @@ export function PdfPaperTemplate1({ documentType, header, content }) {
         </div>
         <div className="w-[55%]">
           {documentType !== "Sales Order" && (
-            <PdfLineRow label="ORDER NO" value={PdfPaperData.orderNo} />
+            <PdfLineRow label="NO. PESANAN" value={PdfPaperData.orderNo} />
           )}
-          <PdfLineRow label="DUE DATE" value={dueDateText} />
+          <PdfLineRow label="JATUH TEMPO" value={dueDateText} />
           {content.showWarehouse && (
-            <PdfLineRow label="WAREHOUSE" value={PdfPaperData.warehouse} />
+            <PdfLineRow label="GUDANG" value={PdfPaperData.warehouse} />
           )}
           {content.showCustomerRef && (
             <PdfLineRow
@@ -348,7 +573,7 @@ export function PdfPaperTemplate1({ documentType, header, content }) {
           )}
           {content.showTags && (
             <PdfLineRow
-              label="TAGS"
+              label="PENANDA"
               value={
                 documentType === "Sales Order"
                   ? PdfPaperData.tagsSalesOrder
@@ -359,78 +584,76 @@ export function PdfPaperTemplate1({ documentType, header, content }) {
           <PdfCustomFieldsBlock header={header} />
         </div>
       </div>
-      <table className="mt-4 w-full border-collapse">
+      <table className="pdf-items mt-4 w-full border-collapse">
         <thead>
           <tr className="border-y border-slate-300 text-left">
-            <th className="py-1 pr-2 font-semibold">NO.</th>
+            <th className="px-2 py-1.5 font-semibold">NO.</th>
             {content.showTableDescription && (
-              <th className="py-1 pr-2 font-semibold">DESCRIPTION</th>
+              <th className="px-2 py-1.5 font-semibold">DESKRIPSI</th>
             )}
             {content.showTableQty && (
-              <th className="py-1 pr-2 font-semibold">{quantityLabel}</th>
+              <th className="px-2 py-1.5 font-semibold">{quantityLabel}</th>
             )}
             {content.showTablePrice && (
-              <th className="py-1 pr-2 font-semibold">{priceLabel}</th>
+              <th className="px-2 py-1.5 font-semibold">{priceLabel}</th>
             )}
             {content.showTableDiscount && (
-              <th className="py-1 pr-2 font-semibold">{discountLabel}</th>
+              <th className="px-2 py-1.5 font-semibold">{discountLabel}</th>
             )}
             {content.showTableTax && (
-              <th className="py-1 pr-2 font-semibold">{taxLabel}</th>
+              <th className="px-2 py-1.5 font-semibold">{taxLabel}</th>
             )}
-            <th className="py-1 font-semibold">AMOUNT (RP.)</th>
+            <th className="px-2 py-1.5 text-right font-semibold">JUMLAH (RP.)</th>
           </tr>
         </thead>
         <tbody>
           <tr className="border-b border-slate-100 align-top">
-            <td className="py-1.5 pr-2">1</td>
+            <td className="px-2 py-1.5">1</td>
             {content.showTableDescription && (
-              <td className="py-1.5 pr-2">
+              <td className="px-2 py-1.5">
                 {content.showTableProduct &&
                   `${PdfPaperData.itemOneCode} `}
                 {PdfPaperData.itemOneName}
               </td>
             )}
             {content.showTableQty && (
-              <td className="py-1.5 pr-2">{PdfPaperData.qtyText}</td>
+              <td className="px-2 py-1.5">{PdfPaperData.qtyText}</td>
             )}
             {content.showTablePrice && (
-              <td className="py-1.5 pr-2">{PdfPaperData.itemOnePrice}</td>
+              <td className="px-2 py-1.5">{PdfPaperData.itemOnePrice}</td>
             )}
-            {content.showTableDiscount && <td className="py-1.5 pr-2"></td>}
-            {content.showTableTax && <td className="py-1.5 pr-2">X</td>}
-            <td className="py-1.5"></td>
+            {content.showTableDiscount && <td className="px-2 py-1.5"></td>}
+            {content.showTableTax && <td className="px-2 py-1.5">X</td>}
+            <td className="px-2 py-1.5">{PdfPaperData.itemOneAmount}</td>
           </tr>
           <tr className="border-b border-slate-100 align-top">
-            <td className="py-1.5 pr-2">2</td>
+            <td className="px-2 py-1.5">2</td>
             {content.showTableDescription && (
-              <td className="py-1.5 pr-2">
+              <td className="px-2 py-1.5">
                 {content.showTableProduct &&
                   `${PdfPaperData.itemTwoCode} `}
                 {PdfPaperData.itemTwoName}
               </td>
             )}
             {content.showTableQty && (
-              <td className="py-1.5 pr-2">{PdfPaperData.qtyText}</td>
+              <td className="px-2 py-1.5">{PdfPaperData.qtyText}</td>
             )}
             {content.showTablePrice && (
-              <td className="py-1.5 pr-2">{PdfPaperData.itemTwoPrice}</td>
+              <td className="px-2 py-1.5">{PdfPaperData.itemTwoPrice}</td>
             )}
             {content.showTableDiscount && (
-              <td className="py-1.5 pr-2">{PdfPaperData.itemTwoDiscount}</td>
+              <td className="px-2 py-1.5">{PdfPaperData.itemTwoDiscount}</td>
             )}
-            {content.showTableTax && <td className="py-1.5 pr-2"></td>}
-            <td className="py-1.5">{PdfPaperData.itemTwoAmount}</td>
+            {content.showTableTax && <td className="px-2 py-1.5"></td>}
+            <td className="px-2 py-1.5">{PdfPaperData.itemTwoAmount}</td>
           </tr>
         </tbody>
       </table>
-      <div className="mt-3">
-        <PdfAmountTotals
-          documentType={documentType}
-          content={content}
-          uppercase={false}
-        />
-      </div>
+      <PdfAmountTotals
+        documentType={documentType}
+        content={content}
+        uppercase={false}
+      />
       {content.showMemo && (
         <div className="mt-4">
           <p className="m-0 font-semibold">MEMO</p>
@@ -439,28 +662,28 @@ export function PdfPaperTemplate1({ documentType, header, content }) {
       )}
       {content.showMessage && (
         <div className="mt-4">
-          <p className="m-0 font-semibold">MESSAGE</p>
+          <p className="m-0 font-semibold">PESAN</p>
           <p className="m-0">{PdfPaperData.messageText}</p>
         </div>
       )}
       {content.showPaymentInfo && (
         <div className="mt-4">
-          <p className="m-0 font-semibold">PAYMENT DETAIL</p>
-          <PdfLineRow label="BANK NAME :" value={PdfPaperData.bankName} />
-          <PdfLineRow label="BANK BRANCH :" value={PdfPaperData.bankBranch} />
+          <p className="m-0 font-semibold">RINCIAN PEMBAYARAN</p>
+          <PdfLineRow label="NAMA BANK :" value={profile.bankName} />
+          <PdfLineRow label="CABANG BANK :" value={profile.bankBranch} />
           <PdfLineRow
-            label="BANK ACCOUNT NUMBER :"
-            value={PdfPaperData.bankAccountNumber}
+            label="NOMOR REKENING :"
+            value={profile.bankAccountNumber}
           />
           <PdfLineRow
-            label="BANK ACCOUNT NAME :"
-            value={PdfPaperData.bankAccountName}
+            label="NAMA PEMILIK REKENING :"
+            value={profile.bankAccountName}
           />
         </div>
       )}
       {content.showAmountInWords && (
         <div className="mt-4">
-          <p className="m-0 font-semibold">AMOUNT IN WORD</p>
+          <p className="m-0 font-semibold">TERBILANG</p>
           <p className="m-0">{amountInWordsText}</p>
         </div>
       )}
@@ -470,19 +693,19 @@ export function PdfPaperTemplate1({ documentType, header, content }) {
           data={PdfPaperData}
         />
       )}
-      {content.showFooter && (
-        <PdfDocumentFooter
-          documentType={documentType}
-          numberLabel="#"
-          content={content}
-        />
-      )}
+      <PdfDocumentFooter
+        documentType={documentType}
+        numberLabel="#"
+        content={content}
+      />
     </div>
   );
 }
 
-export function PdfPaperTemplate6({ documentType, header, content }) {
-  const numberTitle = documentType === "Sales Order" ? "Order #" : "Invoice #";
+export function PdfPaperTemplate6({ documentType, header, content, company }) {
+  const profile = resolveCompany(company);
+  const labels = pdfTableLabels(content);
+  const numberTitle = documentType === "Sales Order" ? "Pesanan #" : "Faktur #";
   const dateText = formatPdfDate(11, 1, 2020, content.dateFormat);
   const dueDateText = formatPdfDate(12, 2, 2020, content.dateFormat);
   const shippingDateText = formatPdfDate(21, 1, 2020, content.dateFormat);
@@ -496,17 +719,16 @@ export function PdfPaperTemplate6({ documentType, header, content }) {
       : PdfPaperData.total;
 
   return (
-    <div className={paperTextClass(header.contentSize)}>
+    <div className={`${paperTextClass(header.contentSize)} flex flex-1 flex-col text-slate-800`}>
+      <PdfPageLogo header={header} company={profile} />
       <div className="flex gap-6">
         <div className="w-1/2">
-          {header.showLogo && paperLogoBox("Left")}
-          {header.showCompanyName && (
-            <p className="m-0 text-[17px] font-bold">{PdfPaperData.companyName}</p>
-          )}
-          {header.showCompanyPhone && (
-            <p className="m-0">{PdfPaperData.companyPhone}</p>
-          )}
-          {header.showCompanyEmail && <p className="m-0">{PdfPaperData.companyEmail}</p>}
+          <PdfCompanyHeader
+            header={header}
+            company={profile}
+            showLogo={false}
+            labels={pdfCompanyLabels(header)}
+          />
         </div>
         <div className="w-1/2">
           <div className="flex gap-4">
@@ -534,51 +756,56 @@ export function PdfPaperTemplate6({ documentType, header, content }) {
               )}
             </div>
             <div className="w-1/2">
+              <PdfDocumentTitle
+                header={header}
+                documentType={documentType}
+                className="mb-2 text-right"
+              />
               <p className="m-0 font-semibold">
                 {numberTitle} {PdfPaperData.documentNumber}
               </p>
               <p className="m-0">{dateText}</p>
-              <p className="m-0">Term: {PdfPaperData.term}</p>
-              <p className="m-0">Due Date: {dueDateText}</p>
-              <p className="m-0">Shipping Date: {shippingDateText}</p>
-              <p className="m-0">Delivery Via: {PdfPaperData.deliveryVia}</p>
-              <p className="m-0">Tracking No.: {PdfPaperData.trackingNo}</p>
+              <p className="m-0">Syarat Pembayaran: {PdfPaperData.term}</p>
+              <p className="m-0">Jatuh Tempo: {dueDateText}</p>
+              <p className="m-0">Tanggal Pengiriman: {shippingDateText}</p>
+              <p className="m-0">Dikirim Melalui: {PdfPaperData.deliveryVia}</p>
+              <p className="m-0">No. Resi: {PdfPaperData.trackingNo}</p>
               <p className="mt-2 text-[16px] font-bold">Rp. {bigNominal}</p>
             </div>
           </div>
         </div>
       </div>
       <PdfCustomFieldsBlock header={header} />
-      <table className="mt-4 w-full border-collapse">
+      <table className="pdf-items mt-4 w-full border-collapse">
         <thead>
-          <tr className="bg-slate-100 text-left">
-            <th className="py-1 pr-2 font-semibold">NO.</th>
+          <tr className="border-y border-slate-300 text-left">
+            <th className="px-2 py-1.5 font-semibold">NO.</th>
             {content.showTableQty && (
-              <th className="py-1 pr-2 font-semibold">Quantity</th>
+              <th className="px-2 py-1.5 font-semibold">{labels.quantity}</th>
             )}
             {content.showTableDescription && (
-              <th className="py-1 pr-2 font-semibold">Description</th>
+              <th className="px-2 py-1.5 font-semibold">{labels.description}</th>
             )}
             {content.showTablePrice && (
-              <th className="py-1 pr-2 font-semibold">Unit Price (Rp.)</th>
+              <th className="px-2 py-1.5 font-semibold">{labels.price}</th>
             )}
             {content.showTableDiscount && (
-              <th className="py-1 pr-2 font-semibold">Discount</th>
+              <th className="px-2 py-1.5 font-semibold">{labels.discount}</th>
             )}
             {content.showTableTax && (
-              <th className="py-1 pr-2 font-semibold">Taxed</th>
+              <th className="px-2 py-1.5 font-semibold">{labels.tax}</th>
             )}
-            <th className="py-1 font-semibold">Amount (Rp.)</th>
+            <th className="px-2 py-1.5 text-right font-semibold">Jumlah (Rp.)</th>
           </tr>
         </thead>
         <tbody>
           <tr className="align-top">
-            <td className="py-1.5 pr-2">1</td>
+            <td className="px-2 py-1.5">1</td>
             {content.showTableQty && (
-              <td className="py-1.5 pr-2">{PdfPaperData.qtyText}</td>
+              <td className="px-2 py-1.5">{PdfPaperData.qtyText}</td>
             )}
             {content.showTableDescription && (
-              <td className="py-1.5 pr-2">
+              <td className="px-2 py-1.5">
                 {content.showTableProduct && (
                   <span className="block">{PdfPaperData.itemOneCode}</span>
                 )}
@@ -586,19 +813,19 @@ export function PdfPaperTemplate6({ documentType, header, content }) {
               </td>
             )}
             {content.showTablePrice && (
-              <td className="py-1.5 pr-2">{PdfPaperData.itemOnePrice}</td>
+              <td className="px-2 py-1.5">{PdfPaperData.itemOnePrice}</td>
             )}
-            {content.showTableDiscount && <td className="py-1.5 pr-2"></td>}
-            {content.showTableTax && <td className="py-1.5 pr-2">PPN</td>}
-            <td className="py-1.5"></td>
+            {content.showTableDiscount && <td className="px-2 py-1.5"></td>}
+            {content.showTableTax && <td className="px-2 py-1.5">PPN</td>}
+            <td className="px-2 py-1.5">{PdfPaperData.itemOneAmount}</td>
           </tr>
           <tr className="border-b border-slate-100 align-top">
-            <td className="py-1.5 pr-2">2</td>
+            <td className="px-2 py-1.5">2</td>
             {content.showTableQty && (
-              <td className="py-1.5 pr-2">{PdfPaperData.qtyText}</td>
+              <td className="px-2 py-1.5">{PdfPaperData.qtyText}</td>
             )}
             {content.showTableDescription && (
-              <td className="py-1.5 pr-2">
+              <td className="px-2 py-1.5">
                 {content.showTableProduct && (
                   <span className="block">{PdfPaperData.itemTwoCode}</span>
                 )}
@@ -606,13 +833,13 @@ export function PdfPaperTemplate6({ documentType, header, content }) {
               </td>
             )}
             {content.showTablePrice && (
-              <td className="py-1.5 pr-2">{PdfPaperData.itemTwoPrice}</td>
+              <td className="px-2 py-1.5">{PdfPaperData.itemTwoPrice}</td>
             )}
             {content.showTableDiscount && (
-              <td className="py-1.5 pr-2">{PdfPaperData.itemTwoDiscount}</td>
+              <td className="px-2 py-1.5">{PdfPaperData.itemTwoDiscount}</td>
             )}
-            {content.showTableTax && <td className="py-1.5 pr-2"></td>}
-            <td className="py-1.5">{PdfPaperData.itemTwoAmount}</td>
+            {content.showTableTax && <td className="px-2 py-1.5"></td>}
+            <td className="px-2 py-1.5">{PdfPaperData.itemTwoAmount}</td>
           </tr>
         </tbody>
       </table>
@@ -623,45 +850,45 @@ export function PdfPaperTemplate6({ documentType, header, content }) {
       />
       {content.showAmountInWords && (
         <div className="mt-4">
-          <p className="m-0 font-semibold">AMOUNT IN WORD</p>
+          <p className="m-0 font-semibold">TERBILANG</p>
           <p className="m-0">{amountInWordsText}</p>
         </div>
       )}
       {content.showPaymentInfo && (
         <div className="mt-4">
-          <p className="m-0 font-semibold">Payment Detail</p>
-          <PdfLineRow label="Bank Name" value={PdfPaperData.bankName} />
-          <PdfLineRow label="Bank/Swift Code" value={PdfPaperData.bankSwift} />
-          <PdfLineRow label="Bank Branch" value={PdfPaperData.bankBranch} />
+          <p className="m-0 font-semibold">Rincian Pembayaran</p>
+          <PdfLineRow label="Nama Bank" value={profile.bankName} />
+          <PdfLineRow label="Kode Bank/SWIFT" value={profile.bankSwift} />
+          <PdfLineRow label="Cabang Bank" value={profile.bankBranch} />
           <PdfLineRow
-            label="Bank Account Number"
-            value={PdfPaperData.bankAccountNumber}
+            label="Nomor Rekening"
+            value={profile.bankAccountNumber}
           />
           <PdfLineRow
-            label="Bank Account Name"
-            value={PdfPaperData.bankAccountName}
+            label="Nama Pemilik Rekening"
+            value={profile.bankAccountName}
           />
         </div>
       )}
       <div className="mt-4">
-        <p className="m-0 font-semibold">Other Information</p>
+        <p className="m-0 font-semibold">Informasi Lain</p>
         {documentType !== "Sales Order" && (
-          <p className="m-0">Order No : {PdfPaperData.orderNo}</p>
+          <p className="m-0">No. Pesanan : {PdfPaperData.orderNo}</p>
         )}
         {content.showCustomerRef && (
           <p className="m-0">
-            Customer's Reference :{" "}
+            {pdfCustomerRefLabel(content)} :{" "}
             {documentType === "Sales Order"
               ? PdfPaperData.customerRefSalesOrder
               : PdfPaperData.customerRefSalesInvoice}
           </p>
         )}
         {content.showWarehouse && (
-          <p className="m-0">Warehouse : {PdfPaperData.warehouse}</p>
+          <p className="m-0">Gudang : {PdfPaperData.warehouse}</p>
         )}
         {content.showTags && (
           <p className="m-0">
-            Tags :{" "}
+            Penanda :{" "}
             {documentType === "Sales Order"
               ? PdfPaperData.tagsSalesOrder
               : PdfPaperData.tagsSalesInvoice}
@@ -676,26 +903,26 @@ export function PdfPaperTemplate6({ documentType, header, content }) {
       )}
       {content.showMessage && (
         <div className="mt-4">
-          <p className="m-0 font-semibold">Message</p>
+          <p className="m-0 font-semibold">Pesan</p>
           <p className="m-0">{PdfPaperData.messageText}</p>
         </div>
       )}
       {content.showSignature && (
         <PdfSignatureBlock documentType={documentType} data={PdfPaperData} />
       )}
-      {content.showFooter && (
-        <PdfDocumentFooter
-          documentType={documentType}
-          numberLabel="#"
-          content={content}
-        />
-      )}
+      <PdfDocumentFooter
+        documentType={documentType}
+        numberLabel="#"
+        content={content}
+      />
     </div>
   );
 }
 
-export function PdfPaperTemplate7({ documentType, header, content }) {
-  const numberTitle = documentType === "Sales Order" ? "Order #" : "Invoice #";
+export function PdfPaperTemplate7({ documentType, header, content, company }) {
+  const profile = resolveCompany(company);
+  const labels = pdfTableLabels(content);
+  const numberTitle = documentType === "Sales Order" ? "Pesanan #" : "Faktur #";
   const dateText = formatPdfDate(11, 1, 2020, content.dateFormat);
   const dueDateText = formatPdfDate(12, 2, 2020, content.dateFormat);
   const shippingDateText = formatPdfDate(21, 1, 2020, content.dateFormat);
@@ -705,24 +932,28 @@ export function PdfPaperTemplate7({ documentType, header, content }) {
       : PdfPaperData.amountInWordsTotal;
 
   return (
-    <div className={paperTextClass(header.contentSize)}>
+    <div className={`${paperTextClass(header.contentSize)} flex flex-1 flex-col text-slate-800`}>
+      <PdfPageLogo header={header} company={profile} />
       <div className="flex gap-6">
         <div className="w-1/2">
-          {header.showLogo && paperLogoBox("Left")}
-          {header.showCompanyName && (
-            <p className="m-0 text-[17px] font-bold">{PdfPaperData.companyName}</p>
-          )}
-          {header.showCompanyPhone && (
-            <p className="m-0">{PdfPaperData.companyPhone}</p>
-          )}
-          {header.showCompanyEmail && <p className="m-0">{PdfPaperData.companyEmail}</p>}
+          <PdfCompanyHeader
+            header={header}
+            company={profile}
+            showLogo={false}
+            labels={pdfCompanyLabels(header)}
+          />
         </div>
         <div className="w-1/2">
-          <PdfLineRow label="Date :" value={dateText} />
+          <PdfDocumentTitle
+            header={header}
+            documentType={documentType}
+            className="mb-2 text-right"
+          />
+          <PdfLineRow label="Tanggal :" value={dateText} />
           <PdfLineRow label={`${numberTitle} :`} value={PdfPaperData.documentNumber} />
           {content.showCustomerRef && (
             <PdfLineRow
-              label="Customer's Reference :"
+              label={`${pdfCustomerRefLabel(content)} :`}
               value={
                 documentType === "Sales Order"
                   ? PdfPaperData.customerRefSalesOrder
@@ -734,7 +965,7 @@ export function PdfPaperTemplate7({ documentType, header, content }) {
       </div>
       <div className="mt-3 border-t border-slate-200 pt-3">
         <p className="m-0 font-semibold uppercase">
-          {documentType === "Purchase Invoice" ? "Vendor" : "Customer"}
+          {documentType === "Purchase Invoice" ? "Pemasok" : "Pelanggan"}
         </p>
         {header.showRecipientName && (
           <p className="m-0">{PdfPaperData.recipientName}</p>
@@ -762,90 +993,114 @@ export function PdfPaperTemplate7({ documentType, header, content }) {
       <table className="mt-4 w-full border-collapse text-center">
         <thead>
           <tr className="border-y border-slate-300 bg-slate-50">
-            {content.showTags && <th className="py-1 px-2 font-semibold">Tags</th>}
-            <th className="py-1 px-2 font-semibold">
-              Delivery Via ( Tracking No. )
+            {content.showTags && <th className="px-2 py-1.5 font-semibold">Penanda</th>}
+            {content.showCustomerRef && (
+              <th className="px-2 py-1.5 font-semibold">
+                {pdfCustomerRefLabel(content)}
+              </th>
+            )}
+            {content.showWarehouse && (
+              <th className="px-2 py-1.5 font-semibold">Gudang</th>
+            )}
+            <th className="px-2 py-1.5 font-semibold">
+              Dikirim Melalui ( No. Resi )
             </th>
-            <th className="py-1 px-2 font-semibold">Term</th>
-            <th className="py-1 px-2 font-semibold">Due Date</th>
-            <th className="py-1 px-2 font-semibold">Shipping Date</th>
+            <th className="px-2 py-1.5 font-semibold">Syarat Pembayaran</th>
+            <th className="px-2 py-1.5 font-semibold">Jatuh Tempo</th>
+            <th className="px-2 py-1.5 font-semibold">Tanggal Pengiriman</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             {content.showTags && (
-              <td className="py-1 px-2">
+              <td className="px-2 py-1.5">
                 {documentType === "Sales Order"
                   ? PdfPaperData.tagsSalesOrder
                   : PdfPaperData.tagsSalesInvoice}
               </td>
             )}
-            <td className="py-1 px-2">
+            {content.showCustomerRef && (
+              <td className="px-2 py-1.5">
+                {documentType === "Sales Order"
+                  ? PdfPaperData.customerRefSalesOrder
+                  : PdfPaperData.customerRefSalesInvoice}
+              </td>
+            )}
+            {content.showWarehouse && (
+              <td className="px-2 py-1.5">{PdfPaperData.warehouse}</td>
+            )}
+            <td className="px-2 py-1.5">
               {PdfPaperData.deliveryVia} ( {PdfPaperData.trackingNo} )
             </td>
-            <td className="py-1 px-2">{PdfPaperData.term}</td>
-            <td className="py-1 px-2">{dueDateText}</td>
-            <td className="py-1 px-2">{shippingDateText}</td>
+            <td className="px-2 py-1.5">{PdfPaperData.term}</td>
+            <td className="px-2 py-1.5">{dueDateText}</td>
+            <td className="px-2 py-1.5">{shippingDateText}</td>
           </tr>
         </tbody>
       </table>
-      <table className="mt-4 w-full border-collapse">
+      <table className="pdf-items mt-4 w-full border-collapse">
         <thead>
           <tr className="border-y border-slate-300 bg-slate-50 text-left">
-            <th className="py-1 pr-2 font-semibold">NO.</th>
+            <th className="px-2 py-1.5 font-semibold">NO.</th>
             {content.showTableQty && (
-              <th className="py-1 pr-2 font-semibold">Quantity</th>
+              <th className="px-2 py-1.5 font-semibold">{labels.quantity}</th>
             )}
-            <th className="py-1 pr-2 font-semibold">Product</th>
+            {content.showTableProduct && (
+              <th className="px-2 py-1.5 font-semibold">Produk</th>
+            )}
             {content.showTableDescription && (
-              <th className="py-1 pr-2 font-semibold">Description</th>
+              <th className="px-2 py-1.5 font-semibold">{labels.description}</th>
             )}
             {content.showTablePrice && (
-              <th className="py-1 pr-2 font-semibold">Unit Price (Rp.)</th>
+              <th className="px-2 py-1.5 font-semibold">{labels.price}</th>
             )}
             {content.showTableDiscount && (
-              <th className="py-1 pr-2 font-semibold">Discount</th>
+              <th className="px-2 py-1.5 font-semibold">{labels.discount}</th>
             )}
             {content.showTableTax && (
-              <th className="py-1 pr-2 font-semibold">Taxed</th>
+              <th className="px-2 py-1.5 font-semibold">{labels.tax}</th>
             )}
-            <th className="py-1 font-semibold">Amount (Rp.)</th>
+            <th className="px-2 py-1.5 text-right font-semibold">Jumlah (Rp.)</th>
           </tr>
         </thead>
         <tbody>
           <tr className="align-top">
-            <td className="py-1.5 pr-2">1</td>
+            <td className="px-2 py-1.5">1</td>
             {content.showTableQty && (
-              <td className="py-1.5 pr-2">{PdfPaperData.qtyText}</td>
+              <td className="px-2 py-1.5">{PdfPaperData.qtyText}</td>
             )}
-            <td className="py-1.5 pr-2">{PdfPaperData.itemOneCode}</td>
+            {content.showTableProduct && (
+              <td className="px-2 py-1.5">{PdfPaperData.itemOneCode}</td>
+            )}
             {content.showTableDescription && (
-              <td className="py-1.5 pr-2">{PdfPaperData.itemOneName}</td>
+              <td className="px-2 py-1.5">{PdfPaperData.itemOneName}</td>
             )}
             {content.showTablePrice && (
-              <td className="py-1.5 pr-2">{PdfPaperData.itemOnePrice}</td>
+              <td className="px-2 py-1.5">{PdfPaperData.itemOnePrice}</td>
             )}
-            {content.showTableDiscount && <td className="py-1.5 pr-2"></td>}
-            {content.showTableTax && <td className="py-1.5 pr-2">PPN</td>}
-            <td className="py-1.5"></td>
+            {content.showTableDiscount && <td className="px-2 py-1.5"></td>}
+            {content.showTableTax && <td className="px-2 py-1.5">PPN</td>}
+            <td className="px-2 py-1.5">{PdfPaperData.itemOneAmount}</td>
           </tr>
           <tr className="border-b border-slate-100 align-top">
-            <td className="py-1.5 pr-2">2</td>
+            <td className="px-2 py-1.5">2</td>
             {content.showTableQty && (
-              <td className="py-1.5 pr-2">{PdfPaperData.qtyText}</td>
+              <td className="px-2 py-1.5">{PdfPaperData.qtyText}</td>
             )}
-            <td className="py-1.5 pr-2">{PdfPaperData.itemTwoCode}</td>
+            {content.showTableProduct && (
+              <td className="px-2 py-1.5">{PdfPaperData.itemTwoCode}</td>
+            )}
             {content.showTableDescription && (
-              <td className="py-1.5 pr-2">{PdfPaperData.itemTwoName}</td>
+              <td className="px-2 py-1.5">{PdfPaperData.itemTwoName}</td>
             )}
             {content.showTablePrice && (
-              <td className="py-1.5 pr-2">{PdfPaperData.itemTwoPrice}</td>
+              <td className="px-2 py-1.5">{PdfPaperData.itemTwoPrice}</td>
             )}
             {content.showTableDiscount && (
-              <td className="py-1.5 pr-2">{PdfPaperData.itemTwoDiscount}</td>
+              <td className="px-2 py-1.5">{PdfPaperData.itemTwoDiscount}</td>
             )}
-            {content.showTableTax && <td className="py-1.5 pr-2"></td>}
-            <td className="py-1.5">{PdfPaperData.itemTwoAmount}</td>
+            {content.showTableTax && <td className="px-2 py-1.5"></td>}
+            <td className="px-2 py-1.5">{PdfPaperData.itemTwoAmount}</td>
           </tr>
         </tbody>
       </table>
@@ -853,22 +1108,22 @@ export function PdfPaperTemplate7({ documentType, header, content }) {
         <div className="w-[50%]">
           {content.showAmountInWords && (
             <div>
-              <p className="m-0 font-semibold">AMOUNT IN WORD</p>
+              <p className="m-0 font-semibold">TERBILANG</p>
               <p className="m-0">{amountInWordsText}</p>
             </div>
           )}
           {content.showPaymentInfo && (
             <div className="mt-4">
-              <p className="m-0 font-semibold">Payment Detail</p>
-              <PdfLineRow label="Bank Name :" value={PdfPaperData.bankName} />
-              <PdfLineRow label="Bank Branch :" value={PdfPaperData.bankBranch} />
+              <p className="m-0 font-semibold">Rincian Pembayaran</p>
+              <PdfLineRow label="Nama Bank :" value={profile.bankName} />
+              <PdfLineRow label="Cabang Bank :" value={profile.bankBranch} />
               <PdfLineRow
-                label="Bank Account Number :"
-                value={PdfPaperData.bankAccountNumber}
+                label="Nomor Rekening :"
+                value={profile.bankAccountNumber}
               />
               <PdfLineRow
-                label="Bank Account Name :"
-                value={PdfPaperData.bankAccountName}
+                label="Nama Pemilik Rekening :"
+                value={profile.bankAccountName}
               />
             </div>
           )}
@@ -881,31 +1136,33 @@ export function PdfPaperTemplate7({ documentType, header, content }) {
           />
         </div>
       </div>
-      <div className="mt-4 rounded border border-slate-200 p-3">
-        <p className="m-0 font-semibold">Special Notes and Instructions</p>
-        {content.showMemo && (
-          <div className="mt-2">
-            <p className="m-0">Memo: {PdfPaperData.memoText}</p>
-          </div>
-        )}
-        {content.showMessage && (
-          <div className="mt-2">
-            <p className="m-0">Message: {PdfPaperData.messageText}</p>
-          </div>
-        )}
-      </div>
+      {(content.showMemo || content.showMessage) && (
+        <div className="mt-4 rounded border border-slate-200 p-3">
+          <p className="m-0 font-semibold">Catatan dan Petunjuk Khusus</p>
+          {content.showMemo && (
+            <div className="mt-2">
+              <p className="m-0">Memo: {PdfPaperData.memoText}</p>
+            </div>
+          )}
+          {content.showMessage && (
+            <div className="mt-2">
+              <p className="m-0">Pesan: {PdfPaperData.messageText}</p>
+            </div>
+          )}
+        </div>
+      )}
       {content.showSignature && (
         <PdfSignatureBlock documentType={documentType} data={PdfPaperData} />
       )}
-      {content.showFooter && (
-        <PdfDocumentFooter documentType={documentType} numberLabel="#" content={content} />
-      )}
+      <PdfDocumentFooter documentType={documentType} numberLabel="#" content={content} />
     </div>
   );
 }
 
-export function PdfPaperTemplate10({ documentType, header, content }) {
-  const numberTitle = documentType === "Sales Order" ? "Order No :" : "Invoice No :";
+export function PdfPaperTemplate10({ documentType, header, content, company }) {
+  const profile = resolveCompany(company);
+  const labels = pdfTableLabels(content);
+  const numberTitle = documentType === "Sales Order" ? "No. Pesanan :" : "No. Faktur :";
   const dateText = formatPdfDate(11, 1, 2020, content.dateFormat);
   const dueDateText = formatPdfDate(12, 2, 2020, content.dateFormat);
   const shippingDateText = formatPdfDate(21, 1, 2020, content.dateFormat);
@@ -915,27 +1172,33 @@ export function PdfPaperTemplate10({ documentType, header, content }) {
       : PdfPaperData.amountInWordsTotal;
 
   return (
-    <div className={paperTextClass(header.contentSize)}>
+    <div className={`${paperTextClass(header.contentSize)} flex flex-1 flex-col text-slate-800`}>
+      <PdfPageLogo header={header} company={profile} />
       <div className="flex items-start justify-between gap-6">
         <div>
-          {header.showLogo && paperLogoBox("Left")}
-          {header.showCompanyName && (
-            <p className="m-0 text-[17px] font-bold">{PdfPaperData.companyName}</p>
-          )}
-          {header.showCompanyPhone && (
-            <p className="m-0">{PdfPaperData.companyPhone}</p>
-          )}
-          {header.showCompanyEmail && <p className="m-0">{PdfPaperData.companyEmail}</p>}
+          <PdfCompanyHeader
+            header={header}
+            company={profile}
+            showLogo={false}
+            labels={pdfCompanyLabels(header)}
+          />
         </div>
-        <div className="rounded bg-slate-100 px-4 py-2 text-right">
-          <p className="m-0 text-[11px] uppercase text-slate-500">Total</p>
-          <p className="m-0 text-[16px] font-bold">{PdfPaperData.total}</p>
+        <div className="flex flex-col items-end gap-3 text-right">
+          <PdfDocumentTitle header={header} documentType={documentType} />
+          <div className="rounded bg-slate-100 px-4 py-2">
+            <p className="m-0 text-[10px] uppercase tracking-wide text-slate-500">
+              Total
+            </p>
+            <p className="m-0 text-[16px] font-bold tabular-nums text-slate-900">
+              {PdfPaperData.total}
+            </p>
+          </div>
         </div>
       </div>
       <div className="mt-3 flex gap-6">
         <div className="w-[55%]">
           <p className="m-0 font-semibold">
-            {documentType === "Purchase Invoice" ? "Billed To" : "Sale To"} :
+            {documentType === "Purchase Invoice" ? "Ditagih Kepada" : "Dijual Kepada"} :
           </p>
           {header.showRecipientName && (
             <p className="m-0">{PdfPaperData.recipientName}</p>
@@ -954,27 +1217,27 @@ export function PdfPaperTemplate10({ documentType, header, content }) {
           )}
           {header.showRecipientAddress && (
             <>
-              <p className="m-0">Address</p>
+              <p className="m-0">{paperLabel(header.labelRecipientAddress, "Alamat")}</p>
               <p className="m-0">{PdfPaperData.recipientBillAddress}</p>
-              <p className="mt-2 m-0">Shipping Address</p>
+              <p className="mt-2 m-0">Alamat Pengiriman</p>
               <p className="m-0">{PdfPaperData.recipientShipAddress}</p>
             </>
           )}
         </div>
         <div className="w-[45%]">
           <PdfLineRow label={`${numberTitle}`} value={PdfPaperData.documentNumber} />
-          <PdfLineRow label="Date :" value={dateText} />
-          <PdfLineRow label="Due Date :" value={dueDateText} />
-          <PdfLineRow label="Term :" value={PdfPaperData.term} />
-          <PdfLineRow label="Shipping Date :" value={shippingDateText} />
-          <PdfLineRow label="Delivery Via :" value={PdfPaperData.deliveryVia} />
-          <PdfLineRow label="Tracking No. :" value={PdfPaperData.trackingNo} />
+          <PdfLineRow label="Tanggal :" value={dateText} />
+          <PdfLineRow label="Jatuh Tempo :" value={dueDateText} />
+          <PdfLineRow label="Syarat Pembayaran :" value={PdfPaperData.term} />
+          <PdfLineRow label="Tanggal Pengiriman :" value={shippingDateText} />
+          <PdfLineRow label="Dikirim Melalui :" value={PdfPaperData.deliveryVia} />
+          <PdfLineRow label="No. Resi :" value={PdfPaperData.trackingNo} />
           {documentType !== "Sales Order" && (
-            <PdfLineRow label="Order No :" value={PdfPaperData.orderNo} />
+            <PdfLineRow label="No. Pesanan :" value={PdfPaperData.orderNo} />
           )}
           {content.showCustomerRef && (
             <PdfLineRow
-              label="Customer's Reference :"
+              label={`${pdfCustomerRefLabel(content)} :`}
               value={
                 documentType === "Sales Order"
                   ? PdfPaperData.customerRefSalesOrder
@@ -983,11 +1246,11 @@ export function PdfPaperTemplate10({ documentType, header, content }) {
             />
           )}
           {content.showWarehouse && (
-            <PdfLineRow label="Warehouse :" value={PdfPaperData.warehouse} />
+            <PdfLineRow label="Gudang :" value={PdfPaperData.warehouse} />
           )}
           {content.showTags && (
             <PdfLineRow
-              label="Tags :"
+              label="Penanda :"
               value={
                 documentType === "Sales Order"
                   ? PdfPaperData.tagsSalesOrder
@@ -998,66 +1261,72 @@ export function PdfPaperTemplate10({ documentType, header, content }) {
         </div>
       </div>
       <PdfCustomFieldsBlock header={header} />
-      <table className="mt-4 w-full border-collapse">
+      <table className="pdf-items mt-4 w-full border-collapse">
         <thead>
           <tr className="border-b-2 border-slate-300 bg-slate-50 text-left">
-            <th className="py-1 pr-2 font-semibold">Product</th>
+            {content.showTableProduct && (
+              <th className="px-2 py-1.5 font-semibold">Produk</th>
+            )}
             {content.showTableDescription && (
-              <th className="py-1 pr-2 font-semibold">Description</th>
+              <th className="px-2 py-1.5 font-semibold">{labels.description}</th>
             )}
             {content.showTableQty && (
-              <th className="py-1 pr-2 font-semibold">Quantity</th>
+              <th className="px-2 py-1.5 font-semibold">{labels.quantity}</th>
             )}
             {content.showTableDiscount && (
-              <th className="py-1 pr-2 font-semibold">Discount</th>
+              <th className="px-2 py-1.5 font-semibold">{labels.discount}</th>
             )}
             {content.showTableTax && (
-              <th className="py-1 pr-2 font-semibold">Taxed</th>
+              <th className="px-2 py-1.5 font-semibold">{labels.tax}</th>
             )}
             {content.showTablePrice && (
-              <th className="py-1 pr-2 font-semibold">Unit Price (Rp.)</th>
+              <th className="px-2 py-1.5 font-semibold">{labels.price}</th>
             )}
-            <th className="py-1 font-semibold">Amount (Rp.)</th>
+            <th className="px-2 py-1.5 text-right font-semibold">Jumlah (Rp.)</th>
           </tr>
         </thead>
         <tbody>
           <tr className="align-top">
-            <td className="py-1.5 pr-2">{PdfPaperData.itemOneCode}</td>
+            {content.showTableProduct && (
+              <td className="px-2 py-1.5">{PdfPaperData.itemOneCode}</td>
+            )}
             {content.showTableDescription && (
-              <td className="py-1.5 pr-2">{PdfPaperData.itemOneName}</td>
+              <td className="px-2 py-1.5">{PdfPaperData.itemOneName}</td>
             )}
             {content.showTableQty && (
-              <td className="py-1.5 pr-2">{PdfPaperData.qtyText}</td>
+              <td className="px-2 py-1.5">{PdfPaperData.qtyText}</td>
             )}
-            {content.showTableDiscount && <td className="py-1.5 pr-2"></td>}
-            {content.showTableTax && <td className="py-1.5 pr-2">PPN</td>}
+            {content.showTableDiscount && <td className="px-2 py-1.5"></td>}
+            {content.showTableTax && <td className="px-2 py-1.5">PPN</td>}
             {content.showTablePrice && (
-              <td className="py-1.5 pr-2">{PdfPaperData.itemOnePrice}</td>
+              <td className="px-2 py-1.5">{PdfPaperData.itemOnePrice}</td>
             )}
-            <td className="py-1.5"></td>
+            <td className="px-2 py-1.5">{PdfPaperData.itemOneAmount}</td>
           </tr>
           <tr className="border-b border-slate-100 align-top">
-            <td className="py-1.5 pr-2">{PdfPaperData.itemTwoCode}</td>
+            {content.showTableProduct && (
+              <td className="px-2 py-1.5">{PdfPaperData.itemTwoCode}</td>
+            )}
             {content.showTableDescription && (
-              <td className="py-1.5 pr-2">{PdfPaperData.itemTwoName}</td>
+              <td className="px-2 py-1.5">{PdfPaperData.itemTwoName}</td>
             )}
             {content.showTableQty && (
-              <td className="py-1.5 pr-2">{PdfPaperData.qtyText}</td>
+              <td className="px-2 py-1.5">{PdfPaperData.qtyText}</td>
             )}
             {content.showTableDiscount && (
-              <td className="py-1.5 pr-2">{PdfPaperData.itemTwoDiscount}</td>
+              <td className="px-2 py-1.5">{PdfPaperData.itemTwoDiscount}</td>
             )}
-            {content.showTableTax && <td className="py-1.5 pr-2"></td>}
+            {content.showTableTax && <td className="px-2 py-1.5"></td>}
             {content.showTablePrice && (
-              <td className="py-1.5 pr-2">{PdfPaperData.itemTwoPrice}</td>
+              <td className="px-2 py-1.5">{PdfPaperData.itemTwoPrice}</td>
             )}
-            <td className="py-1.5">{PdfPaperData.itemTwoAmount}</td>
+            <td className="px-2 py-1.5">{PdfPaperData.itemTwoAmount}</td>
           </tr>
         </tbody>
       </table>
       {content.showMessage && (
         <div className="mt-4">
-          <p className="m-0 font-semibold">Message</p>
+          <p className="m-0 font-semibold">Pesan</p>
           <p className="m-0">{PdfPaperData.messageText}</p>
         </div>
       )}
@@ -1069,20 +1338,20 @@ export function PdfPaperTemplate10({ documentType, header, content }) {
       )}
       {content.showAmountInWords && (
         <div className="mt-4">
-          <p className="m-0 font-semibold">AMOUNT IN WORD</p>
+          <p className="m-0 font-semibold">TERBILANG</p>
           <p className="m-0">{amountInWordsText}</p>
         </div>
       )}
       <PdfAmountTotals documentType={documentType} content={content} uppercase={false} />
       {content.showPaymentInfo && (
         <div className="mt-4">
-          <p className="m-0 font-semibold">Payment Detail</p>
-          <p className="m-0">Bank Name : {PdfPaperData.bankName}</p>
-          <p className="m-0">Bank Branch : {PdfPaperData.bankBranch}</p>
+          <p className="m-0 font-semibold">Rincian Pembayaran</p>
+          <p className="m-0">Nama Bank : {profile.bankName}</p>
+          <p className="m-0">Cabang Bank : {profile.bankBranch}</p>
           <p className="m-0">
-            Bank Account Number : {PdfPaperData.bankAccountNumber}
+            Nomor Rekening : {profile.bankAccountNumber}
           </p>
-          <p className="m-0">Bank Account Name : {PdfPaperData.bankAccountName}</p>
+          <p className="m-0">Nama Pemilik Rekening : {profile.bankAccountName}</p>
         </div>
       )}
       {content.showSignature && (
@@ -1092,15 +1361,15 @@ export function PdfPaperTemplate10({ documentType, header, content }) {
           bestRegards
         />
       )}
-      {content.showFooter && (
-        <PdfDocumentFooter documentType={documentType} numberLabel="#" content={content} />
-      )}
+      <PdfDocumentFooter documentType={documentType} numberLabel="#" content={content} />
     </div>
   );
 }
 
-export function PdfPaperTemplate12({ documentType, header, content }) {
-  const numberTitle = documentType === "Sales Order" ? "Order #" : "Invoice #";
+export function PdfPaperTemplate12({ documentType, header, content, company }) {
+  const profile = resolveCompany(company);
+  const labels = pdfTableLabels(content);
+  const numberTitle = documentType === "Sales Order" ? "Pesanan #" : "Faktur #";
   const dateText = formatPdfDate(11, 1, 2020, content.dateFormat);
   const dueDateText = formatPdfDate(12, 2, 2020, content.dateFormat);
   const shippingDateText = formatPdfDate(21, 1, 2020, content.dateFormat);
@@ -1114,27 +1383,31 @@ export function PdfPaperTemplate12({ documentType, header, content }) {
       : PdfPaperData.total;
 
   return (
-    <div className={paperTextClass(header.contentSize)}>
+    <div className={`${paperTextClass(header.contentSize)} flex flex-1 flex-col text-slate-800`}>
+      <PdfPageLogo header={header} company={profile} />
       <div className="flex items-start justify-between gap-6">
         <div>
-          {header.showLogo && paperLogoBox("Left")}
-          {header.showCompanyName && (
-            <p className="m-0 text-[17px] font-bold">{PdfPaperData.companyName}</p>
-          )}
-          {header.showCompanyPhone && (
-            <p className="m-0">{PdfPaperData.companyPhone}</p>
-          )}
-          {header.showCompanyEmail && <p className="m-0">{PdfPaperData.companyEmail}</p>}
+          <PdfCompanyHeader
+            header={header}
+            company={profile}
+            showLogo={false}
+            labels={pdfCompanyLabels(header)}
+          />
         </div>
-        <div className="rounded-md bg-brand px-4 py-2 text-right text-white">
-          <p className="m-0 text-[10px] uppercase">Balance Due</p>
-          <p className="m-0 text-[16px] font-bold">Rp. {bigNominal}</p>
+        <div className="flex flex-col items-end gap-3 text-right">
+          <PdfDocumentTitle header={header} documentType={documentType} />
+          <div className="rounded-md bg-brand px-4 py-2 text-white">
+            <p className="m-0 text-[10px] uppercase tracking-wide">Sisa Tagihan</p>
+            <p className="m-0 text-[16px] font-bold tabular-nums">
+              Rp. {bigNominal}
+            </p>
+          </div>
         </div>
       </div>
       <div className="mt-4 grid grid-cols-3 gap-3">
         <div className="col-span-1 rounded-lg border border-slate-200 p-3">
           <p className="m-0 text-[10px] font-semibold uppercase text-slate-500">
-            {documentType === "Purchase Invoice" ? "Vendor" : "Customer"}
+            {documentType === "Purchase Invoice" ? "Pemasok" : "Pelanggan"}
           </p>
           {header.showRecipientName && (
             <p className="m-0 font-semibold">{PdfPaperData.recipientName}</p>
@@ -1142,7 +1415,7 @@ export function PdfPaperTemplate12({ documentType, header, content }) {
           {header.showRecipientFullName && (
             <>
               <p className="mt-2 m-0 text-[10px] font-semibold uppercase text-slate-500">
-                Full Name
+                {paperLabel(header.labelRecipientFullName, "Nama Lengkap")}
               </p>
               <p className="m-0">{PdfPaperData.recipientFullName}</p>
             </>
@@ -1150,7 +1423,7 @@ export function PdfPaperTemplate12({ documentType, header, content }) {
           {header.showRecipientCompany && (
             <>
               <p className="mt-2 m-0 text-[10px] font-semibold uppercase text-slate-500">
-                Company Name
+                {paperLabel(header.labelRecipientCompany, "Nama Perusahaan")}
               </p>
               <p className="m-0">{PdfPaperData.recipientCompanyName}</p>
             </>
@@ -1158,7 +1431,7 @@ export function PdfPaperTemplate12({ documentType, header, content }) {
           {header.showRecipientTelephone && (
             <>
               <p className="mt-2 m-0 text-[10px] font-semibold uppercase text-slate-500">
-                Phone
+                {paperLabel(header.labelRecipientTelephone, "Telepon")}
               </p>
               <p className="m-0">{PdfPaperData.recipientPhone}</p>
             </>
@@ -1166,7 +1439,7 @@ export function PdfPaperTemplate12({ documentType, header, content }) {
           {header.showRecipientEmail && (
             <>
               <p className="mt-2 m-0 text-[10px] font-semibold uppercase text-slate-500">
-                Email
+                {paperLabel(header.labelRecipientEmail, "Email")}
               </p>
               <p className="m-0">{PdfPaperData.recipientEmail}</p>
             </>
@@ -1174,11 +1447,11 @@ export function PdfPaperTemplate12({ documentType, header, content }) {
           {header.showRecipientAddress && (
             <>
               <p className="mt-2 m-0 text-[10px] font-semibold uppercase text-slate-500">
-                Address
+                {paperLabel(header.labelRecipientAddress, "Alamat")}
               </p>
               <p className="m-0">{PdfPaperData.recipientBillAddress}</p>
               <p className="mt-2 m-0 text-[10px] font-semibold uppercase text-slate-500">
-                Shipping Address
+                Alamat Pengiriman
               </p>
               <p className="m-0">{PdfPaperData.recipientShipAddress}</p>
             </>
@@ -1191,35 +1464,35 @@ export function PdfPaperTemplate12({ documentType, header, content }) {
             </p>
             <p className="m-0 font-semibold">{PdfPaperData.documentNumber}</p>
             <p className="mt-2 m-0 text-[10px] font-semibold uppercase text-slate-500">
-              Date
+              Tanggal
             </p>
             <p className="m-0">{dateText}</p>
             <p className="mt-2 m-0 text-[10px] font-semibold uppercase text-slate-500">
-              Due Date
+              Jatuh Tempo
             </p>
             <p className="m-0">{dueDateText}</p>
             <p className="mt-2 m-0 text-[10px] font-semibold uppercase text-slate-500">
-              Term
+              Syarat Pembayaran
             </p>
             <p className="m-0">{PdfPaperData.term}</p>
           </div>
           <div className="rounded-lg border border-slate-200 p-3">
             <p className="m-0 text-[10px] font-semibold uppercase text-slate-500">
-              Shipping Date
+              Tanggal Pengiriman
             </p>
             <p className="m-0">{shippingDateText}</p>
             <p className="mt-2 m-0 text-[10px] font-semibold uppercase text-slate-500">
-              Delivery Via
+              Dikirim Melalui
             </p>
             <p className="m-0">{PdfPaperData.deliveryVia}</p>
             <p className="mt-2 m-0 text-[10px] font-semibold uppercase text-slate-500">
-              Tracking No.
+              No. Resi
             </p>
             <p className="m-0">{PdfPaperData.trackingNo}</p>
             {documentType !== "Sales Order" && (
               <>
                 <p className="mt-2 m-0 text-[10px] font-semibold uppercase text-slate-500">
-                  Order No
+                  No. Pesanan
                 </p>
                 <p className="m-0">{PdfPaperData.orderNo}</p>
               </>
@@ -1230,7 +1503,7 @@ export function PdfPaperTemplate12({ documentType, header, content }) {
               {content.showCustomerRef && (
                 <div>
                   <p className="m-0 text-[10px] font-semibold uppercase text-slate-500">
-                    Customer's Reference
+                    {pdfCustomerRefLabel(content)}
                   </p>
                   <p className="m-0">
                     {documentType === "Sales Order"
@@ -1242,7 +1515,7 @@ export function PdfPaperTemplate12({ documentType, header, content }) {
               {content.showWarehouse && (
                 <div>
                   <p className="m-0 text-[10px] font-semibold uppercase text-slate-500">
-                    Warehouse
+                    Gudang
                   </p>
                   <p className="m-0">{PdfPaperData.warehouse}</p>
                 </div>
@@ -1250,7 +1523,7 @@ export function PdfPaperTemplate12({ documentType, header, content }) {
               {content.showTags && (
                 <div>
                   <p className="m-0 text-[10px] font-semibold uppercase text-slate-500">
-                    Tags
+                    Penanda
                   </p>
                   <p className="m-0">
                     {documentType === "Sales Order"
@@ -1264,74 +1537,74 @@ export function PdfPaperTemplate12({ documentType, header, content }) {
         </div>
       </div>
       <PdfCustomFieldsBlock header={header} />
-      <table className="mt-4 w-full border-collapse">
+      <table className="pdf-items mt-4 w-full border-collapse">
         <thead>
           <tr className="border-y border-slate-300 text-left">
-            <th className="py-1 pr-2 font-semibold">NO.</th>
+            <th className="px-2 py-1.5 font-semibold">NO.</th>
             {content.showTableDescription && (
-              <th className="py-1 pr-2 font-semibold">Description</th>
+              <th className="px-2 py-1.5 font-semibold">{labels.description}</th>
             )}
             {content.showTableQty && (
-              <th className="py-1 pr-2 font-semibold">Quantity</th>
+              <th className="px-2 py-1.5 font-semibold">{labels.quantity}</th>
             )}
             {content.showTablePrice && (
-              <th className="py-1 pr-2 font-semibold">Unit Price (Rp.)</th>
+              <th className="px-2 py-1.5 font-semibold">{labels.price}</th>
             )}
             {content.showTableDiscount && (
-              <th className="py-1 pr-2 font-semibold">Discount</th>
+              <th className="px-2 py-1.5 font-semibold">{labels.discount}</th>
             )}
             {content.showTableTax && (
-              <th className="py-1 pr-2 font-semibold">Taxed</th>
+              <th className="px-2 py-1.5 font-semibold">{labels.tax}</th>
             )}
-            <th className="py-1 font-semibold">Amount (Rp.)</th>
+            <th className="px-2 py-1.5 text-right font-semibold">Jumlah (Rp.)</th>
           </tr>
         </thead>
         <tbody>
           <tr className="border-b border-slate-100 align-top">
-            <td className="py-1.5 pr-2">1</td>
+            <td className="px-2 py-1.5">1</td>
             {content.showTableDescription && (
-              <td className="py-1.5 pr-2">
+              <td className="px-2 py-1.5">
                 {content.showTableProduct &&
                   `${PdfPaperData.itemOneCode} - `}
                 {PdfPaperData.itemOneName}
               </td>
             )}
             {content.showTableQty && (
-              <td className="py-1.5 pr-2">{PdfPaperData.qtyText}</td>
+              <td className="px-2 py-1.5">{PdfPaperData.qtyText}</td>
             )}
             {content.showTablePrice && (
-              <td className="py-1.5 pr-2">{PdfPaperData.itemOnePrice}</td>
+              <td className="px-2 py-1.5">{PdfPaperData.itemOnePrice}</td>
             )}
-            {content.showTableDiscount && <td className="py-1.5 pr-2"></td>}
-            {content.showTableTax && <td className="py-1.5 pr-2">PPN</td>}
-            <td className="py-1.5"></td>
+            {content.showTableDiscount && <td className="px-2 py-1.5"></td>}
+            {content.showTableTax && <td className="px-2 py-1.5">PPN</td>}
+            <td className="px-2 py-1.5">{PdfPaperData.itemOneAmount}</td>
           </tr>
           <tr className="align-top">
-            <td className="py-1.5 pr-2">2</td>
+            <td className="px-2 py-1.5">2</td>
             {content.showTableDescription && (
-              <td className="py-1.5 pr-2">
+              <td className="px-2 py-1.5">
                 {content.showTableProduct &&
                   `${PdfPaperData.itemTwoCode} - `}
                 {PdfPaperData.itemTwoName}
               </td>
             )}
             {content.showTableQty && (
-              <td className="py-1.5 pr-2">{PdfPaperData.qtyText}</td>
+              <td className="px-2 py-1.5">{PdfPaperData.qtyText}</td>
             )}
             {content.showTablePrice && (
-              <td className="py-1.5 pr-2">{PdfPaperData.itemTwoPrice}</td>
+              <td className="px-2 py-1.5">{PdfPaperData.itemTwoPrice}</td>
             )}
             {content.showTableDiscount && (
-              <td className="py-1.5 pr-2">{PdfPaperData.itemTwoDiscount}</td>
+              <td className="px-2 py-1.5">{PdfPaperData.itemTwoDiscount}</td>
             )}
-            {content.showTableTax && <td className="py-1.5 pr-2"></td>}
-            <td className="py-1.5">{PdfPaperData.itemTwoAmount}</td>
+            {content.showTableTax && <td className="px-2 py-1.5"></td>}
+            <td className="px-2 py-1.5">{PdfPaperData.itemTwoAmount}</td>
           </tr>
         </tbody>
       </table>
       {content.showMessage && (
         <div className="mt-4">
-          <p className="m-0 font-semibold">Message</p>
+          <p className="m-0 font-semibold">Pesan</p>
           <p className="m-0">{PdfPaperData.messageText}</p>
         </div>
       )}
@@ -1343,39 +1616,76 @@ export function PdfPaperTemplate12({ documentType, header, content }) {
       )}
       {content.showAmountInWords && (
         <div className="mt-4">
-          <p className="m-0 font-semibold">AMOUNT IN WORD</p>
+          <p className="m-0 font-semibold">TERBILANG</p>
           <p className="m-0">{amountInWordsText}</p>
         </div>
       )}
       <PdfAmountTotals documentType={documentType} content={content} uppercase={false} />
       {content.showPaymentInfo && (
         <div className="mt-4">
-          <p className="m-0 font-semibold">Payment Detail</p>
-          <p className="m-0">Bank Name : {PdfPaperData.bankName}</p>
-          <p className="m-0">Bank Branch : {PdfPaperData.bankBranch}</p>
+          <p className="m-0 font-semibold">Rincian Pembayaran</p>
+          <p className="m-0">Nama Bank : {profile.bankName}</p>
+          <p className="m-0">Cabang Bank : {profile.bankBranch}</p>
           <p className="m-0">
-            Bank Account Number : {PdfPaperData.bankAccountNumber}
+            Nomor Rekening : {profile.bankAccountNumber}
           </p>
-          <p className="m-0">Bank Account Name : {PdfPaperData.bankAccountName}</p>
+          <p className="m-0">Nama Pemilik Rekening : {profile.bankAccountName}</p>
         </div>
       )}
       {content.showSignature && (
         <PdfSignatureBlock documentType={documentType} data={PdfPaperData} />
       )}
-      {content.showFooter && (
-        <PdfDocumentFooter documentType={documentType} numberLabel="#" content={content} />
-      )}
+      <PdfDocumentFooter documentType={documentType} numberLabel="#" content={content} />
     </div>
   );
 }
 
-export function PdfPaper({ template, documentType, header, content }) {
+function PdfDraftWatermark() {
+  return (
+    <div
+      className="pointer-events-none absolute inset-0 flex select-none items-center justify-center overflow-hidden"
+      aria-hidden="true"
+    >
+      <span className="-rotate-[30deg] text-[96px] font-bold uppercase tracking-widest text-slate-300/40">
+        Draf
+      </span>
+    </div>
+  );
+}
+
+function PdfQrPlaceholder() {
+  return (
+    <div className="mt-4 flex items-center gap-2 text-[10px] text-slate-500">
+      <div className="flex h-14 w-14 items-center justify-center rounded border border-dashed border-slate-300 bg-slate-50 font-semibold tracking-widest text-slate-400">
+        QR
+      </div>
+      <span>Pindai untuk membayar</span>
+    </div>
+  );
+}
+
+export function PdfPaper({ general, ...props }) {
+  return (
+    <PdfSignerContext.Provider value={props.company}>
+      <PdfGeneralContext.Provider value={general || null}>
+        <div className="relative flex flex-1 flex-col">
+          {general?.useDraftWatermark && <PdfDraftWatermark />}
+          <PdfPaperBody {...props} />
+          {general?.useQrCode && <PdfQrPlaceholder />}
+        </div>
+      </PdfGeneralContext.Provider>
+    </PdfSignerContext.Provider>
+  );
+}
+
+function PdfPaperBody({ template, documentType, header, content, company }) {
   if (template === "Template 6") {
     return (
       <PdfPaperTemplate6
         documentType={documentType}
         header={header}
         content={content}
+        company={company}
       />
     );
   }
@@ -1385,6 +1695,7 @@ export function PdfPaper({ template, documentType, header, content }) {
         documentType={documentType}
         header={header}
         content={content}
+        company={company}
       />
     );
   }
@@ -1394,6 +1705,7 @@ export function PdfPaper({ template, documentType, header, content }) {
         documentType={documentType}
         header={header}
         content={content}
+        company={company}
       />
     );
   }
@@ -1403,6 +1715,7 @@ export function PdfPaper({ template, documentType, header, content }) {
         documentType={documentType}
         header={header}
         content={content}
+        company={company}
       />
     );
   }
@@ -1411,6 +1724,7 @@ export function PdfPaper({ template, documentType, header, content }) {
       documentType={documentType}
       header={header}
       content={content}
+      company={company}
     />
   );
 }
