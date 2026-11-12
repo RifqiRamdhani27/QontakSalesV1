@@ -1410,7 +1410,7 @@ export default function CustomFieldsPage() {
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
           <h1 className="m-0 text-[28px] font-bold text-gray-900 max-md:text-2xl">
-            Bidang Kustom
+            Custom field
           </h1>
           <p className="m-0 mt-1.5 text-slate-500">
             Kelola bidang kustom untuk transaksi dan produk Anda.

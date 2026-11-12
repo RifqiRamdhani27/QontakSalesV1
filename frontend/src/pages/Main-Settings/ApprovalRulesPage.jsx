@@ -266,7 +266,7 @@ function ApprovalRuleForm({ initialRule, users, customers, onSubmit, onClose }) 
     <form className={modalPanel} onSubmit={submit}>
       <div className={modalHeader}>
         <h3 className={modalTitle}>
-          {initialRule ? "Ubah aturan persetujuan" : "Buat aturan persetujuan"}
+          {initialRule ? "Ubah aturan approval" : "Buat aturan approval"}
         </h3>
         <button
           type="button"
@@ -784,7 +784,7 @@ function DeleteApprovalModal({ onConfirm, onClose }) {
         </div>
         <div className="px-[22px] py-5">
           <p className="m-0 text-sm leading-relaxed text-slate-600">
-            Aturan persetujuan yang dihapus tidak dapat dipulihkan.
+            Aturan approval yang dihapus tidak dapat dipulihkan.
           </p>
         </div>
         <div className={modalFooter}>
@@ -1250,7 +1250,7 @@ export default function ApprovalRulesPage() {
       changeTime: stamp(),
       user: "Anda",
       action: editingRule ? "Edit" : "Buat",
-      description: editingRule ? "Aturan persetujuan diperbarui" : "Aturan persetujuan dibuat",
+      description: editingRule ? "Aturan approval diperbarui" : "Aturan approval dibuat",
     };
     const payload = {
       ...values,
@@ -1267,7 +1267,7 @@ export default function ApprovalRulesPage() {
       setEditingRule(null);
       setShowForm(false);
     } catch (requestError) {
-      window.alert(requestError.response?.data?.detail || "Gagal menyimpan aturan persetujuan.");
+      window.alert(requestError.response?.data?.detail || "Gagal menyimpan aturan approval.");
     }
   };
 
@@ -1277,7 +1277,7 @@ export default function ApprovalRulesPage() {
       setDeletingRule(null);
       setCurrentPage((page) => Math.max(1, page));
     } catch (requestError) {
-      window.alert(requestError.response?.data?.detail || "Gagal menghapus aturan persetujuan.");
+      window.alert(requestError.response?.data?.detail || "Gagal menghapus aturan approval.");
     }
   };
 
@@ -1285,7 +1285,7 @@ export default function ApprovalRulesPage() {
     <div className="p-7 max-md:p-[18px]">
       <div className="mb-6 flex items-center justify-between gap-4">
         <h2 className="m-0 text-[28px] font-bold text-gray-900">
-          Aturan persetujuan
+          Aturan approval
         </h2>
         <button
           type="button"
@@ -1295,13 +1295,13 @@ export default function ApprovalRulesPage() {
             setShowForm(true);
           }}
         >
-          Buat aturan persetujuan
+          Buat aturan approval
         </button>
       </div>
 
       {(error || loading) && (
         <p className="m-0 mb-4 text-sm text-slate-500">
-          {loading ? "Memuat aturan persetujuan..." : error}
+          {loading ? "Memuat aturan approval..." : error}
         </p>
       )}
 
@@ -1339,10 +1339,10 @@ export default function ApprovalRulesPage() {
         <div className={tableCard}>
           <div className="flex flex-col items-center justify-center gap-2 px-6 py-16 text-center">
             <p className="m-0 text-[15px] font-semibold text-gray-900">
-              Belum ada aturan persetujuan
+              Belum ada aturan approval
             </p>
             <p className="m-0 text-sm text-slate-500">
-              Aturan persetujuan akan tampil di sini.
+              Aturan approval akan tampil di sini.
             </p>
           </div>
         </div>

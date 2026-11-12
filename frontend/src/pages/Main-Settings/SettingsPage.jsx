@@ -30,11 +30,11 @@ const SETTINGS_MENU = [
   { id: "products", label: "Produk", path: "/settings/products", component: ProductsSettingsPage, hasDropdown: true },
   { id: "productions", label: "Produksi", path: "/settings/productions", component: ProductionsSettingsPage },
   { id: "template", label: "Templat", path: "/settings/template", component: TemplateSettingsPage, hasDropdown: true },
-  { id: "custom-fields", label: "Bidang kustom", path: "/settings/custom-fields", component: CustomFieldsPage },
+  { id: "custom-fields", label: "Custom field", path: "/settings/custom-fields", component: CustomFieldsPage },
   { id: "account-mapping", label: "Pemetaan Akun", path: "/settings/account-mapping", component: AccountMappingPage },
   { id: "billings", label: "Tagihan", path: "/settings/billings", component: BillingsPage },
-  { id: "approval-rules", label: "Aturan persetujuan", path: "/settings/approval-rules", component: ApprovalRulesPage },
-  { id: "tagging-rules", label: "Aturan penandaan", path: "/settings/tagging-rules", component: TaggingRulesPage },
+  { id: "approval-rules", label: "Aturan approval", path: "/settings/approval-rules", component: ApprovalRulesPage },
+  { id: "tagging-rules", label: "Aturan tagging", path: "/settings/tagging-rules", component: TaggingRulesPage },
 ];
 
 export default function Pengaturan() {

@@ -263,7 +263,7 @@ export default function TaggingRulesPage() {
       }
       setShowForm(false);
     } catch (requestError) {
-      window.alert(requestError.response?.data?.detail || "Gagal menyimpan aturan penandaan.");
+      window.alert(requestError.response?.data?.detail || "Gagal menyimpan aturan tagging.");
     }
   };
 
@@ -272,7 +272,7 @@ export default function TaggingRulesPage() {
       await remove(deletingRule.id);
       setDeletingRule(null);
     } catch (requestError) {
-      window.alert(requestError.response?.data?.detail || "Gagal menghapus aturan penandaan.");
+      window.alert(requestError.response?.data?.detail || "Gagal menghapus aturan tagging.");
     }
   };
 
@@ -288,7 +288,7 @@ export default function TaggingRulesPage() {
   return (
     <div className="p-7 max-md:p-[18px]">
       <div className="mb-6 flex items-center justify-between gap-4">
-        <h2 className="m-0 text-[28px] font-bold text-gray-900">Aturan Penandaan</h2>
+        <h2 className="m-0 text-[28px] font-bold text-gray-900">Aturan tagging</h2>
         <button
           type="button"
           className={btnPrimary}
@@ -297,13 +297,13 @@ export default function TaggingRulesPage() {
             setShowForm(true);
           }}
         >
-          Buat aturan penandaan baru
+          Buat aturan tagging baru
         </button>
       </div>
 
       {(error || loading) && (
         <p className="m-0 mb-4 text-sm text-slate-500">
-          {loading ? "Memuat aturan penandaan..." : error}
+          {loading ? "Memuat aturan tagging..." : error}
         </p>
       )}
 
@@ -337,10 +337,10 @@ export default function TaggingRulesPage() {
         <div className={tableCard}>
           <div className="flex flex-col items-center justify-center gap-2 px-6 py-16 text-center">
             <p className="m-0 text-[15px] font-semibold text-gray-900">
-              Belum ada aturan penandaan
+              Belum ada aturan tagging
             </p>
             <p className="m-0 text-sm text-slate-500">
-              Aturan penandaan akan tampil di sini.
+              Aturan tagging akan tampil di sini.
             </p>
           </div>
         </div>
