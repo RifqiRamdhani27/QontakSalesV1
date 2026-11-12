@@ -3,6 +3,7 @@ import Beranda from "./pages/Main-Beranda/Beranda";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import AcceptInvitationPage from "./pages/Main-Settings/AcceptInvitationPage";
 import BiayaPage from "./pages/Main-Biaya/BiayaPage";
 import ProductsMain from "./pages/Main-Product/ProductsMain";
 import ProductionMain from "./pages/Main-Productions/ProductionsMainPage";
@@ -42,9 +43,9 @@ import PenyelesaianPesananPenjualan from "./pages/Main-Laporan/PenyelesaianPesan
 import ProfitabilitasProduk from "./pages/Main-Laporan/ProfitabilitasProduk";
 import UsiaPiutang from "./pages/Main-Laporan/UsiaPiutang";
 import DaftarLainnya from "./pages/Main-DaftarLainnya/DaftarLainnya";
-import DaftarFakturProforma from "./pages/DaftarFakturProforma";
-import DaftarTukarFaktur from "./pages/DaftarTukarFaktur";
-import DaftarPembelian from "./pages/DaftarPembelian";
+import DaftarFakturProforma from "./pages/Main-Laporan/DaftarFakturProforma";
+import DaftarTukarFaktur from "./pages/Main-Laporan/DaftarTukarFaktur";
+import DaftarPembelian from "./pages/Main-Laporan/DaftarPembelian";
 import PembelianPerSupplier from "./pages/Main-Laporan/PembelianPerSupplier";
 import UtangSupplier from "./pages/Main-Laporan/UtangSupplier";
 import DaftarPengeluaran from "./pages/Main-Laporan/DaftarPengeluaran";
@@ -254,6 +255,7 @@ function App() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
       <Route path="/privacy" element={<PrivacyPolicyPage />} />
       <Route path="/terms" element={<TermsPage />} />
       <Route path="/pusat-bantuan" element={<PusatBantuan />} />
