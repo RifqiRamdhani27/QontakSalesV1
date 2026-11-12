@@ -5,6 +5,7 @@ import { CaretDown, CaretLeft, CaretRight } from "@phosphor-icons/react";
 import "./SettingsPage.css";
 import api, { extractError } from "@/services/settingsApi";
 import { setSettingsAccess } from "@/services/settingsAccess";
+import ErrorBoundary from "@/components/ui/ErrorBoundary";
 
 import CompanyPage from "@/pages/Main-Settings/CompanyPage";
 import UserManagementPage from "@/pages/Main-Settings/UserManagementPage";
@@ -192,7 +193,9 @@ export default function Pengaturan() {
         ) : !access ? (
           <Box p={7}><Text color="gray.600">Memuat hak akses pengaturan...</Text></Box>
         ) : ActiveComponent ? (
-          <ActiveComponent />
+          <ErrorBoundary key={activeItem.id}>
+            <ActiveComponent />
+          </ErrorBoundary>
         ) : (
           <Box p={7} role="alert">
             <Text fontWeight="semibold">Akses pengaturan tidak diizinkan.</Text>
