@@ -1,0 +1,56 @@
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) {
+  color: #0f172a;
+  color-scheme: light;
+}
+
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) .bg-brand {
+  background-color: var(--chakra-colors-primary, #2563eb);
+}
+
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) .bg-brand\/5 {
+  background-color: rgb(37 99 235 / 5%);
+}
+
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) .bg-brand\/10 {
+  background-color: rgb(37 99 235 / 10%);
+}
+
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) .hover\:bg-brand-dark:hover {
+  background-color: #1d4ed8;
+}
+
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) .text-brand {
+  color: var(--chakra-colors-primary, #2563eb);
+}
+
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) .accent-brand {
+  accent-color: var(--chakra-colors-primary, #2563eb);
+}
+
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) .border-brand {
+  border-color: var(--chakra-colors-primary, #2563eb);
+}
+
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) .border-brand\/30 {
+  border-color: rgb(37 99 235 / 30%);
+}
+
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) .border-l-brand {
+  border-left-color: var(--chakra-colors-primary, #2563eb);
+}
+
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) .border-t-brand {
+  border-top-color: var(--chakra-colors-primary, #2563eb);
+}
+
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) .focus\:border-brand:focus {
+  border-color: var(--chakra-colors-primary, #2563eb);
+}
+
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) .peer:checked ~ .peer-checked\:bg-brand {
+  background-color: var(--chakra-colors-primary, #2563eb);
+}
+
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) button.text-gray-400:not(:disabled) {
+  color: #475569;
+}
