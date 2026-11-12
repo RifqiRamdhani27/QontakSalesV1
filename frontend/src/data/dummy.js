@@ -15,10 +15,10 @@ export const currencyFormatOptions = [
 ];
 
 export const currencyFormatLabels = {
-  with_decimal: "Once with decimals",
-  no_decimal: "Once",
-  thousands: "In thousands",
-  millions: "In millions",
+  with_decimal: "Satuan dengan desimal",
+  no_decimal: "Satuan tanpa desimal",
+  thousands: "Dalam ribuan",
+  millions: "Dalam jutaan",
 };
 
 export const companySizeOptions = ["0-50", "51-100", "101-300", "301-2000", ">2000"];
@@ -70,26 +70,26 @@ export const baseCurrencyOptions = [
 ];
 
 export const baseCurrencyLabels = {
-  IDR: "IDR - Indonesian Rupiah",
-  USD: "USD - United States Dollar",
-  SGD: "SGD - Singapore Dollar",
-  MYR: "MYR - Malaysian Ringgit",
+  IDR: "IDR - Rupiah Indonesia",
+  USD: "USD - Dolar Amerika Serikat",
+  SGD: "SGD - Dolar Singapura",
+  MYR: "MYR - Ringgit Malaysia",
   EUR: "EUR - Euro",
-  JPY: "JPY - Japanese Yen",
-  CNY: "CNY - Chinese Yuan",
-  HKD: "HKD - Hong Kong Dollar",
-  KRW: "KRW - South Korean Won",
-  INR: "INR - Indian Rupee",
-  AUD: "AUD - Australian Dollar",
-  NZD: "NZD - New Zealand Dollar",
-  GBP: "GBP - British Pound Sterling",
-  CHF: "CHF - Swiss Franc",
-  CAD: "CAD - Canadian Dollar",
-  AED: "AED - UAE Dirham",
-  SAR: "SAR - Saudi Riyal",
-  THB: "THB - Thai Baht",
-  PHP: "PHP - Philippine Peso",
-  VND: "VND - Vietnamese Dong",
+  JPY: "JPY - Yen Jepang",
+  CNY: "CNY - Yuan Tiongkok",
+  HKD: "HKD - Dolar Hong Kong",
+  KRW: "KRW - Won Korea Selatan",
+  INR: "INR - Rupee India",
+  AUD: "AUD - Dolar Australia",
+  NZD: "NZD - Dolar Selandia Baru",
+  GBP: "GBP - Pound Sterling Inggris",
+  CHF: "CHF - Franc Swiss",
+  CAD: "CAD - Dolar Kanada",
+  AED: "AED - Dirham Uni Emirat Arab",
+  SAR: "SAR - Riyal Arab Saudi",
+  THB: "THB - Baht Thailand",
+  PHP: "PHP - Peso Filipina",
+  VND: "VND - Dong Vietnam",
 };
 
 
