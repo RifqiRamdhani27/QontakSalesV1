@@ -7,7 +7,8 @@ import {
   Camera,
   X,
 } from "@phosphor-icons/react";
-import api from "@/services/api";
+import api from "@/services/settingsApi";
+import { canAccessSettings } from "@/services/settingsAccess";
 import {
   btnPrimary,
   btnSecondary,
@@ -70,7 +71,7 @@ export default function AgentsPage() {
     try {
       setLoading(true);
 
-      const response = await api.get("/agents/");
+      const response = await api.get("/settings/agents/");
 
       const data = response.data;
 
@@ -84,7 +85,7 @@ export default function AgentsPage() {
       console.error("Fetch agents error:", error);
       alert(
         error.response?.data?.detail ||
-          "Gagal mengambil data agent."
+          "Gagal mengambil data agen."
       );
     } finally {
       setLoading(false);
@@ -160,12 +161,12 @@ export default function AgentsPage() {
 
     // Validasi create
     if (!editAgent && form.password.length < 8) {
-      alert("Password minimal 8 karakter.");
+      alert("Kata sandi minimal 8 karakter.");
       return;
     }
 
     if (!form.username.trim()) {
-      alert("Username wajib diisi.");
+      alert("Nama pengguna wajib diisi.");
       return;
     }
 
@@ -197,18 +198,18 @@ export default function AgentsPage() {
 
       if (editAgent) {
         response = await api.put(
-          `/agents/${editAgent.id}/`,
+          `/settings/agents/${editAgent.id}/`,
           formData
         );
 
-        alert("Agent berhasil diperbarui.");
+        alert("Agen berhasil diperbarui.");
       } else {
         response = await api.post(
-          "/agents/",
+          "/settings/agents/",
           formData
         );
 
-        alert("Agent berhasil dibuat.");
+        alert("Agen berhasil dibuat.");
       }
 
       console.log("Agent response:", response.data);
@@ -229,7 +230,7 @@ export default function AgentsPage() {
 
       const data = error.response?.data;
 
-      let message = "Gagal menyimpan agent.";
+      let message = "Gagal menyimpan data agen.";
 
       if (data?.detail) {
         message = data.detail;
@@ -261,9 +262,9 @@ export default function AgentsPage() {
     try {
       setDeleteLoading(true);
 
-      await api.delete(`/agents/${deleteId}/`);
+      await api.delete(`/settings/agents/${deleteId}/`);
 
-      alert("Agent berhasil dihapus.");
+      alert("Agen berhasil dihapus.");
 
       setDeleteId(null);
 
@@ -273,7 +274,7 @@ export default function AgentsPage() {
 
       alert(
         error.response?.data?.detail ||
-          "Gagal menghapus agent."
+          "Gagal menghapus agen."
       );
     } finally {
       setDeleteLoading(false);
@@ -311,10 +312,10 @@ export default function AgentsPage() {
 
           <div>
             <h1 className="m-0 text-[28px] font-bold text-gray-900 max-md:text-2xl">
-              Agents
+              Agen
             </h1>
             <p className="m-0 mt-1 text-sm text-slate-500">
-              Kelola data agent QontakSales
+              Kelola data agen QontakSales
             </p>
           </div>
         </div>
@@ -323,9 +324,10 @@ export default function AgentsPage() {
   type="button"
   className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 disabled:opacity-60 max-md:w-full"
   onClick={openCreate}
+  disabled={!canAccessSettings("agents", "create")}
 >
   <Plus size={18} />
-  Add Agent
+  Tambah Agen
 </button>
       </div>
 
@@ -333,12 +335,12 @@ export default function AgentsPage() {
       <div className="mb-6 grid grid-cols-3 gap-4 max-md:grid-cols-1">
 
         <div className={statCard}>
-          <span className={statLabel}>Total Agents</span>
+          <span className={statLabel}>Total Agen</span>
           <strong className="text-[28px] text-gray-900">{agents.length}</strong>
         </div>
 
         <div className={statCard}>
-          <span className={statLabel}>Managers</span>
+          <span className={statLabel}>Manajer</span>
           <strong className="text-[28px] text-gray-900">
             {
               agents.filter(
@@ -350,7 +352,7 @@ export default function AgentsPage() {
         </div>
 
         <div className={statCard}>
-          <span className={statLabel}>Agents</span>
+          <span className={statLabel}>Agen</span>
           <strong className="text-[28px] text-gray-900">
             {
               agents.filter(
@@ -369,28 +371,28 @@ export default function AgentsPage() {
         {loading ? (
           <div className="flex min-h-[300px] flex-col items-center justify-center gap-2.5 p-10 text-slate-500">
             <div className={`${pageSpinner} h-[22px] w-[22px]`} />
-            <p className="m-0">Loading agents...</p>
+            <p className="m-0">Memuat agen...</p>
           </div>
         ) : agents.length === 0 ? (
           <div className="flex min-h-[300px] flex-col items-center justify-center gap-2.5 p-10 text-slate-500">
             <UserPlus size={40} />
 
             <h2 className="m-0 text-xl text-gray-900">
-              Belum ada agent
+              Belum ada agen
             </h2>
 
             <p className="m-0 mb-2">
-              Klik Add Agent untuk
-              menambahkan agent.
+              Klik Tambah Agen untuk menambahkan agen.
             </p>
 
             <button
               type="button"
               className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
               onClick={openCreate}
+              disabled={!canAccessSettings("agents", "create")}
             >
               <Plus size={18} />
-              Add Agent
+              Tambah Agen
             </button>
           </div>
         ) : (
@@ -398,11 +400,11 @@ export default function AgentsPage() {
             <table className={`${tableBase} min-w-[760px]`}>
               <thead>
                 <tr>
-                  <th className={th}>Agent</th>
+                  <th className={th}>Agen</th>
                   <th className={th}>Email</th>
-                  <th className={th}>Phone</th>
-                  <th className={th}>Role</th>
-                  <th className={th}>Actions</th>
+                  <th className={th}>Telepon</th>
+                  <th className={th}>Peran</th>
+                  <th className={th}>Tindakan</th>
                 </tr>
               </thead>
 
@@ -420,7 +422,7 @@ export default function AgentsPage() {
                               src={agent.avatar_url}
                               alt={
                                 agent.username ||
-                                "Agent"
+                                "Agen"
                               }
                               className="h-full w-full object-cover"
                             />
@@ -471,23 +473,25 @@ export default function AgentsPage() {
                         <button
                           type="button"
                           className={`${btnSecondary} max-md:justify-center`}
+                          disabled={!canAccessSettings("agents", "edit")}
                           onClick={() =>
                             openEdit(agent)
                           }
                         >
                           <Pencil size={14} />
-                          Edit
+                          Ubah
                         </button>
 
                         <button
                           type="button"
                           className={`${btnDangerOutline} max-md:justify-center`}
+                          disabled={!canAccessSettings("agents", "delete")}
                           onClick={() =>
                             setDeleteId(agent.id)
                           }
                         >
                           <Trash size={14} />
-                          Delete
+                          Hapus
                         </button>
 
                       </div>
@@ -521,8 +525,8 @@ export default function AgentsPage() {
             <div className={modalHeader}>
               <h2 className={modalTitle}>
                 {editAgent
-                  ? "Edit Agent"
-                  : "Add Agent"}
+                  ? "Ubah Agen"
+                  : "Tambah Agen"}
               </h2>
 
               <button
@@ -549,7 +553,7 @@ export default function AgentsPage() {
                     {avatarPreview ? (
                       <img
                         src={avatarPreview}
-                        alt="Avatar preview"
+                        alt="Pratinjau foto profil"
                         className="h-full w-full object-cover"
                       />
                     ) : (
@@ -574,7 +578,7 @@ export default function AgentsPage() {
                     }
                   >
                     <Camera size={16} />
-                    Upload Avatar
+                    Unggah Foto Profil
                   </button>
 
                   <input
@@ -590,7 +594,7 @@ export default function AgentsPage() {
                 {/* USERNAME */}
                 <div className={formGroup}>
                   <label className={formLabel}>
-                    Username
+                    Nama pengguna
                     <span className={formRequiredMark}>*</span>
                   </label>
 
@@ -598,7 +602,7 @@ export default function AgentsPage() {
                     name="username"
                     value={form.username}
                     onChange={handleChange}
-                    placeholder="Masukkan username"
+                    placeholder="Masukkan nama pengguna"
                     disabled={!!editAgent}
                     className={inputBase}
                   />
@@ -616,7 +620,7 @@ export default function AgentsPage() {
                     name="email"
                     value={form.email}
                     onChange={handleChange}
-                    placeholder="agent@example.com"
+                    placeholder="agen@contoh.com"
                     className={inputBase}
                   />
                 </div>
@@ -625,7 +629,7 @@ export default function AgentsPage() {
                 {!editAgent && (
                   <div className={formGroup}>
                     <label className={formLabel}>
-                      Password
+                      Kata sandi
                       <span className={formRequiredMark}>*</span>
                     </label>
 
@@ -639,14 +643,14 @@ export default function AgentsPage() {
                     />
 
                     <small className="mt-[5px] block text-xs text-slate-500">
-                      Password minimal 8 karakter.
+                      Kata sandi minimal 8 karakter.
                     </small>
                   </div>
                 )}
 
                 {/* FIRST NAME */}
                 <div className={formGroup}>
-                  <label className={formLabel}>First Name</label>
+                  <label className={formLabel}>Nama Depan</label>
 
                   <input
                     name="first_name"
@@ -659,7 +663,7 @@ export default function AgentsPage() {
 
                 {/* LAST NAME */}
                 <div className={formGroup}>
-                  <label className={formLabel}>Last Name</label>
+                  <label className={formLabel}>Nama Belakang</label>
 
                   <input
                     name="last_name"
@@ -672,7 +676,7 @@ export default function AgentsPage() {
 
                 {/* PHONE */}
                 <div className={formGroup}>
-                  <label className={formLabel}>Phone</label>
+                  <label className={formLabel}>Telepon</label>
 
                   <input
                     name="phone"
@@ -697,7 +701,7 @@ export default function AgentsPage() {
                   }}
                   disabled={submitLoading}
                 >
-                  Cancel
+                  Batal
                 </button>
 
                 <button
@@ -708,12 +712,12 @@ export default function AgentsPage() {
                   {submitLoading ? (
                     <>
                       <span className={buttonSpinner} />
-                      Saving...
+                      Menyimpan...
                     </>
                   ) : (
                     editAgent
-                      ? "Update"
-                      : "Create"
+                      ? "Perbarui"
+                      : "Buat"
                   )}
                 </button>
 
@@ -732,13 +736,12 @@ export default function AgentsPage() {
           <div className={`${modalPanel} max-w-[420px]`}>
 
             <div className={modalHeader}>
-              <h2 className={modalTitle}>Hapus Agent?</h2>
+              <h2 className={modalTitle}>Hapus Agen?</h2>
             </div>
 
             <div className="p-[22px]">
               <p className="m-0 text-slate-600">
-                Apakah lo yakin mau menghapus
-                agent ini?
+                Apakah Anda yakin ingin menghapus agen ini?
               </p>
             </div>
 
