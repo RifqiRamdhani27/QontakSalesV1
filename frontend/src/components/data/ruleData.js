@@ -113,7 +113,7 @@ const roleLabels = {
   "Product: Good & Services": "Produk: Barang dan jasa",
   "Product: Warehouse": "Produk: Gudang",
   Production: "Produksi",
-  "Custom fields": "Bidang kustom",
+  "Custom fields": "Custom field",
   Billings: "Tagihan",
   "Email Template: Sales Invoice": "Templat email: Faktur penjualan",
   "Email Template: Sales Quote": "Templat email: Penawaran penjualan",
@@ -123,177 +123,511 @@ const roleLabels = {
   "Whatsapp Template: Sales Invoice": "Templat WhatsApp: Faktur penjualan",
   "Whatsapp Template: Sales Order": "Templat WhatsApp: Pesanan penjualan",
   "Account Mapping": "Pemetaan Akun",
-  "Approval Rules": "Aturan Persetujuan",
-  "Tagging Rules": "Aturan Penandaan",
+  "Approval Rules": "Aturan approval",
+  "Tagging Rules": "Aturan tagging",
+  "CRM access": "Akses CRM",
+  "CRM settings access": "Akses Pengaturan CRM",
 };
 
 export function roleLabel(value) {
   return Object.hasOwn(roleLabels, value) ? roleLabels[value] : value;
 }
 
+const ALL_COLUMNS = ["View", "Create/Add", "Edit", "Delete"];
+const VIEW_COLUMN = ["View"];
+const VIEW_EDIT_COLUMNS = ["View", "Edit"];
+const VIEW_CREATE_COLUMNS = ["View", "Create/Add"];
+const VIEW_CREATE_DELETE_COLUMNS = ["View", "Create/Add", "Delete"];
+
 export const customRoleFeatures = [
   {
+    name: "Sekilas bisnis",
+    label: "SEKILAS BISNIS",
+    rows: [
+      { key: "Balance sheet", label: "Neraca", columns: VIEW_COLUMN },
+      { key: "General ledger", label: "Buku besar", columns: VIEW_COLUMN },
+      { key: "Profit loss", label: "Laba rugi", columns: VIEW_COLUMN },
+      { key: "Trial balance", label: "Neraca saldo", columns: VIEW_COLUMN },
+    ],
+  },
+  {
     name: "Cash & Bank",
-    viewOnly: false,
-    subs: ["Bank transfer", "Bank deposit", "Bank withdrawal"],
+    label: "KAS & BANK",
+    rows: [
+      { key: "Bank transfer", label: "Transfer uang", columns: ALL_COLUMNS },
+      { key: "Bank deposit", label: "Terima uang", columns: ALL_COLUMNS },
+      { key: "Bank withdrawal", label: "Kirim uang", columns: ALL_COLUMNS },
+    ],
+  },
+  {
+    name: "CRM",
+    label: "CRM",
+    rows: [
+      { key: "CRM access", label: "Akses CRM", columns: ALL_COLUMNS },
+      {
+        key: "CRM settings access",
+        label: "Akses Pengaturan CRM",
+        columns: ALL_COLUMNS,
+        info: true,
+      },
+    ],
   },
   {
     name: "Expenses",
-    viewOnly: false,
-    subs: ["Expenses", "Pay Bills"],
+    label: "BIAYA",
+    rows: [
+      { key: "Expenses", label: "Biaya", columns: ALL_COLUMNS },
+      {
+        key: "Pay Bills",
+        label: "Bayar Tagihan",
+        columns: VIEW_CREATE_COLUMNS,
+        info: true,
+      },
+    ],
   },
   {
     name: "Product",
-    viewOnly: false,
-    subs: ["Stock adjustment", "Product conversion", "Warehouse Transfer"],
+    label: "PRODUK",
+    rows: [
+      {
+        key: "Stock adjustment",
+        label: "Penyesuaian stok",
+        columns: ALL_COLUMNS,
+      },
+      {
+        key: "Product conversion",
+        label: "Konversi produk",
+        columns: VIEW_CREATE_DELETE_COLUMNS,
+      },
+      {
+        key: "Warehouse Transfer",
+        label: "Transfer gudang",
+        columns: ALL_COLUMNS,
+      },
+    ],
   },
   {
     name: "Purchase",
-    viewOnly: false,
-    subs: [
-      "Purchase quote",
-      "Purchase order",
-      "Purchase delivery",
-      "Purchase invoice",
-      "Purchase return",
-      "Purchase request",
-      "Purchase invoice financing",
+    label: "PEMBELIAN",
+    rows: [
+      {
+        key: "Purchase quote",
+        label: "Penawaran pembelian",
+        columns: ALL_COLUMNS,
+      },
+      {
+        key: "Purchase order",
+        label: "Pesanan pembelian",
+        columns: ALL_COLUMNS,
+      },
+      {
+        key: "Purchase delivery",
+        label: "Pengiriman pembelian",
+        columns: ALL_COLUMNS,
+        info: true,
+      },
+      {
+        key: "Purchase invoice",
+        label: "Penagihan pembelian",
+        columns: ALL_COLUMNS,
+      },
+      {
+        key: "Purchase return",
+        label: "Retur pembelian",
+        columns: ALL_COLUMNS,
+        info: true,
+      },
+      {
+        key: "Purchase request",
+        label: "Permintaan pembelian",
+        columns: ALL_COLUMNS,
+      },
+      {
+        key: "Purchase invoice financing",
+        label: "Pembiayaan faktur pembelian",
+        columns: VIEW_COLUMN,
+        info: true,
+      },
     ],
   },
   {
     name: "Business overview report",
-    viewOnly: true,
-    subs: [
-      "Balance sheet",
-      "General ledger",
-      "Profit loss",
-      "Journal",
-      "Cash flow",
-      "Trial balance",
-      "Statement of changes in equity",
-      "Executive summary",
-      "Profit & loss budgeting",
-      "Budget management",
+    label: "LAPORAN SEKILAS BISNIS",
+    rows: [
+      { key: "Balance sheet", label: "Neraca", columns: VIEW_COLUMN },
+      { key: "General ledger", label: "Buku besar", columns: VIEW_COLUMN },
+      { key: "Profit loss", label: "Laba rugi", columns: VIEW_COLUMN },
+      { key: "Journal", label: "Jurnal", columns: VIEW_COLUMN },
+      { key: "Cash flow", label: "Arus kas", columns: VIEW_COLUMN },
+      { key: "Trial balance", label: "Neraca saldo", columns: VIEW_COLUMN },
+      {
+        key: "Statement of changes in equity",
+        label: "Perubahan modal",
+        columns: VIEW_COLUMN,
+      },
+      {
+        key: "Executive summary",
+        label: "Ringkasan bisnis",
+        columns: VIEW_COLUMN,
+      },
+      {
+        key: "Profit & loss budgeting",
+        label: "Anggaran laba rugi",
+        columns: VIEW_COLUMN,
+      },
+      {
+        key: "Budget management",
+        label: "Manajemen anggaran",
+        columns: VIEW_COLUMN,
+      },
     ],
   },
   {
     name: "Sales report",
-    viewOnly: true,
-    subs: [
-      "Sales list",
-      "Sales by customer",
-      "Customer balance",
-      "Aged receivable",
-      "Sales delivery",
-      "Sales by product",
-      "Sales order completion",
-      "Product profitability",
-      "Proforma invoice list",
-      "Join invoice list",
+    label: "LAPORAN PENJUALAN",
+    rows: [
+      { key: "Sales list", label: "Daftar penjualan", columns: VIEW_COLUMN },
+      {
+        key: "Sales by customer",
+        label: "Penjualan per pelanggan",
+        columns: VIEW_COLUMN,
+      },
+      {
+        key: "Customer balance",
+        label: "Piutang pelanggan",
+        columns: VIEW_COLUMN,
+      },
+      { key: "Aged receivable", label: "Usia piutang", columns: VIEW_COLUMN },
+      {
+        key: "Sales delivery",
+        label: "Pengiriman penjualan",
+        columns: VIEW_COLUMN,
+      },
+      {
+        key: "Sales by product",
+        label: "Penjualan per produk",
+        columns: VIEW_COLUMN,
+      },
+      {
+        key: "Sales order completion",
+        label: "Penyelesaian pesanan penjualan",
+        columns: VIEW_COLUMN,
+      },
+      {
+        key: "Product profitability",
+        label: "Profitabilitas produk",
+        columns: VIEW_COLUMN,
+      },
+      {
+        key: "Proforma invoice list",
+        label: "Daftar faktur proforma",
+        columns: VIEW_COLUMN,
+      },
+      { key: "Join invoice list", label: "Daftar tukar", columns: VIEW_COLUMN },
     ],
   },
   {
     name: "Purchases report",
-    viewOnly: true,
-    subs: [
-      "Purchase list",
-      "Purchase by vendor",
-      "Vendor balance",
-      "Expense list",
-      "Expense details",
-      "Aged payable",
-      "Purchase delivery",
-      "Purchase by product",
-      "Purchase order completion",
+    label: "LAPORAN PEMBELIAN",
+    rows: [
+      { key: "Purchase list", label: "Daftar pembelian", columns: VIEW_COLUMN },
+      {
+        key: "Purchase by vendor",
+        label: "Pembelian per supplier",
+        columns: VIEW_COLUMN,
+      },
+      {
+        key: "Vendor balance",
+        label: "Utang supplier",
+        columns: VIEW_COLUMN,
+      },
+      {
+        key: "Expense list",
+        label: "Daftar pengeluaran",
+        columns: VIEW_COLUMN,
+      },
+      {
+        key: "Expense details",
+        label: "Detail pengeluaran",
+        columns: VIEW_COLUMN,
+      },
+      { key: "Aged payable", label: "Usia utang", columns: VIEW_COLUMN },
+      {
+        key: "Purchase delivery",
+        label: "Pengiriman pembelian",
+        columns: VIEW_COLUMN,
+      },
+      {
+        key: "Purchase by product",
+        label: "Pembelian per produk",
+        columns: VIEW_COLUMN,
+      },
+      {
+        key: "Purchase order completion",
+        label: "Penyelesaian pesanan pembelian",
+        columns: VIEW_COLUMN,
+      },
     ],
   },
   {
     name: "Product report",
-    viewOnly: true,
-    subs: [
-      "Inventory summary",
-      "Warehouse stock quantity",
-      "Inventory valuation",
-      "Warehouse stock valuation",
-      "Inventory details",
-      "Warehouse item movement",
+    label: "LAPORAN PRODUK",
+    rows: [
+      {
+        key: "Inventory summary",
+        label: "Ringkasan persediaan barang",
+        columns: VIEW_COLUMN,
+      },
+      {
+        key: "Warehouse stock quantity",
+        label: "Kuantitas stok gudang",
+        columns: VIEW_COLUMN,
+      },
+      {
+        key: "Inventory valuation",
+        label: "Nilai persediaan barang",
+        columns: VIEW_COLUMN,
+      },
+      {
+        key: "Warehouse stock valuation",
+        label: "Nilai stok gudang",
+        columns: VIEW_COLUMN,
+      },
+      {
+        key: "Inventory details",
+        label: "Detail persediaan barang",
+        columns: VIEW_COLUMN,
+      },
+      {
+        key: "Warehouse item movement",
+        label: "Pergerakan barang gudang",
+        columns: VIEW_COLUMN,
+      },
     ],
   },
   {
     name: "Assets report",
-    viewOnly: true,
-    subs: [
-      "Fixed asset summary",
-      "Fixed asset details",
-      "Sold or disposed asset",
+    label: "LAPORAN ASET",
+    rows: [
+      {
+        key: "Fixed asset summary",
+        label: "Ringkasan aset tetap",
+        columns: VIEW_COLUMN,
+      },
+      {
+        key: "Fixed asset details",
+        label: "Detail aset tetap",
+        columns: VIEW_COLUMN,
+      },
+      {
+        key: "Sold or disposed asset",
+        label: "Penjualan atau pelepasan aset",
+        columns: VIEW_COLUMN,
+      },
     ],
   },
   {
     name: "Foreign exchange report",
-    viewOnly: true,
-    subs: [
-      "Bank summary",
-      "Foreign exchange gain loss",
-      "Realised currency gain loss",
-      "Unrealised currency gain loss",
+    label: "LAPORAN PERTUKARAN KURS",
+    rows: [
+      { key: "Bank summary", label: "Ringkasan bank", columns: VIEW_COLUMN },
+      {
+        key: "Foreign exchange gain loss",
+        label: "Devisa laba atau rugi",
+        columns: VIEW_COLUMN,
+      },
+      {
+        key: "Realised currency gain loss",
+        label: "Laba atau rugi mata uang terealisasi",
+        columns: VIEW_COLUMN,
+      },
+      {
+        key: "Unrealised currency gain loss",
+        label: "Laba atau rugi mata uang belum terealisasi",
+        columns: VIEW_COLUMN,
+      },
     ],
   },
   {
     name: "Bank report",
-    viewOnly: true,
-    subs: ["Bank reconciliation summary", "Bank statement"],
+    label: "LAPORAN BANK",
+    rows: [
+      {
+        key: "Bank reconciliation summary",
+        label: "Ringkasan rekonsiliasi bank",
+        columns: VIEW_COLUMN,
+      },
+      {
+        key: "Bank statement",
+        label: "Mutasi rekening koran",
+        columns: VIEW_COLUMN,
+      },
+    ],
   },
   {
     name: "Tax report",
-    viewOnly: true,
-    subs: ["Withholding tax", "Sales tax"],
+    label: "LAPORAN PAJAK",
+    rows: [
+      { key: "Withholding tax", label: "Pajak pemotongan", columns: VIEW_COLUMN },
+      { key: "Sales tax", label: "Pajak penjualan", columns: VIEW_COLUMN },
+    ],
   },
   {
     name: "Sales",
-    viewOnly: false,
-    subs: [
-      "Sales quote",
-      "Sales order",
-      "Sales delivery",
-      "Sales invoice",
-      "Sales return",
-      "Sales invoice financing",
+    label: "PENJUALAN",
+    rows: [
+      {
+        key: "Sales quote",
+        label: "Penawaran penjualan",
+        columns: ALL_COLUMNS,
+      },
+      { key: "Sales order", label: "Pesanan penjualan", columns: ALL_COLUMNS },
+      {
+        key: "Sales delivery",
+        label: "Pengiriman penjualan",
+        columns: ALL_COLUMNS,
+        info: true,
+      },
+      {
+        key: "Sales invoice",
+        label: "Penagihan penjualan",
+        columns: ALL_COLUMNS,
+      },
+      {
+        key: "Sales return",
+        label: "Retur penjualan",
+        columns: ALL_COLUMNS,
+        info: true,
+      },
+      {
+        key: "Sales invoice financing",
+        label: "Pembiayaan faktur penjualan",
+        columns: VIEW_COLUMN,
+        info: true,
+      },
     ],
-  },
-  {
-    name: "Other lists",
-    viewOnly: false,
-    subs: ["Chart of Accounts", "Customer", "Product: Unit"],
   },
   {
     name: "Setting",
-    viewOnly: false,
-    subs: [
-      "Company setting",
-      "Agents",
-      "User management: User list",
-      "User management: Custom role",
-      "Sales: Form settings",
-      "Sales: Invoice reminder",
-      "Purchase",
-      "Product: Good & Services",
-      "Product: Warehouse",
-      "Production",
-      "Custom fields",
-      "Billings",
-      "Email Template: Sales Invoice",
-      "Email Template: Sales Quote",
-      "Email Template: Sales Order",
-      "Email Template: Purchase Order",
-      "PDF Template: Customize PDF",
-      "Whatsapp Template: Sales Invoice",
-      "Whatsapp Template: Sales Order",
-      "Account Mapping",
-      "Approval Rules",
-      "Tagging Rules",
+    label: "PENGATURAN",
+    rows: [
+      {
+        key: "Company setting",
+        label: "Pengaturan perusahaan",
+        columns: VIEW_EDIT_COLUMNS,
+      },
+      {
+        key: "User management: User list",
+        label: "Pengaturan pengguna: Daftar pengguna",
+        columns: ALL_COLUMNS,
+      },
+      {
+        key: "User management: Custom role",
+        label: "Pengaturan pengguna: Custom role",
+        columns: ALL_COLUMNS,
+      },
+      {
+        key: "Sales: Form settings",
+        label: "Penjualan: Pengaturan form",
+        columns: VIEW_EDIT_COLUMNS,
+      },
+      {
+        key: "Sales: Invoice reminder",
+        label: "Penjualan: Pengingat faktur",
+        columns: VIEW_EDIT_COLUMNS,
+      },
+      {
+        key: "Purchase",
+        label: "Pembelian",
+        columns: VIEW_EDIT_COLUMNS,
+      },
+      {
+        key: "Product: Good & Services",
+        label: "Produk: Barang & Jasa",
+        columns: VIEW_EDIT_COLUMNS,
+      },
+      {
+        key: "Product: Warehouse",
+        label: "Produk: Gudang",
+        columns: VIEW_EDIT_COLUMNS,
+      },
+      {
+        key: "Email Template: Sales Invoice",
+        label: "Email Template: Faktur Penjualan",
+        columns: VIEW_EDIT_COLUMNS,
+      },
+      {
+        key: "Email Template: Sales Quote",
+        label: "Email Template: Penawaran Penjualan",
+        columns: VIEW_EDIT_COLUMNS,
+      },
+      {
+        key: "Email Template: Sales Order",
+        label: "Email Template: Pemesanan Penjualan",
+        columns: VIEW_EDIT_COLUMNS,
+      },
+      {
+        key: "Email Template: Purchase Order",
+        label: "Email Template: Pemesanan Pembelian",
+        columns: VIEW_EDIT_COLUMNS,
+      },
+      {
+        key: "PDF Template: Customize PDF",
+        label: "PDF Template: Customize PDF",
+        columns: VIEW_EDIT_COLUMNS,
+      },
+      {
+        key: "Whatsapp Template: Sales Invoice",
+        label: "Whatsapp Template: Faktur Penjualan",
+        columns: VIEW_EDIT_COLUMNS,
+      },
+      {
+        key: "Whatsapp Template: Sales Order",
+        label: "Whatsapp Template: Pemesanan Penjualan",
+        columns: VIEW_EDIT_COLUMNS,
+      },
+      {
+        key: "Whatsapp Template: Purchase Invoice",
+        label: "Whatsapp Template: Faktur Pembelian",
+        columns: ALL_COLUMNS,
+      },
+      {
+        key: "Whatsapp Template: Purchase Order",
+        label: "Whatsapp Template: Pemesanan Pembelian",
+        columns: ALL_COLUMNS,
+      },
+      {
+        key: "Account Mapping",
+        label: "Pemetaan Akun",
+        columns: VIEW_EDIT_COLUMNS,
+      },
+      {
+        key: "Approval Rules",
+        label: "Aturan Approval",
+        columns: ALL_COLUMNS,
+      },
+      {
+        key: "Tagging Rules",
+        label: "Aturan Tagging",
+        columns: ALL_COLUMNS,
+      },
     ],
   },
 ];
+
+const customRoleFeatureMap = new Map(
+  customRoleFeatures.map((feature) => [feature.name, feature])
+);
+
+export function customRoleFeatureLabel(featureName) {
+  return customRoleFeatureMap.get(featureName)?.label || roleLabel(featureName);
+}
+
+export function customRoleSubFeatureLabel(featureName, subFeature) {
+  const feature = customRoleFeatureMap.get(featureName);
+  const row = feature?.rows.find((item) => item.key === subFeature);
+  return row?.label || roleLabel(subFeature);
+}
 
 export const inviteRoles = [
   {

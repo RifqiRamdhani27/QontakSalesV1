@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CaretDown, CaretRight, MagnifyingGlass, X } from "@phosphor-icons/react";
+import { CaretDown, CaretRight, Info, MagnifyingGlass, X } from "@phosphor-icons/react";
 import Pagination from "@/components/ui/Pagination";
 import emptyRoleImg from "@/assets/empty-role.svg";
 import {
@@ -32,6 +32,8 @@ import {
 } from "@/data/dummy";
 import {
   customRoleFeatures,
+  customRoleFeatureLabel,
+  customRoleSubFeatureLabel,
   inviteRoles,
   roleLabel as permissionLabel,
 } from "@/components/data/ruleData";
@@ -41,7 +43,15 @@ import { DropdownPanel, useDropdown } from "@/components/ui/PopoverSelect";
 
 const PAGE_SIZE = 10;
 
-const authorityColumns = ["View", "Create/Add", "Edit", "Delete"];
+const authorityColumns = [
+  { key: "View", label: "Lihat" },
+  { key: "Create/Add", label: "Buat/Tambah" },
+  { key: "Edit", label: "Ubah" },
+  { key: "Delete", label: "Hapus" },
+];
+const authorityColumnKeys = authorityColumns.map((column) => column.key);
+const authorityColumnLabel = (key) =>
+  authorityColumns.find((column) => column.key === key)?.label || permissionLabel(key);
 const columnToApi = { View: "see", "Create/Add": "create", Edit: "edit", Delete: "can_delete" };
 
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0") + ":00");
@@ -60,7 +70,6 @@ function accessLimitLabel(value) {
   return value.replace(/\b(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b/g, (day) => DAY_OPTIONS.find((option) => option.key === day).label);
 }
 
-const featureColumns = (feature) => (feature.viewOnly ? ["View"] : authorityColumns);
 const cellKey = (featureName, subName, column) => `${featureName}.${subName}.${column}`;
 const hasAuthority = (a) => a.see || a.create || a.edit || a.can_delete;
 const grantedAuthorities = (role) => (role.authorities || []).filter(hasAuthority);
@@ -180,25 +189,39 @@ function ConfirmDeleteModal({ title, message, loading, onClose, onConfirm }) {
 
 
 function RoleDetailsDrawer({ role, onClose }) {
-  const rows = [];
-  customRoleFeatures.forEach((feature) => {
-    const subs = (role.authorities || []).filter(
-      (a) => a.feature === feature.name && hasAuthority(a)
-    );
-    subs.forEach((a, index) => {
-      rows.push({
-        key: feature.name + "." + a.sub_feature,
-        feature: index === 0 ? feature.name : "",
-        sub: a.sub_feature,
-        badges: [
-          a.create && "Create/Add",
-          a.can_delete && "Delete",
-          a.see && "View",
-          a.edit && "Edit",
-        ].filter(Boolean),
-      });
-    });
+  const groups = new Map();
+  (role.authorities || []).filter(hasAuthority).forEach((authority) => {
+    if (!groups.has(authority.feature)) groups.set(authority.feature, []);
+    groups.get(authority.feature).push(authority);
   });
+
+  const featureOrder = new Map(
+    customRoleFeatures.map((feature, index) => [feature.name, index])
+  );
+  const rows = [...groups.entries()]
+    .sort(([featureA], [featureB]) => {
+      const orderA = featureOrder.get(featureA) ?? Number.MAX_SAFE_INTEGER;
+      const orderB = featureOrder.get(featureB) ?? Number.MAX_SAFE_INTEGER;
+      return orderA - orderB || featureA.localeCompare(featureB);
+    })
+    .flatMap(([featureName, authorities]) =>
+      authorities
+        .slice()
+        .sort((authorityA, authorityB) =>
+          authorityA.sub_feature.localeCompare(authorityB.sub_feature)
+        )
+        .map((authority, index) => ({
+          key: `${featureName}.${authority.sub_feature}`,
+          feature: index === 0 ? customRoleFeatureLabel(featureName) : "",
+          sub: customRoleSubFeatureLabel(featureName, authority.sub_feature),
+          badges: [
+            authority.see && "View",
+            authority.create && "Create/Add",
+            authority.edit && "Edit",
+            authority.can_delete && "Delete",
+          ].filter(Boolean),
+        }))
+    );
 
   return (
     <SideDrawer
@@ -231,8 +254,8 @@ function RoleDetailsDrawer({ role, onClose }) {
           ) : (
             rows.map((row) => (
               <tr key={row.key}>
-                <td className={`${td} !py-2.5`}>{permissionLabel(row.feature)}</td>
-                <td className={`${td} !py-2.5`}>{permissionLabel(row.sub)}</td>
+                <td className={`${td} !py-2.5`}>{row.feature}</td>
+                <td className={`${td} !py-2.5`}>{row.sub}</td>
                 <td className={`${td} !py-2.5`}>
                   <div className="flex flex-wrap gap-1.5">
                     {row.badges.map((badge) => (
@@ -240,7 +263,7 @@ function RoleDetailsDrawer({ role, onClose }) {
                         key={badge}
                         className="rounded bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600"
                       >
-                        {permissionLabel(badge)}
+                        {authorityColumnLabel(badge)}
                       </span>
                     ))}
                   </div>
@@ -264,58 +287,100 @@ function CustomRoleDrawer({ role, onClose, onSaved }) {
   const [authorityCells, setAuthorityCells] = useState(() => {
     const cells = {};
     (role?.authorities || []).forEach((a) => {
-      cells[cellKey(a.feature, a.sub_feature, "View")] = a.see;
-      cells[cellKey(a.feature, a.sub_feature, "Create/Add")] = a.create;
-      cells[cellKey(a.feature, a.sub_feature, "Edit")] = a.edit;
-      cells[cellKey(a.feature, a.sub_feature, "Delete")] = a.can_delete;
+      authorityColumnKeys.forEach((column) => {
+        cells[cellKey(a.feature, a.sub_feature, column)] = !!a[columnToApi[column]];
+      });
     });
     return cells;
   });
 
-  const active = customRoleFeatures.find((f) => f.name === activeName);
+  const active =
+    customRoleFeatures.find((feature) => feature.name === activeName) || customRoleFeatures[0];
 
-  const isSubChecked = (feature, sub) =>
-    featureColumns(feature).some((c) => authorityCells[cellKey(feature.name, sub, c)]);
-  const checkedSubCount = (feature) =>
-    feature.subs.filter((sub) => isSubChecked(feature, sub)).length;
-  const selectedFeatureCount = customRoleFeatures.filter((f) => checkedSubCount(f) > 0).length;
+  const rowColumns = (row) => row.columns || [];
+  const isCellChecked = (feature, row, column) =>
+    !!authorityCells[cellKey(feature.name, row.key, column)];
+  const isRowChecked = (feature, row) =>
+    !row.disabled &&
+    rowColumns(row).some((column) => isCellChecked(feature, row, column));
+  const checkedRowCount = (feature) =>
+    feature.rows.filter((row) => isRowChecked(feature, row)).length;
+  const selectedFeatureCount = customRoleFeatures.filter(
+    (feature) => checkedRowCount(feature) > 0
+  ).length;
 
-  const setCells = (feature, subs, columns, value) =>
+  const setCells = (feature, rows, columns, value) =>
     setAuthorityCells((prev) => {
       const next = { ...prev };
-      subs.forEach((sub) =>
-        columns.forEach((c) => {
-          next[cellKey(feature.name, sub, c)] = value;
-        })
-      );
+      rows.forEach((row) => {
+        rowColumns(row)
+          .filter((column) => columns.includes(column))
+          .forEach((column) => {
+            next[cellKey(feature.name, row.key, column)] = value;
+          });
+      });
       return next;
     });
 
-  const isColumnAllChecked = (column) =>
-    featureColumns(active).includes(column) &&
-    active.subs.every((sub) => authorityCells[cellKey(active.name, sub, column)]);
+  const setFeature = (feature, value) =>
+    setCells(feature, feature.rows, authorityColumnKeys, value);
+
+  const activeRowsWithColumn = (column) =>
+    active.rows.filter(
+      (row) => !row.disabled && rowColumns(row).includes(column)
+    );
+
+  const isColumnAllChecked = (column) => {
+    const rows = activeRowsWithColumn(column);
+    return rows.length > 0 && rows.every((row) => isCellChecked(active, row, column));
+  };
+
+  const setColumn = (column, value) =>
+    setCells(active, activeRowsWithColumn(column), [column], value);
 
   const buildAuthorities = () =>
     customRoleFeatures
       .flatMap((feature) =>
-        feature.subs.map((sub) => {
-          const entry = {
-            feature: feature.name,
-            sub_feature: sub,
-            see: false,
-            create: false,
-            edit: false,
-            can_delete: false,
-          };
-          featureColumns(feature).forEach((c) => {
-            entry[columnToApi[c]] = !!authorityCells[cellKey(feature.name, sub, c)];
-          });
-          return entry;
-        })
+        feature.rows
+          .filter((row) => !row.disabled)
+          .map((row) => {
+            const entry = {
+              feature: feature.name,
+              sub_feature: row.key,
+              see: false,
+              create: false,
+              edit: false,
+              can_delete: false,
+            };
+            rowColumns(row).forEach((column) => {
+              entry[columnToApi[column]] = isCellChecked(feature, row, column);
+            });
+            return entry;
+          })
       )
       .filter(hasAuthority);
 
-  const authorities = buildAuthorities();
+  const knownKeys = new Set(
+    customRoleFeatures.flatMap((feature) =>
+      feature.rows.map((row) => `${feature.name}.${row.key}`)
+    )
+  );
+  const preservedAuthorities = (role?.authorities || [])
+    .filter(
+      (authority) =>
+        hasAuthority(authority) &&
+        !knownKeys.has(`${authority.feature}.${authority.sub_feature}`)
+    )
+    .map((authority) => ({
+      feature: authority.feature,
+      sub_feature: authority.sub_feature,
+      see: !!authority.see,
+      create: !!authority.create,
+      edit: !!authority.edit,
+      can_delete: !!authority.can_delete,
+    }));
+
+  const authorities = [...buildAuthorities(), ...preservedAuthorities];
   const canSave = roleName.trim() !== "" && authorities.length > 0 && !saving;
 
   const handleSave = async () => {
@@ -343,7 +408,7 @@ function CustomRoleDrawer({ role, onClose, onSaved }) {
     }
   };
 
-  const colGrid = "grid grid-cols-[1fr_90px_90px_90px_90px] items-center";
+  const colGrid = "grid grid-cols-[1fr_88px_100px_84px_84px] items-center";
 
   return (
     <SideDrawer
@@ -398,94 +463,135 @@ function CustomRoleDrawer({ role, onClose, onSaved }) {
         subfitur rincian penjualan untuk memberikan akses yang lebih terperinci.
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-slate-200">
-        <div className="flex bg-slate-50 text-[13px] font-semibold text-slate-700">
-          <div className="w-[190px] shrink-0 border-r border-slate-200 px-4 py-3">
-            Fitur ({selectedFeatureCount})
-          </div>
-          <div className={`${colGrid} flex-1 px-4 py-3`}>
-            <div>Subfitur/fungsi tambahan</div>
-            {authorityColumns.map((column) => (
-              <label key={column} className="flex cursor-pointer items-center justify-center gap-1.5">
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 accent-brand"
-                  checked={isColumnAllChecked(column)}
-                  disabled={!featureColumns(active).includes(column)}
-                  onChange={(e) => setCells(active, active.subs, [column], e.target.checked)}
-                />
-                {permissionLabel(column)}
-              </label>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex">
-          <div className="w-[190px] shrink-0 border-r border-slate-200">
-            {customRoleFeatures.map((feature) => {
-              const count = checkedSubCount(feature);
-              const isActive = feature.name === activeName;
-              return (
-                <div
-                  key={feature.name}
-                  onClick={() => setActiveName(feature.name)}
-                  className={
-                    "flex cursor-pointer items-center gap-2.5 border-b border-slate-100 px-4 py-2.5 text-[13px] " +
-                    (isActive
-                      ? "border-l-[3px] border-l-brand bg-indigo-50 pl-[13px] font-semibold"
-                      : "hover:bg-slate-50")
-                  }
+      <div className="overflow-x-auto rounded-lg border border-slate-200">
+        <div className="min-w-[740px]">
+          <div className="flex bg-slate-50 text-[13px] font-semibold text-slate-700">
+            <div className="w-[232px] shrink-0 border-r border-slate-200 px-4 py-3">
+              Fitur ({selectedFeatureCount})
+            </div>
+            <div className={`${colGrid} flex-1 px-4 py-3`}>
+              <div>Subfitur/fungsi tambahan</div>
+              {authorityColumns.map((column) => (
+                <label
+                  key={column.key}
+                  className="flex cursor-pointer items-center justify-center gap-1.5"
+                  title={column.label}
                 >
                   <input
                     type="checkbox"
-                    className="h-4 w-4 shrink-0 cursor-pointer accent-brand"
-                    checked={count > 0}
-                    onClick={(e) => e.stopPropagation()}
-                    onChange={() =>
-                      setCells(feature, feature.subs, featureColumns(feature), count === 0)
-                    }
+                    className="h-4 w-4 accent-brand"
+                    checked={isColumnAllChecked(column.key)}
+                    disabled={activeRowsWithColumn(column.key).length === 0}
+                    onChange={(e) => setColumn(column.key, e.target.checked)}
                   />
-                  <span className="flex-1 text-slate-800">{permissionLabel(feature.name)}</span>
-                  {count > 0 && (
-                    <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-brand/10 px-1.5 text-xs font-bold text-brand">
-                      {count}
-                    </span>
-                  )}
-                </div>
-              );
-            })}
+                  <span className="text-[11px]">{column.label}</span>
+                </label>
+              ))}
+            </div>
           </div>
 
-          <div className="flex-1 bg-indigo-50/60">
-            {active.subs.map((sub) => (
-              <div
-                key={sub}
-                className={`${colGrid} border-b border-slate-200/70 px-4 py-2.5 text-[13px] text-slate-700`}
-              >
-                <label className="flex cursor-pointer items-center gap-2.5">
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 accent-brand"
-                    checked={isSubChecked(active, sub)}
-                    onChange={(e) =>
-                      setCells(active, [sub], featureColumns(active), e.target.checked)
+          <div className="flex">
+            <div className="w-[232px] shrink-0 border-r border-slate-200">
+              {customRoleFeatures.map((feature) => {
+                const count = checkedRowCount(feature);
+                const isActive = feature.name === activeName;
+                return (
+                  <div
+                    key={feature.name}
+                    onClick={() => setActiveName(feature.name)}
+                    className={
+                      "flex cursor-pointer items-center gap-2.5 border-b border-slate-100 px-4 py-2.5 " +
+                      (isActive
+                        ? "border-l-[3px] border-l-brand bg-indigo-50 pl-[13px] font-semibold"
+                        : "hover:bg-slate-50")
                     }
-                  />
-                  {permissionLabel(sub)}
-                </label>
-                {authorityColumns.map((column) => (
-                  <div key={column} className="flex justify-center">
+                  >
                     <input
                       type="checkbox"
-                      className="h-4 w-4 accent-brand disabled:opacity-30"
-                      disabled={!featureColumns(active).includes(column)}
-                      checked={!!authorityCells[cellKey(active.name, sub, column)]}
-                      onChange={(e) => setCells(active, [sub], [column], e.target.checked)}
+                      className="h-4 w-4 shrink-0 cursor-pointer accent-brand"
+                      checked={count > 0}
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={() => setFeature(feature, count === 0)}
                     />
+                    <span className="flex-1 text-[11px] font-semibold uppercase leading-tight tracking-[0.03em] text-slate-700">
+                      {feature.label}
+                    </span>
+                    {count > 0 && (
+                      <span className="inline-flex h-5 min-w-[20px] shrink-0 items-center justify-center rounded-full bg-brand/10 px-1.5 text-xs font-bold text-brand">
+                        {count}
+                      </span>
+                    )}
                   </div>
-                ))}
-              </div>
-            ))}
+                );
+              })}
+            </div>
+
+            <div className="flex-1 bg-indigo-50/60">
+              {active.rows.map((row) => {
+                const allowedColumns = rowColumns(row);
+                const disabled = !!row.disabled;
+                return (
+                  <div
+                    key={row.key}
+                    className={`${colGrid} border-b border-slate-200/70 px-4 py-2.5 text-[13px] ${
+                      disabled ? "bg-slate-100/70 text-slate-400" : "text-slate-700"
+                    }`}
+                  >
+                    <label
+                      className={
+                        "flex items-center gap-2.5 " +
+                        (disabled ? "cursor-not-allowed" : "cursor-pointer")
+                      }
+                    >
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 accent-brand disabled:cursor-not-allowed disabled:opacity-40"
+                        disabled={disabled}
+                        checked={isRowChecked(active, row)}
+                        onChange={(e) => setCells(active, [row], allowedColumns, e.target.checked)}
+                      />
+                      <span className={`flex-1 ${disabled ? "text-slate-400" : ""}`}>
+                        {row.label}
+                      </span>
+                      {disabled && (
+                        <span className="shrink-0 whitespace-nowrap rounded bg-slate-200/80 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                          Nonaktif
+                        </span>
+                      )}
+                    </label>
+                    {authorityColumns.map((column) => {
+                      const allowed = allowedColumns.includes(column.key);
+                      return (
+                        <div key={column.key} className="flex justify-center">
+                          <span className="flex items-center gap-1">
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4 accent-brand disabled:cursor-not-allowed disabled:opacity-30"
+                              disabled={disabled || !allowed}
+                              checked={allowed && isCellChecked(active, row, column.key)}
+                              onChange={(e) =>
+                                setCells(active, [row], [column.key], e.target.checked)
+                              }
+                            />
+                            {allowed && column.key === "View" && row.info && (
+                              <span
+                                role="img"
+                                tabIndex={0}
+                                aria-label="Izin Lihat mencakup akses ke informasi detail fitur ini"
+                                title="Izin Lihat mencakup akses ke informasi detail fitur ini"
+                                className="inline-flex shrink-0 cursor-help text-slate-500 hover:text-slate-700"
+                              >
+                                <Info size={15} weight="fill" />
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
