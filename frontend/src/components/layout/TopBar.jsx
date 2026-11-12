@@ -22,7 +22,8 @@ import {
   CaretLeft,
   Check,
   Moon,
-  Sun
+  Sun,
+  UserCircle
 } from "@phosphor-icons/react";
 import api from "@/services/api";
 import { DotsNine } from "@phosphor-icons/react";
@@ -403,9 +404,10 @@ export default function TopBar({ onMenuClick }) {
                   </Box>
                   <VStack align="stretch" gap={0}>
                     {user && (
-                      <Button variant="plain" justifyContent="flex-start" px={3} py={3} h="auto" color={currentTheme.dropdownText} _hover={{ bg: currentTheme.hoverBg }} onClick={() => { setShowProfile(true); setShowMenu(false); }}>
-                        Profil saya
-                      </Button>
+                      <HStack p={3} cursor="pointer" _hover={{ bg: currentTheme.hoverBg }} onClick={() => { setShowProfile(true); setShowMenu(false); }}>
+                        <UserCircle size={16} color={currentTheme.text} />
+                        <Text fontSize="sm">Profil saya</Text>
+                      </HStack>
                     )}
                     <HStack p={3} cursor="pointer" _hover={{ bg: currentTheme.hoverBg }} onClick={() => { navigate("/settings"); setShowMenu(false); }}>
                       <Gear size={16} color={currentTheme.text} /><Text fontSize="sm">Settings</Text>
@@ -534,7 +536,7 @@ export default function TopBar({ onMenuClick }) {
         </Box>
       </HStack>
       {showProfile && user && (
-        <ProfileModal user={user} onClose={() => setShowProfile(false)} onUpdated={() => fetchUser()} />
+        <ProfileModal user={user} isDark={themeMode === "dark"} onClose={() => setShowProfile(false)} onUpdated={() => fetchUser()} />
       )}
     </>
   );
