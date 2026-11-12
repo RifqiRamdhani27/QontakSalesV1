@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CaretDown,
   CaretUp,
@@ -7,6 +7,10 @@ import {
 } from "@phosphor-icons/react";
 
 import { mappingGroups } from "@/data/accountMapping";
+import { accountLabel, accountText } from "@/data/settingsAccountLabels";
+import { useAccountMappings } from "@/services/useSetting";
+import { canAccessSettings } from "@/services/settingsAccess";
+import { DropdownPanel, useDropdown } from "@/components/ui/PopoverSelect";
 import {
   btnModalSubmit,
   buttonSpinner,
@@ -14,27 +18,94 @@ import {
   formRequiredMark,
 } from "@/components/ui/styles";
 
+const codeFromOption = (option) =>
+  option?.code || option?.text.match(/^\(([^)]+)\)/)?.[1] || "";
+
+const categoryFromOption = (option) =>
+  option?.text.match(/\(([^()]*(?:\([^()]*\)[^()]*)*)\)\s*$/)?.[1] || "";
+
+const uniqueOptions = (options) => {
+  const seen = new Set();
+  return options.filter((option) => {
+    if (seen.has(option.id)) return false;
+    seen.add(option.id);
+    return true;
+  });
+};
+
+const accountOption = (account) => ({
+  id: account.code,
+  code: account.code,
+  text: account.label,
+});
+
+const rowOptions = (row, curated, accounts, byCode) => {
+  const categories = new Set(
+    (row.options || []).map(categoryFromOption).filter(Boolean)
+  );
+  const matched = curated
+    .map((option) => byCode.get(option.code))
+    .filter(Boolean)
+    .map(accountOption);
+  const relevant = accounts
+    .filter(
+      (account) => categories.size === 0 || categories.has(account.category)
+    )
+    .map(accountOption);
+  return uniqueOptions([...matched, ...relevant]);
+};
+
+const buildGroups = (accounts) => {
+  const byCode = new Map(accounts.map((account) => [account.code, account]));
+
+  return mappingGroups.map((group) => ({
+    ...group,
+    rows: group.rows.map((row) => {
+      const curated = uniqueOptions(
+        (row.options || []).map((option) => {
+          const code = codeFromOption(option);
+          return { id: code || option.id, code, text: option.text };
+        })
+      );
+      const options =
+        accounts.length === 0
+          ? curated
+          : rowOptions(row, curated, accounts, byCode);
+      const defaultOption =
+        (row.options || []).find((option) => option.id === row.value) ||
+        curated[0];
+      const defaultCode = codeFromOption(defaultOption);
+      const value = options.some((option) => option.id === defaultCode)
+        ? defaultCode
+        : options[0]?.id || "";
+      return { ...row, options, value };
+    }),
+  }));
+};
+
 function AccountSelect({ row, value, disabled, onChange }) {
-  const [open, setOpen] = useState(false);
+  const dropdown = useDropdown();
   const [query, setQuery] = useState("");
   const options = row.options || [];
 
   const filtered = query.trim()
     ? options.filter((o) =>
+        accountText(o.text).toLowerCase().includes(query.trim().toLowerCase()) ||
         o.text.toLowerCase().includes(query.trim().toLowerCase())
       )
     : options;
 
   const selected = options.find((o) => o.id === value);
-  const display = selected ? selected.text : "Select account";
+  const display = selected ? accountText(selected.text) : "Pilih akun";
 
   return (
     <div className="relative">
       <button
+        ref={dropdown.triggerRef}
         type="button"
         disabled={disabled}
         onClick={() => {
-          setOpen(!open);
+          dropdown.toggle();
           setQuery("");
         }}
         className="flex h-[38px] w-full items-center justify-between gap-2 rounded-lg border border-gray-200 bg-white px-3 text-left transition-colors hover:border-gray-300 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
@@ -43,14 +114,14 @@ function AccountSelect({ row, value, disabled, onChange }) {
         <CaretDown size={15} className="flex-shrink-0 text-slate-500" />
       </button>
 
-      {open && !disabled && (
-        <>
-          <div
-            className="fixed inset-0 z-[900]"
-            onClick={() => setOpen(false)}
-          />
-
-          <div className="absolute left-0 right-0 top-full z-[950] mt-1.5 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-[0_8px_24px_rgba(0,0,0,0.12)]">
+      {dropdown.isOpen && !disabled && (
+        <DropdownPanel
+          rect={dropdown.rect}
+          triggerRef={dropdown.triggerRef}
+          onClose={dropdown.close}
+          variant="settings"
+          className="rounded-lg border border-gray-200 bg-white shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
+        >
             <div className="border-b border-gray-100 p-2">
               <div className="flex items-center gap-2 rounded-md bg-slate-50 px-2.5 py-1.5">
                 <MagnifyingGlass size={14} className="text-slate-400" />
@@ -59,7 +130,7 @@ function AccountSelect({ row, value, disabled, onChange }) {
                   value={query}
                   autoFocus
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder={`${filtered.length} results are available`}
+                  placeholder={`${filtered.length} hasil tersedia`}
                   className="m-0 w-full border-0 bg-transparent p-0 text-sm text-gray-900 outline-none placeholder:text-slate-400"
                 />
               </div>
@@ -68,7 +139,7 @@ function AccountSelect({ row, value, disabled, onChange }) {
             <div className="max-h-[220px] overflow-y-auto p-1.5">
               {filtered.length === 0 ? (
                 <p className="m-0 px-3 py-4 text-center text-sm text-slate-500">
-                  No account found
+                  Akun tidak ditemukan
                 </p>
               ) : (
                 filtered.map((o) => (
@@ -77,7 +148,7 @@ function AccountSelect({ row, value, disabled, onChange }) {
                     type="button"
                     onClick={() => {
                       onChange(row.id, o.id);
-                      setOpen(false);
+                      dropdown.close();
                     }}
                     className={`flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-slate-50 ${
                       o.id === value
@@ -86,13 +157,12 @@ function AccountSelect({ row, value, disabled, onChange }) {
                     }`}
                   >
                     {o.id === value && <Check size={14} weight="bold" />}
-                    <span className="truncate">{o.text}</span>
+                    <span className="truncate">{accountText(o.text)}</span>
                   </button>
                 ))
               )}
             </div>
-          </div>
-        </>
+        </DropdownPanel>
       )}
     </div>
   );
@@ -110,7 +180,7 @@ function GroupAccordion({ group, values, onChange }) {
         aria-expanded={open}
       >
         <span className="text-[15px] font-semibold text-gray-900">
-          {group.label}
+          {accountLabel(group.label)}
         </span>
 
         <span className="ml-auto flex h-7 w-7 items-center justify-center text-slate-500">
@@ -123,7 +193,7 @@ function GroupAccordion({ group, values, onChange }) {
           {group.rows.map((row) => (
             <div key={row.id}>
               <label className={formLabel}>
-                {row.label}
+                {accountLabel(row.label)}
                 {row.locked ? null : (
                   <span className={formRequiredMark}>*</span>
                 )}
@@ -131,20 +201,20 @@ function GroupAccordion({ group, values, onChange }) {
 
               {row.tooltip && (
                 <p className="m-0 mb-1.5 text-xs text-slate-400">
-                  {row.tooltip}
+                  {accountLabel(row.tooltip)}
                 </p>
               )}
 
               <AccountSelect
                 row={row}
                 value={values[row.id] ?? row.value}
-                disabled={!!row.locked}
+                disabled={!!row.locked || !canAccessSettings("account-mapping", "edit")}
                 onChange={onChange}
               />
 
               {row.locked && row.note && (
                 <p className="m-0 mt-1.5 text-xs text-slate-500">
-                  {row.note}
+                  {accountLabel(row.note)}
                 </p>
               )}
             </div>
@@ -156,18 +226,24 @@ function GroupAccordion({ group, values, onChange }) {
 }
 
 export default function AccountMappingPage() {
-  const [values, setValues] = useState(() => {
-    const init = {};
-    mappingGroups.forEach((g) =>
-      g.rows.forEach((r) => {
-        init[r.id] = r.value;
-      })
-    );
-    return init;
-  });
-
+  const {
+    values: storedValues,
+    accounts,
+    loading,
+    error: loadError,
+    save,
+  } = useAccountMappings();
+  const groups = useMemo(() => buildGroups(accounts), [accounts]);
+  const [values, setValues] = useState({});
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState("");
+
+  useEffect(() => {
+    if (Object.keys(storedValues).length > 0) {
+      setValues((current) => ({ ...current, ...storedValues }));
+    }
+  }, [storedValues]);
 
   const handleChange = (rowId, accountId) => {
     setValues((prev) => ({ ...prev, [rowId]: accountId }));
@@ -176,11 +252,39 @@ export default function AccountMappingPage() {
 
   const handleSave = async (e) => {
     e.preventDefault();
+    if (!canAccessSettings("account-mapping", "edit")) return;
     try {
       setSaving(true);
       setSaved(false);
-      await new Promise((r) => setTimeout(r, 700));
+      setSaveError("");
+      const entries = [];
+      groups.forEach((group) => {
+        group.rows.forEach((row) => {
+          const accountValue = values[row.id] ?? row.value;
+          const selected = (row.options || []).find((option) => option.id === accountValue);
+          const accountCode = codeFromOption(selected) || accountValue;
+          if (!accountCode) return;
+          entries.push({
+            account_type: group.id,
+            target_type: "company",
+            target_id: row.id,
+            account_code: accountCode,
+            account_name: selected?.text || "",
+            mapping_options: {
+              account_value: accountValue,
+              label: row.label,
+            },
+          });
+        });
+      });
+      if (entries.length === 0) {
+        setSaveError("Belum ada akun yang bisa dipetakan. Lengkapi Daftar Akun terlebih dahulu.");
+        return;
+      }
+      await save(entries);
       setSaved(true);
+    } catch (error) {
+      setSaveError(error.response?.data?.detail || "Gagal menyimpan pemetaan akun.");
     } finally {
       setSaving(false);
     }
@@ -190,24 +294,26 @@ export default function AccountMappingPage() {
     <div className="mx-auto max-w-[1400px] p-6 max-md:p-4">
       <div className="mb-5">
         <h1 className="m-0 text-[28px] font-bold text-gray-900">
-          Account Mapping
+          Pemetaan Akun
         </h1>
         <p className="m-0 mt-1.5 text-sm text-slate-500">
-          Choose default account for each label to help the system create your
-          journal entry automatically from transactions.
+          Pilih akun bawaan untuk setiap label agar sistem dapat membuat entri jurnal secara otomatis dari transaksi.
         </p>
+        {loadError && (
+          <p className="m-0 mt-2 text-sm text-red-600">{loadError}</p>
+        )}
       </div>
 
       <div className="overflow-hidden rounded-[10px] border border-gray-200 bg-white">
         <div className="border-b border-gray-200 p-5">
-          <h2 className="m-0 text-lg text-gray-900">Mapping List</h2>
+          <h2 className="m-0 text-lg text-gray-900">Daftar Pemetaan</h2>
           <p className="m-0 mt-[5px] text-[13px] italic text-slate-500">
-            All fields are required
+            Semua bidang wajib diisi
           </p>
         </div>
 
         <form onSubmit={handleSave}>
-          {mappingGroups.map((g) => (
+          {groups.map((g) => (
             <GroupAccordion
               key={g.id}
               group={g}
@@ -217,28 +323,32 @@ export default function AccountMappingPage() {
           ))}
 
           <div className="flex flex-col gap-4 p-5 max-md:items-stretch md:flex-row md:items-center md:justify-between">
-            <p className="m-0 max-w-[420px] text-[13px] text-slate-500">
-              Reset account will take effect after you submit this account
-              mapping
-            </p>
+            <div className="max-w-[420px]">
+              <p className="m-0 text-[13px] text-slate-500">
+                Pengaturan ulang akun akan berlaku setelah Anda menyimpan pemetaan akun ini
+              </p>
+              {saveError && (
+                <p className="m-0 mt-1.5 text-[13px] text-red-600">{saveError}</p>
+              )}
+            </div>
 
             <button
               type="submit"
               className={btnModalSubmit}
-              disabled={saving}
+              disabled={saving || loading}
             >
               {saving ? (
                 <>
                   <span className={buttonSpinner} />
-                  Saving...
+                  Menyimpan...
                 </>
               ) : saved ? (
                 <>
                   <Check size={16} weight="bold" />
-                  Saved
+                  Tersimpan
                 </>
               ) : (
-                "Submit"
+                "Simpan"
               )}
             </button>
           </div>
