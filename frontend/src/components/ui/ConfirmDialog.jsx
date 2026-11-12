@@ -32,7 +32,7 @@ const ACTION_CONFIG = {
   },
 };
 
-export default function ConfirmDialog({ open, onClose, onConfirm, title, message, action = "warning", loading = false }) {
+export default function ConfirmDialog({ open, onClose, onConfirm, title, message, action = "warning", loading = false, confirmText, cancelText = "Cancel" }) {
   const config = ACTION_CONFIG[action] || ACTION_CONFIG.warning;
   const IconComp = config.icon;
 
@@ -58,7 +58,7 @@ export default function ConfirmDialog({ open, onClose, onConfirm, title, message
             <Dialog.Footer>
               <HStack gap={3}>
                 <Dialog.CloseTrigger asChild>
-                  <Button variant="outline" disabled={loading}>Cancel</Button>
+                  <Button variant="outline" disabled={loading}>{cancelText}</Button>
                 </Dialog.CloseTrigger>
                 <Button
                   bg={config.buttonColor}
@@ -67,7 +67,7 @@ export default function ConfirmDialog({ open, onClose, onConfirm, title, message
                   loading={loading}
                   onClick={() => { onConfirm(); onClose(); }}
                 >
-                  {config.confirmText}
+                  {confirmText ?? config.confirmText}
                 </Button>
               </HStack>
             </Dialog.Footer>
