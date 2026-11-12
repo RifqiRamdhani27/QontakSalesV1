@@ -26,16 +26,19 @@ const LEFT_ITEMS = [
     {
         id: "unit",
         title: "Unit",
+        path: "/units",
         description: "Berisi daftar satuan (unit) produk Anda.",
     },
     {
         id: "daftar-audit",
         title: "Daftar Audit",
+        path: "/audits",
         description: "Daftar perubahan yang telah dilakukan",
     },
     {
         id: "penghitungan-ulang-nilai-persediaan",
         title: "Penghitungan ulang nilai persediaan",
+        path: "/inventory-recalculation",
         badge: "Baru",
         description:
             "Menampilkan status dan log penghitungan nilai persediaan yang disebabkan oleh perubahan data transaksi.",
@@ -58,6 +61,7 @@ const RIGHT_ITEMS = [
     {
         id: "daftar-lampiran",
         title: "Daftar Lampiran",
+        path: "/attachments",
         description: "Daftar semua lampiran pada transaksi",
     },
     {
@@ -77,6 +81,7 @@ const RIGHT_ITEMS = [
     {
         id: "daftar-impor-ekspor",
         title: "Daftar Impor & Ekspor",
+        path: "/importexport",
         description:
             "Menampilkan daftar riwayat impor dan ekspor di Jurnal. Anda dapat melihat status dan data dari masing-masing impor & ekspor, serta menghapus data per impor.",
     },
