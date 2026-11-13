@@ -1,7 +1,32 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Box, HStack, VStack, Text } from "@chakra-ui/react";
 import { X } from "@phosphor-icons/react";
+
+const THEME = {
+  light: {
+    panelBg: "white",
+    overlayBg: "blackAlpha.600",
+    text: "#595d67ff",
+    titleText: "#1A202C",
+    border: "border",
+    hoverBg: "muted",
+    iconBoxBg: "white",
+    closeColor: "#595d67ff",
+    divider: "border",
+  },
+  dark: {
+    panelBg: "#1A1A1A",
+    overlayBg: "blackAlpha.700",
+    text: "#eaeaeaff",
+    titleText: "#F3F4F6",
+    border: "#333333",
+    hoverBg: "#2A2A2A",
+    iconBoxBg: "#242424",
+    closeColor: "#E5B85C",
+    divider: "#333333",
+  },
+};
 
 const MY_APPS = [
   {
@@ -122,7 +147,7 @@ const MORE_APPS = [
   },
 ];
 
-function AppItem({ app }) {
+function AppItem({ app, theme }) {
   return (
     <HStack
       as="a"
@@ -135,12 +160,13 @@ function AppItem({ app }) {
       borderRadius="md"
       cursor="pointer"
       transition="background 150ms ease"
-      _hover={{ bg: "muted" }}
+      _hover={{ bg: theme.hoverBg }}
     >
       <Box
         w="42px" h="42px" flexShrink={0}
-        border="1px solid" borderColor="border" borderRadius="md"
-        display="flex" alignItems="center" justifyContent="center" bg="white"
+        border="1px solid" borderColor={theme.border} borderRadius="md"
+        display="flex" alignItems="center" justifyContent="center"
+        bg={theme.iconBoxBg}
       >
         {typeof app.icon === "string" ? (
           <img src={app.icon} alt={app.name} width={24} height={24} style={{ objectFit: "contain" }} />
@@ -149,27 +175,44 @@ function AppItem({ app }) {
         )}
       </Box>
       <VStack align="start" gap={0.5}>
-        <Text fontSize="sm" fontWeight="semibold">{app.name}</Text>
-        <Text fontSize="sm" color="foreground" opacity={0.6} lineHeight="1.6">{app.desc}</Text>
+        <Text fontSize="sm" fontWeight="semibold" color={theme.titleText}>{app.name}</Text>
+        <Text fontSize="sm" color={theme.text} opacity={0.6} lineHeight="1.6">{app.desc}</Text>
       </VStack>
     </HStack>
   );
 }
 
-function Section({ title, apps, divider }) {
+function Section({ title, apps, divider, theme }) {
   return (
     <Box>
-      {divider && <Box borderTop="1px solid" borderColor="border" my={4} />}
-      <Text fontSize="sm" mb={3} lineHeight="1.6">{title}</Text>
+      {divider && <Box borderTop="1px solid" borderColor={theme.divider} my={4} />}
+      <Text fontSize="sm" mb={3} lineHeight="1.6" color={theme.text}>{title}</Text>
       <VStack align="stretch" gap={1}>
-        {apps.map((a) => <AppItem key={a.name} app={a} />)}
+        {apps.map((a) => <AppItem key={a.name} app={a} theme={theme} />)}
       </VStack>
     </Box>
   );
 }
 
 export default function AppsDrawer({ open, onClose, userName }) {
-  // Tutup dengan tombol ESC + kunci scroll body saat terbuka
+  const [themeMode, setThemeMode] = useState(() => {
+    return localStorage.getItem("app_theme") || "light";
+  });
+
+  useEffect(() => {
+    const handleThemeChange = () => {
+      setThemeMode(localStorage.getItem("app_theme") || "light");
+    };
+    window.addEventListener("themeChanged", handleThemeChange);
+    window.addEventListener("storage", handleThemeChange);
+    return () => {
+      window.removeEventListener("themeChanged", handleThemeChange);
+      window.removeEventListener("storage", handleThemeChange);
+    };
+  }, []);
+
+  const theme = THEME[themeMode];
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e) => e.key === "Escape" && onClose();
@@ -186,7 +229,7 @@ export default function AppsDrawer({ open, onClose, userName }) {
     <>
       {/* Overlay (fade) */}
       <Box
-        position="fixed" inset={0} bg="blackAlpha.600" zIndex={1000}
+        position="fixed" inset={0} bg={theme.overlayBg} zIndex={1000}
         opacity={open ? 1 : 0}
         pointerEvents={open ? "auto" : "none"}
         transition="opacity 300ms ease"
@@ -197,17 +240,18 @@ export default function AppsDrawer({ open, onClose, userName }) {
       <Box
         position="fixed" top={0} right={0} h="100vh"
         w={{ base: "100%", sm: "340px" }}
-        bg="white" shadow="2xl" zIndex={1001}
+        bg={theme.panelBg} shadow="2xl" zIndex={1001}
         overflowY="auto"
         transform={open ? "translateX(0)" : "translateX(100%)"}
         opacity={open ? 1 : 0}
         visibility={open ? "visible" : "hidden"}
-        transition="transform 350ms cubic-bezier(0.22, 1, 0.36, 1), opacity 250ms ease, visibility 350ms"
+        transition="transform 350ms cubic-bezier(0.22, 1, 0.36, 1), opacity 250ms ease, visibility 350ms, background 200ms ease"
         willChange="transform"
+        color={theme.text}
       >
         <HStack justify="flex-end" p={4} pb={0}>
-          <Box cursor="pointer" p={1} borderRadius="md" _hover={{ bg: "muted" }} onClick={onClose}>
-            <X size={20} color="#595d67ff" />
+          <Box cursor="pointer" p={1} borderRadius="md" _hover={{ bg: theme.hoverBg }} onClick={onClose}>
+            <X size={20} color={theme.closeColor} />
           </Box>
         </HStack>
 
@@ -215,13 +259,15 @@ export default function AppsDrawer({ open, onClose, userName }) {
           <Section
             title={`Hi ${userName || "there"}, your apps are listed here.`}
             apps={MY_APPS}
+            theme={theme}
           />
           <Section
             divider
             title="Other apps by Mekari that might suit your business needs."
             apps={OTHER_APPS}
+            theme={theme}
           />
-          <Section divider title="More from Mekari." apps={MORE_APPS} />
+          <Section divider title="More from Mekari." apps={MORE_APPS} theme={theme} />
         </Box>
       </Box>
     </>,
