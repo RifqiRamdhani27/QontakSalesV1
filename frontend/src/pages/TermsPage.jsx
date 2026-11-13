@@ -86,8 +86,6 @@ export default function TermsPage() {
   return (
     <Box bg={C.bg} minH="100vh" fontFamily={FONT} color={C.ink}>
       <Navbar />
-
-      {/* Hero gelap: membuat navbar tampil persis seperti di landing page */}
       <Box
         id="terms-hero" position="relative" overflow="hidden" color="white" bg={C.navy}
         pt={{ base: 32, md: 40 }} pb={{ base: 14, md: 20 }}
@@ -104,12 +102,29 @@ export default function TermsPage() {
         <Container maxW="4xl" position="relative" zIndex={1}>
           <VStack align="start" gap={4}>
             <HStack
-              as="button" gap={1.5} fontSize="sm" fontWeight="600" color={C.soft}
-              transition={`color 300ms ${EASE}`} _hover={{ color: C.sky300 }}
-              onClick={() => navigate("/")} marginTop="-75px"
+              as="button"
+              display="inline-flex"
+              alignItems="center"
+              gap={1.5}
+              fontSize="sm"
+              fontWeight="600"
+              color={C.soft}
+              transition={`color 300ms ${EASE}`}
+              role="group"
+              _hover={{
+                color: C.sky300,
+                _child: { color: C.sky300 }
+              }}
+              py={2}
+              px={2}
+              ml={-2}
+              my={-2}
+              onClick={() => navigate("/")}
+              marginTop="-75px"
+              cursor="pointer"
             >
               <ArrowLeft size={16} weight="bold" />
-              <Text>Kembali ke Beranda</Text>
+              <Text m={0}>Kembali ke Beranda</Text>
             </HStack>
             <Text fontSize="xs" fontWeight="700" letterSpacing="0.1em" textTransform="uppercase" color={C.sky400}>
               Legal
