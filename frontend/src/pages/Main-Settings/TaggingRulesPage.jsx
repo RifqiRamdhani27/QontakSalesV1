@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { CaretDown, Check, PencilSimple, Plus, Trash, X } from "@phosphor-icons/react";
 import Pagination from "@/components/ui/Pagination";
 import PopoverSelect from "@/components/ui/PopoverSelect";
 import MultiSelect from "@/components/ui/MultiSelect";
+import { DropdownPanel } from "@/components/ui/PopoverSelect";
 import {
   tableWrapper,
   tableBase,
@@ -10,7 +11,6 @@ import {
   th,
   td,
   trHover,
-  selectBase,
   formLabel,
   btnPrimary,
   modalOverlay,
@@ -29,27 +29,30 @@ import {
   taggingTransactionTypes,
   taggingTypeOptions,
   customTagOptions,
-  dummyTaggingRules,
+  ruleLabel,
 } from "@/data/ruleData";
-import { dummyUsers } from "@/data/dummy";
+import { useTaggingRules } from "@/services/useSetting";
 
 const PAGE_SIZE = 5;
 
 const taggingTypeLabel = (value) =>
   taggingTypeOptions.find((option) => option.value === value)?.label || "-";
 
-function UserChips({ selected, onToggle }) {
+function UserChips({ selected, users, onToggle }) {
   return (
     <MultiSelect
+        floating
       selected={selected}
+      emptyText="Belum ada pengguna"
+      removeLabel="Hapus"
       onToggle={onToggle}
-      options={dummyUsers.map((user) => user.username)}
-      placeholder="Select users (max. 250 people)"
+      options={users.map((user) => user.username)}
+      placeholder="Pilih pengguna (maks. 250 orang)"
     />
   );
 }
 
-function TaggingRuleForm({ initialRule, onSubmit, onClose }) {
+function TaggingRuleForm({ initialRule, users, onSubmit, onClose }) {
   const [ruleName, setRuleName] = useState(initialRule?.ruleName || "");
   const [transactionType, setTransactionType] = useState(
     initialRule?.transactionType || "Sales Invoice"
@@ -91,13 +94,13 @@ function TaggingRuleForm({ initialRule, onSubmit, onClose }) {
     <form className={modalPanel} onSubmit={submit}>
       <div className={modalHeader}>
         <h3 className={modalTitle}>
-          {initialRule ? initialRule.ruleName : "Create rule"}
+          {initialRule ? initialRule.ruleName : "Buat aturan"}
         </h3>
         <button
           type="button"
           className={modalCloseButton}
           onClick={onClose}
-          aria-label="Close"
+          aria-label="Tutup"
         >
           <X size={20} />
         </button>
@@ -106,7 +109,7 @@ function TaggingRuleForm({ initialRule, onSubmit, onClose }) {
       <div className="max-h-[calc(90vh-140px)] overflow-y-auto px-[22px] py-5">
         <div className={formGroup}>
           <label className={formLabel} htmlFor="tagging_rule_name">
-            Rule name
+            Nama aturan
           </label>
           <input
             id="tagging_rule_name"
@@ -119,10 +122,13 @@ function TaggingRuleForm({ initialRule, onSubmit, onClose }) {
         </div>
 
         <div className={formGroup}>
-          <span className={formLabel}>Transaction Type</span>
+          <span className={formLabel}>Jenis Transaksi</span>
           <PopoverSelect
+        floating
             value={transactionType}
-            placeholder="Select option"
+            getOptionLabel={ruleLabel}
+            emptyText="Tidak ada pilihan"
+            placeholder="Pilih opsi"
             groups={[
               {
                 label: "",
@@ -134,7 +140,7 @@ function TaggingRuleForm({ initialRule, onSubmit, onClose }) {
         </div>
 
         <div className={formGroup}>
-          <span className={formLabel}>Tagging type that appears on transaction</span>
+          <span className={formLabel}>Jenis penanda yang tampil pada transaksi</span>
           <div className="flex flex-col gap-2.5">
             {taggingTypeOptions.map((option) => (
               <label
@@ -155,29 +161,36 @@ function TaggingRuleForm({ initialRule, onSubmit, onClose }) {
           </div>
           {taggingType === 3 && (
             <div className="mt-3">
-              <span className={formLabel}>Custom tag</span>
+              <span className={formLabel}>Penanda kustom</span>
               <MultiSelect
+        floating
                 selected={customTags}
+                emptyText="Belum ada penanda"
+                removeLabel="Hapus"
                 onToggle={toggleCustomTag}
                 options={customTagOptions}
-                placeholder="Type & enter to create tag"
+                placeholder="Ketik dan tekan Enter untuk membuat penanda"
               />
             </div>
           )}
         </div>
 
         <div>
-          <span className={formLabel}>Transaction maker</span>
-          <UserChips selected={transactionMakers} onToggle={toggleMaker} />
+          <span className={formLabel}>Pembuat transaksi</span>
+          <UserChips
+            selected={transactionMakers}
+            users={users}
+            onToggle={toggleMaker}
+          />
         </div>
       </div>
 
       <div className={modalFooter}>
         <button type="button" className={btnModalCancel} onClick={onClose}>
-          Cancel
+          Batal
         </button>
         <button type="submit" className={btnModalSubmit}>
-          {initialRule ? "Save changes" : "Create rule"}
+          {initialRule ? "Simpan perubahan" : "Buat aturan"}
         </button>
       </div>
     </form>
@@ -194,22 +207,22 @@ function DeleteTaggingModal({ ruleName, onConfirm, onClose }) {
             type="button"
             className={modalCloseButton}
             onClick={onClose}
-            aria-label="Close"
+            aria-label="Tutup"
           >
             <X size={20} />
           </button>
         </div>
         <div className="px-[22px] py-5">
           <p className="m-0 text-sm leading-relaxed text-slate-600">
-            The deleted rule cannot be recovered.
+            Aturan yang dihapus tidak dapat dipulihkan.
           </p>
         </div>
         <div className={modalFooter}>
           <button type="button" className={btnModalCancel} onClick={onClose}>
-            Cancel
+            Batal
           </button>
           <button type="button" className={btnModalDelete} onClick={onConfirm}>
-            Yes, delete
+            Ya, hapus
           </button>
         </div>
       </div>
@@ -218,48 +231,56 @@ function DeleteTaggingModal({ ruleName, onConfirm, onClose }) {
 }
 
 export default function TaggingRulesPage() {
-  const [rules, setRules] = useState(dummyTaggingRules);
+  const { rules, options, loading, error, create, update, remove } =
+    useTaggingRules();
   const [filterType, setFilterType] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingRule, setEditingRule] = useState(null);
   const [deletingRule, setDeletingRule] = useState(null);
   const [openActionId, setOpenActionId] = useState(null);
+  const actionRef = useRef(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(PAGE_SIZE);
 
   const filtered = rules.filter((rule) =>
     filterType ? rule.transactionType === filterType : true
   );
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
   const pageItems = filtered.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE
+    (safePage - 1) * pageSize,
+    safePage * pageSize
   );
 
-  const handleSubmit = (values) => {
-    if (editingRule) {
-      setRules((current) =>
-        current.map((rule) =>
-          rule.id === editingRule.id ? { ...rule, ...values } : rule
-        )
-      );
-      setEditingRule(null);
-    } else {
-      setRules((current) => [...current, { id: Date.now(), ...values }]);
+  const handleSubmit = async (values) => {
+    try {
+      if (editingRule) {
+        await update(editingRule.id, values);
+        setEditingRule(null);
+      } else {
+        await create(values);
+      }
+      setShowForm(false);
+    } catch (requestError) {
+      window.alert(requestError.response?.data?.detail || "Gagal menyimpan aturan tagging.");
     }
-    setShowForm(false);
   };
 
-  const handleDelete = () => {
-    setRules((current) => current.filter((rule) => rule.id !== deletingRule.id));
-    setDeletingRule(null);
+  const handleDelete = async () => {
+    try {
+      await remove(deletingRule.id);
+      setDeletingRule(null);
+    } catch (requestError) {
+      window.alert(requestError.response?.data?.detail || "Gagal menghapus aturan tagging.");
+    }
   };
 
   const taggingDisplay = (rule) => {
     if (rule.taggingType === 3) {
       return rule.customTags.length > 0
         ? rule.customTags.join(", ")
-        : "Custom";
+        : "Kustom";
     }
     return taggingTypeLabel(rule.taggingType);
   };
@@ -267,7 +288,7 @@ export default function TaggingRulesPage() {
   return (
     <div className="p-7 max-md:p-[18px]">
       <div className="mb-6 flex items-center justify-between gap-4">
-        <h2 className="m-0 text-[28px] font-bold text-gray-900">Tagging Rule</h2>
+        <h2 className="m-0 text-[28px] font-bold text-gray-900">Aturan tagging</h2>
         <button
           type="button"
           className={btnPrimary}
@@ -276,15 +297,24 @@ export default function TaggingRulesPage() {
             setShowForm(true);
           }}
         >
-          Create new tagging rule
+          Buat aturan tagging baru
         </button>
       </div>
+
+      {(error || loading) && (
+        <p className="m-0 mb-4 text-sm text-slate-500">
+          {loading ? "Memuat aturan tagging..." : error}
+        </p>
+      )}
 
       <div className="mb-4 flex items-center justify-end gap-3">
         <div className="w-[220px]">
           <PopoverSelect
+        floating
             value={filterType}
-            placeholder="All transaction type"
+            getOptionLabel={ruleLabel}
+            emptyText="Tidak ada pilihan"
+            placeholder="Semua jenis transaksi"
             includeAll
             groups={[
               {
@@ -307,10 +337,10 @@ export default function TaggingRulesPage() {
         <div className={tableCard}>
           <div className="flex flex-col items-center justify-center gap-2 px-6 py-16 text-center">
             <p className="m-0 text-[15px] font-semibold text-gray-900">
-              There are no tagging rules yet
+              Belum ada aturan tagging
             </p>
             <p className="m-0 text-sm text-slate-500">
-              The tagging rules will appear here.
+              Aturan tagging akan tampil di sini.
             </p>
           </div>
         </div>
@@ -320,11 +350,11 @@ export default function TaggingRulesPage() {
             <table className={tableBase}>
               <thead>
                 <tr>
-                  <th className={th}>Rule name</th>
-                  <th className={th}>Transaction type</th>
-                  <th className={th}>Tagging type</th>
+                  <th className={th}>Nama aturan</th>
+                  <th className={th}>Jenis transaksi</th>
+                  <th className={th}>Jenis penanda</th>
                   <th className="bg-slate-50 px-[18px] py-3.5 text-right">
-                    Action
+                    Tindakan
                   </th>
                 </tr>
               </thead>
@@ -334,23 +364,32 @@ export default function TaggingRulesPage() {
                     <td className={`${td} font-medium text-gray-900`}>
                       {rule.ruleName}
                     </td>
-                    <td className={td}>{rule.transactionType}</td>
+                    <td className={td}>{ruleLabel(rule.transactionType)}</td>
                     <td className={td}>{taggingDisplay(rule)}</td>
                     <td className="border-b border-slate-100 px-[18px] py-[15px] text-right">
                       <div className="relative inline-block">
                         <button
                           type="button"
                           className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-slate-50"
-                          onClick={() =>
+                          onClick={(event) => {
+                            actionRef.current = event.currentTarget;
                             setOpenActionId(
                               openActionId === rule.id ? null : rule.id
-                            )
-                          }
+                            );
+                          }}
                         >
-                          Action <CaretDown size={12} />
+                          Tindakan <CaretDown size={12} />
                         </button>
                         {openActionId === rule.id && (
-                          <div className="absolute right-0 top-full z-10 mt-1 w-44 overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+                          <DropdownPanel
+                            rect={actionRef.current?.getBoundingClientRect()}
+                            triggerRef={actionRef}
+                            onClose={() => setOpenActionId(null)}
+                            variant="settings"
+                            width={176}
+                            align="right"
+                            className="rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
+                          >
                             <button
                               type="button"
                               className="flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-left text-[13px] text-gray-700 hover:bg-slate-50"
@@ -360,7 +399,7 @@ export default function TaggingRulesPage() {
                                 setShowForm(true);
                               }}
                             >
-                              <PencilSimple size={14} /> Edit rule
+                              <PencilSimple size={14} /> Ubah aturan
                             </button>
                             <button
                               type="button"
@@ -370,9 +409,9 @@ export default function TaggingRulesPage() {
                                 setDeletingRule(rule);
                               }}
                             >
-                              <Trash size={14} /> Delete rule
+                              <Trash size={14} /> Hapus aturan
                             </button>
-                          </div>
+                          </DropdownPanel>
                         )}
                       </div>
                     </td>
@@ -386,11 +425,15 @@ export default function TaggingRulesPage() {
 
       <div className="mt-4">
         <Pagination
-          currentPage={currentPage}
+          currentPage={safePage}
           totalPages={totalPages}
           totalItems={filtered.length}
-          pageSize={PAGE_SIZE}
+          pageSize={pageSize}
           onPageChange={setCurrentPage}
+          onPageSizeChange={(size) => {
+            setPageSize(size);
+            setCurrentPage(1);
+          }}
         />
       </div>
 
@@ -398,6 +441,7 @@ export default function TaggingRulesPage() {
         <div className={modalOverlay}>
           <TaggingRuleForm
             initialRule={editingRule}
+            users={options.users}
             onSubmit={handleSubmit}
             onClose={() => {
               setShowForm(false);

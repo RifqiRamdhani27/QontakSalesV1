@@ -22,11 +22,13 @@ import {
   CaretLeft,
   Check,
   Moon,
-  Sun
+  Sun,
+  UserCircle
 } from "@phosphor-icons/react";
 import api from "@/services/api";
 import { DotsNine } from "@phosphor-icons/react";
 import AppsDrawer from "./AppsDrawer";
+import ProfileModal from "@/components/profile/ProfileModal";
 
 // Palet Warna Tema
 const THEME = {
@@ -83,6 +85,7 @@ export default function TopBar({ onMenuClick }) {
   const [user, setUser] = useState(null);
   const [avatarKey, setAvatarKey] = useState(0);
   const [showApps, setShowApps] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
 
   const notifRef = useRef(null);
   const menuRef = useRef(null);
@@ -414,6 +417,12 @@ export default function TopBar({ onMenuClick }) {
                     )}
                   </Box>
                   <VStack align="stretch" gap={0}>
+                    {user && (
+                      <HStack p={3} cursor="pointer" _hover={{ bg: currentTheme.hoverBg }} onClick={() => { setShowProfile(true); setShowMenu(false); }}>
+                        <UserCircle size={16} color={currentTheme.text} />
+                        <Text fontSize="sm">Profil saya</Text>
+                      </HStack>
+                    )}
                     <HStack p={3} cursor="pointer" _hover={{ bg: currentTheme.hoverBg }} onClick={() => { navigate("/settings"); setShowMenu(false); }}>
                       <Gear size={16} color={currentTheme.text} /><Text fontSize="sm">Settings</Text>
                     </HStack>
@@ -540,6 +549,9 @@ export default function TopBar({ onMenuClick }) {
           )}
         </Box>
       </HStack>
+      {showProfile && user && (
+        <ProfileModal user={user} isDark={themeMode === "dark"} onClose={() => setShowProfile(false)} onUpdated={() => fetchUser()} />
+      )}
     </>
   );
 }

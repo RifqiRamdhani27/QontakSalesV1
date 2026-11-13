@@ -176,9 +176,63 @@ python manage.py runserver 8000
 ```
 Backend akan aktif di: `http://localhost:8000`
 
-### 2. Menjalankan Frontend (React + Vite)
+### Seed Data Wilayah
 
-Buka terminal baru:
+Seeder mengisi data provinsi, kabupaten/kota, kecamatan, kelurahan/desa, dan kode pos untuk dropdown alamat pada Settings → Perusahaan. Dataset sudah disertakan di `backend/qontak_sales/apps/regions/data/wilayah.json`; tidak perlu mengunduh data atau menyediakan folder proyek lain.
+
+Pastikan dependensi backend sudah terpasang dan konfigurasi `DB_*` di `backend/.env` menunjuk database yang benar. Cadangkan database penting sebelum menjalankan seed. Dari root repository, jalankan:
+
+```bash
+cd backend
+source venv/bin/activate
+python manage.py migrate
+python manage.py seed_wilayah --dry-run
+python manage.py seed_wilayah
+```
+
+Di Windows, ganti perintah aktivasi dengan `venv\Scripts\activate`. Jika terminal sudah berada di folder `backend` dengan virtual environment aktif, mulai dari `python manage.py migrate`.
+
+- Migrasi mengisi data dasar provinsi dan kabupaten/kota. Jalankan `seed_wilayah` untuk melengkapi kecamatan, kelurahan/desa, dan kode pos.
+- `--dry-run` memvalidasi kode, relasi, serta rencana perubahan tanpa menulis data. Periksa nama database dan rencana yang dicetak sebelum menjalankan seed sebenarnya.
+- Seed menambah kode wilayah yang belum ada dan mengisi kode pos yang kosong. ID, nama, relasi, dan kode pos existing yang sudah terisi tidak ditimpa. Relasi yang bertentangan ditolak.
+- Penulisan menggunakan satu transaksi; jika gagal, perubahan dalam seed dibatalkan. Command aman dijalankan ulang tanpa membuat duplikat dan tidak mengubah data perusahaan atau pengguna.
+- Frontend membaca tabel database melalui `/api/regions/provinces/`, `/api/regions/cities/`, dan `/api/regions/postal-codes/?city_code=...`, bukan membaca file JSON secara langsung.
+
+Untuk menambahkan mapping kode pos yang sudah diverifikasi, jalankan dari folder `backend`:
+
+```bash
+python manage.py seed_wilayah --kodepos /path/to/kodepos.json --dry-run
+python manage.py seed_wilayah --kodepos /path/to/kodepos.json
+```
+
+File tambahan berupa object JSON dengan kode kelurahan sebagai key dan kode pos lima digit sebagai string. Kode kelurahan harus ada dalam snapshot. Format tidak valid ditolak, bukan diperbaiki otomatis; nilai database yang sudah terisi tetap dipertahankan.
+
+#### Isi dan sumber dataset wilayah
+
+| Jenis | Jumlah |
+|-------|--------|
+| Provinsi | 38 |
+| Kabupaten/kota | 514 |
+| Kecamatan | 7.277 |
+| Kelurahan/desa | 83.762 |
+| Kelurahan dengan kode pos | 83.021 |
+| Kelurahan tanpa kode pos dalam sumber | 741 |
+
+Kode pos yang tidak tersedia dibiarkan kosong. Snapshot belum menyediakan kode pos untuk Tambrauw (`96.09`) dan Maybrat (`96.10`); API mengembalikan daftar kosong dan form menampilkan bahwa pilihan belum tersedia, tanpa memakai kode pos wilayah lain sebagai pengganti.
+
+Sumber langsung snapshot:
+
+- Provinsi dan kabupaten/kota: katalog existing `frontend/src/data/provinsi.json` dan `frontend/src/data/kabupaten_kota.json` pada QontakSalesV1, identik dengan katalog QontakSalesVersion2 saat snapshot dibuat.
+- Kecamatan dan kelurahan: dataset existing QontakSales, `frontend/public/data/kecamatan.json` dan `frontend/public/data/kelurahan/*.json`.
+- Kode pos: dataset existing QontakSalesVersion2, `backend/qontak_sales/apps/regions/management/commands/kodepos.json`.
+
+Semua sumber langsung tersebut sudah digabungkan ke `wilayah.json`. Tidak ada download GitHub atau API luar saat seed/runtime. Identitas kelurahan dicocokkan secara persis; tidak ada lokasi dummy, penggantian kode wilayah, atau kode pos hasil tebakan.
+
+Checksum SHA-256 dataset: `8343aa8119a13ffc9855f1c6e9a0776c1411d6c23a8a7c154118ec3e901f7995`.
+
+Asal upstream dan lisensi dataset warisan belum tercatat secara terverifikasi di repository sumber. Dataset ini tidak diklaim sebagai data resmi terkini atau otomatis berlisensi MIT; konfirmasi hak redistribusi sebelum menerbitkan snapshot secara publik.
+
+### Frontend Setup
 
 ```bash
 cd frontend

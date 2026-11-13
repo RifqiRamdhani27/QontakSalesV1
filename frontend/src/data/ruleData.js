@@ -1,3 +1,40 @@
+const ruleLabels = {
+  sales: "Penjualan",
+  purchase: "Pembelian",
+  purchases: "Pembelian",
+  expenses: "Biaya",
+  products: "Produk",
+  "sales invoice": "Faktur penjualan",
+  "payment receipt": "Penerimaan pembayaran",
+  "sales order": "Pesanan penjualan",
+  "down payment receipt": "Penerimaan uang muka",
+  "sales return": "Retur penjualan",
+  "sales quote": "Penawaran penjualan",
+  "sales delivery": "Pengiriman penjualan",
+  "purchase invoice": "Faktur pembelian",
+  "purchase payment": "Pembayaran pembelian",
+  "purchase order": "Pesanan pembelian",
+  "purchase down payment": "Uang muka pembelian",
+  "purchase return": "Retur pembelian",
+  "purchase quote": "Penawaran pembelian",
+  "purchase delivery": "Pengiriman pembelian",
+  "purchase request": "Permintaan pembelian",
+  "product conversion": "Konversi produk",
+  "warehouse transfer": "Transfer gudang",
+  "stock adjustment": "Penyesuaian stok",
+  "either must approve": "Salah satu penyetuju harus menyetujui",
+  "all must approve": "Semua penyetuju harus menyetujui",
+  "all transaction types": "Semua jenis transaksi",
+  edit: "Ubah",
+  create: "Buat",
+  delete: "Hapus",
+};
+
+export function ruleLabel(value) {
+  const key = value?.toLowerCase();
+  return Object.hasOwn(ruleLabels, key) ? ruleLabels[key] : value;
+}
+
 export const approvalTransactionTypes = [
   {
     label: "Sales",
@@ -39,21 +76,21 @@ export const approvalApproverTypes = ["Either must approve", "All must approve"]
 export const approvalCriteriaOptions = [
   {
     value: "specificValue",
-    label: "Transaction exceeds specific value",
-    note: "Only applies if selecting all customers option.",
+    label: "Transaksi melebihi nilai tertentu",
+    note: "Hanya berlaku jika opsi semua pelanggan dipilih.",
     description: "",
   },
   {
     value: "maxReceivable",
-    label: "Transaction exceeds maximum receivable",
-    note: "Only applies in sales invoice and order.",
-    description: "Applies if a customer has a maximum receivable (credit limit).",
+    label: "Transaksi melebihi batas maksimal piutang",
+    note: "Hanya berlaku pada faktur dan pesanan penjualan.",
+    description: "Berlaku jika pelanggan memiliki batas maksimal piutang (batas kredit).",
   },
   {
     value: "overdue",
-    label: "Transaction is overdue",
-    note: "Only applies in sales invoice and order.",
-    description: "Applies if a customer has an overdue transaction for",
+    label: "Transaksi terlambat dibayar",
+    note: "Hanya berlaku pada faktur dan pesanan penjualan.",
+    description: "Berlaku jika pelanggan memiliki transaksi yang terlambat dibayar selama",
   },
 ];
 
@@ -136,7 +173,7 @@ export const dummyApprovalChangelogs = {
     {
       changeTime: "18 Sep 2026, 19:12",
       user: "Fathan Hilmi",
-      action: "Create",
+      action: "Buat",
       description: "Created approval rule",
     },
   ],
@@ -171,8 +208,8 @@ export const taggingTransactionTypes = [
 ];
 
 export const taggingTypeOptions = [
-  { value: 1, label: "Email of each user" },
-  { value: 2, label: "Full name of each user" },
+  { value: 1, label: "Email setiap pengguna" },
+  { value: 2, label: "Nama lengkap setiap pengguna" },
   { value: 3, label: "Custom" },
 ];
 

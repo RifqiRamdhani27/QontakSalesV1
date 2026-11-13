@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Pencil } from "@phosphor-icons/react";
 import {
   btnModalCancel,
-  btnModalSubmit,
   btnSecondary,
   formLabel,
   inputBase,
@@ -10,7 +9,6 @@ import {
   selectBase,
   textareaBase,
 } from "@/components/ui/styles";
-import RegionSelects from "@/components/ui/RegionSelects";
 import brandLogo from "@/assets/brand.png";
 import {
   baseCurrencyLabels,
@@ -22,6 +20,50 @@ import {
   industryOptions,
 } from "@/data/dummy";
 import api from "../../services/api";
+import { canAccessSettings } from "@/services/settingsAccess";
+
+const companyLabels = {
+  "Company Information": "Informasi Perusahaan",
+  "Company Name": "Nama Perusahaan",
+  "Company Email": "Email Perusahaan",
+  "Phone Number": "Nomor Telepon",
+  Industry: "Industri",
+  "Specify Industry": "Nama Industri",
+  "Company Address": "Alamat Perusahaan",
+  Province: "Provinsi",
+  "City/Regency": "Kota/Kabupaten",
+  "Postal Code": "Kode Pos",
+  "Company Size": "Ukuran Perusahaan",
+  "Bank Account Information": "Informasi Rekening Bank",
+  "Bank Name": "Nama Bank",
+  "SWIFT Code": "Kode SWIFT",
+  "Branch Office": "Kantor Cabang",
+  "Branch Address": "Alamat Cabang",
+  "Account Number": "Nomor Rekening",
+  "Account Holder Name": "Nama Pemilik Rekening",
+  "Other Information": "Informasi Lain",
+  "Company Logo": "Logo Perusahaan",
+  "Fax Number": "Nomor Faks",
+  "Shipping Address": "Alamat Pengiriman",
+  "Billing Address": "Alamat Penagihan",
+  "Taxpayer Identification Number (NPWP)": "Nomor Pokok Wajib Pajak (NPWP)",
+  Website: "Situs Web",
+  "Show logo on reports": "Tampilkan logo pada laporan",
+  "Additional Feature Settings": "Pengaturan Fitur Tambahan",
+  "Base Currency": "Mata Uang Dasar",
+  "Currency Format": "Format Mata Uang",
+  "Teknologi - Startup dan Perangkat Lunak": "Teknologi - Perusahaan Rintisan dan Perangkat Lunak",
+  "Event/Wedding Organizer": "Penyelenggara Acara/Pernikahan",
+  "Perhotelan, Perjalanan dan F&B": "Perhotelan, Perjalanan, Makanan dan Minuman",
+  "Ringkasan kinerja (via email)": "Ringkasan kinerja (melalui email)",
+  "Tag transaksi": "Penandaan transaksi",
+  "Multi mata uang": "Multimata uang",
+  Other: "Lainnya",
+};
+
+function companyLabel(value) {
+  return Object.hasOwn(companyLabels, value) ? companyLabels[value] : value;
+}
 
 const emptyCompany = {
   name: "",
@@ -96,11 +138,11 @@ function Card({ title, editing, onEdit, children }) {
   return (
     <section className="rounded-[10px] bg-white p-6 shadow-sm">
       <div className="mb-5 flex items-start justify-between gap-4">
-        <h2 className="m-0 text-[19px] font-bold text-gray-900">{title}</h2>
-        {!editing && (
+        <h2 className="m-0 text-[19px] font-bold text-gray-900">{companyLabel(title)}</h2>
+        {!editing && canAccessSettings("company", "edit") && (
           <button type="button" className={btnSecondary} onClick={onEdit}>
             <Pencil size={14} />
-            <span>Edit</span>
+            <span>Ubah</span>
           </button>
         )}
       </div>
@@ -112,7 +154,7 @@ function Card({ title, editing, onEdit, children }) {
 function InfoField({ label, value, full }) {
   return (
     <div className={full ? "col-span-full" : ""}>
-      <div className="text-[13px] text-slate-500">{label}</div>
+      <div className="text-[13px] text-slate-500">{companyLabel(label)}</div>
       <div className="mt-0.5 break-words text-sm font-medium text-gray-900">
         {value || "-"}
       </div>
@@ -123,7 +165,7 @@ function InfoField({ label, value, full }) {
 function EditField({ label, full, children }) {
   return (
     <div className={full ? "col-span-full" : ""}>
-      <label className={formLabel}>{label}</label>
+      <label className={formLabel}>{companyLabel(label)}</label>
       {children}
     </div>
   );
@@ -139,7 +181,7 @@ function CheckRow({ label, checked, disabled, onChange }) {
         disabled={disabled}
         onChange={onChange}
       />
-      <span>{label}</span>
+      <span>{companyLabel(label)}</span>
     </label>
   );
 }
@@ -148,16 +190,78 @@ function EditActions({ onCancel, onSave, saving }) {
   return (
     <div className="col-span-full mt-[6px] flex justify-end gap-2.5">
       <button type="button" className={btnModalCancel} onClick={onCancel} disabled={saving}>
-        Cancel
+        Batal
       </button>
       <button type="button" className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-60" onClick={onSave} disabled={saving}>
-        {saving ? "Menyimpan..." : "Save"}
+        {saving ? "Menyimpan..." : "Simpan"}
       </button>
     </div>
   );
 }
 
-function CompanyInfoCard({ company, draft, editing, onEdit, setField, setDraft, onCancel, onSave, saving, postalCodes }) {
+function CompanyInfoCard({ company, draft, editing, onEdit, setField, setDraft, onCancel, onSave, saving }) {
+  const [provinces, setProvinces] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [loadingRegions, setLoadingRegions] = useState(false);
+  const [regionError, setRegionError] = useState("");
+  const [postalCodes, setPostalCodes] = useState([]);
+  const [postalLoading, setPostalLoading] = useState(false);
+  const [postalError, setPostalError] = useState("");
+  const province = provinces.find((item) => item.name === draft?.province);
+  const cityOptions = cities.filter((item) => item.province === province?.id);
+  const cityCode = editing ? cityOptions.find((item) => item.name === draft?.city)?.code : undefined;
+
+  useEffect(() => {
+    if (!editing) return;
+    let active = true;
+    const loadRegions = async () => {
+      setLoadingRegions(true);
+      setRegionError("");
+      try {
+        const [provinceResponse, cityResponse] = await Promise.all([
+          api.get("/regions/provinces/"),
+          api.get("/regions/cities/"),
+        ]);
+        if (!active) return;
+        setProvinces(provinceResponse.data);
+        setCities(cityResponse.data);
+      } catch {
+        if (active) setRegionError("Gagal memuat daftar wilayah.");
+      } finally {
+        if (active) setLoadingRegions(false);
+      }
+    };
+    loadRegions();
+    return () => {
+      active = false;
+    };
+  }, [editing]);
+
+  useEffect(() => {
+    setPostalCodes([]);
+    setPostalError("");
+    if (!cityCode) {
+      setPostalLoading(false);
+      return;
+    }
+    let active = true;
+    const loadPostalCodes = async () => {
+      setPostalLoading(true);
+      try {
+        const response = await api.get("/regions/postal-codes/?city_code=" + cityCode);
+        if (active) setPostalCodes(response.data.map((item) => item.code));
+      } catch {
+        if (active) setPostalError("Gagal memuat pilihan kode pos.");
+      } finally {
+        if (active) setPostalLoading(false);
+      }
+    };
+    loadPostalCodes();
+    return () => {
+      active = false;
+    };
+  }, [cityCode]);
+
   return (
     <Card title="Company Information" editing={editing} onEdit={onEdit}>
       {editing ? (
@@ -193,20 +297,23 @@ function CompanyInfoCard({ company, draft, editing, onEdit, setField, setDraft, 
               value={draft.industry}
               onChange={(e) => setField("industry", e.target.value)}
             >
+              {draft.industry && !industryOptions.includes(draft.industry) && (
+                <option value={draft.industry}>{companyLabel(draft.industry)}</option>
+              )}
               {industryOptions.map((industry) => (
                 <option key={industry} value={industry}>
-                  {industry}
+                  {companyLabel(industry)}
                 </option>
               ))}
             </select>
           </EditField>
 
-          {draft.industry === "Other" && (
+          {(draft.industry === "Other" || draft.industry === "Lainnya") && (
             <EditField label="Specify Industry">
               <input
                 className={inputBase}
                 value={draft.industryOther}
-                placeholder="Enter business industry"
+                placeholder="Masukkan industri usaha"
                 onChange={(e) => setField("industryOther", e.target.value)}
               />
             </EditField>
@@ -221,30 +328,65 @@ function CompanyInfoCard({ company, draft, editing, onEdit, setField, setDraft, 
             />
           </EditField>
 
-          <RegionSelects
-            value={{ province: draft.province, city: draft.city }}
-            onChange={(region) => setDraft((current) => ({ ...current, ...region }))}
-            fields={["province", "city"]}
-          />
+          <div className="flex flex-col gap-[7px]">
+            <label className={formLabel}>Provinsi</label>
+            <select
+              className={selectBase}
+              value={draft.province}
+              disabled={loadingRegions || Boolean(regionError)}
+              aria-label="Provinsi"
+              onChange={(e) => setDraft((current) => ({
+                ...current,
+                province: e.target.value,
+                city: "",
+                postalCode: "",
+              }))}
+            >
+              <option value="">{loadingRegions ? "Memuat..." : "Pilih provinsi"}</option>
+              {provinces.map((item) => (
+                <option key={item.id} value={item.name}>{item.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-[7px]">
+            <label className={formLabel}>Kota/Kabupaten</label>
+            <select
+              className={selectBase}
+              value={draft.city}
+              disabled={loadingRegions || Boolean(regionError) || !draft.province}
+              aria-label="Kota/Kabupaten"
+              onChange={(e) => setDraft((current) => ({
+                ...current,
+                city: e.target.value,
+                postalCode: "",
+              }))}
+            >
+              <option value="">{loadingRegions ? "Memuat..." : "Pilih kota/kabupaten"}</option>
+              {cityOptions.map((item) => (
+                <option key={item.id} value={item.name}>{item.name}</option>
+              ))}
+            </select>
+          </div>
+          {regionError && <p className="col-span-full text-sm text-red-600">{regionError}</p>}
 
           <EditField label="Postal Code">
             <select
               className={selectBase}
               value={draft.postalCode}
-              disabled={!draft.city}
+              disabled={!draft.city || postalLoading || loadingRegions || Boolean(regionError)}
+              aria-label="Kode Pos"
               onChange={(e) => setField("postalCode", e.target.value)}
             >
-              <option value="">{draft.city ? "Pilih kode pos" : "Pilih kota dulu"}</option>
-              {draft.postalCode &&
-                !postalCodes.includes(draft.postalCode) && (
-                  <option value={draft.postalCode}>{draft.postalCode}</option>
-                )}
+              <option value="">{postalLoading ? "Memuat..." : draft.city ? (postalCodes.length ? "Pilih kode pos" : "Kode pos belum tersedia") : "Pilih kota dulu"}</option>
+              {draft.postalCode && !postalCodes.includes(draft.postalCode) && (
+                <option value={draft.postalCode}>{draft.postalCode}</option>
+              )}
               {postalCodes.map((code) => (
-                <option key={code} value={code}>
-                  {code}
-                </option>
+                <option key={code} value={code}>{code}</option>
               ))}
             </select>
+            {postalError && <p className="mt-1 text-sm text-red-600">{postalError}</p>}
           </EditField>
 
           <EditField label="Company Size">
@@ -274,9 +416,9 @@ function CompanyInfoCard({ company, draft, editing, onEdit, setField, setDraft, 
           <InfoField
             label="Industry"
             value={
-              company.industry === "Other"
-                ? company.industryOther || "Other"
-                : company.industry
+              (company.industry === "Other" || company.industry === "Lainnya")
+                ? company.industryOther || companyLabel(company.industry)
+                : companyLabel(company.industry)
             }
           />
           <InfoField label="Company Address" value={company.address} full />
@@ -374,11 +516,11 @@ function OtherInfoCard({ company, draft, editing, onEdit, setField, onLogoPick, 
             <div className="mt-2 flex items-center gap-2.5">
               <img
                 src={logoPreview || brandLogo}
-                alt="Company Logo"
+                alt="Logo Perusahaan"
                 className="h-9 w-9 rounded-md object-contain"
               />
               <span className="text-sm text-slate-500">
-                {draft.logoName || (logoPreview ? "Logo tersimpan" : "No logo available")}
+                {draft.logoName || (logoPreview ? "Logo tersimpan" : "Belum ada logo")}
               </span>
             </div>
           </EditField>
@@ -445,12 +587,12 @@ function OtherInfoCard({ company, draft, editing, onEdit, setField, onLogoPick, 
       ) : (
         <div className="grid grid-cols-2 gap-x-[18px] gap-y-4 max-md:grid-cols-1">
           <div className="col-span-full">
-            <div className="text-[13px] text-slate-500">Company logo</div>
+            <div className="text-[13px] text-slate-500">Logo perusahaan</div>
             <div className="mt-1.5 flex items-center gap-2.5">
               {company.logo ? (
                 <img
                   src={company.logo}
-                  alt="Company Logo"
+                  alt="Logo Perusahaan"
                   className="h-10 w-10 rounded-md object-contain"
                 />
               ) : (
@@ -552,16 +694,15 @@ export default function CompanyPage() {
   const [saving, setSaving] = useState(false);
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
-  const [postalCodes, setPostalCodes] = useState([]);
 
   useEffect(() => {
     const loadCompany = async () => {
       try {
-        const response = await api.get("/company/");
+        const response = await api.get("/settings/company/");
         setCompany(serverToClient(response.data));
       } catch (error) {
         console.error(error);
-        alert("Gagal memuat data company.");
+        alert("Gagal memuat data perusahaan.");
       } finally {
         setLoading(false);
       }
@@ -569,34 +710,6 @@ export default function CompanyPage() {
     loadCompany();
   }, []);
 
-  useEffect(() => {
-    const cityName = draft?.city;
-    if (!cityName) {
-      setPostalCodes([]);
-      return;
-    }
-    let cancelled = false;
-    api
-      .get("/cities/")
-      .then((response) => {
-        const found = response.data.find((c) => c.name === cityName);
-        if (!found) {
-          setPostalCodes([]);
-          return;
-        }
-        return api
-          .get("/postal-codes/?city_code=" + found.code)
-          .then((res) => {
-            if (!cancelled) setPostalCodes(res.data.map((p) => p.code));
-          });
-      })
-      .catch(() => {
-        if (!cancelled) setPostalCodes([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [draft?.city]);
 
   const startEdit = (card) => {
     setDraft({ ...company, features: { ...company.features } });
@@ -637,7 +750,7 @@ export default function CompanyPage() {
         formData.append("logo", logoFile);
       }
 
-      const response = await api.put("/company/", formData);
+      const response = await api.put("/settings/company/", formData);
       setCompany(serverToClient(response.data));
       setEditingCard(null);
       setDraft(null);
@@ -651,7 +764,7 @@ export default function CompanyPage() {
           ? Object.entries(detail)
               .map(([field, errs]) => `${field}: ${errs}`)
               .join("\n")
-          : "Gagal menyimpan data company.";
+          : "Gagal menyimpan data perusahaan.";
       alert(message);
     } finally {
       setSaving(false);
@@ -690,9 +803,9 @@ export default function CompanyPage() {
   return (
     <div className="p-7 max-md:p-[18px]">
       <div className="mb-6">
-        <h1 className="m-0 text-[28px] font-bold text-gray-900">Company</h1>
+        <h1 className="m-0 text-[28px] font-bold text-gray-900">Perusahaan</h1>
         <p className="m-0 mt-1.5 text-slate-500">
-          Manage QontakSales company information.
+          Kelola informasi perusahaan QontakSales.
         </p>
       </div>
 
@@ -707,7 +820,6 @@ export default function CompanyPage() {
           onCancel={cancelEdit}
           onSave={saveEdit}
           saving={saving}
-          postalCodes={postalCodes}
         />
 
         <BankInfoCard

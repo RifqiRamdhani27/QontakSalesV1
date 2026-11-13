@@ -15,6 +15,7 @@ urlpatterns = [
     path("api/", include("qontak_sales.apps.products.urls")),
     path("api/", include("qontak_sales.apps.inventory.urls")),
     path("api/", include("qontak_sales.apps.pricerules.urls")),
+    path("api/regions/", include("qontak_sales.apps.regions.urls")),
 ]
 
 if settings.DEBUG:

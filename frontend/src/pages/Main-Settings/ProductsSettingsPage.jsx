@@ -1,28 +1,50 @@
-import { useState } from "react";
-import { Info, MagnifyingGlass, Pencil, PencilSimple, Trash, X } from "@phosphor-icons/react";
+import { useEffect, useState } from "react";
+import { MagnifyingGlass, Pencil, PencilSimple, Trash, X } from "@phosphor-icons/react";
 import {
   btnModalCancel,
   btnModalSubmit,
   formLabel,
   inputBase,
+  pageSpinner,
   textareaBase,
 } from "@/components/ui/styles";
+import api, { extractError } from "@/services/settingsApi";
+import { useEditing, useSetting } from "@/services/useSetting";
+import { canAccessSettingsFeature } from "@/services/settingsAccess";
 
-const initialSubfeatures = {
-  stockInfo: false,
-  barcode: false,
-  variant: false,
-  serialTracking: true,
-  batchTracking: true,
-};
 
-const subfeatureLabels = [
-  ["stockInfo", "Stock info on sales & purchases"],
-  ["barcode", "Barcode scanning"],
-  ["variant", "Product variant"],
-  ["serialTracking", "Serial number tracking"],
-  ["batchTracking", "Batch tracking"],
+const PRODUCT_SETTINGS_URL = "/products/settings/";
+const CATEGORY_URL = "/product-categories/";
+const UNIT_URL = "/product-units/";
+const BATCH_REMINDER_URL = "/products/batch-reminders/";
+
+const SUBFEATURES = [
+  ["show_stock_info", "Informasi stok pada penjualan dan pembelian"],
+  ["enable_barcode", "Pemindaian kode batang"],
+  ["use_product_variant", "Varian produk"],
+  ["enable_serial_number_tracking", "Pelacakan nomor seri"],
+  ["enable_batch_tracking", "Pelacakan kelompok produksi"],
 ];
+
+const REMINDER_UNIT_OPTIONS = [
+  { value: "day", label: "Hari" },
+  { value: "week", label: "Minggu" },
+  { value: "month", label: "Bulan" },
+];
+
+const REMINDER_TIMING_OPTIONS = [
+  { value: "before_expiration", label: "Sebelum kedaluwarsa" },
+  { value: "after_expiration", label: "Setelah kedaluwarsa" },
+];
+
+const DEFAULT_REMINDER = {
+  title: "Pengingat 1",
+  interval_value: 2,
+  interval_unit: "day",
+  timing: "before_expiration",
+  email_subject: "Kelompok produksi barang mendekati kedaluwarsa",
+  email_body: "Terdapat kelompok produksi barang yang akan kedaluwarsa pada [TanggalKedaluwarsa].",
+};
 
 function MainTab({ mainPage, setMainPage }) {
   return (
@@ -34,8 +56,9 @@ function MainTab({ mainPage, setMainPage }) {
             : "p-2 text-gray-400 hover:border-b hover:border-gray-500 hover:bg-gray-50 hover:text-black"
         }
         onClick={() => setMainPage(true)}
+        disabled={!canAccessSettingsFeature("Product: Good & Services")}
       >
-        Goods & services
+        Barang dan jasa
       </button>
 
       <button
@@ -45,8 +68,9 @@ function MainTab({ mainPage, setMainPage }) {
             : "p-2 text-gray-400 hover:border-b hover:border-gray-500 hover:bg-gray-50 hover:text-black"
         }
         onClick={() => setMainPage(false)}
+        disabled={!canAccessSettingsFeature("Product: Warehouse")}
       >
-        Warehouse
+        Gudang
       </button>
     </div>
   );
@@ -70,6 +94,7 @@ function SectionHeading({ title, editing, onEdit }) {
           type="button"
           className="cursor-pointer rounded-md border-0 bg-transparent p-[5px] text-slate-500 transition-colors hover:bg-slate-100"
           onClick={onEdit}
+          aria-label={`Ubah ${title}`}
         >
           <Pencil size={16} />
         </button>
@@ -81,12 +106,7 @@ function SectionHeading({ title, editing, onEdit }) {
 function ToggleSwitch({ checked, onChange }) {
   return (
     <label className="flex cursor-pointer select-none items-center gap-3">
-      <input
-        type="checkbox"
-        className="peer sr-only"
-        checked={checked}
-        onChange={onChange}
-      />
+      <input type="checkbox" className="peer sr-only" checked={checked} onChange={onChange} />
       <span className="relative h-[22px] w-10 rounded-full bg-slate-300 transition-colors peer-checked:bg-brand after:absolute after:left-[3px] after:top-[3px] after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-[18px]"></span>
     </label>
   );
@@ -105,8 +125,22 @@ function SetLink({ children, onClick }) {
 }
 
 function StatusText({ active }) {
+  return <span className="text-sm text-gray-900">{active ? "Aktif" : "Nonaktif"}</span>;
+}
+
+function SaveActions({ saving, error, onCancel, onSave }) {
   return (
-    <span className="text-sm text-gray-900">{active ? "Active" : "Inactive"}</span>
+    <div className="pt-4">
+      {error && <p className="m-0 mb-3 whitespace-pre-line text-sm text-red-600">{error}</p>}
+      <div className="flex justify-end gap-2.5">
+        <button type="button" className={btnModalCancel} onClick={onCancel} disabled={saving}>
+          Batal
+        </button>
+        <button type="button" className={btnModalSubmit} onClick={onSave} disabled={saving}>
+          {saving ? "Menyimpan..." : "Simpan perubahan"}
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -126,10 +160,12 @@ function ModalShell({ title, children, footer }) {
   );
 }
 
-function ListSetModal({ title, nameLabel, addLabel, searchPlaceholder, noun, onClose }) {
-  const [rows, setRows] = useState([
-    { id: 1, name: noun === "product category" ? "baba" : "Pcs", amount: 0 },
-  ]);
+
+function ListSetModal({ title, nameLabel, addLabel, searchPlaceholder, noun, url, editable, onClose }) {
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
   const [search, setSearch] = useState("");
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState("");
@@ -137,30 +173,76 @@ function ListSetModal({ title, nameLabel, addLabel, searchPlaceholder, noun, onC
   const [editName, setEditName] = useState("");
   const [deleteId, setDeleteId] = useState(null);
 
-  const nextId = rows.reduce((max, row) => Math.max(max, row.id), 0) + 1;
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .get(url)
+      .then((response) => {
+        const data = response.data;
+        if (!cancelled) setRows(Array.isArray(data) ? data : data.results || []);
+      })
+      .catch((e) => {
+        if (!cancelled) setError(extractError(e, "Gagal memuat data."));
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [url]);
+
+  const sortByName = (list) => [...list].sort((a, b) => a.name.localeCompare(b.name));
 
   const visibleRows = rows.filter((row) =>
     row.name.toLowerCase().includes(search.toLowerCase()),
   );
 
-  const confirmAdd = () => {
-    if (newName.trim() === "") return;
-    setRows((current) => [...current, { id: nextId, name: newName.trim(), amount: 0 }]);
-    setNewName("");
-    setAdding(false);
+  const run = async (action, failMessage) => {
+    setBusy(true);
+    setError("");
+    try {
+      await action();
+      return true;
+    } catch (e) {
+      setError(extractError(e, failMessage));
+      return false;
+    } finally {
+      setBusy(false);
+    }
   };
 
-  const confirmEdit = (row) => {
-    if (editName.trim() === "") return;
-    setRows((current) =>
-      current.map((item) => (item.id === row.id ? { ...item, name: editName.trim() } : item)),
-    );
-    setEditingId(null);
+  const confirmAdd = async () => {
+    const name = newName.trim();
+    if (name === "") return;
+    const ok = await run(async () => {
+      const response = await api.post(url, { name });
+      setRows((current) => sortByName([...current, response.data]));
+    }, `Gagal menambah ${noun}.`);
+    if (ok) {
+      setNewName("");
+      setAdding(false);
+    }
   };
 
-  const confirmDelete = (row) => {
-    setRows((current) => current.filter((item) => item.id !== row.id));
-    setDeleteId(null);
+  const confirmEdit = async (row) => {
+    const name = editName.trim();
+    if (name === "") return;
+    const ok = await run(async () => {
+      const response = await api.patch(`${url}${row.id}/`, { name });
+      setRows((current) =>
+        sortByName(current.map((item) => (item.id === row.id ? response.data : item))),
+      );
+    }, `Gagal mengubah ${noun}.`);
+    if (ok) setEditingId(null);
+  };
+
+  const confirmDelete = async (row) => {
+    const ok = await run(async () => {
+      await api.delete(`${url}${row.id}/`);
+      setRows((current) => current.filter((item) => item.id !== row.id));
+    }, `Gagal menghapus ${noun}.`);
+    if (ok) setDeleteId(null);
   };
 
   return (
@@ -189,29 +271,36 @@ function ListSetModal({ title, nameLabel, addLabel, searchPlaceholder, noun, onC
                 onChange={(event) => setSearch(event.target.value)}
               />
             </div>
-            <button
-              type="button"
-              className="shrink-0 cursor-pointer rounded-lg border border-gray-300 bg-white px-3.5 py-2 text-[13px] font-semibold text-gray-700 transition-colors hover:bg-slate-50"
-              onClick={() => {
-                setAdding(true);
-                setEditingId(null);
-                setDeleteId(null);
-              }}
-            >
-              {addLabel}
-            </button>
+            {editable && (
+              <button
+                type="button"
+                className="shrink-0 cursor-pointer rounded-lg border border-gray-300 bg-white px-3.5 py-2 text-[13px] font-semibold text-gray-700 transition-colors hover:bg-slate-50"
+                onClick={() => {
+                  setAdding(true);
+                  setEditingId(null);
+                  setDeleteId(null);
+                  setError("");
+                }}
+              >
+                {addLabel}
+              </button>
+            )}
           </div>
 
           <div className="flex items-center gap-3 rounded-lg bg-slate-50 px-3 py-2.5">
             <div className={`${formLabel} flex-1 m-0`}>{nameLabel}</div>
-            <div className={`${formLabel} w-[90px] m-0`}>
-              <span className="inline-flex items-center gap-1">
-                Amount
-                <Info size={14} className="text-slate-400" />
-              </span>
-            </div>
             <div className="w-[76px]"></div>
           </div>
+
+          {loading && <p className="m-0 px-3 py-3 text-sm text-slate-500">Memuat...</p>}
+          {error && (
+            <p className="m-0 whitespace-pre-line px-3 py-2.5 text-sm text-red-600">{error}</p>
+          )}
+          {!loading && !error && visibleRows.length === 0 && !adding && (
+            <p className="m-0 px-3 py-3 text-sm text-slate-500">
+              {search ? `Tidak ada ${noun} yang cocok.` : `Belum ada ${noun}.`}
+            </p>
+          )}
 
           <div className="flex flex-col">
             {adding && (
@@ -220,24 +309,29 @@ function ListSetModal({ title, nameLabel, addLabel, searchPlaceholder, noun, onC
                   type="text"
                   className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-brand"
                   value={newName}
+                  maxLength={100}
+                  autoFocus
                   onChange={(event) => setNewName(event.target.value)}
                 />
                 <button
                   type="button"
                   className="cursor-pointer border-0 bg-transparent px-2 py-1 text-[13px] font-semibold text-slate-600 hover:text-black"
+                  disabled={busy}
                   onClick={() => {
                     setAdding(false);
                     setNewName("");
+                    setError("");
                   }}
                 >
-                  Cancel
+                  Batal
                 </button>
                 <button
                   type="button"
-                  className="cursor-pointer border-0 bg-transparent px-2 py-1 text-[13px] font-semibold text-brand hover:underline"
+                  className="cursor-pointer border-0 bg-transparent px-2 py-1 text-[13px] font-semibold text-brand hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={busy}
                   onClick={confirmAdd}
                 >
-                  Save
+                  Simpan
                 </button>
               </div>
             )}
@@ -250,57 +344,67 @@ function ListSetModal({ title, nameLabel, addLabel, searchPlaceholder, noun, onC
                       type="text"
                       className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-brand"
                       value={editName}
+                      maxLength={100}
+                      autoFocus
                       onChange={(event) => setEditName(event.target.value)}
                     />
                   ) : (
                     <span className="text-sm text-gray-900">{row.name}</span>
                   )}
                 </div>
-                <div className="w-[90px] text-sm text-slate-500">{row.amount}</div>
                 <div className="flex w-[76px] justify-end gap-1">
                   {editingId === row.id ? (
                     <>
                       <button
                         type="button"
                         className="cursor-pointer border-0 bg-transparent px-1.5 py-1 text-[13px] font-semibold text-slate-600 hover:text-black"
-                        onClick={() => setEditingId(null)}
+                        disabled={busy}
+                        onClick={() => {
+                          setEditingId(null);
+                          setError("");
+                        }}
                       >
-                        Cancel
+                        Batal
                       </button>
                       <button
                         type="button"
-                        className="cursor-pointer border-0 bg-transparent px-1.5 py-1 text-[13px] font-semibold text-brand hover:underline"
+                        className="cursor-pointer border-0 bg-transparent px-1.5 py-1 text-[13px] font-semibold text-brand hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+                        disabled={busy}
                         onClick={() => confirmEdit(row)}
                       >
-                        Save
+                        Simpan
                       </button>
                     </>
                   ) : (
-                    <>
-                      <button
-                        type="button"
-                        className="cursor-pointer rounded-md border-0 bg-transparent p-1.5 text-slate-500 transition-colors hover:bg-slate-100"
-                        onClick={() => {
-                          setEditingId(row.id);
-                          setEditName(row.name);
-                          setAdding(false);
-                          setDeleteId(null);
-                        }}
-                      >
-                        <PencilSimple size={16} />
-                      </button>
-                      <button
-                        type="button"
-                        className="cursor-pointer rounded-md border-0 bg-transparent p-1.5 text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600"
-                        onClick={() => {
-                          setDeleteId(deleteId === row.id ? null : row.id);
-                          setEditingId(null);
-                          setAdding(false);
-                        }}
-                      >
-                        <Trash size={16} />
-                      </button>
-                    </>
+                    editable && (
+                      <>
+                        <button
+                          type="button"
+                          className="cursor-pointer rounded-md border-0 bg-transparent p-1.5 text-slate-500 transition-colors hover:bg-slate-100"
+                          onClick={() => {
+                            setEditingId(row.id);
+                            setEditName(row.name);
+                            setAdding(false);
+                            setDeleteId(null);
+                            setError("");
+                          }}
+                        >
+                          <PencilSimple size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          className="cursor-pointer rounded-md border-0 bg-transparent p-1.5 text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600"
+                          onClick={() => {
+                            setDeleteId(deleteId === row.id ? null : row.id);
+                            setEditingId(null);
+                            setAdding(false);
+                            setError("");
+                          }}
+                        >
+                          <Trash size={16} />
+                        </button>
+                      </>
+                    )
                   )}
                 </div>
               </div>
@@ -309,28 +413,26 @@ function ListSetModal({ title, nameLabel, addLabel, searchPlaceholder, noun, onC
             {deleteId !== null && (
               <div className="border-b border-slate-100 px-3 py-2.5">
                 <div className="rounded-lg bg-red-50 px-3.5 py-2.5">
-                  <div className="text-sm font-semibold text-red-700">
-                    Delete {noun}?
-                  </div>
+                  <div className="text-sm font-semibold text-red-700">Hapus {noun}?</div>
                   <p className="m-0 mt-0.5 text-[13px] text-red-600">
-                    The deleted {noun} cannot be restored.
+                    Data {noun} yang dihapus tidak dapat dipulihkan.
                   </p>
                   <div className="mt-2 flex justify-end gap-2.5">
                     <button
                       type="button"
                       className="cursor-pointer border-0 bg-transparent px-2 py-1 text-[13px] font-semibold text-slate-600 hover:text-black"
+                      disabled={busy}
                       onClick={() => setDeleteId(null)}
                     >
-                      Cancel
+                      Batal
                     </button>
                     <button
                       type="button"
-                      className="cursor-pointer rounded-lg border-0 bg-red-600 px-3 py-1.5 text-[13px] font-semibold text-white transition-colors hover:bg-red-700"
-                      onClick={() =>
-                        confirmDelete(rows.find((item) => item.id === deleteId))
-                      }
+                      className="cursor-pointer rounded-lg border-0 bg-red-600 px-3 py-1.5 text-[13px] font-semibold text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                      disabled={busy}
+                      onClick={() => confirmDelete(rows.find((item) => item.id === deleteId))}
                     >
-                      Delete
+                      Hapus
                     </button>
                   </div>
                 </div>
@@ -341,7 +443,7 @@ function ListSetModal({ title, nameLabel, addLabel, searchPlaceholder, noun, onC
 
         <div className="flex shrink-0 justify-end border-t border-gray-200 px-[22px] py-4">
           <button type="button" className={btnModalSubmit} onClick={onClose}>
-            Done
+            Selesai
           </button>
         </div>
       </div>
@@ -349,20 +451,32 @@ function ListSetModal({ title, nameLabel, addLabel, searchPlaceholder, noun, onC
   );
 }
 
-function BatchReminderModal({ onClose }) {
-  const [reminders, setReminders] = useState([
-    {
-      title: "Reminder 1",
-      days: "2",
-      unit: "Day",
-      when: "Before expiration",
-      subject: "Product batch nearing expiration",
-      body: "There is a product batch that will expire on [TanggalKedaluwarsa].",
-    },
-  ]);
-  const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const current = reminders[selectedIndex];
+function BatchReminderModal({ editable, onClose }) {
+  const [reminders, setReminders] = useState(null);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .get(BATCH_REMINDER_URL)
+      .then((response) => {
+        if (cancelled) return;
+        setReminders(response.data.length > 0 ? response.data : [DEFAULT_REMINDER]);
+      })
+      .catch((e) => {
+        if (cancelled) return;
+        setError(extractError(e, "Gagal memuat pengingat kelompok produksi."));
+        setReminders([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const current = reminders?.[selectedIndex];
 
   const setField = (field, value) => {
     setReminders((rows) =>
@@ -375,12 +489,12 @@ function BatchReminderModal({ onClose }) {
     setReminders((rows) => [
       ...rows,
       {
-        title: `Reminder ${next}`,
-        days: "1",
-        unit: "Day",
-        when: "Before expiration",
-        subject: "",
-        body: "",
+        title: `Pengingat ${next}`,
+        interval_value: 1,
+        interval_unit: "day",
+        timing: "before_expiration",
+        email_subject: "",
+        email_body: "",
       },
     ]);
     setSelectedIndex(reminders.length);
@@ -388,316 +502,376 @@ function BatchReminderModal({ onClose }) {
 
   const deleteReminder = () => {
     if (reminders.length === 1) return;
-    const remaining = reminders.filter((row, i) => i !== selectedIndex);
-    setReminders(remaining);
+    setReminders(reminders.filter((row, i) => i !== selectedIndex));
     setSelectedIndex(0);
+  };
+
+  const handleSave = async () => {
+    for (const row of reminders) {
+      if (!row.title.trim()) {
+        setError("Judul pengingat tidak boleh kosong.");
+        return;
+      }
+      if (!(Number(row.interval_value) >= 1)) {
+        setError(`"${row.title}": interval minimal 1.`);
+        return;
+      }
+    }
+
+    setSaving(true);
+    setError("");
+    try {
+      await api.put(
+        BATCH_REMINDER_URL,
+        reminders.map((row) => ({
+          title: row.title.trim(),
+          interval_value: Number(row.interval_value),
+          interval_unit: row.interval_unit,
+          timing: row.timing,
+          email_subject: row.email_subject,
+          email_body: row.email_body,
+        })),
+      );
+      onClose();
+    } catch (e) {
+      setError("Gagal menyimpan pengingat kelompok produksi.\n" + (extractError(e, "") || ""));
+      setSaving(false);
+    }
   };
 
   return (
     <ModalShell
-      title="Set batch reminder"
+      title="Atur pengingat kelompok produksi"
       footer={
         <>
-          <button type="button" className={btnModalCancel} onClick={onClose}>
-            Batal
+          <button type="button" className={btnModalCancel} onClick={onClose} disabled={saving}>
+            {editable ? "Batal" : "Tutup"}
           </button>
-          <button type="button" className={btnModalSubmit} onClick={onClose}>
-            Simpan
-          </button>
+          {editable && (
+            <button
+              type="button"
+              className={btnModalSubmit}
+              onClick={handleSave}
+              disabled={saving || reminders === null}
+            >
+              {saving ? "Menyimpan..." : "Simpan"}
+            </button>
+          )}
         </>
       }
     >
-      <div className="flex gap-5 max-md:flex-col">
-        <div className="w-[240px] shrink-0 border-r border-slate-100 pr-4 max-md:w-full max-md:border-r-0 max-md:border-b max-md:pr-0 max-md:pb-4">
-          {reminders.map((row, index) => (
-            <button
-              key={index}
-              type="button"
-              className={
-                index === selectedIndex
-                  ? "mb-2 block w-full cursor-pointer rounded-lg border border-brand bg-brand/5 px-3.5 py-2.5 text-left"
-                  : "mb-2 block w-full cursor-pointer rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-left transition-colors hover:bg-slate-50"
-              }
-              onClick={() => setSelectedIndex(index)}
-            >
-              <span className="block text-sm font-bold text-gray-900">{row.title}</span>
-              <span className="mt-0.5 block text-[13px] text-slate-500">
-                {row.days} {row.unit.toLowerCase()}
-                {Number(row.days) > 1 ? "s" : ""}{" "}
-                {row.when === "Before expiration" ? "before" : "after"} expiration
-              </span>
-            </button>
-          ))}
-
-          <button
-            type="button"
-            className="cursor-pointer border-0 bg-transparent p-0 text-[13px] font-semibold text-brand hover:underline"
-            onClick={addReminder}
-          >
-            Add new reminder
-          </button>
+      {reminders === null ? (
+        <div className="flex items-center justify-center p-10">
+          <span className={pageSpinner} />
         </div>
+      ) : (
+        <>
+          {error && <p className="m-0 mb-4 whitespace-pre-line text-sm text-red-600">{error}</p>}
+          {current && (
+            <div className="flex gap-5 max-md:flex-col">
+              <div className="w-[240px] shrink-0 border-r border-slate-100 pr-4 max-md:w-full max-md:border-r-0 max-md:border-b max-md:pr-0 max-md:pb-4">
+                {reminders.map((row, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    className={
+                      index === selectedIndex
+                        ? "mb-2 block w-full cursor-pointer rounded-lg border border-brand bg-brand/5 px-3.5 py-2.5 text-left"
+                        : "mb-2 block w-full cursor-pointer rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-left transition-colors hover:bg-slate-50"
+                    }
+                    onClick={() => setSelectedIndex(index)}
+                  >
+                    <span className="block text-sm font-bold text-gray-900">{row.title}</span>
+                    <span className="mt-0.5 block text-[13px] text-slate-500">
+                      {row.interval_value}{" "}
+                      {REMINDER_UNIT_OPTIONS.find((option) => option.value === row.interval_unit)?.label.toLowerCase() || row.interval_unit}{" "}
+                      {row.timing === "before_expiration" ? "sebelum" : "setelah"} kedaluwarsa
+                    </span>
+                  </button>
+                ))}
 
-        <div className="flex-1">
-          <div className="mb-4 flex items-end justify-between gap-3">
-            <div className="flex-1">
-              <div className="mb-[7px] flex items-center justify-between">
-                <label className={`${formLabel} m-0`}>Reminder title</label>
-                <span className="text-xs text-slate-400">{current.title.length}/40</span>
+                {editable && (
+                  <button
+                    type="button"
+                    className="cursor-pointer border-0 bg-transparent p-0 text-[13px] font-semibold text-brand hover:underline"
+                    onClick={addReminder}
+                  >
+                    Tambah pengingat baru
+                  </button>
+                )}
               </div>
-              <input
-                type="text"
-                maxLength={40}
-                className={inputBase}
-                value={current.title}
-                onChange={(event) => setField("title", event.target.value)}
-              />
+
+              <div className="flex-1">
+                <div className="mb-4 flex items-end justify-between gap-3">
+                  <div className="flex-1">
+                    <div className="mb-[7px] flex items-center justify-between">
+                      <label className={`${formLabel} m-0`}>Judul pengingat</label>
+                      <span className="text-xs text-slate-400">{current.title.length}/40</span>
+                    </div>
+                    <input
+                      type="text"
+                      maxLength={40}
+                      className={inputBase}
+                      value={current.title}
+                      disabled={!editable}
+                      onChange={(event) => setField("title", event.target.value)}
+                    />
+                  </div>
+                  {editable && (
+                    <button
+                      type="button"
+                      className="mb-2.5 cursor-pointer border-0 bg-transparent p-0 text-[13px] font-semibold text-red-600 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+                      disabled={reminders.length === 1}
+                      onClick={deleteReminder}
+                    >
+                      Hapus pengingat
+                    </button>
+                  )}
+                </div>
+
+                <div className="mb-4">
+                  <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">
+                    Kirim pengingat
+                  </label>
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <input
+                      type="number"
+                      min="1"
+                      className="w-[80px] rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition-[border-color,box-shadow] focus:border-brand focus:shadow-[0_0_0_3px_rgba(37,99,235,0.1)] disabled:cursor-not-allowed disabled:bg-slate-100"
+                      value={current.interval_value}
+                      disabled={!editable}
+                      onChange={(event) => setField("interval_value", event.target.value)}
+                    />
+                    <select
+                      className="w-[110px] rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition-[border-color,box-shadow] focus:border-brand focus:shadow-[0_0_0_3px_rgba(37,99,235,0.1)] disabled:cursor-not-allowed disabled:bg-slate-100"
+                      value={current.interval_unit}
+                      disabled={!editable}
+                      onChange={(event) => setField("interval_unit", event.target.value)}
+                    >
+                      {REMINDER_UNIT_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    {REMINDER_TIMING_OPTIONS.map((option) => (
+                      <label
+                        key={option.value}
+                        className="flex cursor-pointer select-none items-center gap-2 text-sm text-gray-700"
+                      >
+                        <input
+                          type="radio"
+                          name="reminder-timing"
+                          className="h-4 w-4 accent-brand"
+                          checked={current.timing === option.value}
+                          disabled={!editable}
+                          onChange={() => setField("timing", option.value)}
+                        />
+                        {option.label}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">
+                    Subjek email
+                  </label>
+                  <input
+                    type="text"
+                    className={inputBase}
+                    value={current.email_subject}
+                    disabled={!editable}
+                    onChange={(event) => setField("email_subject", event.target.value)}
+                  />
+                </div>
+
+                <div className="mb-0">
+                  <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">
+                    Isi email
+                  </label>
+                  <textarea
+                    rows="5"
+                    className={textareaBase}
+                    value={current.email_body}
+                    disabled={!editable}
+                    onChange={(event) => setField("email_body", event.target.value)}
+                  />
+                </div>
+              </div>
             </div>
-            <button
-              type="button"
-              className="mb-2.5 cursor-pointer border-0 bg-transparent p-0 text-[13px] font-semibold text-red-600 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={reminders.length === 1}
-              onClick={deleteReminder}
-            >
-              Delete reminder
-            </button>
-          </div>
-
-          <div className="mb-4">
-            <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">
-              Send reminder
-            </label>
-            <div className="flex flex-wrap items-center gap-2.5">
-              <input
-                type="number"
-                min="1"
-                className="w-[80px] rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition-[border-color,box-shadow] focus:border-brand focus:shadow-[0_0_0_3px_rgba(37,99,235,0.1)]"
-                value={current.days}
-                onChange={(event) => setField("days", event.target.value)}
-              />
-              <select
-                className="w-[110px] rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition-[border-color,box-shadow] focus:border-brand focus:shadow-[0_0_0_3px_rgba(37,99,235,0.1)]"
-                value={current.unit}
-                onChange={(event) => setField("unit", event.target.value)}
-              >
-                <option value="Day">Day</option>
-                <option value="Week">Week</option>
-                <option value="Month">Month</option>
-              </select>
-              <label className="flex cursor-pointer select-none items-center gap-2 text-sm text-gray-700">
-                <input
-                  type="radio"
-                  name="reminder-when"
-                  className="h-4 w-4 accent-brand"
-                  checked={current.when === "Before expiration"}
-                  onChange={() => setField("when", "Before expiration")}
-                />
-                Before expiration
-              </label>
-              <label className="flex cursor-pointer select-none items-center gap-2 text-sm text-gray-700">
-                <input
-                  type="radio"
-                  name="reminder-when"
-                  className="h-4 w-4 accent-brand"
-                  checked={current.when === "After expiration"}
-                  onChange={() => setField("when", "After expiration")}
-                />
-                After expiration
-              </label>
-            </div>
-          </div>
-
-          <div className="mb-4">
-            <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">
-              Email subject
-            </label>
-            <input
-              type="text"
-              className={inputBase}
-              value={current.subject}
-              onChange={(event) => setField("subject", event.target.value)}
-            />
-          </div>
-
-          <div className="mb-0">
-            <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">
-              Email body
-            </label>
-            <textarea
-              rows="5"
-              className={textareaBase}
-              value={current.body}
-              onChange={(event) => setField("body", event.target.value)}
-            />
-          </div>
-        </div>
-      </div>
+          )}
+        </>
+      )}
     </ModalShell>
   );
 }
 
-function GoodsAndServicesTab() {
-  const [savedSubfeatures, setSavedSubfeatures] = useState(initialSubfeatures);
-  const [subfeatureDraft, setSubfeatureDraft] = useState(initialSubfeatures);
-  const [subfeatureEditing, setSubfeatureEditing] = useState(false);
+
+function GoodsAndServicesTab({ saved, save }) {
+  const subfeatures = useEditing(saved, save, "Gagal menyimpan pengaturan produk.");
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [unitModalOpen, setUnitModalOpen] = useState(false);
   const [batchReminderModalOpen, setBatchReminderModalOpen] = useState(false);
 
-  const startSubfeatureEdit = () => {
-    setSubfeatureDraft(savedSubfeatures);
-    setSubfeatureEditing(true);
-  };
+  const editable = canAccessSettingsFeature("Product: Good & Services", "edit");
 
-  const cancelSubfeatureEdit = () => {
-    setSubfeatureEditing(false);
-    setSubfeatureDraft(savedSubfeatures);
-  };
-
-  const saveSubfeatureEdit = () => {
-    setSavedSubfeatures(subfeatureDraft);
-    setSubfeatureEditing(false);
-  };
-
-  const toggleSubfeature = (key) => {
-    setSubfeatureDraft((current) => ({ ...current, [key]: !current[key] }));
+  const submitSubfeatures = () => {
+    const payload = {};
+    SUBFEATURES.forEach(([field]) => {
+      payload[field] = subfeatures.draft[field];
+    });
+    subfeatures.submit(payload);
   };
 
   return (
     <div className="mb-6 mt-4 rounded-[10px] bg-white p-6 shadow-sm">
-      <SectionHeading title="Basic settings" />
-      <SettingRow label="Product category">
-        <SetLink onClick={() => setCategoryModalOpen(true)}>Set product category</SetLink>
+      <SectionHeading title="Pengaturan dasar" />
+      <SettingRow label="Kategori produk">
+        <SetLink onClick={() => setCategoryModalOpen(true)}>
+          {editable ? "Atur kategori produk" : "Lihat kategori produk"}
+        </SetLink>
       </SettingRow>
-      <SettingRow label="Product unit">
-        <SetLink onClick={() => setUnitModalOpen(true)}>Set unit</SetLink>
+      <SettingRow label="Satuan produk">
+        <SetLink onClick={() => setUnitModalOpen(true)}>
+          {editable ? "Atur satuan" : "Lihat satuan"}
+        </SetLink>
       </SettingRow>
-      <SettingRow label="Inventory costing method">
-        <span className="text-sm text-gray-900">Average cost</span>
+      <SettingRow label="Metode penilaian persediaan">
+        <span className="text-sm text-gray-900">Biaya rata-rata</span>
       </SettingRow>
 
       <SectionHeading
-        title="Subfeature settings"
-        editing={subfeatureEditing}
-        onEdit={startSubfeatureEdit}
+        title="Pengaturan subfitur"
+        editing={subfeatures.editing}
+        onEdit={editable ? subfeatures.start : undefined}
       />
-      {subfeatureLabels.map(([key, label]) => (
-        <SettingRow key={key} label={label}>
-          {subfeatureEditing ? (
+      {SUBFEATURES.map(([field, label]) => (
+        <SettingRow key={field} label={label}>
+          {subfeatures.editing ? (
             <ToggleSwitch
-              checked={subfeatureDraft[key]}
-              onChange={() => toggleSubfeature(key)}
+              checked={subfeatures.draft[field]}
+              onChange={() => subfeatures.toggleField(field)}
             />
           ) : (
-            <StatusText active={savedSubfeatures[key]} />
+            <StatusText active={saved[field]} />
           )}
         </SettingRow>
       ))}
-      {subfeatureEditing && (
-        <div className="flex justify-end gap-2.5 pt-4">
-          <button type="button" className={btnModalCancel} onClick={cancelSubfeatureEdit}>
-            Batal
-          </button>
-          <button type="button" className={btnModalSubmit} onClick={saveSubfeatureEdit}>
-            Simpan perubahan
-          </button>
-        </div>
+      {subfeatures.editing && (
+        <SaveActions
+          saving={subfeatures.saving}
+          error={subfeatures.error}
+          onCancel={subfeatures.cancel}
+          onSave={submitSubfeatures}
+        />
       )}
 
-      <SectionHeading title="Other settings" />
-      <SettingRow label="Batch reminder">
-        <SetLink onClick={() => setBatchReminderModalOpen(true)}>Set batch reminder</SetLink>
+      <SectionHeading title="Pengaturan lainnya" />
+      <SettingRow label="Pengingat kelompok produksi">
+        <SetLink onClick={() => setBatchReminderModalOpen(true)}>
+          {editable ? "Atur pengingat batch" : "Lihat pengingat batch"}
+        </SetLink>
       </SettingRow>
 
       {categoryModalOpen && (
         <ListSetModal
-          title="Set product category"
-          nameLabel="Product category"
-          addLabel="Add category"
-          searchPlaceholder="Search product category"
-          noun="product category"
+          title="Atur kategori produk"
+          nameLabel="Kategori produk"
+          addLabel="Tambah kategori"
+          searchPlaceholder="Cari kategori produk"
+          noun="kategori produk"
+          url={CATEGORY_URL}
+          editable={editable}
           onClose={() => setCategoryModalOpen(false)}
         />
       )}
 
       {unitModalOpen && (
         <ListSetModal
-          title="Set unit"
-          nameLabel="Unit"
-          addLabel="Add unit"
-          searchPlaceholder="Search unit"
-          noun="unit"
+          title="Atur satuan"
+          nameLabel="Satuan"
+          addLabel="Tambah satuan"
+          searchPlaceholder="Cari satuan"
+          noun="satuan"
+          url={UNIT_URL}
+          editable={editable}
           onClose={() => setUnitModalOpen(false)}
         />
       )}
 
       {batchReminderModalOpen && (
-        <BatchReminderModal onClose={() => setBatchReminderModalOpen(false)} />
+        <BatchReminderModal editable={editable} onClose={() => setBatchReminderModalOpen(false)} />
       )}
     </div>
   );
 }
 
-function WarehouseTab() {
-  const [savedStatus, setSavedStatus] = useState(false);
-  const [draftStatus, setDraftStatus] = useState(false);
-  const [editing, setEditing] = useState(false);
 
-  const startEdit = () => {
-    setDraftStatus(savedStatus);
-    setEditing(true);
-  };
-
-  const cancelEdit = () => {
-    setEditing(false);
-    setDraftStatus(savedStatus);
-  };
-
-  const saveEdit = () => {
-    setSavedStatus(draftStatus);
-    setEditing(false);
-  };
+function WarehouseTab({ saved, save }) {
+  const storage = useEditing(saved, save, "Gagal menyimpan pengaturan gudang.");
 
   return (
     <div className="mb-6 mt-4 rounded-[10px] bg-white p-6 shadow-sm">
-      <SectionHeading title="Storage location" editing={editing} onEdit={startEdit} />
+      <SectionHeading
+        title="Lokasi penyimpanan"
+        editing={storage.editing}
+        onEdit={canAccessSettingsFeature("Product: Warehouse", "edit") ? storage.start : undefined}
+      />
       <p className="m-0 py-3.5 text-[13px] leading-relaxed text-slate-500">
-        By activating this feature, you can manage storage locations in your warehouses at a
-        specific level, such as area, rack, or bin.
+        Dengan mengaktifkan fitur ini, Anda dapat mengelola lokasi penyimpanan di gudang hingga tingkat tertentu, seperti area, rak, atau wadah.
       </p>
-      <SettingRow label="Feature status">
-        {editing ? (
-          <ToggleSwitch checked={draftStatus} onChange={() => setDraftStatus(!draftStatus)} />
+      <SettingRow label="Status fitur">
+        {storage.editing ? (
+          <ToggleSwitch
+            checked={storage.draft.enable_storage_location}
+            onChange={() => storage.toggleField("enable_storage_location")}
+          />
         ) : (
-          <StatusText active={savedStatus} />
+          <StatusText active={saved.enable_storage_location} />
         )}
       </SettingRow>
-      {editing && (
-        <div className="flex justify-end gap-2.5 pt-4">
-          <button type="button" className={btnModalCancel} onClick={cancelEdit}>
-            Batal
-          </button>
-          <button type="button" className={btnModalSubmit} onClick={saveEdit}>
-            Simpan perubahan
-          </button>
-        </div>
+      {storage.editing && (
+        <SaveActions
+          saving={storage.saving}
+          error={storage.error}
+          onCancel={storage.cancel}
+          onSave={() =>
+            storage.submit({ enable_storage_location: storage.draft.enable_storage_location })
+          }
+        />
       )}
     </div>
   );
 }
 
 export default function ProductsPage() {
-  const [mainPage, setMainPage] = useState(true);
+  const [mainPage, setMainPage] = useState(canAccessSettingsFeature("Product: Good & Services"));
+  const { saved, loading, loadError, save } = useSetting(PRODUCT_SETTINGS_URL);
 
   return (
     <div className="p-7 max-md:p-[18px]">
       <div className="mb-6 flex items-start ">
-        <h2 className="m-0 text-[28px] font-bold text-gray-900">Products</h2>
+        <h2 className="m-0 text-[28px] font-bold text-gray-900">Produk</h2>
       </div>
 
       <MainTab mainPage={mainPage} setMainPage={setMainPage} />
 
-      {mainPage ? <GoodsAndServicesTab /> : <WarehouseTab />}
+      {!saved ? (
+        loading ? (
+          <div className="mb-6 mt-4 flex items-center justify-center rounded-[10px] bg-white p-16 shadow-sm">
+            <span className={pageSpinner} />
+          </div>
+        ) : (
+          <div className="mb-6 mt-4 rounded-[10px] bg-white p-6 text-sm text-red-600 shadow-sm">
+            {loadError}
+          </div>
+        )
+      ) : mainPage ? (
+        <GoodsAndServicesTab saved={saved} save={save} />
+      ) : (
+        <WarehouseTab saved={saved} save={save} />
+      )}
     </div>
   );
 }
