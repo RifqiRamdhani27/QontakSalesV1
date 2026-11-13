@@ -1,8 +1,8 @@
 <div align="center">
 
-# QontakSales
+# Enterprise ERP & Financial Accounting Platform
 
-**Sales CRM Platform** — Kelola leads, pipeline, broadcast WhatsApp, dan tim sales Anda dalam satu platform.
+**Solusi Terpadu Manajemen Keuangan, Pembukuan Akuntansi, dan Operasional Bisnis Perusahaan**
 
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=flat&logo=react&logoColor=white)](https://reactjs.org/)
 [![Django](https://img.shields.io/badge/Django-5.1-092E20?style=flat&logo=django&logoColor=white)](https://www.djangoproject.com/)
@@ -14,166 +14,167 @@
 
 ---
 
-## Fitur Utama
+## Tim Pengembang
 
-| Fitur | Deskripsi |
-|-------|-----------|
-| **Dashboard** | Statistik real-time: revenue, win rate, stage distribution, leaderboard agent |
-| **Dashboard Export** | Export laporan dashboard ke Excel (.xlsx) dengan styling profesional |
-| **Leads Management** | CRUD leads lengkap dengan search, filter, sort, pagination |
-| **Pipeline (Kanban)** | Visualisasi pipeline 5 stage: Prospek Baru → Hubungi → Negosiasi → Won/Lost |
-| **WhatsApp Broadcast** | Kirim pesan massal ke leads dengan template personal (`{name}`, `{phone}`, `{company}`, `{value}`) |
-| **Broadcast History** | Riwayat pengiriman broadcast lengkap dengan status & detail |
-| **Archive Leads** | Soft-delete leads tanpa menghapus data, tidak terhitung di dashboard |
-| **Agent Management** | Kelola tim sales agent (Manager only) |
-| **Role-Based Access** | 2 role: Manager (full access) & Agent (limited access) |
-| **Switch Account** | Manager bisa impersonate agent untuk review |
-| **Landing Page** | Halaman publik dengan Hero, Features, CTA, FAQ, Privacy, Terms, Contact |
-| **Profile & Avatar** | Upload avatar, edit profil, change password |
+Platform ini dikembangkan secara kolaboratif oleh:
+
+*  **Ketua Proyek:** **Rifqi**  
+  *Lead Architecture, Financial Engine (COA, Jurnal Umum, Tutup Buku, Laporan Keuangan), Database Management & Fullstack Integration.*
+*  **Anggota Tim:**
+  * **Fathan** — *Modul Operasional & Frontend UI/UX (Produk, Produksi, Pemenuhan, Manajemen Kontak).*
+  * **Freza** — *Modul Transaksi & Anggaran (Penjualan, Pembelian, Kas & Bank, Biaya, Anggaran).*
+
+---
+
+## Fitur Utama Sistem
+
+Platform ini menyediakan rangkaian modul lengkap untuk memenuhi kebutuhan siklus akuntansi dan operasional perusahaan:
+
+| Modul | Deskripsi Fitur |
+|---|---|
+| ** Dashboard & Beranda** | Ringkasan analitik real-time posisi kas/bank, pendapatan, beban operasional, dan laba bersih perusahaan. |
+| ** Daftar Akun (COA)** | Pengelolaan Chart of Accounts hierarkis (Aset, Liabilitas, Ekuitas, Pendapatan, dan Beban). |
+| ** Tutup Buku Otomatis** | Proses rekonsiliasi akhir periode, kalkulasi laba/rugi berjalan, dan penguncian transaksi historis. |
+| ** Jurnal Umum** | Pencatatan transaksi akuntansi debit-kredit dengan validasi keseimbangan (*balanced balance*). |
+| ** Kas & Bank** | Manajemen rekening bank dan kas fisik, mutasi kas masuk/keluar, serta transfer antar-kas. |
+| ** Laporan Keuangan** | Laporan Neraca (*Balance Sheet*), Laba Rugi (*Income Statement*), Arus Kas (*Cash Flow*), Laporan Perubahan Modal, Buku Besar, dan Neraca Saldo. |
+| ** Anggaran & Biaya** | Perencanaan alokasi anggaran departemen, rincian realisasi pengeluaran, dan pencatatan biaya operasional. |
+| ** Penjualan & Piutang** | Faktur penjualan, proforma invoice, tukar faktur, dan pemantauan penuaan piutang pelanggan (*Aging Receivables*). |
+| ** Pembelian & Utang** | Pemesanan pembelian (PO), pencatatan faktur vendor/supplier, dan tracking jatuh tempo utang usaha. |
+| ** Manajemen Aset Tetap** | Registrasi aset, monitoring nilai perolehan, masa manfaat, dan kalkulasi akumulasi penyusutan. |
+| ** Produksi & Pemenuhan** | Manajemen alur produksi barang dari bahan baku hingga pemenuhan pesanan (*Fulfillment*) pelanggan. |
+| ** Dark Mode & Responsif** | Dukungan tampilan tema gelap (*Dark Mode*) |
 
 ---
 
 ## Tech Stack
 
-### Backend
-- **Framework:** Django 5.1 + Django REST Framework
-- **Database:** PostgreSQL
-- **Authentication:** JWT (SimpleJWT)
-- **WhatsApp API:** Fonnte (via sendFast microservice)
-
 ### Frontend
 - **Framework:** React 19 + Vite 6
 - **UI Library:** Chakra UI v3
 - **Icons:** Phosphor Icons
-- **Charts:** Chart.js (react-chartjs-2)
-- **HTTP Client:** Axios
-- **Router:** React Router DOM v7
+- **Charts:** Chart.js & react-chartjs-2
+- **State & Routing:** React Router DOM v7
+- **HTTP Client:** Axios (dengan JWT token interceptor)
+
+### Backend
+- **Framework:** Django 5.1 + Django REST Framework (DRF)
+- **Database:** PostgreSQL 16
+- **Authentication:** JSON Web Tokens (SimpleJWT)
+- **Architecture:** Modul-modul terisolasi (*Accounts, COA, Inventory, Products, Contacts, Reports*)
 
 ---
 
-## Arsitektur
+## Arsitektur Sistem
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Frontend (React + Vite)                   │
+│                    Frontend (React 19 + Vite)               │
 │                      http://localhost:5173                   │
 └─────────────────────────┬───────────────────────────────────┘
-                          │ REST API (Axios)
+                          │ REST API (JSON / Axios)
                           ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                 Backend (Django REST Framework)              │
 │                      http://localhost:8000                   │
 │                                                             │
-│  ┌──────────┐  ┌──────────┐  ┌──────────────┐  ┌─────────┐ │
-│  │ accounts │  │  leads   │  │  broadcasts  │  │  (...)  │ │
-│  └──────────┘  └──────────┘  └──────┬───────┘  └─────────┘ │
-└──────────────────────────────────────┼──────────────────────┘
-                                       │ HTTP POST
-                                       ▼
+│  ┌───────────────┐ ┌────────────────┐ ┌───────────────────┐ │
+│  │    Accounts   │ │   Accounting   │ │  Cash & Banking   │ │
+│  │  (Auth, JWT)  │ │ (COA, Journal) │ │  (Transactions)   │ │
+│  └───────────────┘ └────────────────┘ └───────────────────┘ │
+│  ┌───────────────┐ ┌────────────────┐ ┌───────────────────┐ │
+│  │ Sales/Purchas.│ │ Assets/Inventory││ Financial Reports │ │
+│  └───────────────┘ └────────────────┘ └───────────────────┘ │
+└─────────────────────────┬───────────────────────────────────┘
+                          │ PostgreSQL Connection
+                          ▼
 ┌─────────────────────────────────────────────────────────────┐
-│              sendFast (Laravel) — WhatsApp API               │
-│                    http://localhost:8001                     │
-│                    Driver: Fonnte API                        │
+│                   PostgreSQL Database                       │
+│         Relational Financial Data with ACID Compliance      │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Struktur Project
+## Struktur Proyek
 
 ```
 QontakSales/
 ├── backend/                        # Django REST API
 │   ├── qontak_sales/
 │   │   ├── apps/
-│   │   │   ├── accounts/           # User, Company, Auth, Permissions
-│   │   │   ├── leads/              # Lead CRUD, Pipeline, Dashboard Stats
-│   │   │   ├── broadcasts/         # WhatsApp Broadcast + History
-│   │   │   ├── activities/         # Activity logging
-│   │   │   └── notifications/      # In-app notifications
+│   │   │   ├── accounts/           # User Auth, Role & Perusahaan
+│   │   │   ├── coa/                # Chart of Accounts, Jurnal & Buku Besar
+│   │   │   ├── accounts_coa/       # Pemetaan relasi akun
+│   │   │   ├── contacts/           # Data vendor & pelanggan
+│   │   │   ├── products/           # Manajemen katalog produk
+│   │   │   ├── inventory/          # Manajemen persediaan & stok
+│   │   │   └── pricerules/         # Aturan harga jual/beli
 │   │   ├── settings.py
 │   │   └── urls.py
 │   ├── manage.py
-│   └── .env
-├── frontend/                       # React SPA
+│   └── requirements.txt
+├── frontend/                       # React Single Page Application (SPA)
 │   ├── src/
-│   │   ├── pages/                  # Page components
-│   │   │   ├── DashboardPage.jsx
-│   │   │   ├── LeadsPage.jsx
-│   │   │   ├── PipelinePage.jsx
-│   │   │   ├── LeadDetailPage.jsx
-│   │   │   ├── BroadcastPage.jsx
-│   │   │   ├── BroadcastHistoryPage.jsx
-│   │   │   ├── ArchivedLeadsPage.jsx
-│   │   │   ├── AgentsPage.jsx
-│   │   │   ├── SettingsPage.jsx
-│   │   │   ├── LoginPage.jsx
-│   │   │   ├── RegisterPage.jsx
-│   │   │   └── LandingPage.jsx
-│   │   ├── components/layout/      # Layout components
-│   │   │   ├── Sidebar.jsx
-│   │   │   ├── TopBar.jsx
-│   │   │   ├── MainLayout.jsx
-│   │   │   └── AuthGuard.jsx
-│   │   ├── services/api.js         # Axios instance + JWT interceptors
-│   │   ├── assets/                 # Images (brand.png, heroImg.png)
-│   │   └── theme/index.js          # Chakra UI theme tokens
+│   │   ├── pages/                  # Halaman aplikasi
+│   │   │   ├── Main-Beranda/       # Halaman Beranda
+│   │   │   ├── Main-Dashboard/     # Dashboard Analitik Finansial
+│   │   │   ├── Main-DaftarAkun/    # COA, Jurnal Umum, Tutup Buku
+│   │   │   ├── Main-KasBank/       # Kas & Bank
+│   │   │   ├── Main-Laporan/       # Neraca, Laba Rugi, Arus Kas, Perubahan Modal
+│   │   │   ├── Main-Anggaran/      # Rencana Anggaran & Realisasi
+│   │   │   ├── Main-Biaya/         # Pencatatan Biaya
+│   │   │   ├── Main-Aset/          # Manajemen Aset Tetap
+│   │   │   ├── Main-Product/       # Produk & Katalog
+│   │   │   ├── Main-Productions/   # Alur Produksi
+│   │   │   ├── Main-Fulfillment/   # Pemenuhan Pesanan
+│   │   │   ├── LoginPage.jsx       # Autentikasi Masuk
+│   │   │   └── RegisterPage.jsx    # Registrasi Pengguna
+│   │   ├── components/layout/      # Sidebar, TopBar, MainLayout
+│   │   ├── services/api.js         # Axios instance & interceptors
+│   │   └── assets/                 # Aset grafis & logo
 │   ├── package.json
 │   └── vite.config.js
-└── PROJECT.md                      # Product Requirements Document
+├── PROJECT.md                      # Product Requirements Document (PRD)
+└── README.md                       # Dokumentasi Utama Proyek
 ```
 
 ---
 
-## Role-Based Permissions
+## Panduan Menjalankan Proyek
 
-| Fitur | Manager | Agent |
-|-------|---------|-------|
-| Dashboard | Full (semua data) | Own data only |
-| Leads | Semua leads | Hanya leads sendiri |
-| Pipeline | Semua leads | Hanya leads sendiri |
-| Broadcast | Semua leads | Hanya leads sendiri |
-| Archive/Restore | Semua leads | Hanya leads sendiri |
-| Agent Management | Full CRUD | Tidak ada akses |
-| Delete Leads | Ya | Tidak |
+### Prasyarat Sistem
+- **Node.js:** Versi 18+ (disarankan Node 20+)
+- **Python:** Versi 3.11 - 3.13
+- **PostgreSQL:** Versi 15+
 
----
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+
-- Python 3.13+
-- PostgreSQL 16+
-- PHP 8.2+ (untuk sendFast)
-
-### Backend Setup
+### 1. Menjalankan Backend (Django)
 
 ```bash
 cd backend
 
-# Create virtual environment
+# Buat virtual environment
 python -m venv venv
-venv\Scripts\activate     # Windows
-source venv/bin/activate  # Linux/Mac
 
-# Install dependencies
+# Aktivasi virtual environment
+# Windows:
+venv\Scripts\activate
+# Linux/macOS:
+source venv/bin/activate
+
+# Install dependensi
 pip install -r requirements.txt
 
-# Configure database
-cp .env.example .env
-# Edit .env with your database credentials
-
-# Run migrations
+# Jalankan migrasi basis data
 python manage.py migrate
 
-# Create superuser
+# Buat akun Superuser / Admin
 python manage.py createsuperuser
 
-# Start server
+# Jalankan server API
 python manage.py runserver 8000
 ```
+Backend akan aktif di: `http://localhost:8000`
 
 ### Seed Data Wilayah
 
@@ -236,116 +237,20 @@ Asal upstream dan lisensi dataset warisan belum tercatat secara terverifikasi di
 ```bash
 cd frontend
 
-# Install dependencies
+# Install dependensi paket
+npm install
+# atau
 pnpm install
 
-# Start dev server
+# Jalankan server development
+npm run dev
+# atau
 pnpm run dev
 ```
-
-### sendFast Setup (WhatsApp API)
-
-```bash
-cd ../sendFast/backend
-
-# Install dependencies
-composer install
-
-# Configure .env
-# Set WA_DRIVER=fonnte
-# Set FONNTE_TOKEN=your_token
-
-# Start server
-php artisan serve --port=8001
-```
-
-### Login
-
-| Role | Email | Password |
-|------|-------|----------|
-| Manager | admin@qontak.com | admin123 |
+Frontend akan aktif di: `http://localhost:5173`
 
 ---
 
-## API Endpoints
+## 📄 Lisensi
 
-### Authentication
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/token/` | Login (email + password) |
-| POST | `/api/token/refresh/` | Refresh JWT token |
-| POST | `/api/auth/register/` | Register new user |
-
-### Leads
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/leads/` | List leads (filter: `?archived=true`) |
-| POST | `/api/leads/` | Create lead |
-| GET | `/api/leads/{id}/` | Lead detail |
-| PUT | `/api/leads/{id}/` | Update lead |
-| DELETE | `/api/leads/{id}/` | Delete lead (Manager only) |
-| POST | `/api/leads/{id}/archive/` | Archive lead |
-| POST | `/api/leads/{id}/restore/` | Restore lead |
-| POST | `/api/leads/{id}/move_stage/` | Move lead to next stage |
-
-### Broadcast
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/broadcasts/` | List broadcast history |
-| POST | `/api/broadcasts/` | Create & send broadcast |
-
-### Dashboard
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/dashboard/stats/` | Dashboard statistics |
-| GET | `/api/dashboard/export/` | Export dashboard report to Excel |
-
-### Profile
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| PUT | `/api/auth/profile/` | Update profile (name, email, avatar) |
-| POST | `/api/auth/change-password/` | Change password |
-
----
-
-## WhatsApp Broadcast
-
-### Template Variables
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `{name}` | Contact name | John Doe |
-| `{phone}` | Phone number | 6281234567890 |
-| `{company}` | Company source | PT Maju Jaya |
-| `{value}` | Deal value | Rp 75.000.000 |
-
-### Contoh Pesan
-
-```
-Halo {name} dari {company}!
-
-Kami ingin menginformasikan bahwa deal senilai Rp {value} sedang dalam tahap negosiasi.
-
-Terima kasih!
-QontakSales Team
-```
-
----
-
-## Screenshots
-
-> Coming soon...
-
----
-
-## License
-
-MIT License
-
----
-
-<div align="center">
-
-**Built with ❤️ by Fitra Riadi**
-
-</div>
+Proyek ini dilisensikan di bawah lisensi **MIT License** — Anda bebas menggunakan, memodifikasi, dan mendistribusikan perangkat lunak ini untuk keperluan pengembangan internal maupun komersial.
