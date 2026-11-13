@@ -843,7 +843,7 @@ export default function LandingPage() {
                             </Text>
                           </HStack>
 
-                          <Heading as="h3" fontSize="xl"         
+                          <Heading as="h3" fontSize="xl"
                             fontWeight="500" pt={2}>{s.title}</Heading>
                           <Text fontSize="sm" color={C.mute} lineHeight="1.7">{s.desc}</Text>
                         </VStack>
@@ -1003,6 +1003,7 @@ export default function LandingPage() {
               ))}
             </SimpleGrid>
 
+            {/* Copyright */}
             <Stack direction={{ base: "column", md: "row" }} justify="space-between" align="center" pt={8} borderTop="1px solid #1E293B" gap={4}>
               <HStack gap={3}>
                 <Box as="img" src={brandFooter} h="36px" alt="Jurnal ERP" loading="lazy" decoding="async" />
@@ -1011,7 +1012,6 @@ export default function LandingPage() {
               <HStack gap={6}>
                 <Text as="button" fontSize="xs" color={C.soft} _hover={{ color: "white" }} onClick={() => navigate("/terms")}>Syarat Penggunaan</Text>
                 <Text as="button" fontSize="xs" color={C.soft} _hover={{ color: "white" }} onClick={() => navigate("/privacy")}>Kebijakan Privasi</Text>
-                <Text as="button" fontSize="xs" color={C.soft} _hover={{ color: "white" }} onClick={() => navigate("/contact")}>Keamanan Data</Text>
               </HStack>
             </Stack>
           </VStack>
