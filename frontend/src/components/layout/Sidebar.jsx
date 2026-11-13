@@ -7,6 +7,8 @@ import {
   Desktop, Tag, ShoppingCart, Bank, SidebarSimple, X, Factory, Truck
 } from "@phosphor-icons/react";
 import brandLogo from "@/assets/brand.png";
+import brandLogoLight from "@/assets/Ino-Finance.png";
+import brandLogoDark from "@/assets/Ino-Finance-SidebarDarkMode.png";
 
 const allNavItems = [
   { label: "Beranda", icon: House, path: "/beranda" },
@@ -90,6 +92,7 @@ export default function Sidebar({ open, onClose }) {
 
   const currentTheme = THEME[themeMode];
   const isDark = themeMode === "dark";
+  const logoSrc = isDark ? brandLogoDark : brandLogoLight;
 
   return (
     <>
@@ -127,11 +130,11 @@ export default function Sidebar({ open, onClose }) {
           bg={currentTheme.toggleBg}
           border="1px solid"
           borderColor={currentTheme.toggleBorder}
-          color={currentTheme.toggleColor}
+          color={isDark ? "#FFFFFF" : currentTheme.toggleColor}
           boxShadow={currentTheme.shadow}
           _hover={{
             bg: themeMode === 'dark' ? '#333' : 'gray.50',
-            color: themeMode === 'dark' ? '#FFF' : 'gray.800',
+            color: isDark ? '#E5B85C' : 'gray.800',
             boxShadow: "0 2px 6px rgba(0,0,0,0.12)"
           }}
           transition="all 150ms ease"
@@ -167,74 +170,19 @@ export default function Sidebar({ open, onClose }) {
           >
             <HStack
               justify="space-between"
-              px={6}
-              minH="64px"
+              px={3}
+              minH="78px"
               flexShrink={0}
             >
-              {isCollapsed ? (
-                <Box
-                  w="32px"
-                  h="32px"
-                  overflow="hidden"
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="flex-start"
-                  flexShrink={0}
-                >
-                  <Box
-                    as="img"
-                    src={brandLogo}
-                    alt="QontakSales"
-                    style={{
-                      height: "28px",
-                      width: "auto",
-                      maxWidth: "none",
-                      objectFit: "cover",
-                      objectPosition: "left center",
-                      filter: currentTheme.logoFilter,
-                      transition: "filter 0.3s ease",
-                    }}
-                  />
-                </Box>
-              ) : isDark ? (
-                <Box position="relative" h="28px" flexShrink={0} display="inline-block">
-                  <Box
-                    as="img"
-                    src={brandLogo}
-                    alt="QontakSales"
-                    h="28px"
-                    display="block"
-                    style={{
-                      filter: currentTheme.titleFilter,
-                      transition: "filter 0.3s ease",
-                    }}
-                  />
-
-                  <Box
-                    as="img"
-                    src={brandLogo}
-                    alt=""
-                    aria-hidden="true"
-                    position="absolute"
-                    top={0}
-                    left={0}
-                    h="28px"
-                    style={{
-                      filter: currentTheme.logoFilter,
-                      clipPath: `inset(0 calc(100% - ${FLOWER_WIDTH}px) 0 0)`,
-                      transition: "filter 0.3s ease",
-                    }}
-                  />
-                </Box>
-              ) : (
+              {/* --- LOGO DISEMBUNYIKAN SAAT COLLAPSED --- */}
+              {!isCollapsed && (
                 <Box
                   as="img"
-                  src={brandLogo}
-                  h="28px"
-                  alt="QontakSales"
+                  src={logoSrc}
+                  h="72px"
+                  alt="Ino Finance"
                   flexShrink={0}
                   style={{
-                    filter: currentTheme.logoFilter,
                     transition: "filter 0.3s ease",
                   }}
                 />

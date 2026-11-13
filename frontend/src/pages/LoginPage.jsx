@@ -11,6 +11,7 @@ import {
   Flex,
   IconButton,
 } from "@chakra-ui/react";
+import { keyframes } from "@emotion/react";
 import { Eye, EyeClosed } from "@phosphor-icons/react";
 import api from "@/services/api";
 import bgImage from "@/assets/meeting.jpg";
@@ -83,6 +84,45 @@ const socials = [
   { label: "X", icon: XLogo },
   { label: "Google", icon: GoogleLogo },
 ];
+
+const EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
+
+const pageIn = keyframes`
+  from { opacity: 0; }
+  to { opacity: 1; }
+`;
+
+const cardIn = keyframes`
+  from { opacity: 0; transform: translateY(36px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+`;
+
+const riseIn = keyframes`
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
+
+const slideIn = keyframes`
+  from { opacity: 0; transform: translateX(-28px); }
+  to { opacity: 1; transform: translateX(0); }
+`;
+
+const popIn = keyframes`
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 1; transform: scale(1); }
+`;
+
+const growIn = keyframes`
+  from { opacity: 0; transform: scaleY(0); }
+  to { opacity: 1; transform: scaleY(1); }
+`;
+
+const reduceMotion =
+  typeof window !== "undefined" &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const enter = (name, delay = 0, duration = 800) =>
+  reduceMotion ? "none" : `${name} ${duration}ms ${EASE} ${delay}ms backwards`;
 
 function FloatingInput({
   name,
@@ -293,16 +333,18 @@ export default function LoginPage() {
       bgSize="cover"
       bgPos="center"
       bgRepeat="no-repeat"
+      animation={enter(pageIn, 0, 600)}
     >
       <Flex
         w="100%"
-        maxW="none"
-        minH={{ base: "auto", md: "calc(100vh - 80px)" }}
+        maxW="1780px"
+        minH={{ base: "auto", md: "calc(100vh - 100px)" }}
         direction={{ base: "column", md: "row" }}
         borderRadius="4xl"
         overflow="hidden"
-        boxShadow="0 25px 60px rgba(0,0,0,0.55)"
+        boxShadow="0 25px 60px rgba(0,0,0,0.60)"
         color="white"
+        animation={enter(cardIn, 100, 1000)}
       >
         <Flex
           display={{ base: "none", md: "flex" }}
@@ -310,16 +352,37 @@ export default function LoginPage() {
           direction="column"
           justify="center"
           p={14}
-          bg="blackAlpha.500"
-          style={{ backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(4px)" }}
+          position="relative"
         >
-          <Heading as="h1" fontSize="5xl" fontWeight="bold" lineHeight="1.1" mb={4}>
+          <Box
+            position="absolute"
+            top="0"
+            right="0"
+            bottom="0"
+            left="0"
+            bg="blackAlpha.500"
+            pointerEvents="none"
+          />
+          <Heading
+            as="h1"
+            position="relative"
+            fontSize="5xl"
+            fontWeight="bold"
+            lineHeight="1.1"
+            mb={4}
+            animation={enter(slideIn, 350, 900)}
+          >
             Welcome Back
           </Heading>
-          <Text fontSize="sm" fontWeight="medium" color="whiteAlpha.800" maxW="420px">
-            Sign in to your account to continue. Track performance, manage your pipeline, and close
-            deals faster.
-          </Text>
+          <Text
+            position="relative"
+            fontSize="sm"
+            fontWeight="medium"
+            color="whiteAlpha.800"
+            maxW="420px"
+            animation={enter(slideIn, 500, 900)}
+          >
+            Sign in to your account to continue. Monitor your business performance and close your products faster.          </Text>
         </Flex>
 
         <Flex
@@ -335,7 +398,7 @@ export default function LoginPage() {
         >
           <Flex w="100%" maxW="560px" gap={{ base: 6, md: 8 }} direction={{ base: "column", md: "row" }}>
             <Box flex="1">
-              <Heading as="h2" fontSize="2xl" mb={8}>
+              <Heading as="h2" fontSize="2xl" mb={8} animation={enter(riseIn, 400)}>
                 Sign in
               </Heading>
 
@@ -346,26 +409,32 @@ export default function LoginPage() {
                       {error}
                     </Box>
                   )}
-                  <FloatingInput
-                    name="email"
-                    type="email"
-                    label="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                  <FloatingInput
-                    name="password"
-                    secret
-                    revealed={showPassword}
-                    label="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    trailing={
-                      <Box onClick={() => setShowPassword(!showPassword)} display="flex" alignItems="center">
-                        {showPassword ? <EyeClosed size={20} /> : <Eye size={20} />}
-                      </Box>
-                    }
-                  />
+
+                  <Box animation={enter(riseIn, 500)}>
+                    <FloatingInput
+                      name="email"
+                      type="email"
+                      label="Email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </Box>
+
+                  <Box animation={enter(riseIn, 600)}>
+                    <FloatingInput
+                      name="password"
+                      secret
+                      revealed={showPassword}
+                      label="Password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      trailing={
+                        <Box onClick={() => setShowPassword(!showPassword)} display="flex" alignItems="center">
+                          {showPassword ? <EyeClosed size={20} /> : <Eye size={20} />}
+                        </Box>
+                      }
+                    />
+                  </Box>
 
                   <Button
                     type="submit"
@@ -380,17 +449,29 @@ export default function LoginPage() {
                     loading={loading}
                     _hover={{ bg: ACCENT_HOVER }}
                     transition="background 200ms ease"
+                    animation={enter(riseIn, 700)}
                   >
                     Sign In
                   </Button>
 
-                  <Text fontSize="xs" textAlign="center" fontWeight="medium">
+                  <Text
+                    fontSize="xs"
+                    textAlign="center"
+                    fontWeight="medium"
+                    animation={enter(riseIn, 800)}
+                  >
                     Don't have an account?{" "}
                     <Button
                       variant="link"
                       color="#1bceffff"
                       fontWeight="semibold"
+                      fontSize="inherit"
+                      h="auto"
+                      minH="0"
+                      minW="0"
+                      p={0}
                       ml={2}
+                      verticalAlign="baseline"
                       onClick={() => navigate("/register")}
                     >
                       Sign up for free
@@ -400,16 +481,39 @@ export default function LoginPage() {
               </form>
             </Box>
 
-            <Flex display={{ base: "none", md: "flex" }} direction="column" align="center" justify="center" gap={3}>
-              <Box w="1px" flex="1" bg="whiteAlpha.500" />
-              <Text fontSize="sm" fontWeight="semibold" color="whiteAlpha.800">
+            <Flex
+              display={{ base: "none", md: "flex" }}
+              direction="column"
+              align="center"
+              justify="center"
+              gap={3}
+            >
+              <Box
+                w="1px"
+                flex="1"
+                bg="whiteAlpha.500"
+                transformOrigin="bottom"
+                animation={enter(growIn, 600, 900)}
+              />
+              <Text
+                fontSize="sm"
+                fontWeight="semibold"
+                color="whiteAlpha.800"
+                animation={enter(riseIn, 800)}
+              >
                 OR
               </Text>
-              <Box w="1px" flex="1" bg="whiteAlpha.500" />
+              <Box
+                w="1px"
+                flex="1"
+                bg="whiteAlpha.500"
+                transformOrigin="top"
+                animation={enter(growIn, 600, 900)}
+              />
             </Flex>
 
             <VStack display={{ base: "none", md: "flex" }} justify="center" gap={4}>
-              {socials.map(({ label, icon: Icon }) => (
+              {socials.map(({ label, icon: Icon }, i) => (
                 <IconButton
                   key={label}
                   type="button"
@@ -419,6 +523,7 @@ export default function LoginPage() {
                   color="black"
                   size="md"
                   _hover={{ bg: "gray.200" }}
+                  animation={enter(popIn, 800 + i * 100, 700)}
                 >
                   <Icon size={18} />
                 </IconButton>

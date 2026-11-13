@@ -1,17 +1,17 @@
 import { useState, useRef, useLayoutEffect } from "react";
-import { useNavigate, Link as RouterLink, Navigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import {
   Box,
   Button,
   Heading,
   Input,
-  Link,
   Stack,
   Text,
   VStack,
   Flex,
   IconButton,
 } from "@chakra-ui/react";
+import { keyframes } from "@emotion/react";
 import api from "@/services/api";
 import bgImage from "@/assets/meeting.jpg";
 import LoadingPopup from "@/components/ui/LoadingPopup";
@@ -83,6 +83,45 @@ const socials = [
   { label: "X", icon: XLogo },
   { label: "Google", icon: GoogleLogo },
 ];
+
+const EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
+
+const pageIn = keyframes`
+  from { opacity: 0; }
+  to { opacity: 1; }
+`;
+
+const cardIn = keyframes`
+  from { opacity: 0; transform: translateY(36px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+`;
+
+const riseIn = keyframes`
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
+
+const slideIn = keyframes`
+  from { opacity: 0; transform: translateX(-28px); }
+  to { opacity: 1; transform: translateX(0); }
+`;
+
+const popIn = keyframes`
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 1; transform: scale(1); }
+`;
+
+const growIn = keyframes`
+  from { opacity: 0; transform: scaleY(0); }
+  to { opacity: 1; transform: scaleY(1); }
+`;
+
+const reduceMotion =
+  typeof window !== "undefined" &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const enter = (name, delay = 0, duration = 800) =>
+  reduceMotion ? "none" : `${name} ${duration}ms ${EASE} ${delay}ms backwards`;
 
 function FloatingInput({ name, label, type = "text", secret = false, value, onChange }) {
   const id = `reg-${name}`;
@@ -268,16 +307,18 @@ export default function RegisterPage() {
       bgSize="cover"
       bgPos="center"
       bgRepeat="no-repeat"
+      animation={enter(pageIn, 0, 600)}
     >
       <Flex
         w="100%"
-        maxW="none"
-        minH={{ base: "auto", md: "calc(100vh - 80px)" }}
+        maxW="1780px"
+        minH={{ base: "auto", md: "calc(100vh - 100px)" }}
         direction={{ base: "column", md: "row" }}
         borderRadius="4xl"
         overflow="hidden"
-        boxShadow="0 25px 60px rgba(0,0,0,0.55)"
+        boxShadow="0 25px 60px rgba(0,0,0,0.60)"
         color="white"
+        animation={enter(cardIn, 100, 1000)}
       >
         <Flex
           display={{ base: "none", md: "flex" }}
@@ -285,15 +326,38 @@ export default function RegisterPage() {
           direction="column"
           justify="center"
           p={14}
-          bg="blackAlpha.500"
-          style={{ backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(4px)" }}
+          position="relative"
         >
-          <Heading as="h1" fontSize="5xl" fontWeight="bold" lineHeight="1.1" mb={4}>
+          <Box
+            position="absolute"
+            top="0"
+            right="0"
+            bottom="0"
+            left="0"
+            bg="blackAlpha.500"
+            pointerEvents="none"
+          />
+          <Heading
+            as="h1"
+            position="relative"
+            fontSize="5xl"
+            fontWeight="bold"
+            lineHeight="1.1"
+            mb={4}
+            animation={enter(slideIn, 350, 900)}
+          >
             Let's Get Started
           </Heading>
-          <Text fontSize="sm" fontWeight="medium" color="whiteAlpha.800" maxW="420px">
-            Start closing more deals today. Free forever for small teams, setup in under 2 minutes,
-            no credit card required.
+          <Text
+            position="relative"
+            fontSize="sm"
+            fontWeight="medium"
+            color="whiteAlpha.800"
+            maxW="420px"
+            animation={enter(slideIn, 500, 1000)}
+          >
+            Record journals, track invoices,
+            and keep your products accurate in real time. Get started in under 2 minutes, no credit card required.
           </Text>
         </Flex>
 
@@ -304,12 +368,13 @@ export default function RegisterPage() {
           align="center"
           justify="center"
           ml={{ base: 0, md: "-1px" }}
-          bgImage="radial-gradient(circle at 100% 0%, rgba(125, 212, 252, 0.46) 0%, rgba(14, 164, 233, 0.2) 35%, transparent 65%)" position="relative"
+          bgImage="radial-gradient(circle at 100% 0%, rgba(125, 212, 252, 0.46) 0%, rgba(14, 164, 233, 0.2) 35%, transparent 65%)"
+          position="relative"
           zIndex={1}
         >
           <Flex w="100%" maxW="560px" gap={{ base: 6, md: 8 }} direction={{ base: "column", md: "row" }}>
             <Box flex="1">
-              <Heading as="h2" fontSize="2xl" mb={8}>
+              <Heading as="h2" fontSize="2xl" mb={8} animation={enter(riseIn, 400)}>
                 Sign up
               </Heading>
 
@@ -320,11 +385,26 @@ export default function RegisterPage() {
                       {error}
                     </Box>
                   )}
-                  <FloatingInput name="name" label="Your name" value={form.name} onChange={handleChange} />
-                  <FloatingInput name="email" type="email" label="Your Email" value={form.email} onChange={handleChange} />
-                  <FloatingInput name="company_name" label="Company name" value={form.company_name} onChange={handleChange} />
-                  <FloatingInput name="password" secret label="Create Password" value={form.password} onChange={handleChange} />
-                  <FloatingInput name="password_confirm" secret label="Repeat password" value={form.password_confirm} onChange={handleChange} />
+
+                  <Box animation={enter(riseIn, 500)}>
+                    <FloatingInput name="name" label="Your name" value={form.name} onChange={handleChange} />
+                  </Box>
+
+                  <Box animation={enter(riseIn, 580)}>
+                    <FloatingInput name="email" type="email" label="Your Email" value={form.email} onChange={handleChange} />
+                  </Box>
+
+                  <Box animation={enter(riseIn, 660)}>
+                    <FloatingInput name="company_name" label="Company name" value={form.company_name} onChange={handleChange} />
+                  </Box>
+
+                  <Box animation={enter(riseIn, 740)}>
+                    <FloatingInput name="password" secret label="Create Password" value={form.password} onChange={handleChange} />
+                  </Box>
+
+                  <Box animation={enter(riseIn, 820)}>
+                    <FloatingInput name="password_confirm" secret label="Repeat password" value={form.password_confirm} onChange={handleChange} />
+                  </Box>
 
                   <Button
                     type="submit"
@@ -339,17 +419,29 @@ export default function RegisterPage() {
                     loading={loading}
                     _hover={{ bg: ACCENT_HOVER }}
                     transition="background 200ms ease"
+                    animation={enter(riseIn, 900)}
                   >
                     Sign up
                   </Button>
 
-                  <Text fontSize="xs" textAlign="center" fontWeight="medium">
+                  <Text
+                    fontSize="xs"
+                    textAlign="center"
+                    fontWeight="medium"
+                    animation={enter(riseIn, 980)}
+                  >
                     Already a Member?{" "}
                     <Button
                       variant="link"
                       color="#1bceffff"
                       fontWeight="semibold"
+                      fontSize="inherit"
+                      h="auto"
+                      minH="0"
+                      minW="0"
+                      p={0}
                       ml={2}
+                      verticalAlign="baseline"
                       onClick={() => navigate("/login")}
                     >
                       Sign in here
@@ -359,16 +451,39 @@ export default function RegisterPage() {
               </form>
             </Box>
 
-            <Flex display={{ base: "none", md: "flex" }} direction="column" align="center" justify="center" gap={3}>
-              <Box w="1px" flex="1" bg="whiteAlpha.500" />
-              <Text fontSize="sm" fontWeight="semibold" color="whiteAlpha.800">
+            <Flex
+              display={{ base: "none", md: "flex" }}
+              direction="column"
+              align="center"
+              justify="center"
+              gap={3}
+            >
+              <Box
+                w="1px"
+                flex="1"
+                bg="whiteAlpha.500"
+                transformOrigin="bottom"
+                animation={enter(growIn, 600, 900)}
+              />
+              <Text
+                fontSize="sm"
+                fontWeight="semibold"
+                color="whiteAlpha.800"
+                animation={enter(riseIn, 800)}
+              >
                 OR
               </Text>
-              <Box w="1px" flex="1" bg="whiteAlpha.500" />
+              <Box
+                w="1px"
+                flex="1"
+                bg="whiteAlpha.500"
+                transformOrigin="top"
+                animation={enter(growIn, 600, 900)}
+              />
             </Flex>
 
             <VStack display={{ base: "none", md: "flex" }} justify="center" gap={4}>
-              {socials.map(({ label, icon: Icon }) => (
+              {socials.map(({ label, icon: Icon }, i) => (
                 <IconButton
                   key={label}
                   type="button"
@@ -378,6 +493,7 @@ export default function RegisterPage() {
                   color="black"
                   size="md"
                   _hover={{ bg: "gray.200" }}
+                  animation={enter(popIn, 800 + i * 100, 700)}
                 >
                   <Icon size={18} />
                 </IconButton>

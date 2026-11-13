@@ -786,7 +786,7 @@ export default function LandingPage() {
               </VStack>
             </Reveal>
 
-            <Box position="relative" w="full">
+            <Box position="relative" w="full" userSelect="none">
               <Box
                 aria-hidden display={{ base: "none", lg: "block" }}
                 position="absolute" left="6%" right="6%" top="56px" zIndex={0}
