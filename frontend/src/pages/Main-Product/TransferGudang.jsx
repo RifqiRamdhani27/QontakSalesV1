@@ -272,14 +272,13 @@ function ActionPageShell({ title, subtitle, children, footer, onBack, maxWidth =
 
         /* Tombol utama (emas) */
         .dash-dark .btn-save {
-          background-color: #E5B85C !important;
-          color: #121212 !important;
-          font-weight: 600;
-          box-shadow: 0 4px 10px rgba(229, 184, 92, 0.3) !important;
+          background: #e08d33 !important; 
+          color: #ffffffff !important; 
+          box-shadow: 0 4px 8px rgba(254, 92, 23, 0.49) !important;
+          transition: all 0.2s ease-in-out;
         }
         .dash-dark .btn-save:hover:not(:disabled) {
-          background-color: #f0c978 !important;
-          box-shadow: 0 8px 18px rgba(229, 184, 92, 0.45) !important;
+          background: #e08c33df !important; 
         }
       `}</style>
     </div>

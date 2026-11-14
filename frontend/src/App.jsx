@@ -1,4 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import AuthGuard from "./components/layout/AuthGuard";
+import PublicOnlyRoute from "./components/layout/PublicOnlyRoute";
 import Beranda from "./pages/Main-Beranda/Beranda";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
@@ -9,14 +11,7 @@ import ProductsMain from "./pages/Main-Product/ProductsMain";
 import ProductionMain from "./pages/Main-Productions/ProductionsMainPage";
 import Fulfillment from "./pages/Main-Fulfillment/Fulfillment";
 import DashboardPage from "./pages/Main-Dashboard/DashboardPage";
-import LeadsPage from "./pages/LeadsPage";
-import PipelinePage from "./pages/PipelinePage";
-import CalendarPage from "./pages/CalendarPage";
-import LeadDetailPage from "./pages/LeadDetailPage";
 import SettingsPage from "./pages/Main-Settings/SettingsPage";
-import BroadcastPage from "./pages/BroadcastPage";
-import BroadcastHistoryPage from "./pages/BroadcastHistoryPage";
-import ArchivedLeadsPage from "./pages/ArchivedLeadsPage";
 import DaftarAkunPage from "./pages/Main-DaftarAkun/DaftarAkunPage";
 import TutupBukuPage from "./pages/Main-DaftarAkun/TutupBukuPage";
 import JurnalUmumPage from "./pages/Main-DaftarAkun/JurnalUmumPage";
@@ -80,12 +75,11 @@ import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import TermsPage from "./pages/TermsPage";
 import ContactPage from "./pages/Main-Contact/ContactPage";
 import MainLayout from "./components/layout/MainLayout";
-import AuthGuard from "./components/layout/AuthGuard";
 import PusatBantuan from "./pages/PusatBantuan";
 import Pajak from "./pages/Main-DaftarLainnya/Pajak";
 import CaraPembayaran from "./pages/Main-DaftarLainnya/CaraPembayaran";
-import BuatPajakBaru from "./pages/BuatPajakBaru";
-import EditPajak from "./pages/EditPajak";
+import BuatPajakBaru from "./pages/Main-DaftarLainnya/BuatPajakBaru";
+import EditPajak from "./pages/Main-DaftarLainnya/EditPajak";
 import SyaratPembayaran from "./pages/Main-DaftarLainnya/SyaratPembayaran";
 /* Data Migrasi */
 import DataMigrasi from "./pages/Main-DaftarLainnya/DataMigrasi";
@@ -103,8 +97,8 @@ import Kas from "./pages/Isi-DaftarAkun/Cash & Bank/Kas";
 import RekeningBank from "./pages/Isi-DaftarAkun/Cash & Bank/RekeningBank";
 import Giro from "./pages/Isi-DaftarAkun/Cash & Bank/Giro";
 import PiutangBelumDitagih from "./pages/Isi-DaftarAkun/AccountsReceivable/PiutangBelumDitagih";
-import PiutangUsaha from "./pages/Isi-DaftarAkun/AccountsReceivable/PiutangUsaha"; 
-import CadanganKerugianPiutang from "./pages/Isi-DaftarAkun/AccountsReceivable/CadanganKerugianPiutang"; 
+import PiutangUsaha from "./pages/Isi-DaftarAkun/AccountsReceivable/PiutangUsaha";
+import CadanganKerugianPiutang from "./pages/Isi-DaftarAkun/AccountsReceivable/CadanganKerugianPiutang";
 import PersediaanBarang from "./pages/Isi-DaftarAkun/Inventory/PersediaanBarang";
 import PiutangLainnya from "./pages/Isi-DaftarAkun/OtherCurrentAssets/PiutangLainnya";
 import PiutangKaryawan from "./pages/Isi-DaftarAkun/OtherCurrentAssets/PiutangKaryawan";
@@ -165,7 +159,7 @@ import BiayaImpor from "./pages/Isi-DaftarAkun/CostOfSales/BiayaImpor";
 import DiskonPembelian from "./pages/Isi-DaftarAkun/CostOfSales/DiskonPembelian";
 import ReturPembelian from "./pages/Isi-DaftarAkun/CostOfSales/ReturPembelian";
 import BiayaProduksi from "./pages/Isi-DaftarAkun/CostOfSales/BiayaProduksi";
-import PengirimanPengangkutan from "./pages/Isi-DaftarAkun/CostOfSales/Pengiriman&Pengangkutan" 
+import PengirimanPengangkutan from "./pages/Isi-DaftarAkun/CostOfSales/Pengiriman&Pengangkutan"
 import BiayaPenjualan from "./pages/Isi-DaftarAkun/Expenses/BiayaPenjualan";
 import IklanPromosi from "./pages/Isi-DaftarAkun/Expenses/IklanPromosi";
 import KomisiFee from "./pages/Isi-DaftarAkun/Expenses/KomisiFee";
@@ -257,9 +251,11 @@ import CreatePurchaseRequestPage from "./pages/Main-Pembelian/CreatePurchaseRequ
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
+      <Route element={<PublicOnlyRoute />}>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+      </Route>
       <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
       <Route path="/privacy" element={<PrivacyPolicyPage />} />
       <Route path="/terms" element={<TermsPage />} />
@@ -466,7 +462,7 @@ function App() {
           <Route path="/isi-daftar-akun/provisi" element={<Provisi />} />
           /* Kontak */
           <Route path="/contact" element={<ContactPage />} />
-          <Route path="/main-contact/profil-kontak/:id" element={<ProfilKontak/>} />
+          <Route path="/main-contact/profil-kontak/:id" element={<ProfilKontak />} />
           <Route path="/main-contact/profil-kontak" element={<ProfilKontak />} />
           <Route path="/main-contact/buat-kontak" element={<BuatKontak />} />
           <Route path="/main-contact/ubah-kontak" element={<UbahKontak />} />
@@ -492,7 +488,7 @@ function App() {
           <Route path="/pembelian/pesanan/create" element={<CreatePurchaseOrderPage />} />
           <Route path="/pembelian/penawaran/create" element={<CreatePurchaseQuotePage />} />
           <Route path="/pembelian/permintaan/create" element={<CreatePurchaseRequestPage />} />
-          /* Produksi */ 
+          /* Produksi */
           <Route path="/productionsmain" element={<ProductionMain />} />
           /* Pemenuhan */
           <Route path="/fulfillment" element={<Fulfillment />} />
@@ -520,14 +516,7 @@ function App() {
           <Route path="/transaksi/data-pembelian" element={<Transaksi2 />} />
           <Route path="/transaksi/biaya" element={<Transaksi3 />} />
           <Route path="/atur-saldo-coa" element={<AturSaldoCoa />} />
-          <Route path="/beranda" element={<Beranda  />} />
-          <Route path="/leads" element={<LeadsPage />} />
-          <Route path="/leads/archived" element={<ArchivedLeadsPage />} />
-          <Route path="/pipeline" element={<PipelinePage />} />
-          <Route path="/calendar" element={<CalendarPage />} />
-          <Route path="/leads/:id" element={<LeadDetailPage />} />
-          <Route path="/broadcasts" element={<BroadcastPage />} />
-          <Route path="/broadcasts/history" element={<BroadcastHistoryPage />} />
+          <Route path="/beranda" element={<Beranda />} />
           <Route path="/settings/*" element={<SettingsPage />} />
           <Route path="/daftar-akun" element={<DaftarAkunPage />} />
           <Route path="/tutup-buku" element={<TutupBukuPage />} />
@@ -582,7 +571,7 @@ function App() {
           <Route path="/laporan/mutasi-rekening-koran" element={<MutasiRekeningKoran />} />
           <Route path="/laporan/pajak-pemotongan" element={<LaporanPajakPemotongan />} />
           <Route path="/laporan/pajak-penjualan" element={<LaporanPajakPenjualan />} />
-          <Route path="/laporan/:reportId" element={<PembelianPerProduk />} />       
+          <Route path="/laporan/:reportId" element={<PembelianPerProduk />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

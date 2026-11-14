@@ -547,8 +547,8 @@ function TableCheckbox({ checked, indeterminate = false, onChange, label }) {
 }
 
 function SortIcon({ direction }) {
-  const up = direction === "asc" ? "#111827" : "#6b7280";
-  const down = direction === "desc" ? "#111827" : "#6b7280";
+  const up = direction === "asc" ? "#111827" : "#ffffffff";
+  const down = direction === "desc" ? "#111827" : "#ffffffff";
   return <svg width="10" height="14" viewBox="0 0 10 14" fill="none" aria-hidden="true"><path d="M5 1.5L8.5 5.5H1.5L5 1.5Z" fill={up} /><path d="M5 12.5L1.5 8.5H8.5L5 12.5Z" fill={down} /></svg>;
 }
 
@@ -1000,7 +1000,7 @@ export default function ContactsPage() {
     setLoading(true);
     setFilters(next);
     setFilterOpen(false);
-    setCurrentPage(1); // Reset halaman saat filter berubah
+    setCurrentPage(1); 
   };
 
   const handleSaveContact = async (formData, createAnother) => {
@@ -1259,7 +1259,7 @@ export default function ContactsPage() {
   .dash-dark .bg-slate-50,
   .dash-dark .bg-slate-100,
   .dash-dark [class*="bg-[#f0f4f8]"] { background-color: #262626; }
-  .dash-dark [class*="bg-[#EDFFFD]"] { background-color: #d38e0d69; }
+  .dash-dark [class*="bg-[#EDFFFD]"] { background-color: #e08c33b8; }
   .dash-dark .bg-indigo-50,
   .dash-dark .bg-indigo-100,
   .dash-dark [class*="bg-indigo-50"] { background-color: rgba(229,184,92,0.15); }
@@ -1296,12 +1296,13 @@ export default function ContactsPage() {
   .dash-dark .border-brand,
   .dash-dark [class~="border-[#4B61DD]"] { border-color: #E5B85C; }
   .dash-dark .bg-brand,
-  .dash-dark [class~="bg-[#4B61DD]"] { background-color: #E5B85C; color: #121212; }
+  .dash-dark [class~="bg-[#4B61DD]"] { background-color: #e08d33; color: #e6e6e6ff; }
   .dash-dark [class*="bg-[#4B61DD]/10"] { background-color: rgba(229,184,92,0.15); }
   .dash-dark [class*="ring-[#4B61DD]"] { --tw-ring-color: rgba(229,184,92,0.25); }
   .dash-dark button[role="checkbox"] svg path { stroke: #121212; }
 
-  .dash-dark .btn-primary-dark { background-color: #E5B85C !important; color: #121212 !important; }
+  .dash-dark .btn-primary-dark { background-color: #e08d33 !important; color: #f9f9f9ff !important; box-shadow: 0 4px 8px rgba(254, 92, 23, 0.49) !important;}
+  .dash-dark .btn-primary-dark:hover { background-color: #e08c33df !important; }
 
   /* Kotak pencarian */
   .dash-dark .search-input {

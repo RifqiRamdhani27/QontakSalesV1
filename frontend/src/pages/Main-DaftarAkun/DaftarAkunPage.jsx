@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import XLSXStyle from "xlsx-js-style";
 import {
   Box, Flex, Text, Button, Input, Select, Badge,
-  HStack, VStack, Spinner, IconButton,
+  HStack, VStack, IconButton,
   Table, Dialog, Field, createListCollection,
 } from "@chakra-ui/react";
 import {
@@ -248,6 +248,9 @@ const EMPTY_FORM = {
   saldo: "0",
 };
 
+const SKELETON_ROWS = Array.from({ length: 10 }, (_, i) => i);
+const SKELETON_NAME_WIDTHS = ["62%", "78%", "48%", "70%", "56%", "84%", "66%", "52%", "74%", "60%"];
+
 export default function DaftarAkunPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -337,10 +340,8 @@ export default function DaftarAkunPage() {
       const wb = XLSXStyle.utils.book_new();
       const wsData = [];
 
-      // Row 1 (empty for spacing)
       wsData.push([{ v: "", s: {} }]);
 
-      // Row 2: Main Title
       const titleStyle = {
         font: { bold: true, sz: 16, color: { rgb: "FFFFFF" }, name: "Calibri" },
         fill: { fgColor: { rgb: "1A3A5C" } },
@@ -359,7 +360,6 @@ export default function DaftarAkunPage() {
         { v: "", s: titleStyle },
       ]);
 
-      // Row 3: Sub-title (company name)
       const subTitleStyle = {
         font: { italic: true, sz: 11, color: { rgb: "FFFFFF" }, name: "Calibri" },
         fill: { fgColor: { rgb: "1A3A5C" } },
@@ -374,10 +374,8 @@ export default function DaftarAkunPage() {
         { v: "", s: subTitleStyle },
       ]);
 
-      // Row 4: Empty spacer
       wsData.push([{ v: "", s: {} }, { v: "", s: {} }, { v: "", s: {} }, { v: "", s: {} }, { v: "", s: {} }, { v: "", s: {} }]);
 
-      // Row 5: Column headers
       const headerStyle = {
         font: { bold: true, sz: 11, color: { rgb: "FFFFFF" }, name: "Calibri" },
         fill: { fgColor: { rgb: "2563EB" } },
@@ -398,7 +396,6 @@ export default function DaftarAkunPage() {
         { v: "Saldo (IDR)", s: headerStyle },
       ]);
 
-      // Data rows
       allData.forEach((a, idx) => {
         const isEven = idx % 2 === 0;
         const rowBg = isEven ? "FFFFFF" : "DBEAFE";
@@ -427,31 +424,28 @@ export default function DaftarAkunPage() {
 
       const ws = XLSXStyle.utils.aoa_to_sheet(wsData);
 
-      // Merge cells for title rows (A1:F1 spacer, A2:F2 title, A3:F3 subtitle)
       ws["!merges"] = [
-        { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }, // row 1 spacer
-        { s: { r: 1, c: 0 }, e: { r: 1, c: 5 } }, // row 2 title
-        { s: { r: 2, c: 0 }, e: { r: 2, c: 5 } }, // row 3 subtitle
-        { s: { r: 3, c: 0 }, e: { r: 3, c: 5 } }, // row 4 spacer
+        { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } },
+        { s: { r: 1, c: 0 }, e: { r: 1, c: 5 } },
+        { s: { r: 2, c: 0 }, e: { r: 2, c: 5 } },
+        { s: { r: 3, c: 0 }, e: { r: 3, c: 5 } },
       ];
 
-      // Column widths
       ws["!cols"] = [
-        { wch: 14 }, // Kode Akun
-        { wch: 40 }, // Nama Akun
-        { wch: 28 }, // Kategori Akun
-        { wch: 18 }, // Pengguna
-        { wch: 12 }, // Pajak
-        { wch: 18 }, // Saldo
+        { wch: 14 },
+        { wch: 40 },
+        { wch: 28 },
+        { wch: 18 },
+        { wch: 12 },
+        { wch: 18 },
       ];
 
-      // Row heights
       ws["!rows"] = [
-        { hpt: 8 },   // row 1 spacer
-        { hpt: 30 },  // row 2 title
-        { hpt: 20 },  // row 3 subtitle
-        { hpt: 8 },   // row 4 spacer
-        { hpt: 22 },  // row 5 headers
+        { hpt: 8 },
+        { hpt: 30 },
+        { hpt: 20 },
+        { hpt: 8 },
+        { hpt: 22 },
         ...allData.map(() => ({ hpt: 18 })),
       ];
 
@@ -566,24 +560,8 @@ export default function DaftarAkunPage() {
       bg={isDark ? "#121212" : "white"}
       minH="100vh"
     >
-      {/* Header */}
       <Flex align="center" justify="space-between" mb={6} flexWrap="wrap" gap={3}>
         <HStack gap={3}>
-          <Box w="36px" h="36px" overflow="hidden" display="flex" alignItems="center" justifyContent="flex-start">
-            <Box
-              as="img"
-              src={brandLogo}
-              h="36px"
-              style={{
-                objectFit: "cover",
-                objectPosition: "left center",
-                maxWidth: "none",
-                filter: isDark ? LOGO_GOLD_FILTER : "none",
-                transition: "filter 0.3s ease",
-              }}
-              alt="Daftar Akun"
-            />
-          </Box>
           <Box>
             <Text fontWeight="bold" fontSize="xl" color="foreground" lineHeight="1.2">
               Daftar Akun
@@ -593,9 +571,7 @@ export default function DaftarAkunPage() {
             </Text>
           </Box>
         </HStack>
-        {/* Action Buttons Group */}
         <HStack gap={3}>
-          {/* Buat Jurnal Umum Button */}
           <Button
             className="dd-btn"
             bg="#1d62a4ff"
@@ -618,7 +594,6 @@ export default function DaftarAkunPage() {
             Buat Jurnal Umum
           </Button>
 
-          {/* Single Navy Blue Tindakan Button */}
           <Box position="relative">
             <Button
               className="dd-btn"
@@ -644,7 +619,6 @@ export default function DaftarAkunPage() {
               </Box>
             </Button>
 
-            {/* Dropdown Menu */}
             {tindakanOpen && (
               <>
                 <Box position="fixed" inset={0} zIndex={90} onClick={() => setTindakanOpen(false)} />
@@ -663,20 +637,17 @@ export default function DaftarAkunPage() {
                   zIndex={100}
                   fontFamily="Segoe UI, -apple-system, sans-serif"
                 >
-                  {/* Item 1: Buat Akun Baru */}
                   <Flex
                     className="dd-item"
                     align="center" gap={3} px={4} py={2.5} cursor="pointer"
                     fontSize="13px" color="#1E293B" fontWeight="500"
                     _hover={{ bg: "#F1F5F9" }}
                     onClick={() => { setTindakanOpen(false); openCreate(); }}
-
                   >
                     <Plus size={16} className="dd-item-tindakan" />
                     <Text>Buat Akun Baru</Text>
                   </Flex>
 
-                  {/* Item 2: Hapus Semua / Hapus Terpilih */}
                   {selectedIds.length > 0 && (
                     <Flex
                       align="center" gap={3} px={4} py={2.5} cursor="pointer"
@@ -690,7 +661,6 @@ export default function DaftarAkunPage() {
                     </Flex>
                   )}
 
-                  {/* Item 3: Tutup buku & kunci periode */}
                   <Flex
                     align="center" gap={3} px={4} py={2.5} cursor="pointer"
                     fontSize="13px" color="#1E293B" fontWeight="500"
@@ -704,8 +674,6 @@ export default function DaftarAkunPage() {
 
                   <Box borderBottom="1px solid #E2E8F0" my={1.5} />
 
-
-                  {/* Item 5: Ekspor Akun */}
                   <Flex
                     align="center" gap={3} px={4} py={2.5} cursor="pointer"
                     fontSize="13px" color="#1E293B" fontWeight="500"
@@ -722,7 +690,6 @@ export default function DaftarAkunPage() {
         </HStack>
       </Flex>
 
-      {/* Filters */}
       <Box bg="white" borderRadius="xl" border="1px solid" borderColor="border"
         boxShadow="0 2px 6px rgba(0,0,0,0.06)" p={4} mb={4} className="dd-card">
         <Flex gap={3} flexWrap="wrap">
@@ -752,62 +719,97 @@ export default function DaftarAkunPage() {
         </Flex>
       </Box>
 
-      {/* Table */}
       <Box
         bg="white" borderRadius="lg" border="1px solid" borderColor="#E2E8F0"
         boxShadow="0 2px 6px rgba(0,0,0,0.06)"
         overflow="hidden"
         className="dd-card"
       >
-        {loading ? (
-          <Flex justify="center" align="center" py={16}>
-            <Spinner color="primary" size="lg" />
-          </Flex>
-        ) : accounts.length === 0 ? (
-          <Flex justify="center" align="center" py={16} direction="column" gap={2}>
-            <Box w="40px" h="40px" overflow="hidden" display="flex" alignItems="center" justifyContent="flex-start" opacity={0.5}>
-              <Box
-                as="img"
-                src={brandLogo}
-                h="40px"
-                style={{
-                  objectFit: "cover",
-                  objectPosition: "left center",
-                  maxWidth: "none",
-                  filter: isDark ? LOGO_GOLD_FILTER : "none",
-                  transition: "filter 0.3s ease",
-                }}
-                alt="Icon"
-              />
-            </Box>
-            <Text color="gray.400" fontSize="sm">Tidak ada akun ditemukan</Text>
-          </Flex>
-        ) : (
-          <Box overflowX="auto">
-            <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "Segoe UI, -apple-system, sans-serif" }}>
-              <thead>
-                <tr style={{ background: "#E0F2FE", borderBottom: "1px solid #BAE6FD" }}>
-                  <th style={{ padding: "8px 12px", width: "36px", textAlign: "center" }}>
-                    <Flex justify="center" align="center">
-                      <RoundCheckbox
-                        checked={isAllSelected}
-                        onChange={toggleSelectAll}
-                        title="Pilih Semua"
-                      />
+        <Box overflowX="auto">
+          <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "Segoe UI, -apple-system, sans-serif" }}>
+            <thead>
+              <tr style={{ background: "#c2fffdff", borderBottom: "1px solid #BAE6FD" }}>
+                <th style={{ padding: "15px 22px", width: "36px", textAlign: "center" }}>
+                  <Flex justify="center" align="center">
+                    <RoundCheckbox
+                      checked={isAllSelected}
+                      onChange={toggleSelectAll}
+                      title="Pilih Semua"
+                    />
+                  </Flex>
+                </th>
+                <th style={{ padding: "8px 12px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: "#0F172A", whiteSpace: "nowrap" }}>Kunci</th>
+                <th style={{ padding: "8px 12px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: "#0F172A", whiteSpace: "nowrap" }}>Kode Akun</th>
+                <th style={{ padding: "8px 12px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: "#0F172A", whiteSpace: "nowrap" }}>Nama Akun</th>
+                <th style={{ padding: "8px 12px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: "#0F172A", whiteSpace: "nowrap" }}>Kategori Akun</th>
+                <th style={{ padding: "8px 12px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: "#0F172A", whiteSpace: "nowrap" }}>Pengguna</th>
+                <th style={{ padding: "8px 12px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: "#0F172A", whiteSpace: "nowrap" }}>Pajak</th>
+                <th style={{ padding: "8px 12px", textAlign: "right", fontSize: "12px", fontWeight: "600", color: "#0F172A", whiteSpace: "nowrap" }}>Saldo (dalam IDR)</th>
+                <th style={{ padding: "8px 12px", textAlign: "right", fontSize: "12px", fontWeight: "600", color: "#0F172A", whiteSpace: "nowrap" }}>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                SKELETON_ROWS.map((i) => (
+                  <tr
+                    key={`skel-${i}`}
+                    className="dd-row"
+                    style={{ borderBottom: "1px solid #F1F5F9", background: "white", height: "36px", pointerEvents: "none" }}
+                  >
+                    <td style={{ padding: "6px 12px", textAlign: "center" }}>
+                      <span className="dd-skel" style={{ display: "block", width: "15px", height: "15px", borderRadius: "50%", margin: "0 auto" }} />
+                    </td>
+                    <td style={{ padding: "6px 12px" }}>
+                      <span className="dd-skel" style={{ display: "block", width: "14px", height: "10px", borderRadius: "4px" }} />
+                    </td>
+                    <td style={{ padding: "6px 12px" }}>
+                      <span className="dd-skel" style={{ display: "block", width: "64px", height: "10px", borderRadius: "4px" }} />
+                    </td>
+                    <td style={{ padding: "6px 12px" }}>
+                      <span className="dd-skel" style={{ display: "block", width: SKELETON_NAME_WIDTHS[i % SKELETON_NAME_WIDTHS.length], minWidth: "90px", height: "10px", borderRadius: "4px" }} />
+                    </td>
+                    <td style={{ padding: "6px 12px" }}>
+                      <span className="dd-skel" style={{ display: "block", width: "110px", height: "10px", borderRadius: "4px" }} />
+                    </td>
+                    <td style={{ padding: "6px 12px" }}>
+                      <span className="dd-skel" style={{ display: "block", width: "32px", height: "10px", borderRadius: "4px" }} />
+                    </td>
+                    <td style={{ padding: "6px 12px" }}>
+                      <span className="dd-skel" style={{ display: "block", width: "28px", height: "10px", borderRadius: "4px" }} />
+                    </td>
+                    <td style={{ padding: "6px 12px" }}>
+                      <span className="dd-skel" style={{ display: "block", width: "80px", height: "10px", borderRadius: "4px", marginLeft: "auto" }} />
+                    </td>
+                    <td style={{ padding: "6px 12px" }}>
+                      <span className="dd-skel" style={{ display: "block", width: "18px", height: "14px", borderRadius: "4px", marginLeft: "auto" }} />
+                    </td>
+                  </tr>
+                ))
+              ) : accounts.length === 0 ? (
+                <tr>
+                  <td colSpan={9} style={{ padding: "56px 12px", textAlign: "center" }}>
+                    <Flex justify="center" align="center" direction="column" gap={2}>
+                      <Box w="40px" h="40px" overflow="hidden" display="flex" alignItems="center" justifyContent="flex-start" opacity={0.5}>
+                        <Box
+                          as="img"
+                          src={brandLogo}
+                          h="40px"
+                          style={{
+                            objectFit: "cover",
+                            objectPosition: "left center",
+                            maxWidth: "none",
+                            filter: isDark ? LOGO_GOLD_FILTER : "none",
+                            transition: "filter 0.3s ease",
+                          }}
+                          alt="Icon"
+                        />
+                      </Box>
+                      <Text color="gray.400" fontSize="sm">Tidak ada akun ditemukan</Text>
                     </Flex>
-                  </th>
-                  <th style={{ padding: "8px 12px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: "#0F172A", whiteSpace: "nowrap" }}>Kunci</th>
-                  <th style={{ padding: "8px 12px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: "#0F172A", whiteSpace: "nowrap" }}>Kode Akun</th>
-                  <th style={{ padding: "8px 12px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: "#0F172A", whiteSpace: "nowrap" }}>Nama Akun</th>
-                  <th style={{ padding: "8px 12px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: "#0F172A", whiteSpace: "nowrap" }}>Kategori Akun</th>
-                  <th style={{ padding: "8px 12px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: "#0F172A", whiteSpace: "nowrap" }}>Pengguna</th>
-                  <th style={{ padding: "8px 12px", textAlign: "left", fontSize: "12px", fontWeight: "600", color: "#0F172A", whiteSpace: "nowrap" }}>Pajak</th>
-                  <th style={{ padding: "8px 12px", textAlign: "right", fontSize: "12px", fontWeight: "600", color: "#0F172A", whiteSpace: "nowrap" }}>Saldo (dalam IDR)</th>
-                  <th style={{ padding: "8px 12px", textAlign: "right", fontSize: "12px", fontWeight: "600", color: "#0F172A", whiteSpace: "nowrap" }}>Aksi</th>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {accounts.map((acct, idx) => {
+              ) : (
+                accounts.map((acct) => {
                   const isLocked = acct.is_system || acct.is_locked ||
                     acct.kode_akun.startsWith("1-10001") ||
                     acct.kode_akun.startsWith("1-10002") ||
@@ -910,28 +912,24 @@ export default function DaftarAkunPage() {
                       </td>
                     </tr>
                   );
-                })}
-              </tbody>
-            </table>
-          </Box>
-        )}
+                })
+              )}
+            </tbody>
+          </table>
+        </Box>
 
-        {/* Total */}
-        {!loading && totalCount > 0 && (
-          <Flex
-            justify="flex-start" align="center"
-            px={4} py={2.5} borderTop="1px solid" borderColor="#E2E8F0"
-            bg="#F8FAFC"
-            className="dd-foot"
-          >
-            <Text fontSize="12px" color="#64748B">
-              Total {totalCount} akun
-            </Text>
-          </Flex>
-        )}
+        <Flex
+          justify="flex-start" align="center"
+          px={4} py={2.5} borderTop="1px solid" borderColor="#E2E8F0"
+          bg="#F8FAFC"
+          className="dd-foot"
+        >
+          <Text fontSize="12px" color="#64748B">
+            {loading ? "Memuat data akun..." : `Total ${totalCount} akun`}
+          </Text>
+        </Flex>
       </Box>
 
-      {/* Modal Tambah/Edit */}
       {modalOpen && (
         <Box
           className="dd-overlay"
@@ -944,24 +942,9 @@ export default function DaftarAkunPage() {
             w="full" maxW="500px"
             maxH="90vh" display="flex" flexDirection="column" overflow="hidden"
           >
-            {/* Modal Header */}
             <Flex align="center" justify="space-between" px={6} py={4} borderBottom="1px solid" borderColor="border" flexShrink={0}>
               <HStack gap={2}>
-                <Box w="24px" h="24px" overflow="hidden" display="flex" alignItems="center" justifyContent="flex-start">
-                  <Box
-                    as="img"
-                    src={brandLogo}
-                    h="24px"
-                    style={{
-                      objectFit: "cover",
-                      objectPosition: "left center",
-                      maxWidth: "none",
-                      filter: isDark ? LOGO_GOLD_FILTER : "none",
-                      transition: "filter 0.3s ease",
-                    }}
-                    alt="Icon"
-                  />
-                </Box>
+
                 <Text fontWeight="bold" fontSize="lg" color="foreground">
                   {editTarget ? "Edit Akun" : "Tambah Akun Baru"}
                 </Text>
@@ -974,7 +957,6 @@ export default function DaftarAkunPage() {
               </IconButton>
             </Flex>
 
-            {/* Modal Body (Scrollable) */}
             <VStack
               gap={4} p={6} flex={1} overflowY="auto"
               css={{
@@ -1044,7 +1026,6 @@ export default function DaftarAkunPage() {
                 </select>
               </Box>
 
-              {/* Pajak */}
               <Box w="full">
                 <Text fontSize="sm" fontWeight="semibold" color="gray.700" mb={1.5}>Pajak</Text>
                 <Input
@@ -1057,7 +1038,6 @@ export default function DaftarAkunPage() {
                 />
               </Box>
 
-              {/* Deskripsi pajak */}
               <Box w="full">
                 <Text fontSize="sm" fontWeight="semibold" color="gray.700" mb={1.5}>Deskripsi pajak</Text>
                 <Input
@@ -1070,7 +1050,6 @@ export default function DaftarAkunPage() {
                 />
               </Box>
 
-              {/* Akses akun */}
               <Box w="full" pt={2}>
                 <Flex align="center" gap={2.5} mb={3}>
                   <User size={26} color={isDark ? "#E5B85C" : "#3B82F6"} weight="regular" />
@@ -1084,7 +1063,6 @@ export default function DaftarAkunPage() {
                 </Text>
 
                 <Flex align="center" gap={6} flexWrap="wrap">
-                  {/* Option 1: Semua pengguna */}
                   <Flex
                     align="center"
                     gap={2.5}
@@ -1113,7 +1091,6 @@ export default function DaftarAkunPage() {
                     </Text>
                   </Flex>
 
-                  {/* Option 2: Sebagian pengguna */}
                   <Flex
                     align="center"
                     gap={2.5}
@@ -1142,7 +1119,6 @@ export default function DaftarAkunPage() {
                     </Text>
                   </Flex>
 
-                  {/* Option 3: Peran tertentu */}
                   <Flex
                     align="center"
                     gap={2.5}
@@ -1172,7 +1148,6 @@ export default function DaftarAkunPage() {
                   </Flex>
                 </Flex>
 
-                {/* Sub-box for Sebagian Pengguna */}
                 {penggunaOption === "sebagian" && (
                   <Box mt={3} p={3} className="dd-card" bg="#F8FAFC" border="1px solid #E2E8F0" borderRadius="lg">
                     <Text fontSize="12px" fontWeight="600" color="#94A3B8" mb={2} textTransform="uppercase" letterSpacing="0.05em">
@@ -1190,7 +1165,6 @@ export default function DaftarAkunPage() {
                   </Box>
                 )}
 
-                {/* Sub-box for Peran Tertentu */}
                 {penggunaOption === "peran" && (
                   <Box mt={3} p={3} className="dd-card" bg="#F8FAFC" border="1px solid #E2E8F0" borderRadius="lg">
                     <Text fontSize="12px" fontWeight="600" color="#94A3B8" mb={2} textTransform="uppercase" letterSpacing="0.05em">
@@ -1224,7 +1198,6 @@ export default function DaftarAkunPage() {
 
             </VStack>
 
-            {/* Modal Footer */}
             <Flex gap={3} px={6} py={4} borderTop="1px solid" borderColor="#F1F5F9" flexShrink={0} bg="white">
               <Button
                 flex={1}
@@ -1254,7 +1227,6 @@ export default function DaftarAkunPage() {
         </Box>
       )}
 
-      {/* Modal Konfirmasi Hapus */}
       {deleteOpen && (
         <Box
           className="dd-overlay"
@@ -1293,7 +1265,6 @@ export default function DaftarAkunPage() {
         </Box>
       )}
 
-      {/* Modal Konfirmasi Hapus Masal */}
       {bulkDeleteOpen && (
         <Box
           className="dd-overlay"
@@ -1338,24 +1309,28 @@ export default function DaftarAkunPage() {
       <style>{`
       .dash-dark { color-scheme: dark; }
 
-      /* Teks Chakra */
       .dash-dark p { color: #f1f5f9; }
       .dash-dark .dd-danger p { color: #f87171; }
       .dash-dark .dd-error p { color: #f87171; }
       .dash-dark .dd-error { background: rgba(239,68,68,0.15); border-color: #7f1d1d; }
 
-      /* Kartu / panel */
       .dash-dark .dd-card { background: #121212; border-color: #634f27; }
       .dash-dark .dd-foot { background: #1a1a1a; border-color: #634f27; }
       .dash-dark .dd-item:hover { background: #2d2d2dff; }
       .dash-dark .dd-item-tindakan { color: #db9d00ff; }
       .dash-dark .dd-danger:hover { background: rgba(239,68,68,0.15); }
 
-      /* Tombol utama -> emas */
-      .dash-dark .dd-btn { background: #E5B85C !important; color: #121212 !important; }
-      .dash-dark .dd-btn:hover { background: #f0c978 !important; }
+      .dash-dark .dd-btn { 
+        background: #e08d33 !important; 
+        color: #ffffffff !important; 
+        box-shadow: 0 4px 8px rgba(254, 92, 23, 0.49) !important;
+        transition: all 0.2s ease-in-out;
+      }
 
-      /* Input, select, textarea */
+      .dash-dark .dd-btn:hover { 
+        background: #e08c33df !important; 
+      }
+
       .dash-dark input, .dash-dark select, .dash-dark textarea {
         background: #262626 !important;
         color: #f1f5f9 !important;
@@ -1368,8 +1343,7 @@ export default function DaftarAkunPage() {
       .dash-dark ::placeholder { color: #94a3b8; }
       .dash-dark input[type="radio"] { accent-color: #E5B85C; }
 
-      /* Tabel */
-      .dash-dark thead tr { background: #d38e0d69 !important; border-color: #634f27 !important; }
+      .dash-dark thead tr { background: #e08c33c1 !important; border-color: #634f27 !important; }
       .dash-dark th { color: #f1f5f9 !important; }
       .dash-dark .dd-row { background: #121212 !important; border-color: #3a3326 !important; }
       .dash-dark .dd-row:hover { background: #2d2d2d !important; }
@@ -1383,12 +1357,10 @@ export default function DaftarAkunPage() {
       .dash-dark td button svg { fill: #E5B85C; }
       .dash-dark td button:hover { background: #2d2d2d !important; }
 
-      /* Checkbox bulat */
       .dash-dark .dd-rc { background: #262626 !important; border-color: #634f27 !important; }
       .dash-dark .dd-rc.on { background: #E5B85C !important; border-color: #E5B85C !important; }
       .dash-dark .dd-rc.on svg { stroke: #121212; }
 
-      /* Dropdown kategori */
       .dash-dark .dd-cat-btn {
         background: #262626 !important;
         border-color: #634f27 !important;
@@ -1411,6 +1383,20 @@ export default function DaftarAkunPage() {
       .dash-dark .dd-overlay span { color: #f1f5f9 !important; }
       .dash-dark .dd-overlay .dd-error p { color: #f87171 !important; }
       .dash-dark .dd-overlay select option { background: #262626; color: #f1f5f9; 
+      }
+
+      .dd-skel {
+        background: linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 37%, #E2E8F0 63%);
+        background-size: 400% 100%;
+        animation: dd-shimmer 1.4s ease infinite;
+      }
+      .dash-dark .dd-skel {
+        background: linear-gradient(90deg, #2a2418 25%, #3a3022 37%, #2a2418 63%);
+        background-size: 400% 100%;
+      }
+      @keyframes dd-shimmer {
+        0% { background-position: 100% 50%; }
+        100% { background-position: 0 50%; }
       }
     `}</style>
     </Box>
@@ -1453,7 +1439,6 @@ function CategoryDropdown({ value, onChange, options, placeholder = "Pilih Kateg
 
   return (
     <div ref={ref} className="dd-cat" style={{ position: "relative", width: "100%" }}>
-      {/* Trigger */}
       <button
         type="button"
         className="dd-cat-btn"
@@ -1492,7 +1477,6 @@ function CategoryDropdown({ value, onChange, options, placeholder = "Pilih Kateg
         />
       </button>
 
-      {/* Panel  */}
       <div
         className="dd-cat-panel"
         style={{
@@ -1516,7 +1500,6 @@ function CategoryDropdown({ value, onChange, options, placeholder = "Pilih Kateg
           transition: "opacity 0.15s ease, transform 0.18s ease, visibility 0.18s",
         }}
       >
-        {/* Opsi: semua kategori */}
         <div
           className="dd-cat-item"
           onClick={() => pick("")}

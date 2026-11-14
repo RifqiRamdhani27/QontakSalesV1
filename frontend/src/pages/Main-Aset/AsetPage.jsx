@@ -652,11 +652,14 @@ export default function AsetPage() {
         }
         .aset-dark .aset-btn-outline:hover { background-color: #2d2d2d !important; }
         .aset-dark .aset-btn-primary {
-          background-color: #f08f18ff !important;
-          color: #000000ff !important;
-          box-shadow: 0 3px 0 #8d540dff !important;
+          background: #e08d33 !important; 
+          color: #ffffffff !important; 
+          box-shadow: 0 4px 8px rgba(254, 92, 23, 0.49) !important;
+          transition: all 0.2s ease-in-out;
         }
-        .aset-dark .aset-btn-primary:hover { background-color: #c87817ff !important; }
+        .aset-dark .aset-btn-primary:hover { 
+        background-color: #c87817ff !important; 
+        }
 
         /* Card */
         .aset-dark .aset-card { background-color: #121212 !important; border-color: #634f27 !important; }
@@ -699,7 +702,7 @@ export default function AsetPage() {
         /* Tabel */
         .aset-dark .aset-table { border-color: #634f27 !important; }
         .aset-dark .aset-thead {
-          background-color: #d38e0d69 !important;
+          background-color: #e08c33c1 !important;
           border-top: none !important;
           color: #f1f5f9 !important;
         }

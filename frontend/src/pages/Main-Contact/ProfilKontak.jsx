@@ -316,8 +316,8 @@ const rootStyle = isDark ? { backgroundColor: "#121212" } : undefined;
       .dash-dark .text-brand,
       .dash-dark [class~="text-[#4B61DD]"] { color: #E5B85C; }
       .dash-dark .bg-brand { background-color: #E5B85C; }
-      .dash-dark [class~="bg-[#4B61DD]"] { background-color: #E5B85C; color: #121212; }
-      .dash-dark [class*="hover:bg-[#3d4fbd]"]:hover { background-color: #f0c978; }
+      .dash-dark [class~="bg-[#4B61DD]"] { background-color: #e08d33; color: #ffffffff; }
+      .dash-dark [class*="hover:bg-[#3d4fbd]"]:hover { background-color: #e08c33df; }
       .dash-dark [class*="hover:text-brand-dark"]:hover { color: #f0c978; }
       .dash-dark .split-btn svg { fill: #121212; }
       .dash-dark .split-btn button { color: #121212; }

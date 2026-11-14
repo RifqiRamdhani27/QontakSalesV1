@@ -67,9 +67,8 @@ function OptionSelect({ value, onChange, options, placeholder, groups }) {
                       onChange(option);
                       setOpen(false);
                     }}
-                    className={`block w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-slate-50 focus:outline-none ${
-                      option === selected ? "font-semibold text-brand" : "text-slate-700"
-                    }`}
+                    className={`block w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-slate-50 focus:outline-none ${option === selected ? "font-semibold text-brand" : "text-slate-700"
+                      }`}
                   >
                     {option}
                   </button>
@@ -85,9 +84,8 @@ function OptionSelect({ value, onChange, options, placeholder, groups }) {
                   onChange(option);
                   setOpen(false);
                 }}
-                className={`block w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-slate-50 focus:outline-none ${
-                  option === selected ? "font-semibold text-brand" : "text-slate-700"
-                }`}
+                className={`block w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-slate-50 focus:outline-none ${option === selected ? "font-semibold text-brand" : "text-slate-700"
+                  }`}
               >
                 {option}
               </button>
@@ -203,14 +201,13 @@ function ActionPageShell({ title, subtitle, children, footer, onBack, maxWidth =
 
         /* Tombol Simpan (emas) */
         .dash-dark .btn-save {
-          background-color: #E5B85C !important;
-          color: #121212 !important;
-          font-weight: 600;
-          box-shadow: 0 4px 10px rgba(229, 184, 92, 0.3) !important;
+          background: #e08d33 !important; 
+          color: #ffffffff !important; 
+          box-shadow: 0 4px 8px rgba(254, 92, 23, 0.49) !important;
+          transition: all 0.2s ease-in-out;
         }
         .dash-dark .btn-save:hover:not(:disabled) {
-          background-color: #f0c978 !important;
-          box-shadow: 0 8px 18px rgba(229, 184, 92, 0.45) !important;
+          background: #e08c33df !important; 
         }
         .dash-dark .btn-save:active:not(:disabled) {
           box-shadow: 0 2px 4px rgba(229, 184, 92, 0.3) !important;
@@ -242,7 +239,7 @@ export default function TambahGudang() {
 
     try {
       setIsSaving(true);
-      
+
       const payload = {
         name: name.trim(),
         code: code.trim() || null,
@@ -252,12 +249,12 @@ export default function TambahGudang() {
       };
 
       await api.post("/warehouses/", payload);
-      
+
       // Jika sukses, kembali ke halaman daftar
       navigate("/products");
     } catch (err) {
       console.error("Gagal menyimpan gudang:", err.response?.data);
-      
+
       // Tampilkan pesan error dari backend
       if (err.response && err.response.data) {
         const errorData = err.response.data;
@@ -281,22 +278,22 @@ export default function TambahGudang() {
       onBack={handleBack}
       footer={
         <>
-          <button 
-            type="button" 
-            onClick={handleBack} 
+          <button
+            type="button"
+            onClick={handleBack}
             className={`${btnModalCancel} btn-cancel focus:outline-none`}
           >
             Batal
           </button>
-          
-          <button 
-            type="button" 
-            onClick={handleSave} 
+
+          <button
+            type="button"
+            onClick={handleSave}
             disabled={isSaving}
             className={`${btnModalSubmit} btn-save group relative flex items-center justify-center border-none text-white focus:outline-none transition-all duration-200 disabled:opacity-70`}
-            style={{ 
+            style={{
               backgroundColor: "rgba(23, 140, 204, 1)",
-              boxShadow: "0 4px 6px -1px rgba(23, 140, 204, 0.4), 0 2px 4px -1px rgba(23, 140, 204, 0.2)" 
+              boxShadow: "0 4px 6px -1px rgba(23, 140, 204, 0.4), 0 2px 4px -1px rgba(23, 140, 204, 0.2)"
             }}
             onMouseEnter={(e) => {
               if (!isSaving) {
@@ -343,14 +340,14 @@ export default function TambahGudang() {
         </div>
         <div>
           <label className={formLabel}>Kode gudang</label>
-          <input 
-            type="text" 
-            value={code} 
-            onChange={(e) => setCode(e.target.value)} 
-            className={`${inputBase} focus:outline-none focus:ring-0`} 
+          <input
+            type="text"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            className={`${inputBase} focus:outline-none focus:ring-0`}
           />
         </div>
-        
+
         <div className="md:col-span-2">
           <label className={formLabel}>Penanggung jawab ({pic ? 1 : 0}/5)</label>
           <OptionSelect value={pic} onChange={setPic} options={[]} placeholder="Pilih penanggung jawab" />
@@ -359,17 +356,17 @@ export default function TambahGudang() {
             minimum, serta batch yang akan kedaluwarsa atau telah kedaluwarsa
           </p>
         </div>
-        
+
         <div className="md:col-span-2">
           <label className={formLabel}>Alamat</label>
-          <input 
-            type="text" 
-            value={address} 
-            onChange={(e) => setAddress(e.target.value)} 
-            className={`${inputBase} focus:outline-none focus:ring-0`} 
+          <input
+            type="text"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            className={`${inputBase} focus:outline-none focus:ring-0`}
           />
         </div>
-        
+
         <div className="md:col-span-2">
           <label className={formLabel}>Catatan</label>
           <textarea

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useOutletContext } from "react-router-dom";
 
 const QUICK_ACTIONS = [
     {
@@ -81,6 +82,10 @@ const ADDON_FEATURES = [
     },
 ];
 
+// Warna isian (tint) ikon dibaca dari CSS variable --icon-tint,
+// jadi otomatis ikut light/dark tanpa hardcode #EAECFB.
+const TINT = { fill: "var(--icon-tint)" };
+
 const TRAININGS = [
     {
         id: "initial-setup",
@@ -90,13 +95,13 @@ const TRAININGS = [
         place: "Online",
         icon: (
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12.47 17H4.96973C1.96973 17 1.96973 15 1.96973 10V9C1.96973 4 1.96973 3 4.96973 3H18.9697C21.3822 3 21.8547 3.64666 21.9472 6.5H16.47C14.2609 6.5 12.47 8.29086 12.47 10.5V17Z" fill="#EAECFB" />
+                <path d="M12.47 17H4.96973C1.96973 17 1.96973 15 1.96973 10V9C1.96973 4 1.96973 3 4.96973 3H18.9697C21.3822 3 21.8547 3.64666 21.9472 6.5H16.47C14.2609 6.5 12.47 8.29086 12.47 10.5V17Z" style={TINT} />
                 <path d="M12.47 17H4.96973C1.96973 17 1.96973 15 1.96973 10V9C1.96973 4 1.96973 3 4.96973 3H18.9697C21.3822 3 21.8547 3.64666 21.9472 6.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M12.5 12H12C10.8954 12 10 11.1046 10 10V7.5" sstroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M12 9.5L10 7.5L8 9.5" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"></path>
-                <path d="M22 12V15C22 16.5 21.5 18 20 18H17C15.5 18 15 16.5 15 15V12C15 10.5 15.5 9 17 9H20C21.5 9 22 10.5 22 12Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
-                <path d="M18.5 9.5V11C18.5 11.825 19.175 12.5 20 12.5H21.5" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"></path>
-                <path d="M9 21H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                <path d="M12.5 12H12C10.8954 12 10 11.1046 10 10V7.5" stroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M12 9.5L10 7.5L8 9.5" stroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M22 12V15C22 16.5 21.5 18 20 18H17C15.5 18 15 16.5 15 15V12C15 10.5 15.5 9 17 9H20C21.5 9 22 10.5 22 12Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M18.5 9.5V11C18.5 11.825 19.175 12.5 20 12.5H21.5" stroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M9 21H15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
         ),
     },
@@ -108,9 +113,9 @@ const TRAININGS = [
         place: "Online",
         icon: (
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M21.001 7V17C21.001 20 19.501 22 16.001 22H8.00098C4.50098 22 3.00098 20 3.00098 17V7C3.00098 4 4.50098 2 8.00098 2H16.001C19.501 2 21.001 4 21.001 7Z" fill="#EAECFB" />
-                <path d="M8 6.06251C8 5.75313 8.25313 5.5 8.56251 5.5H10.0025C10.7394 5.5 11.2727 6.09908 11.2727 6.83597C11.2727 7.57286 10.7394 8.17193 10.0025 8.17193H8V6.06251Z" fill="#EAECFB" />
-                <path d="M13 8.56251C13 8.25313 13.2531 8 13.5625 8H15.0025C15.7394 8 16.2727 8.59908 16.2727 9.33597C16.2727 10.0729 15.7394 10.6719 15.0025 10.6719H13V8.56251Z" fill="#EAECFB" />
+                <path d="M21.001 7V17C21.001 20 19.501 22 16.001 22H8.00098C4.50098 22 3.00098 20 3.00098 17V7C3.00098 4 4.50098 2 8.00098 2H16.001C19.501 2 21.001 4 21.001 7Z" style={TINT} />
+                <path d="M8 6.06251C8 5.75313 8.25313 5.5 8.56251 5.5H10.0025C10.7394 5.5 11.2727 6.09908 11.2727 6.83597C11.2727 7.57286 10.7394 8.17193 10.0025 8.17193H8V6.06251Z" style={TINT} />
+                <path d="M13 8.56251C13 8.25313 13.2531 8 13.5625 8H15.0025C15.7394 8 16.2727 8.59908 16.2727 9.33597C16.2727 10.0729 15.7394 10.6719 15.0025 10.6719H13V8.56251Z" style={TINT} />
                 <path d="M8 8.17193H10.0025C10.7394 8.17193 11.2727 7.57286 11.2727 6.83597C11.2727 6.09908 10.7394 5.5 10.0025 5.5H8.56251C8.25313 5.5 8 5.75313 8 6.06251V8.17193ZM8 8.17193V10.5M9.68753 8.17193L11 10.5M13 10.6719H15.0025C15.7394 10.6719 16.2727 10.0729 16.2727 9.33597C16.2727 8.59908 15.7394 8 15.0025 8H13.5625C13.2531 8 13 8.25313 13 8.56251V10.6719ZM13 10.6719V13M7.75 18.25H12.25M7.75 15.75H16.25M21.001 7V17C21.001 20 19.501 22 16.001 22H8.00098C4.50098 22 3.00098 20 3.00098 17V7C3.00098 4 4.50098 2 8.00098 2H16.001C19.501 2 21.001 4 21.001 7Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
         ),
@@ -138,12 +143,63 @@ const PinMiniIcon = () => (
     </svg>
 );
 
-const ExternalLinkIcon = () => (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M14 4h6v6M20 4l-9 9" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-);
+// ---------------------------------------------------------------------------
+// Palet tema. Light = sama persis seperti sebelumnya.
+// Dark = satu keluarga warna emas/coklat hangat, border tipis (bukan emas
+// penuh), glow hover lembut, tanpa warna biru.
+// ---------------------------------------------------------------------------
+const LIGHT = {
+    bgMain: "#ffffff",
+    cardBg: "#ffffff",
+    cardBgHover: "#ffffff",
+    cardBorder: "#d4d6da",
+    hoverBorder: "#564ef9",
+    hoverShadow: "0 1px 6px rgba(0,0,0,0.4)",
+    hoverLift: "none",
+    textTitle: "#0f172a",
+    textBody: "#1e293b",
+    textMuted: "#64748b",
+    accent: "#0031BE",
+    bannerBorder: "#e2e8f0",
+    bannerBg: "linear-gradient(340deg, #66cfff 9.7%, #00a8fd 47.12%, #0087d9 84.53%)",
+    bannerImageOpacity: 1,
+    bannerTitle: "#ffffff",
+    bannerBtnBg: "#ffffff",
+    bannerBtnBgHover: "#f0f0f0",
+    bannerBtnText: "#564ef9",
+    bannerBtnBorder: "#e1d9d9f5",
+    bannerCardBg: "#ffffff",
+    bannerCardBorder: "#d4d6da",
+    iconTint: "#EAECFB",
+    iconTile: "transparent",
+};
+
+const DARK = {
+    bgMain: "#121212",
+    cardBg: "#1a1a19",
+    cardBgHover: "#211c13",
+    cardBorder: "rgba(222, 166, 54, 0.18)",
+    hoverBorder: "#dea636",
+    hoverShadow: "0 6px 20px rgba(222, 166, 54, 0.12)",
+    hoverLift: "translateY(-1px)",
+    textTitle: "#f8fafc",
+    textBody: "#e2e8f0",
+    textMuted: "#94a3b8",
+    accent: "#dea636",
+    bannerBorder: "rgba(222, 166, 54, 0.28)",
+    bannerBg:
+        "radial-gradient(120% 140% at 100% 0%, rgba(222,166,54,0.28) 0%, rgba(222,166,54,0) 55%), linear-gradient(135deg, #2e2008 0%, #1e1608 55%, #15110a 100%)",
+    bannerImageOpacity: 0.16,
+    bannerTitle: "#f8fafc",
+    bannerBtnBg: "#e08d33",
+    bannerBtnBgHover: "#e08c33df",
+    bannerBtnText: "#ebebebff",
+    bannerBtnBorder: "transparent",
+    bannerCardBg: "rgba(18, 18, 18, 0.72)",
+    bannerCardBorder: "rgba(222, 166, 54, 0.25)",
+    iconTint: "rgba(222, 166, 54, 0.18)",
+    iconTile: "rgba(255, 255, 255, 0.07)",
+};
 
 export default function Beranda({ userName = "Rifqi" }) {
     const [themeMode, setThemeMode] = useState(() => localStorage.getItem("app_theme") || "light");
@@ -158,39 +214,60 @@ export default function Beranda({ userName = "Rifqi" }) {
     }, []);
 
     const isDark = themeMode === "dark";
-    const bgMain = isDark ? "#121212" : "#ffffff";
-    const cardBg = isDark ? "#1e1e1e" : "#ffffff";
-    const cardBorderHover = isDark ? "#ff780aff" : "#564ef9ff";
-    const cardBoxShadowHover = isDark ? "0 1px 10px rgba(255, 200, 2, 1)" : "0 1px 6px rgba(0,0,0,0.4)";
-    const cardBorder = isDark ? "#d29417ff" : "#d4d6daff";
-    const cardBorderV2 = isDark ? "#dea636ff" : "#d4d6daff";
-    const textTitle = isDark ? "#f8fafc" : "#0f172a";
-    const iconColor = isDark ? "#dea636ff" : "#0f172a";
-    const iconColorV2 = isDark ? "#dea636ff" : "#0031BE";
-    const textBody = isDark ? "#cbd5e1" : "#1e293b";
-    const textMuted = isDark ? "#94a3b8" : "#64748b";
-    const textV2 = isDark ? "#d6a135ff" : "#564ef9ff";
+    const t = isDark ? DARK : LIGHT;
+
+    // Minta MainLayout menggambar motif background di container scroll-nya
+    // selama halaman ini tampil (dilepas lagi saat pindah halaman).
+    const outlet = useOutletContext();
+    const setHasBackdrop = outlet?.setHasBackdrop;
+    const hasLayoutBackdrop = !!setHasBackdrop;
+    useEffect(() => {
+        if (!setHasBackdrop) return undefined;
+        setHasBackdrop(true);
+        return () => setHasBackdrop(false);
+    }, [setHasBackdrop]);
+
+    // Helper hover: dipakai semua kartu supaya perilakunya seragam
+    // (dan border selalu kembali ke warna normal saat mouse keluar).
+    const hoverOn = (e) => {
+        const s = e.currentTarget.style;
+        s.borderColor = t.hoverBorder;
+        s.boxShadow = t.hoverShadow;
+        s.backgroundColor = t.cardBgHover;
+        s.transform = t.hoverLift;
+    };
+    const hoverOff = (baseBorder, baseBg) => (e) => {
+        const s = e.currentTarget.style;
+        s.borderColor = baseBorder;
+        s.boxShadow = "none";
+        s.backgroundColor = baseBg;
+        s.transform = "none";
+    };
 
     return (
         <div
             style={{
+                "--icon-tint": t.iconTint,
                 margin: "-14px",
                 minHeight: "100vh",
-                backgroundColor: bgMain, 
+                backgroundColor: hasLayoutBackdrop ? "transparent" : t.bgMain,
                 fontFamily: "'Inter', sans-serif, system-ui",
-                color: textBody, 
+                color: t.textBody,
                 paddingBottom: "56px",
+                position: "relative",
                 transition: "background-color 0.3s ease, color 0.3s ease",
             }}
         >
-            <div style={{ maxWidth: "960px", margin: "0 auto", padding: "32px 24px 0 24px" }}>
-                
+            {/* Motif background dark mode sekarang digambar oleh MainLayout (di container scroll),
+                supaya menutup penuh sampai pojok atas dan area scrollbar tanpa celah. */}
+            <div style={{ position: "relative", zIndex: 1, maxWidth: "960px", margin: "0 auto", padding: "32px 24px 0 24px" }}>
+
                 {/* Greeting */}
                 <div style={{ textAlign: "center", marginBottom: "24px" }}>
-                    <p style={{ margin: 0, fontSize: "15px", fontWeight: 700, color: textBody, lineHeight: 1.5 }}>
+                    <p style={{ margin: 0, fontSize: "15px", fontWeight: 700, color: t.textBody, lineHeight: 1.5 }}>
                         Halo, {userName}
                     </p>
-                    <p style={{ margin: 0, fontSize: "20px", fontWeight: 700, color: textTitle, lineHeight: 1.5 }}>
+                    <p style={{ margin: 0, fontSize: "20px", fontWeight: 700, color: t.textTitle, lineHeight: 1.5 }}>
                         Aktivitas apa yang ingin Anda lakukan?
                     </p>
                 </div>
@@ -207,26 +284,33 @@ export default function Beranda({ userName = "Rifqi" }) {
                                 gap: "14px",
                                 height: "56px",
                                 padding: "0 20px",
-                                backgroundColor: cardBg, 
-                                border: `1px solid ${cardBorder}`, 
+                                backgroundColor: t.cardBg,
+                                border: `1px solid ${t.cardBorder}`,
                                 borderRadius: "8px",
                                 cursor: "pointer",
                                 boxSizing: "border-box",
                                 width: "100%",
-                                transition: "border-color 0.15s ease, box-shadow 0.15s ease",
+                                transition: "border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, transform 0.2s ease",
                                 gridColumnStart: index === QUICK_ACTIONS.length - 1 ? 2 : "auto",
                             }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.borderColor = cardBorderHover;
-                                e.currentTarget.style.boxShadow = cardBoxShadowHover;
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.borderColor = cardBorder; 
-                                e.currentTarget.style.boxShadow = "none";
-                            }}
+                            onMouseEnter={hoverOn}
+                            onMouseLeave={hoverOff(t.cardBorder, t.cardBg)}
                         >
-                            <img src={action.icon} alt="" style={{ width: "28px", height: "28px", objectFit: "contain", flexShrink: 0 }} />
-                            <span style={{ fontSize: "14px", fontWeight: 700, color: textBody, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", textAlign: "left" }}>
+                            {/* Tile tipis di dark mode supaya ikon berwarna tidak "mengambang" di background gelap.
+                                Margin negatif menjaga ukuran layout tetap sama dengan light mode. */}
+                            <span
+                                style={{
+                                    display: "inline-flex",
+                                    flexShrink: 0,
+                                    padding: isDark ? "4px" : 0,
+                                    margin: isDark ? "-4px" : 0,
+                                    borderRadius: "8px",
+                                    backgroundColor: t.iconTile,
+                                }}
+                            >
+                                <img src={action.icon} alt="" style={{ width: "28px", height: "28px", objectFit: "contain", display: "block" }} />
+                            </span>
+                            <span style={{ fontSize: "14px", fontWeight: 700, color: t.textBody, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", textAlign: "left" }}>
                                 {action.label}
                             </span>
                         </button>
@@ -238,71 +322,98 @@ export default function Beranda({ userName = "Rifqi" }) {
                     style={{
                         position: "relative",
                         borderRadius: "12px",
-                        border: `1px solid ${isDark ? "#333" : "#e2e8f0"}`, // UBAH BORDER
+                        border: `1px solid ${t.bannerBorder}`,
                         padding: "24px 24px 20px 24px",
                         marginBottom: "48px",
                         overflow: "hidden",
-                        backgroundImage: "url(https://jurnal-assets.s3.ap-southeast-1.amazonaws.com/images/add-on-background.png), linear-gradient(340deg, #66cfff 9.7%, #00a8fd 47.12%, #0087d9 84.53%)",
-                        backgroundRepeat: "no-repeat",
-                        backgroundPosition: "right 0 top 0, 0 0",
-                        backgroundSize: "190px 250px, contain",
+                        background: t.bannerBg,
+                        transition: "border-color 0.3s ease",
                     }}
                 >
-                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "16px", marginBottom: "20px" }}>
-                        <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 700, color: "#ffffff", lineHeight: 1.4, maxWidth: "300px" }}>
-                            Tingkatkan produktivitas bisnis Anda dengan fitur tambahan Jurnal
-                        </h2>
-                        <button
-                            type="button"
-                            style={{ flexShrink: 0, whiteSpace: "nowrap", height: "34px", padding: "0 16px", backgroundColor: "#ffffff", color: textV2, fontSize: "12.5px", fontWeight: 600, border: "1px solid #e1d9d9f5", borderRadius: "6px", cursor: "pointer", boxShadow: "0 1px 2px rgba(0,0,0,0.06)", transition: "background-color 0.35s ease" }}
-                            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#f0f0f0ff"; }}
-                            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "#ffffff"; }}
-                        >
-                            Kunjungi Marketplace
-                        </button>
-                    </div>
+                    {/* Ilustrasi dekoratif: di dark dibuat sangat redup agar tidak bentrok dengan tema emas */}
+                    <div
+                        aria-hidden="true"
+                        style={{
+                            position: "absolute",
+                            top: 0,
+                            right: 0,
+                            width: "190px",
+                            height: "250px",
+                            backgroundImage: "url(https://jurnal-assets.s3.ap-southeast-1.amazonaws.com/images/add-on-background.png)",
+                            backgroundRepeat: "no-repeat",
+                            backgroundSize: "190px 250px",
+                            opacity: t.bannerImageOpacity,
+                            filter: isDark ? "sepia(1) saturate(2.5) hue-rotate(-10deg)" : "none",
+                            pointerEvents: "none",
+                        }}
+                    />
 
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "10px" }}>
-                        {ADDON_FEATURES.map((feature) => (
-                            <div
-                                key={feature.id}
+                    <div style={{ position: "relative", zIndex: 1 }}>
+                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "16px", marginBottom: "20px" }}>
+                            <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 700, color: t.bannerTitle, lineHeight: 1.4, maxWidth: "300px" }}>
+                                Tingkatkan produktivitas bisnis Anda dengan fitur tambahan Jurnal
+                            </h2>
+                            <button
+                                type="button"
                                 style={{
-                                    backgroundColor: cardBg, 
-                                    border: `1.5px solid ${cardBorderV2}`, 
-                                    borderRadius: "8px",
-                                    padding: "12px",
-                                    transition: "border-color 0.15s ease, box-shadow 0.15s ease",
+                                    flexShrink: 0,
+                                    whiteSpace: "nowrap",
+                                    height: "34px",
+                                    padding: "0 16px",
+                                    backgroundColor: t.bannerBtnBg,
+                                    color: t.bannerBtnText,
+                                    fontSize: "12.5px",
+                                    fontWeight: 600,
+                                    border: `1px solid ${t.bannerBtnBorder}`,
+                                    borderRadius: "6px",
                                     cursor: "pointer",
+                                    boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
+                                    transition: "background-color 0.3s ease",
                                 }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.borderColor = cardBorderHover;
-                                    e.currentTarget.style.boxShadow = cardBoxShadowHover;
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.borderColor = cardBorderHover; 
-                                    e.currentTarget.style.boxShadow = "none";
-                                }}
+                                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = t.bannerBtnBgHover; }}
+                                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = t.bannerBtnBg; }}
                             >
-                                <div style={{ color: iconColorV2 }}>
-                                    {feature.icon}
+                                Kunjungi Marketplace
+                            </button>
+                        </div>
+
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "10px" }}>
+                            {ADDON_FEATURES.map((feature) => (
+                                <div
+                                    key={feature.id}
+                                    style={{
+                                        backgroundColor: t.bannerCardBg,
+                                        border: `1.5px solid ${t.bannerCardBorder}`,
+                                        borderRadius: "8px",
+                                        padding: "12px",
+                                        transition: "border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, transform 0.2s ease",
+                                        cursor: "pointer",
+                                        backdropFilter: isDark ? "blur(4px)" : "none",
+                                    }}
+                                    onMouseEnter={hoverOn}
+                                    onMouseLeave={hoverOff(t.bannerCardBorder, t.bannerCardBg)}
+                                >
+                                    <div style={{ color: t.accent }}>
+                                        {feature.icon}
+                                    </div>
+                                    <h3 style={{ margin: "8px 0 0 0", fontSize: "12.5px", fontWeight: 700, color: t.textTitle, lineHeight: 1.3 }}>
+                                        {feature.title}
+                                    </h3>
+                                    <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: t.textMuted, lineHeight: 1.4 }}>
+                                        {feature.description}
+                                    </p>
                                 </div>
-                                <h3 style={{ margin: "8px 0 0 0", fontSize: "12.5px", fontWeight: 700, color: textTitle, lineHeight: 1.3 }}>
-                                    {feature.title}
-                                </h3>
-                                <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: textMuted, lineHeight: 1.4 }}>
-                                    {feature.description}
-                                </p>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
                 </div>
 
                 {/* Free training section */}
                 <div style={{ textAlign: "center", marginBottom: "20px" }}>
-                    <h2 style={{ fontFamily: "Montserrat, 'sans-serif', system-ui", lineHeight: 1.5, fontWeight: "bold", fontSize: "20px", color: textTitle, textAlign: "center", marginBottom: "8px", margin: 0 }}>
+                    <h2 style={{ fontFamily: "Montserrat, 'sans-serif', system-ui", lineHeight: 1.5, fontWeight: "bold", fontSize: "20px", color: t.textTitle, textAlign: "center", margin: 0 }}>
                         Pelatihan Jurnal gratis
                     </h2>
-                    <p style={{ margin: "4px 0 0 0", fontSize: "13px", color: textMuted }}>
+                    <p style={{ margin: "4px 0 0 0", fontSize: "13px", color: t.textMuted }}>
                         Pilih pelatihan sesuai kebutuhan Anda.
                     </p>
                 </div>
@@ -314,44 +425,40 @@ export default function Beranda({ userName = "Rifqi" }) {
                             style={{
                                 display: "flex",
                                 flexDirection: "column",
-                                border: `1px solid ${cardBorder}`, 
+                                backgroundColor: isDark ? t.cardBg : "transparent",
+                                border: `1px solid ${t.cardBorder}`,
                                 borderRadius: "8px",
                                 padding: "16px",
+                                transition: "border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, transform 0.2s ease",
                             }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.borderColor = cardBorderHover;
-                                e.currentTarget.style.boxShadow = cardBoxShadowHover;
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.borderColor = cardBorder; // KEMBALIKAN BORDER DINAMIS
-                                e.currentTarget.style.boxShadow = "none";
-                            }}
+                            onMouseEnter={hoverOn}
+                            onMouseLeave={hoverOff(t.cardBorder, isDark ? t.cardBg : "transparent")}
                         >
-                            <div style={{ color: iconColorV2 }}>
-                                    {training.icon}
+                            <div style={{ color: t.accent }}>
+                                {training.icon}
                             </div>
-                            
-                            <h3 style={{ margin: "10px 0 0 0", fontSize: "13.5px", fontWeight: 700, color: textTitle }}>
+
+                            <h3 style={{ margin: "10px 0 0 0", fontSize: "13.5px", fontWeight: 700, color: t.textTitle }}>
                                 {training.title}
                             </h3>
 
                             <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "12px" }}>
                                 <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                                     <CalendarMiniIcon />
-                                    <span style={{ fontSize: "12px", color: textMuted }}>
-                                        Hari: <span style={{ fontWeight: 600, color: textBody }}>{training.day}</span>
+                                    <span style={{ fontSize: "12px", color: t.textMuted }}>
+                                        Hari: <span style={{ fontWeight: 600, color: t.textBody }}>{training.day}</span>
                                     </span>
                                 </div>
                                 <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                                     <ClockMiniIcon />
-                                    <span style={{ fontSize: "12px", color: textMuted }}>
-                                        Waktu: <span style={{ fontWeight: 600, color: textBody }}>{training.time}</span>
+                                    <span style={{ fontSize: "12px", color: t.textMuted }}>
+                                        Waktu: <span style={{ fontWeight: 600, color: t.textBody }}>{training.time}</span>
                                     </span>
                                 </div>
                                 <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                                     <PinMiniIcon />
-                                    <span style={{ fontSize: "12px", color: textMuted }}>
-                                        Tempat: <span style={{ fontWeight: 600, color: textBody }}>{training.place}</span>
+                                    <span style={{ fontSize: "12px", color: t.textMuted }}>
+                                        Tempat: <span style={{ fontWeight: 600, color: t.textBody }}>{training.place}</span>
                                     </span>
                                 </div>
                             </div>
@@ -359,11 +466,11 @@ export default function Beranda({ userName = "Rifqi" }) {
                             <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "14px" }}>
                                 <button
                                     type="button"
-                                    style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "none", border: "none", padding: 0, cursor: "pointer", fontSize: "12.5px", fontWeight: 600, color: iconColorV2 }}
+                                    style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "none", border: "none", padding: 0, cursor: "pointer", fontSize: "12.5px", fontWeight: 600, color: t.accent }}
                                 >
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-                                        <rect x="2" y="2" width="10" height="20" rx="6" fill="#EAECFB" />
-                                        <path d="M13 11L21.2 2.8M22 6.8V2H17.2M11 2H9C4 2 2 4 2 9V15C2 20 4 22 9 22H15C20 22 22 20 22 15V13" stroke={iconColorV2} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                        <rect x="2" y="2" width="10" height="20" rx="6" style={TINT} />
+                                        <path d="M13 11L21.2 2.8M22 6.8V2H17.2M11 2H9C4 2 2 4 2 9V15C2 20 4 22 9 22H15C20 22 22 20 22 15V13" stroke={t.accent} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
                                     Daftar sekarang
                                 </button>
