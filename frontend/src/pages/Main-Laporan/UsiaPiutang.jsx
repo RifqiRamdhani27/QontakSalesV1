@@ -723,7 +723,7 @@ export default function UsiaPiutang() {
 
             <button
               type="button"
-              onClick={() => navigate("/leads")}
+              onClick={() => navigate("/laporan")}
               style={{
                 height: "36px",
                 padding: "0 20px",

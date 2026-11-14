@@ -1098,8 +1098,11 @@ export default function RincianAnggaran() {
                 .rb-dark .rb-icon:hover { background-color: #2d2d2d !important; }
                 .rb-dark .rb-cancel { color: #cbd5e1 !important; }
                 .rb-dark .rb-cancel:hover { color: #E5B85C !important; }
-                .rb-dark .rb-btn { background-color: #E5B85C !important; color: #121212 !important; }
-                .rb-dark .rb-btn:hover { background-color: #f0c978 !important; }
+                .rb-dark .rb-btn { background: #e08d33 !important; 
+          color: #ffffffff !important; 
+          box-shadow: 0 4px 8px rgba(254, 92, 23, 0.49) !important;
+          transition: all 0.2s ease-in-out; }
+                .rb-dark .rb-btn:hover { background: #e08c33df !important;  }
 
                 /* Panel dropdown (hingga & bandingkan) */
                 .rb-dark .rb-panel {

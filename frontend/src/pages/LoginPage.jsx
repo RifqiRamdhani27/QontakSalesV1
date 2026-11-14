@@ -314,7 +314,7 @@ export default function LoginPage() {
       localStorage.removeItem("manager_user");
       localStorage.removeItem("impersonating");
       localStorage.removeItem("impersonated_name");
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       const msg = err.response?.data?.detail || err.response?.data?.error || "Invalid email or password";
       setError(msg);
