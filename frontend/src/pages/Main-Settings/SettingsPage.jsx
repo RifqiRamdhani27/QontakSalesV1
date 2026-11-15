@@ -39,10 +39,25 @@ const SETTINGS_MENU = [
 
 export default function Pengaturan() {
   const location = useLocation();
+  const [themeMode, setThemeMode] = useState(
+    () => localStorage.getItem("app_theme") || "light"
+  );
   const [collapsed, setCollapsed] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [access, setAccess] = useState(null);
   const [accessError, setAccessError] = useState("");
+
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
+
+  const isDark = themeMode === "dark";
 
   useEffect(() => {
     let active = true;
@@ -69,13 +84,13 @@ export default function Pengaturan() {
   const ActiveComponent = activeItem && access?.modules?.[activeItem.id]?.view === true ? activeItem.component : null;
 
   return (
-    <HStack data-qontak-settings="" align="stretch" gap={0} minW={0} style={{ height: "calc(100vh - 60px)", overflow: "hidden" }} bg="#F5F7FA">
+    <HStack data-qontak-settings="" className={isDark ? "settings-dark" : ""} align="stretch" gap={0} minW={0} style={{ height: "calc(100vh - 60px)", overflow: "hidden" }} bg={isDark ? "#121212" : "#F5F7FA"}>
       <Box
         w={collapsed ? "0px" : "230px"}
         minW={collapsed ? "0px" : "230px"}
-        bg="white"
+        bg={isDark ? "#1A1A1A" : "white"}
         borderRight="1px solid"
-        borderColor="border"
+        borderColor={isDark ? "#333333" : "border"}
         display="flex"
         flexDirection="column"
         overflow="hidden"
@@ -102,7 +117,7 @@ export default function Pengaturan() {
           minW="230px"
           css={{
             "&::-webkit-scrollbar": { width: "6px" },
-            "&::-webkit-scrollbar-thumb": { backgroundColor: "#CBD5E1", borderRadius: "3px" },
+            "&::-webkit-scrollbar-thumb": { backgroundColor: isDark ? "#4A4A4A" : "#CBD5E1", borderRadius: "3px" },
             "&::-webkit-scrollbar-track": { backgroundColor: "transparent" },
           }}
         >
@@ -122,9 +137,9 @@ export default function Pengaturan() {
                 borderRadius="md"
                 fontSize="sm"
                 fontWeight={isActive ? "semibold" : "normal"}
-                bg={isActive ? "#EEF0FE" : "transparent"}
+                bg={isActive ? (isDark ? "rgba(229,184,92,0.15)" : "#EEF0FE") : "transparent"}
                 color={isActive ? "primary" : "foreground"}
-                _hover={{ bg: isActive ? "#EEF0FE" : "muted", textDecoration: "none" }}
+                _hover={{ bg: isActive ? (isDark ? "rgba(229,184,92,0.15)" : "#EEF0FE") : (isDark ? "#2D2D2D" : "muted"), textDecoration: "none" }}
                 transition="all 150ms ease"
                 onClick={() => {
                   if (item.hasDropdown) {
@@ -173,9 +188,9 @@ export default function Pengaturan() {
           aria-label="Perluas navigasi pengaturan"
           aria-expanded={!collapsed}
           w="18px"
-          bg="white"
+          bg={isDark ? "#1A1A1A" : "white"}
           borderRight="1px solid"
-          borderColor="border"
+          borderColor={isDark ? "#333333" : "border"}
           display="flex"
           alignItems="flex-end"
           justifyContent="center"

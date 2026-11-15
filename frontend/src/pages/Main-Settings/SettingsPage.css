@@ -54,3 +54,213 @@
 :is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) button.text-gray-400:not(:disabled) {
   color: #475569;
 }
+
+@media screen {
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) {
+    --chakra-colors-primary: #e5b85c;
+    --chakra-colors-foreground: #f1f5f9;
+    --chakra-colors-border: #634f27;
+    --chakra-colors-muted: #262626;
+    --chakra-colors-white: #1a1a1a;
+    --chakra-colors-gray-600: #cbd5e1;
+    --chakra-colors-red-600: #f87171;
+    color: #f1f5f9;
+    color-scheme: dark;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) .bg-white {
+    background-color: #121212 !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.bg-gray-50, .bg-slate-50, .bg-slate-50\/60, .bg-slate-900) {
+    background-color: #1a1a1a !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.bg-gray-100, .bg-slate-100, .bg-slate-100\/70, .bg-slate-200, .bg-slate-200\/80) {
+    background-color: #262626 !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.bg-gray-300, .bg-slate-300) {
+    background-color: #4a4a4a !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.text-black, .text-gray-900, .text-gray-800, .text-gray-700, .text-slate-900, .text-slate-800, .text-slate-700) {
+    color: #f1f5f9 !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.text-gray-600, .text-slate-600) {
+    color: #cbd5e1 !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.text-gray-500, .text-gray-400, .text-slate-500, .text-slate-400, .text-slate-300) {
+    color: #94a3b8 !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.text-brand, .text-blue-400, .text-blue-500, .text-blue-600, .text-blue-700, .text-blue-900, .text-sky-700) {
+    color: #e5b85c !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.bg-brand, .bg-blue-600, .bg-blue-700) {
+    background-color: #e5b85c !important;
+    color: #121212 !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.bg-brand\/5, .bg-brand\/10, .bg-blue-50, .bg-blue-100, .bg-indigo-50, .bg-indigo-50\/60, .bg-sky-50) {
+    background-color: rgba(229, 184, 92, 0.15) !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.border-gray-100, .border-gray-200, .border-gray-300, .border-gray-400, .border-gray-500, .border-slate-100, .border-slate-200, .border-slate-200\/70, .border-slate-300, .border-slate-400, .border-blue-100, .border-brand\/30) {
+    border-color: #634f27 !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.border-brand, .border-blue-400, .border-blue-500) {
+    border-color: #e5b85c !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.border-l-brand, .border-t-brand) {
+    border-color: #e5b85c !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(input:not([type="checkbox"], [type="radio"], [type="file"]), select, textarea) {
+    background-color: #262626 !important;
+    border-color: #634f27 !important;
+    color: #f1f5f9 !important;
+    caret-color: #e5b85c;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(input, textarea)::placeholder {
+    color: #94a3b8 !important;
+    opacity: 1;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(input, select, textarea):focus {
+    border-color: #e5b85c !important;
+    outline-color: #e5b85c;
+    box-shadow: 0 0 0 3px rgba(229, 184, 92, 0.15) !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(input:not([type="checkbox"], [type="radio"], [type="file"]), select, textarea):disabled {
+    background-color: #1a1a1a !important;
+    border-color: #333333 !important;
+    color: #94a3b8 !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(input, select, textarea)[aria-invalid="true"] {
+    border-color: #f87171 !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.accent-brand, .accent-blue-600, input[type="checkbox"], input[type="radio"]) {
+    accent-color: #e5b85c !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) .peer:checked ~ .peer-checked\:bg-brand {
+    background-color: #e5b85c !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.hover\:bg-brand-dark, .hover\:bg-blue-700):hover:not(:disabled) {
+    background-color: #f0c978 !important;
+    color: #121212 !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.hover\:bg-gray-50, .hover\:bg-gray-100, .hover\:bg-gray-200, .hover\:bg-slate-50, .hover\:bg-slate-100, .hover\:bg-slate-200):hover:not(:disabled) {
+    background-color: #2d2d2d !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.hover\:bg-blue-50, .hover\:bg-brand\/5, .hover\:bg-brand\/10):hover:not(:disabled) {
+    background-color: rgba(229, 184, 92, 0.15) !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.hover\:text-black, .hover\:text-gray-700, .hover\:text-gray-900, .hover\:text-slate-600, .hover\:text-slate-700, .hover\:text-slate-800):hover:not(:disabled) {
+    color: #f1f5f9 !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.hover\:text-brand, .hover\:text-blue-600, .hover\:text-blue-700):hover:not(:disabled) {
+    color: #f0c978 !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.hover\:border-gray-300, .hover\:border-gray-400, .hover\:border-gray-500, .hover\:border-blue-400, .focus\:border-brand, .focus\:border-blue-500):is(:hover, :focus):not(:disabled) {
+    border-color: #e5b85c !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) .disabled\:bg-slate-100:disabled {
+    background-color: #1a1a1a !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) .disabled\:border-slate-200:disabled {
+    border-color: #333333 !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.disabled\:text-slate-400, .disabled\:text-slate-500):disabled {
+    color: #94a3b8 !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) .bg-slate-900\/55 {
+    background-color: rgba(0, 0, 0, 0.55) !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) .bg-red-50 {
+    background-color: rgba(248, 113, 113, 0.15) !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.text-red-600, .text-red-700) {
+    color: #f87171 !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) .border-red-600 {
+    border-color: #f87171 !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) .hover\:bg-red-50:hover:not(:disabled) {
+    background-color: rgba(248, 113, 113, 0.15) !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.hover\:text-red-600, .hover\:text-red-700):hover:not(:disabled) {
+    color: #fca5a5 !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) .bg-green-50 {
+    background-color: rgba(34, 197, 94, 0.15) !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.text-green-600, .text-green-700, .text-emerald-500) {
+    color: #86efac !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) .bg-purple-100 {
+    background-color: rgba(168, 85, 247, 0.15) !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) .text-purple-700 {
+    color: #d8b4fe !important;
+  }
+
+  body:has(.settings-dark) > [data-qontak-settings] {
+    background-color: #242424 !important;
+    border-color: #634f27 !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  body:has(.settings-dark) [data-scope="dialog"][data-part="positioner"] {
+    --chakra-colors-bg-panel: #1a1a1a;
+    --chakra-colors-fg: #f1f5f9;
+    --chakra-colors-fg-muted: #cbd5e1;
+    --chakra-colors-foreground: #f1f5f9;
+    --chakra-colors-border: #634f27;
+    --chakra-colors-gray-fg: #f1f5f9;
+    --chakra-colors-gray-muted: #634f27;
+    --chakra-colors-gray-subtle: #262626;
+    --chakra-colors-gray-focus-ring: #e5b85c;
+    color: #f1f5f9;
+    color-scheme: dark;
+  }
+
+  body:has(.settings-dark) [data-scope="dialog"][data-part="content"] {
+    background-color: #1a1a1a !important;
+    border-color: #634f27 !important;
+    color: #f1f5f9 !important;
+  }
+
+  body:has(.settings-dark) [data-scope="dialog"][data-part="backdrop"] {
+    background-color: rgba(0, 0, 0, 0.6) !important;
+  }
+}
