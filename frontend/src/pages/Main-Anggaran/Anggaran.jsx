@@ -240,7 +240,7 @@ export default function Anggaran() {
 
         /* Tombol utama -> emas */
         .ang-dark .ang-btn {
-           background: #e08d33 !important; 
+          background: #e08d33 !important; 
           color: #ffffffff !important; 
           box-shadow: 0 4px 8px rgba(254, 92, 23, 0.49) !important;
           transition: all 0.2s ease-in-out;

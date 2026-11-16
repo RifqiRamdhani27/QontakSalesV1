@@ -1,4 +1,4 @@
-import { useState, useEffect, memo } from "react";
+import { useState, useEffect, useLayoutEffect, memo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Box, Button, HStack, Text } from "@chakra-ui/react";
 import brandLogoWhite from "@/assets/Ino-Finance-Footer.png";
@@ -14,7 +14,18 @@ const NAV_MID = 35;
 const DARK_IDS = [
   "home", "section-dark-testimonial", "section-dark-2", "section-dark-3",
   "terms-hero", "terms-footer",
+  "privacy-hero", "privacy-footer",
 ];
+
+const getDarkSections = () => {
+  const found = new Set();
+  DARK_IDS.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) found.add(el);
+  });
+  document.querySelectorAll("[data-nav-dark]").forEach((el) => found.add(el));
+  return Array.from(found);
+};
 
 function useScrolled(threshold = 24) {
   const [scrolled, setScrolled] = useState(false);
@@ -27,52 +38,66 @@ function useScrolled(threshold = 24) {
   return scrolled;
 }
 
-/** Navbar sedang di atas section gelap? Pakai IntersectionObserver (garis 1px setinggi navbar). */
-function useDarkNav() {
-  const [dark, setDark] = useState(true);
-  useEffect(() => {
-    const visible = new Set();
+function useDarkNav(pathname) {
+  const [dark, setDark] = useState(false);
+
+  useLayoutEffect(() => {
     let io;
+    let retry;
+    let resizeTimer;
+    const visible = new Set();
 
     const build = () => {
       io?.disconnect();
       visible.clear();
+
+      const sections = getDarkSections();
+      if (sections.length === 0) {
+        setDark(false);
+        return;
+      }
+
       const bottom = Math.max(window.innerHeight - NAV_MID - 1, 0);
       io = new IntersectionObserver(
         (entries) => {
-          entries.forEach((e) => (e.isIntersecting ? visible.add(e.target.id) : visible.delete(e.target.id)));
+          entries.forEach((e) => {
+            if (e.isIntersecting) visible.add(e.target);
+            else visible.delete(e.target);
+          });
           setDark(visible.size > 0);
         },
         { rootMargin: `-${NAV_MID}px 0px -${bottom}px 0px`, threshold: 0 }
       );
-      DARK_IDS.forEach((id) => {
-        const el = document.getElementById(id);
-        if (el) io.observe(el);
-      });
+      sections.forEach((el) => io.observe(el));
     };
 
-    // Tunda sebentar supaya section halaman sudah ter-render
-    const t0 = setTimeout(build, 0);
-    let t;
-    const onResize = () => { clearTimeout(t); t = setTimeout(build, 200); };
+    build();
+    retry = setTimeout(build, 300);
+
+    const onResize = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(build, 200);
+    };
     window.addEventListener("resize", onResize);
+
     return () => {
-      clearTimeout(t0);
-      clearTimeout(t);
+      clearTimeout(retry);
+      clearTimeout(resizeTimer);
       window.removeEventListener("resize", onResize);
       io?.disconnect();
     };
-  }, []);
+  }, [pathname]);
+
   return dark;
 }
 
-const NavLink = ({ children, onClick, scrolled, isDarkSection }) => (
+const NavLink = ({ children, onClick, isDarkSection }) => (
   <Box
     as="button" className="group" position="relative" overflow="hidden"
     fontSize="sm" fontWeight="600" onClick={onClick}
-    color={isDarkSection ? "white" : (scrolled ? C.mute : "white")}
+    color={isDarkSection ? "white" : C.mute}
     transition={`color 100ms ${EASE}`}
-    _hover={{ color: isDarkSection ? C.sky300 : (scrolled ? C.sky : C.sky300) }}
+    _hover={{ color: isDarkSection ? C.sky300 : C.sky }}
   >
     <Text as="span" display="block" transition={`transform 500ms ${EASE}`} _groupHover={{ transform: "translateY(-100%)" }}>
       {children}
@@ -93,14 +118,10 @@ const Navbar = memo(function Navbar() {
   const onLanding = location.pathname === "/";
 
   const scrolled = useScrolled();
-  const isDarkSection = useDarkNav();
+  const isDarkSection = useDarkNav(location.pathname);
   const showDarkBg = scrolled && isDarkSection;
   const showLightBg = scrolled && !isDarkSection;
 
-  /**
-   * Di landing: scroll smooth ke section (sama seperti sebelumnya).
-   * Di halaman lain: pindah ke "/" lalu scroll ke section tujuan.
-   */
   const go = (id) => {
     if (onLanding) {
       document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
@@ -109,16 +130,27 @@ const Navbar = memo(function Navbar() {
     }
   };
 
-  // Tiba di landing dari halaman lain dengan tujuan section → scroll ke sana.
   useEffect(() => {
     if (!onLanding) return;
     const id = location.state?.scrollTo;
     if (!id) return;
-    const t = setTimeout(() => {
-      document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-      navigate("/", { replace: true, state: null }); // bersihkan state supaya tidak scroll ulang saat refresh
-    }, 400);
-    return () => clearTimeout(t);
+
+    let tries = 0;
+    let timer;
+    const attempt = () => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth" });
+        navigate("/", { replace: true, state: null });
+        return;
+      }
+      tries += 1;
+      if (tries < 15) timer = setTimeout(attempt, 100);
+      else navigate("/", { replace: true, state: null });
+    };
+    timer = setTimeout(attempt, 150);
+
+    return () => clearTimeout(timer);
   }, [onLanding, location.state, navigate]);
 
   return (
@@ -154,20 +186,17 @@ const Navbar = memo(function Navbar() {
             <Box
               as="img" src={brandLogoWhite} alt="Jurnal ERP" h="70px" display="block"
               decoding="async"
-              opacity={isDarkSection || !scrolled ? 1 : 0}
+              opacity={isDarkSection ? 1 : 0}
               transition={`opacity 500ms ${EASE}`}
             />
             <Box
               as="img" src={brandLogoBlack} alt="" aria-hidden h="70px"
               decoding="async"
               position="absolute" top={0} left={0} pointerEvents="none"
-              opacity={!isDarkSection && scrolled ? 1 : 0}
+              opacity={isDarkSection ? 0 : 1}
               transition={`opacity 500ms ${EASE}`}
             />
           </Box>
-
-          <HStack gap={8} display={{ base: "none", md: "flex" }}>
-          </HStack>
 
           <HStack gap={6}>
             <Button
