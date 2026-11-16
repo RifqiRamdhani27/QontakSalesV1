@@ -240,10 +240,14 @@ export default function Anggaran() {
 
         /* Tombol utama -> emas */
         .ang-dark .ang-btn {
-          background-color: #E5B85C !important;
-          color: #121212 !important;
+           background: #e08d33 !important; 
+          color: #ffffffff !important; 
+          box-shadow: 0 4px 8px rgba(254, 92, 23, 0.49) !important;
+          transition: all 0.2s ease-in-out;
         }
-        .ang-dark .ang-btn:hover { background-color: #f0c978 !important; }
+        .ang-dark .ang-btn:hover { 
+          background: #e08c33df !important;  
+        }
 
         /* Link "Lihat contoh" */
         .ang-dark .ang-link { color: #E5B85C !important; }

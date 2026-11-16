@@ -127,7 +127,7 @@ const buildContactPayload = (form, availableGroups = []) => {
 function Checkbox({ checked, indeterminate = false, disabled = false, onChange }) {
   const ref = useRef(null);
   if (ref.current) ref.current.indeterminate = indeterminate;
-  
+
   return (
     <input
       ref={ref}
@@ -288,12 +288,12 @@ function BankAccount({ bank, index, onChange, onRemove }) {
 export default function UbahKontak(props) {
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // Tangkap data kontak dari state (jika diarahkan dari tombol Ubah Profil)
   const contact = props.contact || location.state?.contactData;
   const groups = props.groups || location.state?.groupsData || [];
   const onClose = props.onClose || (() => navigate(-1));
-  
+
   const [successOpen, setSuccessOpen] = useState(false);
 
   // Fungsi simpan ke API
@@ -361,20 +361,20 @@ export default function UbahKontak(props) {
   const [saveMenuOpen, setSaveMenuOpen] = useState(false);
 
   const [themeMode, setThemeMode] = useState(
-  () => localStorage.getItem("app_theme") || "light"
-);
+    () => localStorage.getItem("app_theme") || "light"
+  );
 
-useEffect(() => {
-  const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
-  window.addEventListener("themeChanged", sync);
-  window.addEventListener("storage", sync);
-  return () => {
-    window.removeEventListener("themeChanged", sync);
-    window.removeEventListener("storage", sync);
-  };
-}, []);
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
 
-const isDark = themeMode === "dark";
+  const isDark = themeMode === "dark";
 
   const set = (key, value) => setForm((current) => ({ ...current, [key]: value }));
   const setDetail = (key, value) => setForm((current) => ({ ...current, detail: { ...current.detail, [key]: value } }));
@@ -403,10 +403,10 @@ const isDark = themeMode === "dark";
   if (!contact) return <div className="p-10">Data kontak tidak ditemukan.</div>;
 
   return (
-      <div
-        className={`${isDark ? "dash-dark" : ""} -m-7 w-[calc(100%+3.5rem)] bg-white max-md:-m-[18px] max-md:w-[calc(100%+2.25rem)]`}
-        style={isDark ? { backgroundColor: "#121212", minHeight: "100vh" } : undefined}
-      >      
+    <div
+      className={`${isDark ? "dash-dark" : ""} -m-6 w-[calc(100%+3rem)] bg-white max-md:-m-[18px] max-md:w-[calc(100%+2.25rem)]`}
+      style={isDark ? { backgroundColor: "#121212", minHeight: "100vh" } : undefined}
+    >
       {/* HEADER BEBAS JARAK */}
       <div
         id="create-contact-top"
@@ -414,7 +414,7 @@ const isDark = themeMode === "dark";
       >
         <button
           type="button"
-          className="cursor-pointer border-0 bg-transparent p-0 text-xs font-semibold text-brand hover:underline"
+          className="cursor-pointer border-0 p-0 text-xs font-semibold text-brand hover:underline"
           onClick={() => setLeaveOpen(true)}
         >
           Kontak
@@ -423,7 +423,7 @@ const isDark = themeMode === "dark";
       </div>
 
       {/* KONTEN FORM */}
-      <div className="flex items-start gap-5 p-7 max-lg:flex-col max-md:p-[18px] w-full">        
+      <div className="flex items-start gap-5 p-7 max-lg:flex-col max-md:p-[18px] w-full">
         <div className="min-w-0 flex-1">
           <FormSection icon={UserCircle} title="Info kontak" collapsible={false}>
             <div className="flex flex-col gap-4">
@@ -515,8 +515,8 @@ const isDark = themeMode === "dark";
           <div className="flex items-center justify-end gap-4 pt-2">
             <button type="button" className="cursor-pointer border-0 bg-transparent px-3 py-2 text-xs font-semibold text-gray-600 hover:text-gray-900" onClick={() => setLeaveOpen(true)}>Batal</button>
             <div className="relative flex">
-              <button type="button" onClick={() => doSave(false)} style={{ height: "36px", cursor: "pointer", borderTopLeftRadius: "6px", borderBottomLeftRadius: "6px", borderTopRightRadius: "0px", borderBottomRightRadius: "0px", border: "none", backgroundColor: "#4B61DD", color: "#ffffff", padding: "0 20px", fontSize: "12px", fontWeight: "600", transition: "background-color 0.15s ease" }} onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#3d4fbd")} onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#4B61DD")}>Simpan</button>
-              <button type="button" onClick={() => setSaveMenuOpen((current) => !current)} style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "36px", cursor: "pointer", borderTopRightRadius: "6px", borderBottomRightRadius: "6px", border: "none", borderLeft: "1px solid rgba(255,255,255,0.3)", backgroundColor: "#4B61DD", color: "#ffffff", padding: "0 10px", transition: "background-color 0.15s ease" }} onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#3d4fbd")} onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#4B61DD")}><svg className="h-3 w-3 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" /></svg></button>
+              <button type="button" className="btn-primary-dark" onClick={() => doSave(false)} style={{ height: "36px", cursor: "pointer", borderTopLeftRadius: "6px", borderBottomLeftRadius: "6px", borderTopRightRadius: "0px", borderBottomRightRadius: "0px", border: "none", backgroundColor: "#4B61DD", color: "#ffffff", padding: "0 20px", fontSize: "12px", fontWeight: "600", transition: "background-color 0.15s ease" }} onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#3d4fbd")} onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#4B61DD")}>Simpan</button>
+              <button type="button" className="btn-primary-dark" onClick={() => setSaveMenuOpen((current) => !current)} style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "36px", cursor: "pointer", borderTopRightRadius: "6px", borderBottomRightRadius: "6px", border: "none", borderLeft: "1px solid rgba(255,255,255,0.3)", backgroundColor: "#4B61DD", color: "#ffffff", padding: "0 10px", transition: "background-color 0.15s ease" }} onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#3d4fbd")} onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#4B61DD")}><svg className="h-3 w-3 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" /></svg></button>
               {saveMenuOpen && <div className="absolute bottom-full right-0 z-30 mb-1 w-[170px] rounded-md border border-gray-200 bg-white py-1 shadow-lg"><button type="button" className="block w-full cursor-pointer border-0 bg-transparent px-3 py-2 text-left text-[13px] text-gray-700 hover:bg-slate-50" onClick={() => doSave(true)}>Simpan & buat baru</button></div>}
             </div>
           </div>
@@ -584,7 +584,7 @@ const isDark = themeMode === "dark";
       }
       .dash-dark .bg-slate-50,
       .dash-dark .bg-slate-100 { background-color: #262626; }
-      .dash-dark [class*="bg-[#EDFFFD]"] { background-color: #d38e0d69; }
+      .dash-dark [class*="bg-[#EDFFFD]"] { background-color: #e08608ab; }
       .dash-dark .bg-indigo-50,
       .dash-dark .bg-indigo-100 { background-color: rgba(229,184,92,0.15); }
 
@@ -608,14 +608,18 @@ const isDark = themeMode === "dark";
       .dash-dark .text-green-500 { color: #22c55e; }
 
       /* Aksen biru -> emas */
-      .dash-dark .text-brand { color: #E5B85C; }
+      .dash-dark .text-brand { color: #fefefeff; }
       .dash-dark [class*="bg-[#4B61DD]"] { background-color: #E5B85C; color: #121212; }
       .dash-dark [class*="hover:bg-[#3d4fbd]"]:hover { background-color: #f0c978; }
       .dash-dark .btn-primary-dark {
-        background-color: #E5B85C !important;
-        color: #121212 !important;
+        background: #e08d33 !important; 
+        color: #ffffffff !important; 
+        box-shadow: 0 4px 8px rgba(254, 92, 23, 0.49) !important;
+        transition: all 0.2s ease-in-out;
       }
-      .dash-dark .btn-primary-dark:hover { background-color: #f0c978 !important; }
+        .dash-dark .btn-primary-dark:hover {
+            background: #e08c33df !important; 
+      }
       .dash-dark .btn-primary-dark svg { fill: #121212; }
       .dash-dark .btn-primary-dark + .btn-primary-dark {
         border-left: 1px solid rgba(18,18,18,0.35) !important;

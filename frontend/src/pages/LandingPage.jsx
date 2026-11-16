@@ -5,12 +5,12 @@ import {
   ArrowRight, CaretDown, Rocket, ShieldCheck, Sparkle,
   Check, Lock, CloudArrowUp, Users, Quotes, Bank, TreeStructure, Lightning, CertificateIcon
 } from "@phosphor-icons/react";
-import AnimatedContent from "./AnimatedContent";
+import AnimatedContent from "./Effect/AnimatedContent";
 import brandFooter from "@/assets/Ino-Finance-Footer.png";
 import ctaBg from "@/assets/cta.jpg";
 import brandLogoWhite from "@/assets/Ino-Finance-Footer.png";
 import brandLogoBlack from "@/assets/Ino-Finance.png";
-import AccordionGallery from "./AccordionGallery";
+import AccordionGallery from "./Effect/AccordionGallery";
 import galleryImg1 from "@/assets/Accounting-1.jpg";
 import galleryImg2 from "@/assets/Accounting-2.jpg";
 import galleryImg3 from "@/assets/Accounting-3.jpg";
@@ -20,8 +20,8 @@ import imgStartup from "@/assets/imgStartup.jpg";
 import imgCorporate from "@/assets/imgCorporate.jpg";
 import imgAkuntan from "@/assets/imgAkuntan.jpg";
 import profilePic from "@/assets/profile-rizal.jpg";
-import MagicRings from "./MagicRings";
-import PixelCard from "./PixelCard";
+import MagicRings from "./Effect/MagicRings";
+import PixelCard from "./Effect/PixelCard";
 
 const C = {
   ink: "#484848ff", navy: "#090D16", navy2: "#0B1120", line: "#E2E8F0", mute: "#475569", soft: "#94A3B8",

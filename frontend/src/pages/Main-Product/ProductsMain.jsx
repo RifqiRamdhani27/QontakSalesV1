@@ -88,11 +88,10 @@ function RowsPerPageDropdown({ value, onChange }) {
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className={`group inline-flex items-center justify-between gap-2.5 h-10 min-w-[70px] px-3 rounded-lg border bg-white text-[13px] font-semibold transition-all duration-150 cursor-pointer shadow-xs ${
-          open
-            ? "border-[#4B61DD] ring-2 ring-[#4B61DD]/15 text-[#4B61DD]"
-            : "border-gray-200 text-gray-800 hover:border-gray-300 hover:bg-slate-50/80"
-        }`}
+        className={`group inline-flex items-center justify-between gap-2.5 h-10 min-w-[70px] px-3 rounded-lg border bg-white text-[13px] font-semibold transition-all duration-150 cursor-pointer shadow-xs ${open
+          ? "border-[#4B61DD] ring-2 ring-[#4B61DD]/15 text-[#4B61DD]"
+          : "border-gray-200 text-gray-800 hover:border-gray-300 hover:bg-slate-50/80"
+          }`}
         aria-haspopup="listbox"
         aria-expanded={open}
       >
@@ -100,9 +99,8 @@ function RowsPerPageDropdown({ value, onChange }) {
         <CaretDown
           size={12}
           weight="bold"
-          className={`transition-transform duration-200 ${
-            open ? "rotate-180 text-[#4B61DD]" : "text-gray-400 group-hover:text-gray-600"
-          }`}
+          className={`transition-transform duration-200 ${open ? "rotate-180 text-[#4B61DD]" : "text-gray-400 group-hover:text-gray-600"
+            }`}
         />
       </button>
 
@@ -121,11 +119,10 @@ function RowsPerPageDropdown({ value, onChange }) {
                   onChange(opt);
                   setOpen(false);
                 }}
-                className={`flex w-full items-center justify-between px-2.5 py-1.5 text-[13px] font-medium rounded-lg transition-colors cursor-pointer ${
-                  isSelected
-                    ? "bg-[#4B61DD]/10 text-[#4B61DD] font-semibold"
-                    : "text-gray-700 hover:bg-slate-100 hover:text-gray-900"
-                }`}
+                className={`flex w-full items-center justify-between px-2.5 py-1.5 text-[13px] font-medium rounded-lg transition-colors cursor-pointer ${isSelected
+                  ? "bg-[#4B61DD]/10 text-[#4B61DD] font-semibold"
+                  : "text-gray-700 hover:bg-slate-100 hover:text-gray-900"
+                  }`}
               >
                 <span>{opt}</span>
                 {isSelected && (
@@ -246,9 +243,8 @@ function SearchSelect({ value, onChange, options, placeholder }) {
           setOpen(true);
           setQuery("");
         }}
-        className={`${inputBase} flex cursor-pointer items-center justify-between pr-9 ${
-          value ? "text-slate-900" : "text-slate-400"
-        }`}
+        className={`${inputBase} flex cursor-pointer items-center justify-between pr-9 ${value ? "text-slate-900" : "text-slate-400"
+          }`}
       >
         <span className="truncate">{value || placeholder}</span>
         <CaretDown
@@ -281,9 +277,8 @@ function SearchSelect({ value, onChange, options, placeholder }) {
                     onChange(option);
                     setOpen(false);
                   }}
-                  className={`block w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-slate-50 ${
-                    option === value ? "font-semibold text-brand" : "text-slate-700"
-                  }`}
+                  className={`block w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-slate-50 ${option === value ? "font-semibold text-brand" : "text-slate-700"
+                    }`}
                 >
                   {option}
                 </button>
@@ -336,9 +331,8 @@ function OptionSelect({ value, onChange, options, placeholder, groups }) {
                       onChange(option);
                       setOpen(false);
                     }}
-                    className={`block w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-slate-50 ${
-                      option === selected ? "font-semibold text-brand" : "text-slate-700"
-                    }`}
+                    className={`block w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-slate-50 ${option === selected ? "font-semibold text-brand" : "text-slate-700"
+                      }`}
                   >
                     {option}
                   </button>
@@ -354,9 +348,8 @@ function OptionSelect({ value, onChange, options, placeholder, groups }) {
                   onChange(option);
                   setOpen(false);
                 }}
-                className={`block w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-slate-50 ${
-                  option === selected ? "font-semibold text-brand" : "text-slate-700"
-                }`}
+                className={`block w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-slate-50 ${option === selected ? "font-semibold text-brand" : "text-slate-700"
+                  }`}
               >
                 {option}
               </button>
@@ -379,9 +372,8 @@ function Dropdown({ trigger, children, align = "left", width = "w-56" }) {
       {trigger({ open, toggle: () => setOpen((prev) => !prev) })}
       {open && (
         <div
-          className={`absolute z-50 mt-2 ${width} rounded-lg border border-gray-200 bg-white py-1.5 shadow-lg ${
-            align === "right" ? "right-0" : "left-0"
-          }`}
+          className={`absolute z-50 mt-2 ${width} rounded-lg border border-gray-200 bg-white py-1.5 shadow-lg ${align === "right" ? "right-0" : "left-0"
+            }`}
         >
           {children({ close: () => setOpen(false) })}
         </div>
@@ -585,11 +577,10 @@ function StatCardsAndSubNav({ subTabs, activeSubTab, onSubTabChange }) {
             key={tab.key}
             type="button"
             onClick={() => onSubTabChange(tab.key)}
-            className={`cursor-pointer border-b-2 pb-3 text-sm font-medium transition-colors ${
-              activeSubTab === tab.key
-                ? "border-[#41D1C8] text-[#37BDB5]"
-                : "border-transparent text-slate-500 hover:text-slate-700"
-            }`}
+            className={`cursor-pointer border-b-2 pb-3 text-sm font-medium transition-colors ${activeSubTab === tab.key
+              ? "border-[#41D1C8] text-[#37BDB5]"
+              : "border-transparent text-slate-500 hover:text-slate-700"
+              }`}
           >
             {tab.label}
           </button>
@@ -646,11 +637,10 @@ function ColumnSelectorDropdown() {
             {columns.map((col) => (
               <label
                 key={col.key}
-                className={`flex items-center gap-2 rounded-md px-2.5 py-2 text-sm ${
-                  col.disabled
-                    ? "cursor-not-allowed text-slate-400"
-                    : "cursor-pointer text-slate-700 hover:bg-slate-50"
-                }`}
+                className={`flex items-center gap-2 rounded-md px-2.5 py-2 text-sm ${col.disabled
+                  ? "cursor-not-allowed text-slate-400"
+                  : "cursor-pointer text-slate-700 hover:bg-slate-50"
+                  }`}
               >
                 <input
                   type="checkbox"
@@ -831,10 +821,18 @@ function ProductActionsMenu({ onSelect }) {
     <Dropdown
       align="right"
       trigger={({ toggle }) => (
-        <button 
-          type="button" 
-          onClick={toggle} 
-          className="flex items-center gap-2 rounded-md bg-[#4B61DD] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#3d4fbd] transition-colors cursor-pointer"
+        <button
+          type="button"
+          className="btn-primary-dark"
+          onClick={toggle}
+          style={{
+            display: "inline-flex", gap: "8px", alignItems: "center", justifyContent: "center",
+            backgroundColor: "#4B61DD", color: "#ffffff", fontSize: "13px", fontWeight: "600",
+            padding: "8px 16px", border: "none", borderRadius: "6px", cursor: "pointer", 
+            boxShadow: "0 1px 2px rgba(0,0,0,0.05)", transition: "background-color 0.15s ease",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#3d4fbd")}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#4B61DD")}
         >
           Tindakan
           <CaretDown size={14} weight="bold" />
@@ -930,11 +928,10 @@ function ProductHeader({ mainTab, onMainTabChange, onAction }) {
             id={`header-${tab.key}`}
             type="button"
             onClick={() => onMainTabChange(tab.key)}
-            className={`cursor-pointer border-b-2 pb-3 text-sm font-medium transition-colors ${
-              mainTab === tab.key
-                ? "border-[#41D1C8] text-[#37BDB5]"
-                : "border-transparent text-slate-500 hover:text-slate-700"
-            }`}
+            className={`cursor-pointer border-b-2 pb-3 text-sm font-medium transition-colors ${mainTab === tab.key
+              ? "border-[#41D1C8] text-[#37BDB5]"
+              : "border-transparent text-slate-500 hover:text-slate-700"
+              }`}
           >
             {tab.label}
           </button>
@@ -1085,9 +1082,8 @@ function ExportAllProductsModal({ onClose }) {
         {exportAllProductsFields.map((field) => (
           <label
             key={field.key}
-            className={`flex items-center gap-2.5 text-[13px] text-slate-700 ${
-              field.disabled ? "cursor-not-allowed" : "cursor-pointer"
-            }`}
+            className={`flex items-center gap-2.5 text-[13px] text-slate-700 ${field.disabled ? "cursor-not-allowed" : "cursor-pointer"
+              }`}
           >
             <input
               type="checkbox"
@@ -1689,7 +1685,7 @@ function ProductListPanel({ onOpenCategoryModal, onAction }) {
       const params = { ...filterParams };
       if (search.trim()) params.keyword = search.trim();
       const res = await api.get("/products/", { params });
-      
+
       const data = res.data.results || res.data || [];
       setProducts(data);
     } catch (err) {
@@ -1784,12 +1780,12 @@ function ProductListPanel({ onOpenCategoryModal, onAction }) {
                       </td>
                       <td className={td}>
                         <button
-                        type="button"
-                        onClick={() => navigate(`/main-product/profil-produk/${p.id}`)}
-                        className="cursor-pointer font-medium text-[#4B61DD] hover:underline text-left"
-                      >
-                        {p.name}
-                      </button>
+                          type="button"
+                          onClick={() => navigate(`/main-product/profil-produk/${p.id}`)}
+                          className="cursor-pointer font-medium text-[#4B61DD] hover:underline text-left"
+                        >
+                          {p.name}
+                        </button>
                       </td>
                       <td className={td}>{p.code || "-"}</td>
                       <td className={td}>{p.category_name || "-"}</td>
@@ -2055,14 +2051,12 @@ function WarehouseListPanel() {
             role="switch"
             aria-checked={showInactive}
             onClick={() => setShowInactive((prev) => !prev)}
-            className={`relative h-5 w-9 cursor-pointer rounded-full transition-colors ${
-              showInactive ? "bg-[#4B61DD]" : "bg-slate-300"
-            }`}
+            className={`relative h-5 w-9 cursor-pointer rounded-full transition-colors ${showInactive ? "bg-[#4B61DD]" : "bg-slate-300"
+              }`}
           >
             <span
-              className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${
-                showInactive ? "translate-x-4" : "translate-x-0.5"
-              }`}
+              className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${showInactive ? "translate-x-4" : "translate-x-0.5"
+                }`}
             />
           </span>
           Tampilkan gudang tidak aktif
@@ -2107,18 +2101,18 @@ function WarehouseListPanel() {
               <tbody>
                 {warehouses.map((wh) => (
                   <tr key={wh.id} className={trHover}>
-                  <td className={td}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        // contoh: navigate(`/main-product/detail-gudang/${wh.id}`);
-                        alert(`Klik gudang: ${wh.name}`);
-                      }}
-                      className="cursor-pointer font-medium text-[#4B61DD] hover:underline text-left"
-                    >
-                      {wh.name}
-                    </button>
-                    </td>                    
+                    <td className={td}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          // contoh: navigate(`/main-product/detail-gudang/${wh.id}`);
+                          alert(`Klik gudang: ${wh.name}`);
+                        }}
+                        className="cursor-pointer font-medium text-[#4B61DD] hover:underline text-left"
+                      >
+                        {wh.name}
+                      </button>
+                    </td>
                     <td className={td}>{wh.code || "-"}</td>
                     <td className={td}>{wh.pic_names?.join(", ") || "-"}</td>
                     <td className={td}>{wh.address || "-"}</td>
@@ -2127,11 +2121,10 @@ function WarehouseListPanel() {
                       <button
                         type="button"
                         onClick={() => handleToggleActive(wh.id)}
-                        className={`rounded px-2 py-0.5 text-xs font-semibold ${
-                          wh.is_active
-                            ? "bg-green-100 text-green-700"
-                            : "bg-slate-100 text-slate-500"
-                        }`}
+                        className={`rounded px-2 py-0.5 text-xs font-semibold ${wh.is_active
+                          ? "bg-green-100 text-green-700"
+                          : "bg-slate-100 text-slate-500"
+                          }`}
                       >
                         {wh.is_active ? "Aktif" : "Tidak Aktif"}
                       </button>
@@ -2324,23 +2317,23 @@ function ImportProductModal({ onClose, title = "Impor produk baru" }) {
     >
       <div className="space-y-4">
         <div className="flex gap-3">
-          <span 
-  style={{ 
-    display: "flex", 
-    alignItems: "center", 
-    justifyContent: "center", 
-    width: "24px", 
-    height: "24px", 
-    flexShrink: 0, 
-    borderRadius: "50%", 
-    backgroundColor: "#4B61DD", 
-    color: "#ffffff", 
-    fontSize: "12px", 
-    fontWeight: "bold" 
-  }}
->
-  1
-</span>
+          <span
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "24px",
+              height: "24px",
+              flexShrink: 0,
+              borderRadius: "50%",
+              backgroundColor: "#4B61DD",
+              color: "#ffffff",
+              fontSize: "12px",
+              fontWeight: "bold"
+            }}
+          >
+            1
+          </span>
           <div>
             <p className="text-sm font-semibold text-slate-800">Unduh file template</p>
             <p className="text-xs text-slate-500">
@@ -2353,23 +2346,23 @@ function ImportProductModal({ onClose, title = "Impor produk baru" }) {
           </div>
         </div>
         <div className="flex gap-3">
-          <span 
-  style={{ 
-    display: "flex", 
-    alignItems: "center", 
-    justifyContent: "center", 
-    width: "24px", 
-    height: "24px", 
-    flexShrink: 0, 
-    borderRadius: "50%", 
-    backgroundColor: "#4B61DD", 
-    color: "#ffffff", 
-    fontSize: "12px", 
-    fontWeight: "bold" 
-  }}
->
-  2
-</span>
+          <span
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "24px",
+              height: "24px",
+              flexShrink: 0,
+              borderRadius: "50%",
+              backgroundColor: "#4B61DD",
+              color: "#ffffff",
+              fontSize: "12px",
+              fontWeight: "bold"
+            }}
+          >
+            2
+          </span>
           <div>
             <p className="text-sm font-semibold text-slate-800">Isi data di file template</p>
             <p className="text-xs text-slate-500">
@@ -2411,23 +2404,23 @@ function ImportProductModal({ onClose, title = "Impor produk baru" }) {
           </div>
         </div>
         <div className="flex gap-3">
-          <span 
-  style={{ 
-    display: "flex", 
-    alignItems: "center", 
-    justifyContent: "center", 
-    width: "24px", 
-    height: "24px", 
-    flexShrink: 0, 
-    borderRadius: "50%", 
-    backgroundColor: "#4B61DD", 
-    color: "#ffffff", 
-    fontSize: "12px", 
-    fontWeight: "bold" 
-  }}
->
-  3
-</span>
+          <span
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "24px",
+              height: "24px",
+              flexShrink: 0,
+              borderRadius: "50%",
+              backgroundColor: "#4B61DD",
+              color: "#ffffff",
+              fontSize: "12px",
+              fontWeight: "bold"
+            }}
+          >
+            3
+          </span>
           <div className="flex-1">
             <p className="text-sm font-semibold text-slate-800">Unggah file template</p>
             <p className="text-xs text-slate-500">
@@ -2463,25 +2456,25 @@ export default function ProductPage() {
   const location = useLocation();
 
   const [themeMode, setThemeMode] = useState(
-  () => localStorage.getItem("app_theme") || "light"
-);
+    () => localStorage.getItem("app_theme") || "light"
+  );
 
-useEffect(() => {
-  const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
-  window.addEventListener("themeChanged", sync);
-  window.addEventListener("storage", sync);
-  return () => {
-    window.removeEventListener("themeChanged", sync);
-    window.removeEventListener("storage", sync);
-  };
-}, []);
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
 
-const isDark = themeMode === "dark";
+  const isDark = themeMode === "dark";
 
   useEffect(() => {
     if (location.state?.openImportModal) {
-      setActionPage("importNewProducts"); 
-    
+      setActionPage("importNewProducts");
+
       window.history.replaceState({}, document.title);
     }
   }, [location]);
@@ -2495,10 +2488,10 @@ const isDark = themeMode === "dark";
   }
 
   return (
-      <div
-        className={`${isDark ? "dash-dark" : ""} min-h-screen bg-white`}
-        style={isDark ? { backgroundColor: "#121212" } : undefined}
-      >
+    <div
+      className={`${isDark ? "dash-dark" : ""} min-h-screen bg-white`}
+      style={isDark ? { backgroundColor: "#121212" } : undefined}
+    >
       <ProductHeader mainTab={mainTab} onMainTabChange={setMainTab} onAction={handleAction} />
 
       {mainTab === "goods" && (
@@ -2540,7 +2533,7 @@ const isDark = themeMode === "dark";
       .dash-dark .bg-white { background-color: #121212; }
       .dash-dark .bg-slate-50,
       .dash-dark .bg-slate-100 { background-color: #262626; }
-      .dash-dark [class*="bg-[#EDFFFD]"] { background-color: #d38e0d69; }
+      .dash-dark [class*="bg-[#EDFFFD]"] { background-color: #e08c33b8; }
       .dash-dark .bg-slate-300 { background-color: #4a4a4a; }
       .dash-dark .bg-indigo-50 { background-color: rgba(229,184,92,0.15); }
       .dash-dark .bg-green-100 { background-color: rgba(34,197,94,0.18); }
@@ -2602,6 +2595,10 @@ const isDark = themeMode === "dark";
       .dash-dark .stat-card:hover {
         box-shadow: 0 6px 18px rgba(229, 184, 92, 0.45);
       }
+
+      .dash-dark .btn-primary-dark { background-color: #e08d33 !important; color: #f9f9f9ff !important; box-shadow: 0 4px 8px rgba(254, 92, 23, 0.49) !important;}
+      .dash-dark .btn-primary-dark:hover { background-color: #e08c33df !important; }
+
     `}</style>
     </div>
   );

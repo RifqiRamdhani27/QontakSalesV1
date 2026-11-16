@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { Navigate } from "react-router-dom";
 import { Spinner } from "@chakra-ui/react";
 import mekariPayImg from "../../assets/mekariPAY.png"
 import {
@@ -273,20 +274,24 @@ export default function DashboardPage() {
   };
 
   const [themeMode, setThemeMode] = useState(
-  () => localStorage.getItem("app_theme") || "light"
-);
+    () => localStorage.getItem("app_theme") || "light"
+  );
 
-useEffect(() => {
-  const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
-  window.addEventListener("themeChanged", sync);
-  window.addEventListener("storage", sync);
-  return () => {
-    window.removeEventListener("themeChanged", sync);
-    window.removeEventListener("storage", sync);
-  };
-}, []);
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
 
-const isDark = themeMode === "dark";
+  const isDark = themeMode === "dark";
+
+  if (!localStorage.getItem("access_token")) {
+    return <Navigate to="/login" replace />;
+  }
 
   if (loading) {
     return (
@@ -424,8 +429,8 @@ const isDark = themeMode === "dark";
                   <button
                     onClick={() => setCashflowMode("chart")}
                     className={`px-3 py-1 font-medium rounded cursor-pointer ${cashflowMode === "chart"
-                        ? "bg-blue-50 text-blue-700 shadow-xs"
-                        : "text-slate-600 hover:text-slate-900"
+                      ? "bg-blue-50 text-blue-700 shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
                       }`}
                     type="button"
                   >
@@ -434,8 +439,8 @@ const isDark = themeMode === "dark";
                   <button
                     onClick={() => setCashflowMode("table")}
                     className={`px-3 py-1 font-medium rounded cursor-pointer ${cashflowMode === "table"
-                        ? "bg-blue-50 text-blue-700 shadow-xs"
-                        : "text-slate-600 hover:text-slate-900"
+                      ? "bg-blue-50 text-blue-700 shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
                       }`}
                     type="button"
                   >
@@ -499,7 +504,7 @@ const isDark = themeMode === "dark";
                         </td>
                         <td className={`py-2 text-right font-semibold ${isDark ? "text-[#E5B85C]" : "text-purple-600"}`}>
                           {formatRp(netCashData[idx])}
-                        </td>                      
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -692,8 +697,8 @@ const isDark = themeMode === "dark";
                   <button
                     onClick={() => setProfitLossMode("chart")}
                     className={`px-3 py-1 font-medium rounded cursor-pointer ${profitLossMode === "chart"
-                        ? "bg-blue-50 text-blue-700 shadow-xs"
-                        : "text-slate-600 hover:text-slate-900"
+                      ? "bg-blue-50 text-blue-700 shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
                       }`}
                     type="button"
                   >
@@ -702,8 +707,8 @@ const isDark = themeMode === "dark";
                   <button
                     onClick={() => setProfitLossMode("table")}
                     className={`px-3 py-1 font-medium rounded cursor-pointer ${profitLossMode === "table"
-                        ? "bg-blue-50 text-blue-700 shadow-xs"
-                        : "text-slate-600 hover:text-slate-900"
+                      ? "bg-blue-50 text-blue-700 shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
                       }`}
                     type="button"
                   >
@@ -980,11 +985,11 @@ const isDark = themeMode === "dark";
   };
 
   return (
-      <div
-          className={`${isDark ? "dash-dark" : ""} bg-[#f8fafc] text-slate-800 antialiased min-h-screen -m-4 md:-m-6 pb-20`}
-          style={isDark ? { backgroundColor: "#121212", color: "#e2e8f0" } : undefined}
-        >
-          {/* BEGIN: MainHeader */}
+    <div
+      className={`${isDark ? "dash-dark" : ""} bg-[#f8fafc] text-slate-800 antialiased min-h-screen -m-4 md:-m-6 pb-20`}
+      style={isDark ? { backgroundColor: "#121212", color: "#e2e8f0" } : undefined}
+    >
+      {/* BEGIN: MainHeader */}
       <header className="bg-white border-b border-slate-200 px-6 pt-5 pb-0">
         <div className="max-w-[1760px] mx-auto">
           {/* Title & Action Bar */}
@@ -1018,8 +1023,8 @@ const isDark = themeMode === "dark";
                   <button
                     onClick={handleToggleEditMode}
                     className={`p-1.5 rounded-md transition-colors cursor-pointer ${isEditMode
-                        ? "bg-blue-600 text-white"
-                        : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"
+                      ? "bg-blue-600 text-white"
+                      : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"
                       }`}
                     title="Ubah urutan widget"
                     type="button"
@@ -1036,8 +1041,8 @@ const isDark = themeMode === "dark";
             <button
               onClick={() => setActiveTab("performa")}
               className={`border-b-2 pb-2.5 text-sm font-semibold flex items-center cursor-pointer ${activeTab === "performa"
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-slate-500 hover:text-slate-700"
+                ? "border-blue-600 text-blue-600"
+                : "border-transparent text-slate-500 hover:text-slate-700"
                 }`}
             >
               Performa bisnis
@@ -1045,8 +1050,8 @@ const isDark = themeMode === "dark";
             <button
               onClick={() => setActiveTab("insight")}
               className={`border-b-2 pb-2.5 text-sm font-medium flex items-center gap-1.5 cursor-pointer ${activeTab === "insight"
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-slate-500 hover:text-slate-700"
+                ? "border-blue-600 text-blue-600"
+                : "border-transparent text-slate-500 hover:text-slate-700"
                 }`}
             >
               <span>Insight Business</span>
