@@ -64,12 +64,8 @@ const sections = [
   },
 ];
 
-/* ───────────────────────── Halaman ───────────────────────── */
-
 export default function TermsPage() {
   const navigate = useNavigate();
-
-  // Font (sama seperti LandingPage; aman dipanggil dua kali karena dicek via id)
   useEffect(() => {
     if (document.getElementById("jerp-font")) return;
     const link = document.createElement("link");
@@ -211,7 +207,6 @@ export default function TermsPage() {
             <HStack gap={6}>
               <Text as="button" fontSize="xs" color="white" onClick={() => navigate("/terms")}>Syarat Penggunaan</Text>
               <Text as="button" fontSize="xs" color={C.soft} _hover={{ color: "white" }} onClick={() => navigate("/privacy")}>Kebijakan Privasi</Text>
-              <Text as="button" fontSize="xs" color={C.soft} _hover={{ color: "white" }} onClick={() => navigate("/contact")}>Keamanan Data</Text>
             </HStack>
           </Stack>
         </Container>
