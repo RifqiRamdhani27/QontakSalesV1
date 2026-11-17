@@ -3,6 +3,7 @@ import { DownloadSimple, CaretDown, ChatCircleDots, Funnel, X, CaretLeft, CaretR
 import emptyFolderImg from "@/assets/empty-folder.png";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
+
 const darkTheme = {
   "colorScheme": "dark",
   "--list-background": "#121212",
@@ -40,6 +41,7 @@ const darkTheme = {
   "--list-danger-button": "#b91c1c",
   "--list-success-button": "#15803d"
 };
+
 const MK = {
   text: "var(--list-text, #232933)",
   muted: "var(--list-muted, #626b79)",
@@ -54,7 +56,9 @@ const MK = {
   legacyPrimary: "var(--list-brand,#216a88)",
   legacyBorder: "var(--list-legacy-border, #cfd9db)"
 };
-const MK_FONT = "Roboto, \"Helvetica Neue\", Helvetica, Arial, sans-serif";
+
+const MK_FONT = "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+
 function useDropdown() {
   const triggerRef = useRef(null);
   const [rect, setRect] = useState(null);
@@ -72,30 +76,10 @@ function useDropdown() {
     }
     open();
   }, [rect, open]);
-  return {
-    triggerRef,
-    rect,
-    isOpen: Boolean(rect),
-    open,
-    openAt,
-    close,
-    toggle
-  };
+  return { triggerRef, rect, isOpen: Boolean(rect), open, openAt, close, toggle };
 }
-function DropdownPanel({
-  rect,
-  onClose,
-  children,
-  minWidth,
-  maxWidth,
-  maxHeight = 320,
-  align = "left",
-  variant = "pixel",
-  triggerRef,
-  contentRef,
-  className,
-  width
-}) {
+
+function DropdownPanel({ rect, onClose, children, minWidth, maxWidth, maxHeight = 320, align = "left", variant = "pixel", triggerRef, contentRef, className, width }) {
   const [themeMode, setThemeMode] = useState(() => localStorage.getItem("app_theme") || "light");
   useEffect(() => {
     const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
@@ -107,11 +91,10 @@ function DropdownPanel({
     };
   }, []);
   const isDark = themeMode === "dark";
-  const theme = isDark ? darkTheme : {
-    colorScheme: "light"
-  };
+  const theme = isDark ? darkTheme : { colorScheme: "light" };
   const panelRef = useRef(null);
   const [pos, setPos] = useState(null);
+
   useLayoutEffect(() => {
     if (!rect || triggerRef) return;
     const panel = panelRef.current;
@@ -124,12 +107,9 @@ function DropdownPanel({
     const top = openUp ? Math.max(8, rect.top - Math.min(h, maxHeight) - 4) : rect.bottom + 4;
     let left = align === "right" ? rect.right - w : rect.left;
     left = Math.max(8, Math.min(left, vw - w - 8));
-    setPos({
-      top,
-      left,
-      maxHeight: Math.max(160, Math.min(maxHeight, openUp ? rect.top - 16 : spaceBelow - 16))
-    });
+    setPos({ top, left, maxHeight: Math.max(160, Math.min(maxHeight, openUp ? rect.top - 16 : spaceBelow - 16)) });
   }, [rect, align, maxHeight, minWidth, triggerRef]);
+
   useLayoutEffect(() => {
     if (!rect || !triggerRef) return;
     let frame;
@@ -178,6 +158,7 @@ function DropdownPanel({
       window.visualViewport?.removeEventListener("resize", schedulePosition);
     };
   }, [rect, triggerRef, align, maxHeight, minWidth, width, onClose]);
+
   useEffect(() => {
     if (!rect) return;
     const onDocDown = event => {
@@ -191,9 +172,7 @@ function DropdownPanel({
         onClose();
         if (triggerRef) {
           event.preventDefault();
-          triggerRef.current?.focus({
-            preventScroll: true
-          });
+          triggerRef.current?.focus({ preventScroll: true });
         }
         return;
       }
@@ -207,12 +186,8 @@ function DropdownPanel({
       const index = items.indexOf(active);
       const next = event.key === "Home" ? 0 : event.key === "End" ? items.length - 1 : event.key === "ArrowUp" ? index <= 0 ? items.length - 1 : index - 1 : (index + 1) % items.length;
       event.preventDefault();
-      items[next].focus({
-        preventScroll: true
-      });
-      items[next].scrollIntoView({
-        block: "nearest"
-      });
+      items[next].focus({ preventScroll: true });
+      items[next].scrollIntoView({ block: "nearest" });
     };
     const onFocus = event => {
       if (panelRef.current?.contains(event.target)) return;
@@ -228,6 +203,7 @@ function DropdownPanel({
       if (triggerRef) document.removeEventListener("focusin", onFocus);
     };
   }, [rect, onClose, triggerRef]);
+
   if (!rect) return null;
   const isLegacy = variant === "legacy";
   const isSettings = variant === "settings";
@@ -257,90 +233,68 @@ function DropdownPanel({
     }),
     visibility: pos ? "visible" : "hidden"
   }} data-list-dropdown="">
-      {children}
-    </div>, document.body);
+    {children}
+  </div>, document.body);
 }
-function MenuItem({
-  children,
-  onClick,
-  selected,
-  icon,
-  danger
-}) {
-  return <button type="button" onClick={onClick} className="flex w-full cursor-pointer items-center gap-2 border-0 bg-transparent px-[15px] py-[6px] text-left text-[13px] transition-colors hover:bg-[color:var(--list-hover,#f2f5ff)]" style={{
-    color: danger ? "var(--list-danger-text, #e74c3c)" : "var(--list-text, #000)"
-  }}>
-      {selected ? <Check size={13} style={{
-      color: "var(--list-link,#4b61dd)"
-    }} /> : null}
+
+function MenuItem({ children, onClick, selected, icon, danger }) {
+  return <button type="button" onClick={onClick} className="flex w-full cursor-pointer items-center gap-2 border-0 bg-transparent px-[15px] py-[6px] text-left text-[13px] transition-colors hover:bg-[color:var(--list-hover,#f2f5ff)]" style={{ color: danger ? "var(--list-danger-text, #e74c3c)" : "var(--list-text, #000)" }}>
+      {selected ? <Check size={13} style={{ color: "var(--list-link,#4b61dd)" }} /> : null}
       {icon}
       <span className="truncate">{children}</span>
     </button>;
 }
-function PixelHeader({
-  title,
-  action,
-  breadcrumb = "Daftar lainnya",
-  breadcrumbClass,
-  breadcrumbTo
-}) {
+
+function PixelHeader({ title, action, breadcrumb = "Daftar Lainnya", breadcrumbClass, breadcrumbTo }) {
   const crumbClass = breadcrumbClass || "m-0 text-[14px] leading-[20px]";
-  return <div className="flex flex-col items-start justify-between gap-4 md:flex-row">
+  return <div className="mb-4 flex flex-col items-start justify-between gap-3 md:flex-row md:items-end">
       <div className="min-w-0 w-full md:w-auto">
-        {breadcrumbTo ? <Link to={breadcrumbTo} className={`${crumbClass} inline-block cursor-pointer no-underline hover:underline`} style={{
-        color: MK.link
-      }}>
-            {breadcrumb}
-          </Link> : <p className={crumbClass} style={{
-        color: breadcrumbClass ? undefined : MK.brand
-      }}>
-            {breadcrumb}
-          </p>}
-        <h1 className="m-0 mt-0.5 text-[24px] font-semibold leading-[32px]" style={{
-        color: MK.text
-      }}>
+        {breadcrumbTo ? <Link to={breadcrumbTo} className={`${crumbClass} inline-block cursor-pointer no-underline hover:underline`} style={{ color: MK.link }}>{breadcrumb}</Link> : <p className={crumbClass} style={{ color: breadcrumbClass ? undefined : MK.brand }}>{breadcrumb}</p>}
+        <h2 style={{ fontSize: "23px", fontWeight: 700, color: MK.text, margin: 0, marginTop: "2px", letterSpacing: "-0.01em" }}>
           {title}
-        </h1>
+        </h2>
       </div>
-      {action ? <div className="shrink-0 pt-1">{action}</div> : null}
+      {action ? <div className="shrink-0">{action}</div> : null}
     </div>;
 }
+
 const btnPrimary = "inline-flex h-[38px] cursor-pointer items-center justify-center gap-1.5 rounded-md border-0 bg-[color:var(--list-brand,#4b61dd)] px-4 text-[14px] font-semibold text-[color:var(--list-brand-text,#fff)] transition-colors hover:bg-[color:var(--list-brand-hover,#3f52c9)] disabled:cursor-not-allowed disabled:bg-[color:var(--list-disabled-bg,#a9a9a9)]";
 const btnOutline = "inline-flex h-[38px] cursor-pointer items-center justify-center gap-1.5 rounded-md border border-[color:var(--list-border,#d0d6dd)] bg-[color:var(--list-surface,#fff)] px-4 text-[14px] font-semibold text-[color:var(--list-link,#4b61dd)] transition-colors hover:bg-[color:var(--list-subtle,#f8f9fb)]";
 const btnGhost = "inline-flex h-[38px] cursor-pointer items-center justify-center gap-1.5 rounded-md border-0 bg-transparent px-4 text-[14px] font-semibold text-[color:var(--list-muted,#626b79)] transition-colors hover:bg-[color:var(--list-hover,#f1f5f9)]";
 const iconBtn = "inline-flex h-[30px] w-[31px] cursor-pointer items-center justify-center rounded border-0 bg-transparent text-[color:var(--list-muted,#626b79)] transition-colors hover:bg-[color:var(--list-hover,#f1f5f9)] hover:text-[color:var(--list-text,#232933)]";
 const inputBase = "h-[38px] w-full rounded-md border border-[color:var(--list-border,#d0d6dd)] bg-[color:var(--list-surface,#fff)] px-3 text-[14px] outline-none transition-colors placeholder:text-[color:var(--list-placeholder,#8f96a3)] focus:border-[color:var(--list-brand,#4b61dd)]";
-const thBase = "bg-[color:var(--list-subtle,#f8f9fb)] px-2 py-4 text-left text-[14px] font-semibold leading-5 align-middle";
-const tdBase = "bg-[color:var(--list-surface,#fff)] px-2 py-3.5 text-[14px] leading-5 align-middle";
-function SearchInput({
-  value,
-  onChange,
-  placeholder,
-  className = ""
-}) {
+
+const thBase = {
+  color: "var(--list-text, #404040)",
+  fontSize: "13.33px",
+  fontWeight: 400,
+  padding: "8px 13.33px",
+  textAlign: "left",
+  height: 40,
+  verticalAlign: "middle",
+  borderBottom: "1px solid var(--list-border, #e2e8f0)"
+};
+
+const tdBase = {
+  color: "var(--list-text, #404040)",
+  fontSize: "13.33px",
+  padding: "5.33px 13.33px",
+  height: 35,
+  verticalAlign: "middle",
+  borderBottom: "1px solid var(--list-border, #e2e8f0)"
+};
+
+function SearchInput({ value, onChange, placeholder, className = "" }) {
   return <div className={`relative ${className}`}>
-      <MagnifyingGlass size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2" style={{
-      color: MK.muted
-    }} />
+      <MagnifyingGlass size={18} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2" style={{ color: MK.muted }} />
       <input type="text" value={value} onChange={event => onChange(event.target.value)} placeholder={placeholder} className={`${inputBase} pl-9`} />
-      {value ? <button type="button" onClick={() => onChange("")} aria-label="Bersihkan pencarian" className="absolute right-2 top-1/2 flex h-5 w-5 -translate-y-1/2 cursor-pointer items-center justify-center rounded border-0 bg-transparent" style={{
-      color: MK.muted
-    }}>
+      {value ? <button type="button" onClick={() => onChange("")} aria-label="Bersihkan pencarian" className="absolute right-2 top-1/2 flex h-5 w-5 -translate-y-1/2 cursor-pointer items-center justify-center rounded border-0 bg-transparent" style={{ color: MK.muted }}>
           <X size={13} />
         </button> : null}
     </div>;
 }
-function TableFooter({
-  pageSize,
-  onPageSize,
-  from,
-  to,
-  total,
-  page,
-  totalPages,
-  onPage,
-  pageSizeOptions = [5, 10, 25, 50, 100]
-}) {
+
+function TableFooter({ pageSize, onPageSize, from, to, total, page, totalPages, onPage, pageSizeOptions = [5, 10, 25, 50, 100] }) {
   const size = useDropdown();
   const [jump, setJump] = useState(String(page));
   useEffect(() => setJump(String(page)), [page]);
@@ -351,68 +305,30 @@ function TableFooter({
   };
   return <div className="flex flex-wrap items-center justify-between gap-3 py-4">
       <div className="flex items-center gap-4">
-        <p className="m-0 text-[14px]" style={{
-        color: MK.muted
-      }}>
-          Baris per halaman
-        </p>
-        <button type="button" ref={size.triggerRef} data-dropdown-trigger onClick={size.toggle} className="flex h-7 cursor-pointer items-center gap-1 rounded border-0 bg-transparent px-1.5 text-[14px] font-semibold" style={{
-        color: MK.text
-      }}>
+        <p className="m-0 text-[14px]" style={{ color: MK.muted }}>Baris per halaman</p>
+        <button type="button" ref={size.triggerRef} data-dropdown-trigger onClick={size.toggle} className="flex h-7 cursor-pointer items-center gap-1 rounded border-0 bg-transparent px-1.5 text-[14px] font-semibold" style={{ color: MK.text }}>
           {pageSize}
           <CaretDown size={12} />
         </button>
         <DropdownPanel rect={size.rect} onClose={size.close} minWidth={72}>
-          {pageSizeOptions.map(option => <MenuItem key={option} selected={option === pageSize} onClick={() => {
-          onPageSize(option);
-          size.close();
-        }}>
-              {option}
-            </MenuItem>)}
+          {pageSizeOptions.map(option => <MenuItem key={option} selected={option === pageSize} onClick={() => { onPageSize(option); size.close(); }}>{option}</MenuItem>)}
         </DropdownPanel>
-
-        <p className="m-0 text-[14px]" style={{
-        color: MK.muted
-      }}>
-          Menampilkan <span>{from}</span> - <span>{to}</span> dari{" "}
-          <span>{total}</span>
-        </p>
+        <p className="m-0 text-[14px]" style={{ color: MK.muted }}>Menampilkan <span>{from}</span> - <span>{to}</span> dari <span>{total}</span></p>
       </div>
-
       <div className="flex items-center gap-2">
-        <input value={jump} onChange={event => setJump(event.target.value.replace(/[^\d]/g, ""))} onBlur={commitJump} onKeyDown={event => {
-        if (event.key === "Enter") commitJump();
-      }} className="h-[30px] w-[88px] rounded-md border bg-[color:var(--list-surface,#fff)] px-2 text-center text-[14px] outline-none placeholder:text-[color:var(--list-placeholder)]" style={{
-        borderColor: MK.border,
-        color: MK.text
-      }} aria-label="Lompat ke halaman" />
-        <p className="m-0 text-[14px]" style={{
-        color: MK.muted
-      }}>
-          dari <span>{totalPages}</span> halaman
-        </p>
-        <button type="button" onClick={() => onPage(Math.max(1, page - 1))} disabled={page <= 1} aria-label="Halaman sebelumnya" className="flex h-[30px] w-[31px] cursor-pointer items-center justify-center rounded border bg-[color:var(--list-surface,#fff)] disabled:cursor-not-allowed" style={{
-        borderColor: MK.border,
-        color: page <= 1 ? "var(--list-muted,#c3c9d4)" : MK.muted
-      }}>
+        <input value={jump} onChange={event => setJump(event.target.value.replace(/[^\d]/g, ""))} onBlur={commitJump} onKeyDown={event => { if (event.key === "Enter") commitJump(); }} className="h-[30px] w-[88px] rounded-md border bg-[color:var(--list-surface,#fff)] px-2 text-center text-[14px] outline-none placeholder:text-[color:var(--list-placeholder)]" style={{ borderColor: MK.border, color: MK.text }} aria-label="Lompat ke halaman" />
+        <p className="m-0 text-[14px]" style={{ color: MK.muted }}>dari <span>{totalPages}</span> halaman</p>
+        <button type="button" onClick={() => onPage(Math.max(1, page - 1))} disabled={page <= 1} aria-label="Halaman sebelumnya" className="flex h-[30px] w-[31px] cursor-pointer items-center justify-center rounded border bg-[color:var(--list-surface,#fff)] disabled:cursor-not-allowed" style={{ borderColor: MK.border, color: page <= 1 ? "var(--list-muted,#c3c9d4)" : MK.muted }}>
           <CaretLeft size={14} />
         </button>
-        <button type="button" onClick={() => onPage(Math.min(totalPages, page + 1))} disabled={page >= totalPages} aria-label="Halaman berikutnya" className="flex h-[30px] w-[31px] cursor-pointer items-center justify-center rounded border bg-[color:var(--list-surface,#fff)] disabled:cursor-not-allowed" style={{
-        borderColor: MK.border,
-        color: page >= totalPages ? "var(--list-muted,#c3c9d4)" : MK.muted
-      }}>
+        <button type="button" onClick={() => onPage(Math.min(totalPages, page + 1))} disabled={page >= totalPages} aria-label="Halaman berikutnya" className="flex h-[30px] w-[31px] cursor-pointer items-center justify-center rounded border bg-[color:var(--list-surface,#fff)] disabled:cursor-not-allowed" style={{ borderColor: MK.border, color: page >= totalPages ? "var(--list-muted,#c3c9d4)" : MK.muted }}>
           <CaretRight size={14} />
         </button>
       </div>
     </div>;
 }
-function Drawer({
-  title,
-  onClose,
-  children,
-  footer,
-  width = 414
-}) {
+
+function Drawer({ title, onClose, children, footer, width = 414 }) {
   const [themeMode, setThemeMode] = useState(() => localStorage.getItem("app_theme") || "light");
   useEffect(() => {
     const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
@@ -424,305 +340,128 @@ function Drawer({
     };
   }, []);
   const isDark = themeMode === "dark";
-  const theme = isDark ? darkTheme : {
-    colorScheme: "light"
-  };
+  const theme = isDark ? darkTheme : { colorScheme: "light" };
   useEffect(() => {
-    const onKey = event => {
-      if (event.key === "Escape") onClose();
-    };
+    const onKey = event => { if (event.key === "Escape") onClose(); };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
-  return createPortal(<div data-list-theme={theme?.colorScheme} style={{
-    ...theme,
-    color: MK.text,
-    fontFamily: MK_FONT
-  }}>
-      <div className="fixed inset-0 z-[9999]" style={{
-      background: "rgba(35,41,51,.35)"
-    }} onClick={onClose} />
-
-      <aside role="dialog" aria-modal="true" className="fixed right-0 top-0 z-[10000] flex h-full flex-col bg-[color:var(--list-surface,#fff)]" aria-label={title} style={{
-      width,
-      boxShadow: "-4px 0 16px rgba(0,0,0,.12)",
-      maxWidth: "100vw"
-    }}>
-        <header className="flex h-[45px] shrink-0 items-center justify-between border-b px-4" style={{
-        borderColor: MK.border
-      }}>
-          <p className="m-0 text-[14px] font-semibold" style={{
-          color: MK.text
-        }}>
-            {title}
-          </p>
-          <button type="button" onClick={onClose} aria-label="Tutup" className="flex h-[30px] w-[31px] cursor-pointer items-center justify-center rounded border-0 bg-transparent hover:bg-[color:var(--list-hover,#f1f5f9)]" style={{
-          color: MK.muted
-        }}>
+  return createPortal(<div data-list-theme={theme?.colorScheme} style={{ ...theme, color: MK.text, fontFamily: MK_FONT }}>
+      <div className="fixed inset-0 z-[9999]" style={{ background: "rgba(35,41,51,.35)" }} onClick={onClose} />
+      <aside role="dialog" aria-modal="true" className="fixed right-0 top-0 z-[10000] flex h-full flex-col bg-[color:var(--list-surface,#fff)]" aria-label={title} style={{ width, boxShadow: "-4px 0 16px rgba(0,0,0,.12)", maxWidth: "100vw" }}>
+        <header className="flex h-[45px] shrink-0 items-center justify-between border-b px-4" style={{ borderColor: MK.border }}>
+          <p className="m-0 text-[14px] font-semibold" style={{ color: MK.text }}>{title}</p>
+          <button type="button" onClick={onClose} aria-label="Tutup" className="flex h-[30px] w-[31px] cursor-pointer items-center justify-center rounded border-0 bg-transparent hover:bg-[color:var(--list-hover,#f1f5f9)]" style={{ color: MK.muted }}>
             <X size={16} />
           </button>
         </header>
-
         <div className="flex-1 overflow-y-auto px-4 py-4">{children}</div>
-
-        {footer ? <div className="flex shrink-0 items-center justify-end gap-2 border-t px-4 py-3" style={{
-        borderColor: MK.border
-      }}>
-            {footer}
-          </div> : null}
+        {footer ? <div className="flex shrink-0 items-center justify-end gap-2 border-t px-4 py-3" style={{ borderColor: MK.border }}>{footer}</div> : null}
       </aside>
     </div>, document.body);
 }
-function EmptyState({
-  image,
-  title,
-  description
-}) {
+
+function EmptyState({ image, title, description }) {
   return <div className="flex flex-col items-center justify-center gap-1 px-6 py-[120px] text-center">
       {image ? <img src={image} alt="" className="h-[128px] w-[128px] object-contain" /> : null}
-      <p className="m-0 text-[16px] font-semibold" style={{
-      color: MK.text,
-      marginTop: image ? 12 : 0
-    }}>
-        {title}
-      </p>
-      <p className="m-0 text-[14px]" style={{
-      color: MK.muted
-    }}>
-        {description}
-      </p>
+      <p className="m-0 text-[16px] font-semibold" style={{ color: MK.text, marginTop: image ? 12 : 0 }}>{title}</p>
+      <p className="m-0 text-[14px]" style={{ color: MK.muted }}>{description}</p>
     </div>;
 }
-function StatusBadge({
-  status
-}) {
+
+function StatusBadge({ status }) {
   const map = {
-    Selesai: {
-      bg: "var(--list-success-bg, #e8f5eb)",
-      color: "var(--list-success-text, #3c914d)"
-    },
-    "Diimpor sebagian": {
-      bg: "var(--list-warning-bg, #fff4e5)",
-      color: "var(--list-warning-text, #b26a00)"
-    },
-    "Dalam proses": {
-      bg: "var(--list-info-bg, #e8f0fe)",
-      color: "var(--list-info-text, #1a56db)"
-    },
-    "Dalam antrean": {
-      bg: "var(--list-subtle, #f1f5f9)",
-      color: "var(--list-muted, #626b79)"
-    },
-    "Menunggu dihapus": {
-      bg: "var(--list-danger-bg, #fdecea)",
-      color: "var(--list-danger-text, #c0392b)"
-    },
-    "Gagal mengimpor": {
-      bg: "var(--list-danger-bg, #fdecea)",
-      color: "var(--list-danger-text, #c0392b)"
-    },
-    "Gagal menghapus": {
-      bg: "var(--list-danger-bg, #fdecea)",
-      color: "var(--list-danger-text, #c0392b)"
-    },
-    "Menunggu hitung ulang": {
-      bg: "var(--list-warning-bg, #fff4e5)",
-      color: "var(--list-warning-text, #b26a00)"
-    }
+    Selesai: { bg: "var(--list-success-bg, #e8f5eb)", color: "var(--list-success-text, #3c914d)" },
+    "Diimpor sebagian": { bg: "var(--list-warning-bg, #fff4e5)", color: "var(--list-warning-text, #b26a00)" },
+    "Dalam proses": { bg: "var(--list-info-bg, #e8f0fe)", color: "var(--list-info-text, #1a56db)" },
+    "Dalam antrean": { bg: "var(--list-subtle, #f1f5f9)", color: "var(--list-muted, #626b79)" },
+    "Menunggu dihapus": { bg: "var(--list-danger-bg, #fdecea)", color: "var(--list-danger-text, #c0392b)" },
+    "Gagal mengimpor": { bg: "var(--list-danger-bg, #fdecea)", color: "var(--list-danger-text, #c0392b)" },
+    "Gagal menghapus": { bg: "var(--list-danger-bg, #fdecea)", color: "var(--list-danger-text, #c0392b)" },
+    "Menunggu hitung ulang": { bg: "var(--list-warning-bg, #fff4e5)", color: "var(--list-warning-text, #b26a00)" }
   };
-  const tone = map[status] || {
-    bg: "var(--list-subtle, #f1f5f9)",
-    color: "var(--list-muted, #626b79)"
-  };
-  return <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[14px] leading-5" style={{
-    background: tone.bg,
-    color: tone.color
-  }}>
+  const tone = map[status] || { bg: "var(--list-subtle, #f1f5f9)", color: "var(--list-muted, #626b79)" };
+  return <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[13px] leading-5" style={{ background: tone.bg, color: tone.color }}>
       {status}
     </span>;
 }
+
 const exportFeatureOptions = ["Semua fitur", "Jurnal", "Laporan piutang pelanggan", "Daftar pengeluaran", "Laporan hutang supplier", "Daftar penjualan", "Daftar pembelian", "Ringkasan pergerakan stok barang gudang", "Buku besar", "Ringkasan bisnis", "Detail aset tetap", "Ekspor produk", "Ekspor kontak", "Ekspor bom (termasuk biaya produksi)", "Ekspor bom", "Penjualan per pelanggan", "Nilai stok gudang", "Penjualan/pelepasan asset", "Laporan keuntungan produk", "Daftar proforma invoice", "Daftar tukar faktur", "Neraca", "Stok opname", "Ekspor produk bundle", "Konversi produk", "Tingkat pemenuhan pesanan", "Perputaran persediaan barang", "Kuantitas produk dengan nomor seri", "Gudang berisi produk bernomor seri"];
 const exportRows = [];
 const exportStatusOptions = ["Semua status", "Dalam antrian", "Working", "Selesai", "Gagal mengekspor"];
 const importFeatureOptions = ["Semua fitur", "Akun", "Aset", "Biaya", "Bill of material", "Buat produk", "Faktur pembelian", "Gudang", "Hellobill", "Jurnal umum", "Kontak", "Kredit memo pelanggan", "Kredit memo supplier", "Pelanggan", "Pembayaran pembelian", "Penagihan penjualan", "Penawaran pembelian", "Penawaran penjualan", "Perintah kerja", "Pesanan pembelian", "Pesanan penjualan", "Produk bundle", "Rekening koran", "Stok opname", "Supplier", "Terima pembayaran", "Transfer gudang", "Update pajak produk", "Update produk", "Update produk bundle"];
 const importRows = [];
 const importStatusOptions = ["Semua status", "Selesai", "Menunggu dihapus", "Dalam antrian", "Dalam proses", "Gagal mengimpor", "Gagal menghapus", "Diimpor sebagian"];
-const TABS = [{
-  id: "impor",
-  label: "Impor"
-}, {
-  id: "ekspor",
-  label: "Ekspor"
-}];
-const emptyFilter = {
-  startDate: "",
-  endDate: ""
-};
+
+const TABS = [{ id: "impor", label: "Impor" }, { id: "ekspor", label: "Ekspor" }];
+const emptyFilter = { startDate: "", endDate: "" };
+
 const toComparable = value => {
   const date = value.split(",")[0];
   const [day, month, year] = date.split("/");
   return `${year}${month}${day}`;
 };
-function FilterSelect({
-  value,
-  options,
-  onChange,
-  placeholder,
-  full
-}) {
+
+function FilterSelect({ value, options, onChange, placeholder, full }) {
   const dropdown = useDropdown();
   return <>
-      <button type="button" ref={dropdown.triggerRef} data-dropdown-trigger onClick={dropdown.toggle} className={`flex h-[38px] cursor-pointer items-center justify-between gap-2 rounded-md border bg-[color:var(--list-surface,#fff)] px-3 text-left text-[14px] ${full ? "w-full" : "w-[237px]"}`} style={{
-      borderColor: MK.border,
-      color: value ? MK.text : "var(--list-muted,#8f96a3)"
-    }}>
+      <button type="button" ref={dropdown.triggerRef} data-dropdown-trigger onClick={dropdown.toggle} className={`flex h-[38px] cursor-pointer items-center justify-between gap-2 rounded-md border bg-[color:var(--list-surface,#fff)] px-3 text-left text-[14px] ${full ? "w-full" : "w-[237px]"}`} style={{ borderColor: MK.border, color: value ? MK.text : "var(--list-muted,#8f96a3)" }}>
         <span className="truncate">{value || placeholder}</span>
-        <CaretDown size={14} style={{
-        color: MK.muted
-      }} />
+        <CaretDown size={14} style={{ color: MK.muted }} />
       </button>
-
       <DropdownPanel rect={dropdown.rect} onClose={dropdown.close} minWidth={full ? 0 : 237} maxHeight={360}>
-        {options.map(option => <MenuItem key={option} selected={option === value} onClick={() => {
-        onChange(option);
-        dropdown.close();
-      }}>
-            {option}
-          </MenuItem>)}
+        {options.map(option => <MenuItem key={option} selected={option === value} onClick={() => { onChange(option); dropdown.close(); }}>{option}</MenuItem>)}
       </DropdownPanel>
     </>;
 }
-function FilterModal({
-  initial,
-  featureOptions,
-  statusOptions,
-  onApply,
-  onReset,
-  onClose
-}) {
+
+function FilterModal({ initial, featureOptions, statusOptions, onApply, onReset, onClose }) {
   const [draft, setDraft] = useState(initial);
-  const update = (field, value) => setDraft(current => ({
-    ...current,
-    [field]: value
-  }));
+  const update = (field, value) => setDraft(current => ({ ...current, [field]: value }));
   return <Drawer title="Filter" onClose={onClose} footer={<>
-          <button type="button" className="mr-auto cursor-pointer border-0 bg-transparent text-[14px] font-semibold" style={{
-      color: MK.muted
-    }} onClick={() => {
-      setDraft({
-        startDate: "",
-        endDate: "",
-        status: "",
-        fitur: ""
-      });
-      onReset();
-    }}>
-            Reset filter
-          </button>
-
-          <button type="button" className={btnGhost} onClick={onClose}>
-            Batalkan
-          </button>
-
-          <button type="button" className={btnPrimary} onClick={() => onApply(draft)}>
-            Terapkan
-          </button>
+          <button type="button" className="mr-auto cursor-pointer border-0 bg-transparent text-[14px] font-semibold" style={{ color: MK.muted }} onClick={() => { setDraft({ startDate: "", endDate: "", status: "", fitur: "" }); onReset(); }}>Reset filter</button>
+          <button type="button" className={btnGhost} onClick={onClose}>Batalkan</button>
+          <button type="button" className={btnPrimary} onClick={() => onApply(draft)}>Terapkan</button>
         </>}>
       <div className="flex flex-col gap-3">
         <div>
-          <label className="mb-1 block text-[13px]" style={{
-          color: MK.muted
-        }} htmlFor="filter_start">
-            Tanggal awal
-          </label>
-
-          <input id="filter_start" type="date" value={draft.startDate} onChange={event => update("startDate", event.target.value)} className="h-[38px] w-full rounded-md border px-3 text-[14px] outline-none placeholder:text-[color:var(--list-placeholder)]" style={{
-          borderColor: MK.border,
-          color: MK.text
-        }} />
+          <label className="mb-1 block text-[13px]" style={{ color: MK.muted }} htmlFor="filter_start">Tanggal awal</label>
+          <input id="filter_start" type="date" value={draft.startDate} onChange={event => update("startDate", event.target.value)} className="h-[38px] w-full rounded-md border px-3 text-[14px] outline-none placeholder:text-[color:var(--list-placeholder)]" style={{ borderColor: MK.border, color: MK.text }} />
         </div>
-
         <div>
-          <label className="mb-1 block text-[13px]" style={{
-          color: MK.muted
-        }} htmlFor="filter_end">
-            Tanggal akhir
-          </label>
-
-          <input id="filter_end" type="date" value={draft.endDate} onChange={event => update("endDate", event.target.value)} className="h-[38px] w-full rounded-md border px-3 text-[14px] outline-none placeholder:text-[color:var(--list-placeholder)]" style={{
-          borderColor: MK.border,
-          color: MK.text
-        }} />
+          <label className="mb-1 block text-[13px]" style={{ color: MK.muted }} htmlFor="filter_end">Tanggal akhir</label>
+          <input id="filter_end" type="date" value={draft.endDate} onChange={event => update("endDate", event.target.value)} className="h-[38px] w-full rounded-md border px-3 text-[14px] outline-none placeholder:text-[color:var(--list-placeholder)]" style={{ borderColor: MK.border, color: MK.text }} />
         </div>
-
         <div>
-          <span className="mb-1 block text-[13px]" style={{
-          color: MK.muted
-        }}>
-            Status
-          </span>
-
+          <span className="mb-1 block text-[13px]" style={{ color: MK.muted }}>Status</span>
           <FilterSelect value={draft.status} options={statusOptions} onChange={value => update("status", value === "Semua status" ? "" : value)} placeholder="Semua status" full />
         </div>
-
         <div>
-          <span className="mb-1 block text-[13px]" style={{
-          color: MK.muted
-        }}>
-            Fitur
-          </span>
-
+          <span className="mb-1 block text-[13px]" style={{ color: MK.muted }}>Fitur</span>
           <FilterSelect value={draft.fitur} options={featureOptions} onChange={value => update("fitur", value === "Semua fitur" ? "" : value)} placeholder="Semua fitur" full />
         </div>
       </div>
     </Drawer>;
 }
-function ImportInfo({
-  onClose,
-  onReload
-}) {
-  return <div className="relative mb-4 rounded-md px-4 py-4" style={{
-    background: "var(--list-subtle,#eaecfb)"
-  }}>
-      <p className="m-0 text-[14px] font-semibold" style={{
-      color: MK.text
-    }}>
-        Info status impor
-      </p>
 
-      <p className="m-0 mt-1 text-[14px] leading-[24px]" style={{
-      color: MK.text
-    }}>
-        <span className="font-semibold">Dalam antrean:</span> Silakan tunggu
-        hingga diproses.
+function ImportInfo({ onClose, onReload }) {
+  return <div className="relative mb-4 rounded-md px-4 py-4" style={{ background: "var(--list-subtle,#eaecfb)" }}>
+      <p className="m-0 text-[14px] font-semibold" style={{ color: MK.text }}>Info status impor</p>
+      <p className="m-0 mt-1 text-[14px] leading-[24px]" style={{ color: MK.text }}>
+        <span className="font-semibold">Dalam antrean:</span> Silakan tunggu hingga diproses.
         <br />
-        <span className="font-semibold">Dalam proses:</span> Bisa memakan waktu
-        hingga 1×24 jam. Cek berkala dengan muat ulang halaman atau hubungi tim
-        support jika lebih dari 24 jam.
+        <span className="font-semibold">Dalam proses:</span> Bisa memakan waktu hingga 1×24 jam. Cek berkala dengan muat ulang halaman atau hubungi tim support jika lebih dari 24 jam.
       </p>
-
       <div className="mt-1 flex items-center gap-4">
-        <button type="button" onClick={onReload} className="cursor-pointer border-0 bg-transparent p-0 text-[14px]" style={{
-        color: "var(--list-link,#4b61dd)"
-      }}>
-          Muat ulang halaman
-        </button>
-
-        <span className="text-[14px]" style={{
-        color: "var(--list-link,#4b61dd)",
-        cursor: "default"
-      }} aria-disabled="true">
-          Hubungi tim support
-        </span>
+        <button type="button" onClick={onReload} className="cursor-pointer border-0 bg-transparent p-0 text-[14px]" style={{ color: "var(--list-link,#4b61dd)" }}>Muat ulang halaman</button>
+        <span className="text-[14px]" style={{ color: "var(--list-link,#4b61dd)", cursor: "default" }} aria-disabled="true">Hubungi tim support</span>
       </div>
-
-      <button type="button" onClick={onClose} aria-label="Tutup info" className="absolute right-3 top-3 flex h-6 w-6 cursor-pointer items-center justify-center rounded border-0 bg-transparent hover:bg-[color:var(--list-hover,#ffffff99)]" style={{
-      color: MK.text
-    }}>
+      <button type="button" onClick={onClose} aria-label="Tutup info" className="absolute right-3 top-3 flex h-6 w-6 cursor-pointer items-center justify-center rounded border-0 bg-transparent hover:bg-[color:var(--list-hover,#ffffff99)]" style={{ color: MK.text }}>
         <X size={16} />
       </button>
     </div>;
 }
+
 export default function ImportExportPage() {
   const [themeMode, setThemeMode] = useState(() => localStorage.getItem("app_theme") || "light");
   useEffect(() => {
@@ -735,9 +474,8 @@ export default function ImportExportPage() {
     };
   }, []);
   const isDark = themeMode === "dark";
-  const pageTheme = isDark ? darkTheme : {
-    colorScheme: "light"
-  };
+  const pageTheme = isDark ? darkTheme : { colorScheme: "light" };
+
   const [tab, setTab] = useState("impor");
   const [search, setSearch] = useState("");
   const [feature, setFeature] = useState("");
@@ -747,9 +485,11 @@ export default function ImportExportPage() {
   const [showFilter, setShowFilter] = useState(false);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+
   const source = tab === "impor" ? importRows : exportRows;
   const featureOptions = tab === "impor" ? importFeatureOptions : exportFeatureOptions;
   const statusOptions = tab === "impor" ? importStatusOptions : exportStatusOptions;
+
   const filtered = useMemo(() => {
     const keyword = search.trim().toLowerCase();
     return source.filter(row => {
@@ -762,11 +502,13 @@ export default function ImportExportPage() {
       return matchKeyword && matchFeature && matchStatus && matchStart && matchEnd;
     });
   }, [source, search, feature, status, filter]);
+
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const safePage = Math.min(page, totalPages);
   const pageItems = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
   const from = filtered.length === 0 ? 0 : (safePage - 1) * pageSize + 1;
   const to = Math.min(safePage * pageSize, filtered.length);
+
   const switchTab = next => {
     setTab(next);
     setPage(1);
@@ -775,181 +517,104 @@ export default function ImportExportPage() {
     setStatus("");
     setFilter(emptyFilter);
   };
-  return <div className="-m-4 min-h-[calc(100%+2rem)] md:-m-6 md:min-h-[calc(100%+3rem)]" style={{
+
+  return <div className="-m-4 min-h-[calc(100%+2rem)] px-6 py-5 md:-m-6 md:min-h-[calc(100%+3rem)] md:px-10" style={{
     ...pageTheme,
-    background: "var(--list-subtle,#f1f5f9)",
+    background: isDark ? "#121212" : "#ffffff",
     fontFamily: MK_FONT
-  }} data-list-theme={pageTheme.colorScheme}>{isDark && <style>{"[data-list-theme=\"dark\"] h1,[data-list-theme=\"dark\"] h2{color:#fff!important}\n[data-list-theme=\"dark\"] table{background-color:#1a1a1a;color:#fff}\n[data-list-theme=\"dark\"] thead,[data-list-theme=\"dark\"] th{background-color:#2b2418!important;color:#fff!important;border-color:#634f27!important}\n[data-list-theme=\"dark\"] td{color:#fff!important;border-color:#634f27!important}\n[data-list-theme=\"dark\"] th :is(a,span,div,p,strong,small,button),[data-list-theme=\"dark\"] td :is(a,span,div,p,strong,small):not(button *){color:#fff!important}\n[data-list-theme=\"dark\"] tbody tr:hover{background-color:rgba(229,184,92,.12)!important}\n[data-list-theme=\"dark\"][data-list-dropdown] button:hover,[data-list-theme=\"dark\"] [role=\"option\"]:hover{background-color:rgba(229,184,92,.15)!important;color:#E5B85C!important}\n[data-list-theme=\"dark\"] input:not([type=\"checkbox\"]):not([type=\"radio\"]):not([type=\"file\"]),[data-list-theme=\"dark\"] select,[data-list-theme=\"dark\"] textarea{background-color:#1a1a1a;color:#f1f5f9;border-color:#634f27;caret-color:#E5B85C}\n[data-list-theme=\"dark\"] input::placeholder,[data-list-theme=\"dark\"] textarea::placeholder{color:#94a3b8}\n[data-list-theme=\"dark\"] input:focus,[data-list-theme=\"dark\"] select:focus,[data-list-theme=\"dark\"] textarea:focus{border-color:#E5B85C!important;box-shadow:0 0 0 3px rgba(229,184,92,.15)}\n[data-list-theme=\"dark\"] input[type=\"checkbox\"],[data-list-theme=\"dark\"] input[type=\"radio\"]{accent-color:#E5B85C}\n[data-list-theme=\"dark\"] button:disabled{background-color:#36312a!important;color:#94a3b8!important;border-color:#634f27}\n[data-list-theme=\"dark\"] ::selection{background-color:#E5B85C;color:#121212}"}</style>}
-      <div className="px-6 pb-2 pt-[18px]">
-        <PixelHeader title="Daftar Impor & Ekspor" breadcrumbTo="/daftar-lainnya" action={<button type="button" className={btnOutline}>
-              <ChatCircleDots size={16} />
-              Beri masukan
-            </button>} />
-      </div>
+  }} data-list-theme={pageTheme.colorScheme}>
+    
+    <style>{`[data-list-theme] input[type="checkbox"]{outline:none!important;outline-offset:0!important;box-shadow:none!important;-webkit-tap-highlight-color:transparent}
+  [data-list-theme] input[type="checkbox"]:focus,[data-list-theme] input[type="checkbox"]:focus-visible,[data-list-theme] input[type="checkbox"]:active{outline:none!important;outline-offset:0!important;box-shadow:none!important}
+  [data-list-theme] *:focus{outline:none!important}
+  [data-list-theme] *:focus-visible{outline:none!important}`}</style>
 
-      <div className="flex items-center gap-6 px-6">
+    {isDark && <style>{"[data-list-theme=\"dark\"] h1,[data-list-theme=\"dark\"] h2{color:#fff!important}\n[data-list-theme=\"dark\"] table{background-color:#1a1a1a;color:#fff}\n[data-list-theme=\"dark\"] thead,[data-list-theme=\"dark\"] th{background-color:#e08c33b8!important;color:#fff!important;border-color:#634f27!important}\n[data-list-theme=\"dark\"] td{color:#fff!important;border-color:#634f27!important}\n[data-list-theme=\"dark\"] th :is(a,span,div,p,strong,small,button),[data-list-theme=\"dark\"] td :is(a,span,div,p,strong,small):not(button *){color:#fff!important}\n[data-list-theme=\"dark\"] tbody tr:hover{background-color:transparent!important}\n[data-list-theme=\"dark\"][data-list-dropdown] button:hover,[data-list-theme=\"dark\"] [role=\"option\"]:hover{background-color:rgba(229,184,92,.15)!important;color:#E5B85C!important}\n[data-list-theme=\"dark\"] input:not([type=\"checkbox\"]):not([type=\"radio\"]):not([type=\"file\"]),[data-list-theme=\"dark\"] select,[data-list-theme=\"dark\"] textarea{background-color:#1a1a1a;color:#f1f5f9;border-color:#634f27;caret-color:#E5B85C}\n[data-list-theme=\"dark\"] input::placeholder,[data-list-theme=\"dark\"] textarea::placeholder{color:#94a3b8}\n[data-list-theme=\"dark\"] input:focus,[data-list-theme=\"dark\"] select:focus,[data-list-theme=\"dark\"] textarea:focus{border-color:#E5B85C!important;box-shadow:0 0 0 3px rgba(229,184,92,.15)}\n[data-list-theme=\"dark\"] input[type=\"checkbox\"],[data-list-theme=\"dark\"] input[type=\"radio\"]{accent-color:#E5B85C}\n[data-list-theme=\"dark\"] button:disabled{background-color:#36312a!important;color:#94a3b8!important;border-color:#634f27}\n[data-list-theme=\"dark\"] ::selection{background-color:#E5B85C;color:#121212}"}</style>}
+
+    <div className="mx-auto w-full max-w-[1688px]">
+      <PixelHeader title="Daftar Impor & Ekspor" breadcrumbTo="/daftar-lainnya" action={<button type="button" className={btnOutline}><ChatCircleDots size={16} />Beri masukan</button>} />
+
+      <div className="mb-4 flex items-center gap-6">
         {TABS.map(item => {
-        const active = tab === item.id;
-        return <button key={item.id} type="button" onClick={() => switchTab(item.id)} className="relative flex h-[48px] cursor-pointer items-center border-0 bg-transparent text-[14px]" style={{
-          color: active ? MK.brand : MK.muted
-        }}>
+          const active = tab === item.id;
+          return <button key={item.id} type="button" onClick={() => switchTab(item.id)} className="relative flex h-[38px] cursor-pointer items-center border-0 bg-transparent text-[14px]" style={{ color: active ? MK.brand : MK.muted }}>
               {item.label}
-
-              <span className="absolute bottom-0 left-1/2 h-[2px] -translate-x-1/2" style={{
-            background: active ? MK.brand : "transparent",
-            width: 37
-          }} />
+              <span className="absolute bottom-0 left-1/2 h-[2px] -translate-x-1/2" style={{ background: active ? MK.brand : "transparent", width: 37 }} />
             </button>;
-      })}
+        })}
       </div>
 
-      <section className="rounded-md bg-[color:var(--list-surface,#fff)] p-6" style={{
-      border: `1px solid ${MK.border}`
-    }}>
+      <div style={{
+        background: "var(--list-surface,#fff)",
+        padding: 20,
+        borderRadius: 12,
+        overflow: "hidden",
+        marginTop: 24,
+        boxShadow: isDark
+          ? "0 8px 30px rgba(201, 77, 0, 0.2), 0 0 0 1px rgba(229, 184, 92, 0.15)"
+          : "0 4px 12px rgba(0, 0, 0, 0.22)",
+        border: isDark ? "1px solid #634f27" : "1px solid transparent"
+      }}>
         {tab === "impor" && showInfo ? <ImportInfo onClose={() => setShowInfo(false)} onReload={() => {
-        setSearch("");
-        setFeature("");
-        setStatus("");
-        setFilter(emptyFilter);
-        setPage(1);
-      }} /> : null}
+          setSearch(""); setFeature(""); setStatus(""); setFilter(emptyFilter); setPage(1);
+        }} /> : null}
 
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <div className="flex gap-2">
-            <FilterSelect value={feature} options={featureOptions} onChange={value => {
-            setFeature(value === "Semua fitur" ? "" : value);
-            setPage(1);
-          }} placeholder="Semua fitur" />
-
-            <FilterSelect value={status} options={statusOptions} onChange={value => {
-            setStatus(value === "Semua status" ? "" : value);
-            setPage(1);
-          }} placeholder="Semua status" />
+            <FilterSelect value={feature} options={featureOptions} onChange={value => { setFeature(value === "Semua fitur" ? "" : value); setPage(1); }} placeholder="Semua fitur" />
+            <FilterSelect value={status} options={statusOptions} onChange={value => { setStatus(value === "Semua status" ? "" : value); setPage(1); }} placeholder="Semua status" />
           </div>
 
           <div className="ml-auto flex items-center gap-3">
             {tab === "impor" ? <>
-                <SearchInput value={search} onChange={value => {
-              setSearch(value);
-              setPage(1);
-            }} placeholder="Cari file" className="w-[240px]" />
-
-                <button type="button" onClick={() => setShowFilter(true)} className="inline-flex h-[38px] cursor-pointer items-center gap-1.5 rounded-md border px-4 text-[14px] font-semibold" style={{
-              borderColor: MK.border,
-              color: "var(--list-link,#4b61dd)",
-              background: filter.startDate || filter.endDate || filter.status || filter.fitur ? "var(--list-subtle,#f2f5ff)" : "var(--list-surface,#fff)"
-            }}>
-                  <Funnel size={15} />
-                  Filter
+                <SearchInput value={search} onChange={value => { setSearch(value); setPage(1); }} placeholder="Cari file" className="w-[240px]" />
+                <button type="button" onClick={() => setShowFilter(true)} className="inline-flex h-[38px] cursor-pointer items-center gap-1.5 rounded-md border px-4 text-[14px] font-semibold" style={{ borderColor: MK.border, color: "var(--list-link,#4b61dd)", background: filter.startDate || filter.endDate || filter.status || filter.fitur ? "var(--list-subtle,#f2f5ff)" : "var(--list-surface,#fff)" }}>
+                  <Funnel size={15} /> Filter
                 </button>
               </> : null}
           </div>
         </div>
 
         {tab === "impor" && <>
-            <table className="w-full border-collapse">
+            <table className="w-full" style={{ borderCollapse: "separate", borderSpacing: 0 }}>
               <thead>
                 <tr>
-                  <th className={thBase} style={{
-                color: MK.text,
-                width: "30%"
-              }}>
-                    Tanggal &amp; waktu
-                  </th>
-                  <th className={thBase} style={{
-                color: MK.text,
-                width: "18%"
-              }}>
-                    Status
-                  </th>
-                  <th className={thBase} style={{
-                color: MK.text,
-                width: "25%"
-              }}>
-                    Fitur
-                  </th>
-                  <th className={thBase} style={{
-                color: MK.text,
-                width: "16%"
-              }}>
-                    Periode
-                  </th>
-                  <th className={thBase} style={{
-                width: 188
-              }} />
+                  <th style={{ ...thBase, width: "30%", borderTopLeftRadius: 8 }}>Tanggal &amp; waktu</th>
+                  <th style={{ ...thBase, width: "18%" }}>Status</th>
+                  <th style={{ ...thBase, width: "25%" }}>Fitur</th>
+                  <th style={{ ...thBase, width: "16%" }}>Periode</th>
+                  <th style={{ ...thBase, width: 188, borderTopRightRadius: 8 }} />
                 </tr>
               </thead>
-
               <tbody>
                 {pageItems.length === 0 ? <tr>
-                    <td colSpan={5} className="bg-[color:var(--list-surface,#fff)] p-0">
+                    <td colSpan={5} style={{ ...tdBase, padding: 0 }}>
                       <EmptyState image={emptyFolderImg} title="Belum ada file" description="Daftar file Anda akan muncul di sini." />
                     </td>
-                  </tr> : pageItems.map(row => <tr key={row.id} className="hover:bg-[color:var(--list-hover,#fafbff)]">
-                      <td className={`${tdBase} py-5`} style={{
-                color: MK.text
-              }}>
-                        {row.waktu}
-                      </td>
-
-                      <td className={`${tdBase} py-5`}>
-                        <StatusBadge status={row.status} />
-                      </td>
-
-                      <td className={`${tdBase} py-5`} style={{
-                color: MK.text
-              }}>
-                        {row.fitur}
-                      </td>
-
-                      <td className={`${tdBase} py-5`} style={{
-                color: MK.text
-              }}>
-                        {row.periode}
-                      </td>
-
-                      <td className={`${tdBase} py-5`}>
+                  </tr> : pageItems.map((row, index) => (
+                    <tr key={row.id} style={{ background: index % 2 === 0 ? "var(--list-subtle,#f9f9f9)" : "var(--list-surface,#fff)" }}>
+                      <td style={{ ...tdBase, padding: "12px 13.33px" }}>{row.waktu}</td>
+                      <td style={{ ...tdBase, padding: "12px 13.33px" }}><StatusBadge status={row.status} /></td>
+                      <td style={{ ...tdBase, padding: "12px 13.33px" }}>{row.fitur}</td>
+                      <td style={{ ...tdBase, padding: "12px 13.33px" }}>{row.periode}</td>
+                      <td style={{ ...tdBase, padding: "12px 13.33px" }}>
                         <div className="flex justify-end">
-                          <button type="button" className={iconBtn} title={row.status === "Selesai" ? "Unduh file" : "File belum bisa diunduh"} aria-label={`Unduh ${row.fitur}`} disabled={row.status !== "Selesai"} style={row.status !== "Selesai" ? {
-                    color: "var(--list-muted,#c3c9d4)",
-                    cursor: "not-allowed"
-                  } : undefined}>
+                          <button type="button" className={iconBtn} title={row.status === "Selesai" ? "Unduh file" : "File belum bisa diunduh"} aria-label={`Unduh ${row.fitur}`} disabled={row.status !== "Selesai"} style={row.status !== "Selesai" ? { color: "var(--list-muted,#c3c9d4)", cursor: "not-allowed" } : undefined}>
                             <DownloadSimple size={17} />
                           </button>
                         </div>
                       </td>
-                    </tr>)}
+                    </tr>
+                  ))}
               </tbody>
             </table>
-
-            <TableFooter pageSize={pageSize} onPageSize={value => {
-          setPageSize(value);
-          setPage(1);
-        }} from={from} to={to} total={filtered.length} page={safePage} totalPages={totalPages} onPage={setPage} />
+            <TableFooter pageSize={pageSize} onPageSize={value => { setPageSize(value); setPage(1); }} from={from} to={to} total={filtered.length} page={safePage} totalPages={totalPages} onPage={setPage} />
           </>}
 
         {tab === "ekspor" && <EmptyState image={emptyFolderImg} title="Belum ada file" description="Daftar file Anda akan muncul di sini." />}
-      </section>
+      </div>
+    </div>
 
-      {showFilter ? <FilterModal initial={{
-      startDate: filter.startDate,
-      endDate: filter.endDate,
-      status,
-      fitur: feature
-    }} featureOptions={featureOptions} statusOptions={statusOptions} onClose={() => setShowFilter(false)} onApply={draft => {
-      setFilter({
-        startDate: draft.startDate,
-        endDate: draft.endDate
-      });
-      setFeature(draft.fitur || "");
-      setStatus(draft.status || "");
-      setPage(1);
-      setShowFilter(false);
-    }} onReset={() => {
-      setFilter(emptyFilter);
-      setFeature("");
-      setStatus("");
-      setPage(1);
-    }} /> : null}
-    </div>;
+    {showFilter ? <FilterModal initial={{ startDate: filter.startDate, endDate: filter.endDate, status, fitur: feature }} featureOptions={featureOptions} statusOptions={statusOptions} onClose={() => setShowFilter(false)} onApply={draft => { setFilter({ startDate: draft.startDate, endDate: draft.endDate }); setFeature(draft.fitur || ""); setStatus(draft.status || ""); setPage(1); setShowFilter(false); }} onReset={() => { setFilter(emptyFilter); setFeature(""); setStatus(""); setPage(1); }} /> : null}
+  </div>;
 }

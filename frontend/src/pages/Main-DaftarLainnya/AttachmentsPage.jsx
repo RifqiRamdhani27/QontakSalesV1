@@ -54,7 +54,7 @@ const MK = {
   legacyPrimary: "var(--list-brand,#216a88)",
   legacyBorder: "var(--list-legacy-border, #cfd9db)"
 };
-const MK_FONT = "Roboto, \"Helvetica Neue\", Helvetica, Arial, sans-serif";
+const MK_FONT = "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
 function useDropdown() {
   const triggerRef = useRef(null);
   const [rect, setRect] = useState(null);
@@ -257,8 +257,8 @@ function DropdownPanel({
     }),
     visibility: pos ? "visible" : "hidden"
   }} data-list-dropdown="">
-      {children}
-    </div>, document.body);
+    {children}
+  </div>, document.body);
 }
 function MenuItem({
   children,
@@ -270,13 +270,14 @@ function MenuItem({
   return <button type="button" onClick={onClick} className="flex w-full cursor-pointer items-center gap-2 border-0 bg-transparent px-[15px] py-[6px] text-left text-[13px] transition-colors hover:bg-[color:var(--list-hover,#f2f5ff)]" style={{
     color: danger ? "var(--list-danger-text, #e74c3c)" : "var(--list-text, #000)"
   }}>
-      {selected ? <Check size={13} style={{
+    {selected ? <Check size={13} style={{
       color: "var(--list-link,#4b61dd)"
     }} /> : null}
-      {icon}
-      <span className="truncate">{children}</span>
-    </button>;
+    {icon}
+    <span className="truncate">{children}</span>
+  </button>;
 }
+
 function LegacyHeader({
   title,
   subtitle,
@@ -286,26 +287,40 @@ function LegacyHeader({
   breadcrumbTo
 }) {
   const crumbText = subtitle || "Daftar Lainnya";
-  return <div className="flex flex-col items-start justify-between gap-4 pb-3 md:flex-row md:items-end">
+  return (
+    <div className="mb-4 flex flex-col items-start justify-between gap-3 md:flex-row md:items-end">
       <div className="min-w-0 w-full md:w-auto">
-        {breadcrumbTo ? <Link to={breadcrumbTo} className="inline-block cursor-pointer text-[14px] leading-[20px] no-underline hover:underline" style={{
-        color: MK.link
-      }}>
+        {breadcrumbTo ? (
+          <Link
+            to={breadcrumbTo}
+            className="inline-block cursor-pointer text-[14px] leading-[20px] no-underline hover:underline"
+            style={{ color: MK.link }}
+          >
             {crumbText}
-          </Link> : <div className="text-[15.72px] leading-[16px]" style={{
-        color: subtitleColor
-      }}>
+          </Link>
+        ) : (
+          <div className="text-[15.72px] leading-[16px]" style={{ color: subtitleColor }}>
             {crumbText}
-          </div>}
-        <h2 className="m-0 py-[12.1px] text-[24.19px] font-medium leading-[1.1]" style={{
-        color: titleColor
-      }}>
+          </div>
+        )}
+        <h2
+          style={{
+            fontSize: "23px",
+            fontWeight: 700,
+            color: titleColor,
+            margin: 0,
+            marginTop: "2px",
+            letterSpacing: "-0.01em"
+          }}
+        >
           {title}
         </h2>
       </div>
-      {action ? <div className="shrink-0 pb-3">{action}</div> : null}
-    </div>;
+      {action ? <div className="shrink-0">{action}</div> : null}
+    </div>
+  );
 }
+
 function LegacyModal({
   title,
   onClose,
@@ -332,39 +347,39 @@ function LegacyModal({
     color: MK.text,
     fontFamily: MK_FONT
   }}>
-      <div className="fixed inset-0 z-[9990]" style={{
+    <div className="fixed inset-0 z-[9990]" style={{
       background: "#000",
       opacity: 0.5
     }} onClick={onClose} />
-      <div className="fixed inset-0 z-[9995] flex items-start justify-center overflow-y-auto py-10">
-        <div className="w-full rounded bg-[color:var(--list-surface,#fff)]" role="dialog" aria-modal="true" aria-label={title} style={{
+    <div className="fixed inset-0 z-[9995] flex items-start justify-center overflow-y-auto py-10">
+      <div className="w-full rounded bg-[color:var(--list-surface,#fff)]" role="dialog" aria-modal="true" aria-label={title} style={{
         maxWidth: width,
         border: "1px solid rgba(0,0,0,.2)",
         boxShadow: "0 5px 15px rgba(0,0,0,.5)"
       }}>
-          <div className="flex items-center justify-between px-4 py-3" style={{
+        <div className="flex items-center justify-between px-4 py-3" style={{
           borderBottom: "1px solid var(--list-border, var(--list-border,#e5e5e5))"
         }}>
-            <h4 className="m-0 text-[16.8px] font-medium" style={{
+          <h4 className="m-0 text-[16.8px] font-medium" style={{
             color: "var(--list-text, #333)"
           }}>
-              {title}
-            </h4>
-            <button type="button" onClick={onClose} aria-label="Tutup" className="cursor-pointer border-0 bg-transparent text-[21px] leading-none" style={{
+            {title}
+          </h4>
+          <button type="button" onClick={onClose} aria-label="Tutup" className="cursor-pointer border-0 bg-transparent text-[21px] leading-none" style={{
             color: "var(--list-muted, #626b79)"
           }}>
-              ×
-            </button>
-          </div>
-          <div className="px-4 py-4">{children}</div>
-          {footer ? <div className="flex items-center justify-end gap-2 px-4 py-3" style={{
+            ×
+          </button>
+        </div>
+        <div className="px-4 py-4">{children}</div>
+        {footer ? <div className="flex items-center justify-end gap-2 px-4 py-3" style={{
           borderTop: "1px solid var(--list-border, var(--list-border,#e5e5e5))"
         }}>
-              {footer}
-            </div> : null}
-        </div>
+          {footer}
+        </div> : null}
       </div>
-    </div>, document.body);
+    </div>
+  </div>, document.body);
 }
 const attachmentRows = [];
 const newTransactionTypeOptions = ["Jual", "Beli", "Biaya", "Kirim uang", "Terima uang", "Transfer bank", "Kredit memo pelanggan", "Kredit memo supplier", "Jurnal umum", "Transfer gudang"];
@@ -450,7 +465,7 @@ function LegacySelect({
   const term = keyword.trim().toLowerCase();
   const visible = term ? options.filter(option => option.toLowerCase().includes(term)) : options;
   return <>
-      <button type="button" ref={dropdown.triggerRef} data-dropdown-trigger onClick={() => {
+    <button type="button" ref={dropdown.triggerRef} data-dropdown-trigger onClick={() => {
       setKeyword("");
       dropdown.toggle();
     }} className="flex cursor-pointer items-center justify-between gap-2 text-left" style={{
@@ -463,38 +478,38 @@ function LegacySelect({
       fontSize: 14,
       color: value ? "var(--list-text,#333)" : "var(--list-muted,#aaa)"
     }}>
-        <span className="truncate">{value || placeholder}</span>
-        <CaretDown size={12} style={{
+      <span className="truncate">{value || placeholder}</span>
+      <CaretDown size={12} style={{
         color: "var(--list-muted,#666)"
       }} />
-      </button>
+    </button>
 
-      <DropdownPanel rect={dropdown.rect} onClose={dropdown.close} minWidth={dropdown.rect?.width || 240} variant="legacy" maxHeight={280}>
-        {searchable ? <div style={{
+    <DropdownPanel rect={dropdown.rect} onClose={dropdown.close} minWidth={dropdown.rect?.width || 240} variant="legacy" maxHeight={280}>
+      {searchable ? <div style={{
         padding: "6px 8px"
       }}>
-            <input autoFocus value={keyword} onChange={event => setKeyword(event.target.value)} placeholder="Cari..." style={{
+        <input autoFocus value={keyword} onChange={event => setKeyword(event.target.value)} placeholder="Cari..." style={{
           ...legacyInput,
           height: 30,
           fontSize: 13
         }} />
-          </div> : null}
+      </div> : null}
 
-        {visible.length === 0 ? <p style={{
+      {visible.length === 0 ? <p style={{
         margin: 0,
         padding: "8px 15px",
         fontSize: 13,
         color: "var(--list-muted,#999)"
       }}>
-            Tidak ada data
-          </p> : visible.map(option => <MenuItem key={option} selected={option === value} onClick={() => {
+        Tidak ada data
+      </p> : visible.map(option => <MenuItem key={option} selected={option === value} onClick={() => {
         onChange(option);
         dropdown.close();
       }}>
-              {option}
-            </MenuItem>)}
-      </DropdownPanel>
-    </>;
+        {option}
+      </MenuItem>)}
+    </DropdownPanel>
+  </>;
 }
 function AddAttachmentModal({
   onClose,
@@ -505,73 +520,73 @@ function AddAttachmentModal({
   const [transactionType, setTransactionType] = useState("");
   const canSubmit = Boolean(file && transactionType);
   return <LegacyModal title="Tambah Berkas" onClose={onClose} width={600} footer={<>
-          <button type="button" style={btnSecondary} onClick={onClose}>
-            Batal
-          </button>
-          <button type="button" style={btnSuccess(!canSubmit)} disabled={!canSubmit} onClick={() => {
+    <button type="button" style={btnSecondary} onClick={onClose}>
+      Batal
+    </button>
+    <button type="button" style={btnSuccess(!canSubmit)} disabled={!canSubmit} onClick={() => {
       if (!canSubmit) return;
       onSubmit({
         nama: file.name,
         tipeTransaksi: transactionType
       });
     }}>
-            Simpan
-          </button>
-        </>}>
-      <div className="flex items-start gap-3 py-2">
-        <label style={{
+      Simpan
+    </button>
+  </>}>
+    <div className="flex items-start gap-3 py-2">
+      <label style={{
         ...legacyLabel,
         width: "33.33%",
         paddingTop: 8
       }}>
-          Upload File
-        </label>
-        <div style={{
+        Upload File
+      </label>
+      <div style={{
         flex: 1
       }}>
-          <input ref={fileRef} type="file" className="hidden placeholder:text-[color:var(--list-placeholder)]" onChange={event => setFile(event.target.files?.[0] || null)} />
-          <div className="flex flex-wrap items-center gap-2">
-            <button type="button" style={{
+        <input ref={fileRef} type="file" className="hidden placeholder:text-[color:var(--list-placeholder)]" onChange={event => setFile(event.target.files?.[0] || null)} />
+        <div className="flex flex-wrap items-center gap-2">
+          <button type="button" style={{
             ...btnPrimaryLegacy,
             height: 30,
             padding: "4px 12px",
             fontSize: 12
           }} onClick={() => fileRef.current?.click()}>
-              + Tambah Berkas
-            </button>
-            {file ? <span className="flex items-center gap-2" style={{
+            + Tambah Berkas
+          </button>
+          {file ? <span className="flex items-center gap-2" style={{
             fontSize: 13,
             color: "var(--list-text,#333)"
           }}>
-                <span className="max-w-[220px] truncate">{file.name}</span>
-                <button type="button" aria-label="Hapus file" className="cursor-pointer border-0 bg-transparent p-0" style={{
+            <span className="max-w-[220px] truncate">{file.name}</span>
+            <button type="button" aria-label="Hapus file" className="cursor-pointer border-0 bg-transparent p-0" style={{
               color: "var(--list-muted,#999)"
             }} onClick={() => {
               setFile(null);
               if (fileRef.current) fileRef.current.value = "";
             }}>
-                  <X size={14} />
-                </button>
-              </span> : null}
-          </div>
+              <X size={14} />
+            </button>
+          </span> : null}
         </div>
       </div>
+    </div>
 
-      <div className="flex items-start gap-3 py-2">
-        <label style={{
+    <div className="flex items-start gap-3 py-2">
+      <label style={{
         ...legacyLabel,
         width: "33.33%",
         paddingTop: 8
       }}>
-          Transaction Type
-        </label>
-        <div style={{
+        Transaction Type
+      </label>
+      <div style={{
         flex: 1
       }}>
-          <LegacySelect value={transactionType} onChange={setTransactionType} options={transactionTypeOptions} placeholder="Pilih tipe transaksi" searchable />
-        </div>
+        <LegacySelect value={transactionType} onChange={setTransactionType} options={transactionTypeOptions} placeholder="Pilih tipe transaksi" searchable />
       </div>
-    </LegacyModal>;
+    </div>
+  </LegacyModal>;
 }
 function SimpleChoiceModal({
   title,
@@ -584,49 +599,49 @@ function SimpleChoiceModal({
 }) {
   const [value, setValue] = useState("");
   return <LegacyModal title={title} onClose={onClose} width={520} footer={<>
-          <button type="button" style={btnSecondary} onClick={onClose}>
-            Batal
-          </button>
-          <button type="button" style={btnSuccess(!value)} disabled={!value} onClick={() => value && onSubmit(value)}>
-            {submitLabel || "Simpan"}
-          </button>
-        </>}>
-      <div className="flex items-start gap-3 py-2">
-        <label style={{
+    <button type="button" style={btnSecondary} onClick={onClose}>
+      Batal
+    </button>
+    <button type="button" style={btnSuccess(!value)} disabled={!value} onClick={() => value && onSubmit(value)}>
+      {submitLabel || "Simpan"}
+    </button>
+  </>}>
+    <div className="flex items-start gap-3 py-2">
+      <label style={{
         ...legacyLabel,
         width: "40%",
         paddingTop: 8
       }}>
-          {label}
-        </label>
-        <div style={{
+        {label}
+      </label>
+      <div style={{
         flex: 1
       }}>
-          <LegacySelect value={value} onChange={setValue} options={options} placeholder={placeholder} searchable />
-        </div>
+        <LegacySelect value={value} onChange={setValue} options={options} placeholder={placeholder} searchable />
       </div>
-    </LegacyModal>;
+    </div>
+  </LegacyModal>;
 }
 function DeleteAttachmentModal({
   onClose,
   onConfirm
 }) {
   return <LegacyModal title="Hapus Lampiran" onClose={onClose} width={460} footer={<>
-          <button type="button" style={btnSecondary} onClick={onClose}>
-            Tidak
-          </button>
-          <button type="button" style={btnDanger} onClick={onConfirm}>
-            Ya
-          </button>
-        </>}>
-      <p style={{
+    <button type="button" style={btnSecondary} onClick={onClose}>
+      Tidak
+    </button>
+    <button type="button" style={btnDanger} onClick={onConfirm}>
+      Ya
+    </button>
+  </>}>
+    <p style={{
       margin: 0,
       fontSize: 14,
       color: "var(--list-text,#333)"
     }}>
-        Apakah anda yakin ingin menghapus?
-      </p>
-    </LegacyModal>;
+      Apakah anda yakin ingin menghapus?
+    </p>
+  </LegacyModal>;
 }
 export default function AttachmentsPage() {
   const [themeMode, setThemeMode] = useState(() => localStorage.getItem("app_theme") || "light");
@@ -707,127 +722,147 @@ export default function AttachmentsPage() {
     height: 35,
     verticalAlign: "middle"
   };
-  return <div className="-m-4 min-h-[calc(100%+2rem)] p-[15px] md:-m-6 md:min-h-[calc(100%+3rem)]" style={{
+  return <div className="-m-4 min-h-[calc(100%+2rem)] px-6 py-5 md:-m-6 md:min-h-[calc(100%+3rem)] md:px-10" style={{
     ...pageTheme,
-    background: MK.legacyPage,
+    background: isDark ? "#121212" : "#ffffff",
     fontFamily: MK_FONT
-  }} data-list-theme={pageTheme.colorScheme}>{isDark && <style>{"[data-list-theme=\"dark\"] h1,[data-list-theme=\"dark\"] h2{color:#fff!important}\n[data-list-theme=\"dark\"] table{background-color:#1a1a1a;color:#fff}\n[data-list-theme=\"dark\"] thead,[data-list-theme=\"dark\"] th{background-color:#2b2418!important;color:#fff!important;border-color:#634f27!important}\n[data-list-theme=\"dark\"] td{color:#fff!important;border-color:#634f27!important}\n[data-list-theme=\"dark\"] th :is(a,span,div,p,strong,small,button),[data-list-theme=\"dark\"] td :is(a,span,div,p,strong,small):not(button *){color:#fff!important}\n[data-list-theme=\"dark\"] tbody tr:hover{background-color:rgba(229,184,92,.12)!important}\n[data-list-theme=\"dark\"][data-list-dropdown] button:hover,[data-list-theme=\"dark\"] [role=\"option\"]:hover{background-color:rgba(229,184,92,.15)!important;color:#E5B85C!important}\n[data-list-theme=\"dark\"] input:not([type=\"checkbox\"]):not([type=\"radio\"]):not([type=\"file\"]),[data-list-theme=\"dark\"] select,[data-list-theme=\"dark\"] textarea{background-color:#1a1a1a;color:#f1f5f9;border-color:#634f27;caret-color:#E5B85C}\n[data-list-theme=\"dark\"] input::placeholder,[data-list-theme=\"dark\"] textarea::placeholder{color:#94a3b8}\n[data-list-theme=\"dark\"] input:focus,[data-list-theme=\"dark\"] select:focus,[data-list-theme=\"dark\"] textarea:focus{border-color:#E5B85C!important;box-shadow:0 0 0 3px rgba(229,184,92,.15)}\n[data-list-theme=\"dark\"] input[type=\"checkbox\"],[data-list-theme=\"dark\"] input[type=\"radio\"]{accent-color:#E5B85C}\n[data-list-theme=\"dark\"] button:disabled{background-color:#36312a!important;color:#94a3b8!important;border-color:#634f27}\n[data-list-theme=\"dark\"] ::selection{background-color:#E5B85C;color:#121212}"}</style>}
-      <div className="mx-auto w-full max-w-[1688px]">
-        <LegacyHeader title="Berkas Unggahan" titleColor="var(--list-text,#000)" subtitleColor="var(--list-muted,rgba(51,51,51,.5))" breadcrumbTo="/daftar-lainnya" action={<button type="button" style={btnPrimaryLegacy} onClick={() => setShowAddModal(true)}>
-             + Tambah Berkas
-            </button>} />
+  }} data-list-theme={pageTheme.colorScheme}>
+    <style>{`[data-list-theme] input[type="checkbox"]{outline:none!important;outline-offset:0!important;box-shadow:none!important;-webkit-tap-highlight-color:transparent}
+  [data-list-theme] input[type="checkbox"]:focus,[data-list-theme] input[type="checkbox"]:focus-visible,[data-list-theme] input[type="checkbox"]:active{outline:none!important;outline-offset:0!important;box-shadow:none!important}
+  [data-list-theme] *:focus{outline:none!important}
+  [data-list-theme] *:focus-visible{outline:none!important}`}</style>
+    {isDark && <style>{"[data-list-theme=\"dark\"] h1,[data-list-theme=\"dark\"] h2{color:#fff!important}\n[data-list-theme=\"dark\"] table{background-color:#1a1a1a;color:#fff}\n[data-list-theme=\"dark\"] thead,[data-list-theme=\"dark\"] th{background-color:#e08c33b8!important;color:#fff!important;border-color:#634f27!important}\n[data-list-theme=\"dark\"] td{color:#fff!important;border-color:#634f27!important}\n[data-list-theme=\"dark\"] th :is(a,span,div,p,strong,small,button),[data-list-theme=\"dark\"] td :is(a,span,div,p,strong,small):not(button *){color:#fff!important}\n[data-list-theme=\"dark\"] tbody tr:hover{background-color:transparent!important}\n[data-list-theme=\"dark\"][data-list-dropdown] button:hover,[data-list-theme=\"dark\"] [role=\"option\"]:hover{background-color:rgba(229,184,92,.15)!important;color:#E5B85C!important}\n[data-list-theme=\"dark\"] input:not([type=\"checkbox\"]):not([type=\"radio\"]):not([type=\"file\"]),[data-list-theme=\"dark\"] select,[data-list-theme=\"dark\"] textarea{background-color:#1a1a1a;color:#f1f5f9;border-color:#634f27;caret-color:#E5B85C}\n[data-list-theme=\"dark\"] input::placeholder,[data-list-theme=\"dark\"] textarea::placeholder{color:#94a3b8}\n[data-list-theme=\"dark\"] input:focus,[data-list-theme=\"dark\"] select:focus,[data-list-theme=\"dark\"] textarea:focus{border-color:#E5B85C!important;box-shadow:0 0 0 3px rgba(229,184,92,.15)}\n[data-list-theme=\"dark\"] input[type=\"checkbox\"],[data-list-theme=\"dark\"] input[type=\"radio\"]{accent-color:#E5B85C}\n[data-list-theme=\"dark\"] button:disabled{background-color:#36312a!important;color:#94a3b8!important;border-color:#634f27}\n[data-list-theme=\"dark\"] .ang-btn{background:#e08d33!important;color:#ffffff!important;box-shadow:0 4px 8px rgba(254,92,23,.49)!important;transition:all .2s ease-in-out}\n[data-list-theme=\"dark\"] .ang-btn:hover{background:#e08c33df!important}\n[data-list-theme=\"dark\"] ::selection{background-color:#E5B85C;color:#121212}"}</style>}
+    <div className="mx-auto w-full max-w-[1688px]">  <LegacyHeader title="Berkas Unggahan" titleColor="var(--list-text,#000)" subtitleColor="var(--list-muted,rgba(51,51,51,.5))" breadcrumbTo="/daftar-lainnya"
+      action={<button type="button" className="ang-btn" style={{ ...btnPrimaryLegacy, height: 40, padding: "0 22px", borderRadius: 8, fontSize: 15, fontWeight: 600 }} onClick={() => setShowAddModal(true)}>
+        + Tambah Berkas
+      </button>} />
 
-        <div style={{
+      <div style={{
         background: "var(--list-surface,#fff)",
-        padding: 14
+        padding: 20,
+        borderRadius: 12,
+        overflow: "hidden",
+        marginTop: 24,
+        boxShadow: isDark
+          ? "0 8px 30px rgba(201, 77, 0, 0.2), 0 0 0 1px rgba(229, 184, 92, 0.15)"
+          : "0 4px 12px rgba(0, 0, 0, 0.22)",
+        border: isDark ? "1px solid #634f27" : "1px solid transparent"
       }}>
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              {selectedIds.length > 0 ? <>
-                  <span style={{
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            {selectedIds.length > 0 ? <>
+              <span style={{
                 fontSize: 13,
                 color: MK.legacyText
               }}>
-                    {selectedIds.length} lampiran dipilih
-                  </span>
-                  <button type="button" onClick={() => setDeletingIds(selectedIds)} className="border-0" style={btnDangerLegacy}>
-                    Hapus
-                  </button>
-                  <button type="button" onClick={() => setCreateModalRow({
+                {selectedIds.length} lampiran dipilih
+              </span>
+              <button type="button" onClick={() => setDeletingIds(selectedIds)} className="border-0" style={{ ...btnDangerLegacy, borderRadius: 8, height: 36, padding: "0 18px" }}>
+                Hapus
+              </button>
+              <button type="button" onClick={() => setCreateModalRow({
                 bulk: true
-              })} className="border-0" style={btnPrimaryLegacy}>
-                    Buat Transaksi Baru
-                  </button>
-                </> : null}
-            </div>
+              })} className="border-0" style={{ ...btnPrimaryLegacy, borderRadius: 8, height: 36, padding: "0 18px" }}>
+                Buat Transaksi Baru
+              </button>
+            </> : null}
+          </div>
 
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <MagnifyingGlass size={13} className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2" style={{
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <MagnifyingGlass size={13} className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2" style={{
                 color: "var(--list-muted,#999)"
               }} />
-                <input type="text" placeholder="Pencarian..." value={search} onChange={event => {
+              <input type="text" placeholder="Pencarian..." value={search} onChange={event => {
                 setSearch(event.target.value);
                 setPage(1);
               }} style={{
                 ...legacyInput,
-                width: 202,
-                paddingLeft: 26
+                width: 220,
+                height: 36,
+                paddingLeft: 28,
+                borderRadius: 8
               }} />
-              </div>
             </div>
           </div>
+        </div>
 
-          <table className="w-full border-collapse">
-            <thead>
-              <tr>
-                <th style={{
+        <table className="w-full" style={{ borderCollapse: "separate", borderSpacing: 0 }}>
+          <thead>
+            <tr>
+              <th style={{
                 ...thStyle,
-                width: 40
+                width: 40,
+                borderTopLeftRadius: 8,
+                borderBottomLeftRadius: 8
               }}>
-                  <input type="checkbox" checked={allSelected} onChange={toggleAll} aria-label="Pilih semua" style={{
-                  cursor: "pointer"
+                <input type="checkbox" checked={allSelected} onChange={toggleAll} aria-label="Pilih semua" style={{
+                  cursor: "pointer",
+                  outline: "none"
                 }} />
-                </th>
-                <th style={{
+              </th>
+              <th style={{
                 ...thStyle,
                 width: "34%"
               }}>Nama</th>
-                <th style={{
+              <th style={{
                 ...thStyle,
                 width: "10%"
               }}>Transaksi</th>
-                <th style={{
+              <th style={{
                 ...thStyle,
                 width: "15.5%"
               }}>Tipe Transaksi</th>
-                <th style={{
+              <th style={{
                 ...thStyle,
                 width: "16%"
               }}>Waktu Pembuatan</th>
-                <th style={{
+              <th style={{
                 ...thStyle,
-                width: "22%"
+                width: "22%",
+                borderTopRightRadius: 8,
+                borderBottomRightRadius: 8
               }}>Tindakan</th>
-              </tr>
-            </thead>
+            </tr>
+          </thead>
 
-            <tbody>
-              {pageItems.length === 0 ? <tr>
-                  <td colSpan={6} style={{
+          <tbody>
+            {pageItems.length === 0 ? <tr>
+              <td colSpan={6} style={{
                 ...tdStyle,
                 textAlign: "center",
                 height: 309
               }}>
-                    <img src={emptyFolderImg} alt="" className="mx-auto h-[128px] w-[128px] object-contain" />
-                    <p className="m-0 mt-3 text-[16px] font-semibold" style={{
+                <img src={emptyFolderImg} alt="" className="mx-auto h-[128px] w-[128px] object-contain" />
+                <p className="m-0 mt-3 text-[16px] font-semibold" style={{
                   color: "var(--list-text,#232933)"
                 }}>
-                      Belum ada berkas
-                    </p>
-                    <p className="m-0 mt-1 text-[14px]" style={{
+                  Belum ada berkas
+                </p>
+                <p className="m-0 mt-1 text-[14px]" style={{
                   color: "var(--list-muted,#626b79)"
                 }}>
-                      Berkas yang Anda unggah akan muncul di sini.
-                    </p>
-                  </td>
-                </tr> : pageItems.map((row, index) => <tr key={row.id} style={{
+                  Berkas yang Anda unggah akan muncul di sini.
+                </p>
+              </td>
+            </tr> : pageItems.map((row, index) => <tr key={row.id} style={{
               background: index % 2 === 0 ? "var(--list-subtle,#f9f9f9)" : "var(--list-surface,#fff)"
             }}>
-                    <td style={tdStyle}>
-                      <input type="checkbox" checked={selectedIds.includes(row.id)} onChange={() => toggleRow(row.id)} aria-label={`Pilih ${row.nama}`} style={{
-                  cursor: "pointer"
+              <td style={tdStyle}>
+                <input type="checkbox" checked={selectedIds.includes(row.id)} onChange={() => toggleRow(row.id)} aria-label={`Pilih ${row.nama}`} style={{
+                  cursor: "pointer",
+                  outline: "none"
                 }} />
-                    </td>
-                    <td style={{
+              </td>
+              <td style={{
                 ...tdStyle,
                 color: "var(--list-text,#000)"
               }}>{row.nama}</td>
-                    <td style={tdStyle}>{row.transaksi}</td>
-                    <td style={tdStyle}>{row.tipeTransaksi}</td>
-                    <td style={tdStyle}>{row.waktu}</td>
-                    <td style={tdStyle}>
-                      <button type="button" data-dropdown-trigger onClick={event => {
+              <td style={tdStyle}>{row.transaksi}</td>
+              <td style={tdStyle}>{row.tipeTransaksi}</td>
+              <td style={tdStyle}>{row.waktu}</td>
+              <td style={tdStyle}>
+                <button type="button" data-dropdown-trigger onClick={event => {
                   if (openActionId === row.id) {
                     setOpenActionId(null);
                     actionMenu.close();
@@ -843,42 +878,42 @@ export default function AttachmentsPage() {
                   background: "var(--list-surface,#fff)",
                   fontSize: "13.33px",
                   color: "var(--list-text,#333)",
-                  padding: "0 10px"
+                  padding: "0 10px",
                 }}>
-                        Pilih Tindakan
-                        <CaretDown size={9} />
-                      </button>
+                  Pilih Tindakan
+                  <CaretDown size={9} />
+                </button>
 
-                      {openActionId === row.id ? <DropdownPanel rect={actionMenu.rect} onClose={() => {
+                {openActionId === row.id ? <DropdownPanel rect={actionMenu.rect} onClose={() => {
                   setOpenActionId(null);
                   actionMenu.close();
                 }} minWidth={170} variant="legacy" maxHeight={260}>
-                          {ACTION_MENU.map(item => <MenuItem key={item} onClick={() => {
+                  {ACTION_MENU.map(item => <MenuItem key={item} onClick={() => {
                     setOpenActionId(null);
                     actionMenu.close();
                     if (item === "Ubah Tipe Transaksi") setTypeModalRow(row);
                     if (item === "Hubungkan ke Transaksi") setLinkModalRow(row);
                     if (item === "Buat Transaksi Baru") setCreateModalRow(row);
                   }}>
-                              {item}
-                            </MenuItem>)}
-                        </DropdownPanel> : null}
-                    </td>
-                  </tr>)}
-            </tbody>
-          </table>
+                    {item}
+                  </MenuItem>)}
+                </DropdownPanel> : null}
+              </td>
+            </tr>)}
+          </tbody>
+        </table>
 
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-            <p style={{
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+          <p style={{
             margin: 0,
             fontSize: 12,
             color: "var(--list-text,#000)"
           }}>
-              Menampilkan {pageItems.length} dari {filtered.length} lampiran
-            </p>
+            Menampilkan {pageItems.length} dari {filtered.length} lampiran
+          </p>
 
-            {totalPages > 1 ? <div className="flex items-center gap-1">
-                <button type="button" onClick={() => setPage(Math.max(1, safePage - 1))} disabled={safePage <= 1} style={{
+          {totalPages > 1 ? <div className="flex items-center gap-1">
+            <button type="button" onClick={() => setPage(Math.max(1, safePage - 1))} disabled={safePage <= 1} style={{
               height: 28,
               minWidth: 28,
               border: "1px solid var(--list-border,#ddd)",
@@ -888,9 +923,9 @@ export default function AttachmentsPage() {
               cursor: safePage <= 1 ? "not-allowed" : "pointer",
               color: "var(--list-muted,#777)"
             }}>
-                  &lt;
-                </button>
-                {Array.from({
+              &lt;
+            </button>
+            {Array.from({
               length: totalPages
             }, (_, i) => i + 1).map(item => <button key={item} type="button" onClick={() => setPage(item)} style={{
               height: 28,
@@ -902,9 +937,9 @@ export default function AttachmentsPage() {
               fontSize: 12,
               cursor: "pointer"
             }}>
-                      {item}
-                    </button>)}
-                <button type="button" onClick={() => setPage(Math.min(totalPages, safePage + 1))} disabled={safePage >= totalPages} style={{
+              {item}
+            </button>)}
+            <button type="button" onClick={() => setPage(Math.min(totalPages, safePage + 1))} disabled={safePage >= totalPages} style={{
               height: 28,
               minWidth: 28,
               border: "1px solid var(--list-border,#ddd)",
@@ -914,18 +949,18 @@ export default function AttachmentsPage() {
               cursor: safePage >= totalPages ? "not-allowed" : "pointer",
               color: "var(--list-muted,#777)"
             }}>
-                  &gt;
-                </button>
-              </div> : null}
-          </div>
+              &gt;
+            </button>
+          </div> : null}
         </div>
       </div>
+    </div>
 
-      {showAddModal ? <AddAttachmentModal onClose={() => setShowAddModal(false)} onSubmit={addRow} /> : null}
+    {showAddModal ? <AddAttachmentModal onClose={() => setShowAddModal(false)} onSubmit={addRow} /> : null}
 
-      {deletingIds ? <DeleteAttachmentModal onClose={() => setDeletingIds(null)} onConfirm={() => deleteRows(deletingIds)} /> : null}
+    {deletingIds ? <DeleteAttachmentModal onClose={() => setDeletingIds(null)} onConfirm={() => deleteRows(deletingIds)} /> : null}
 
-      {typeModalRow ? <SimpleChoiceModal title="Ubah Tipe Transaksi" label="Transaction Type" placeholder="Pilih tipe transaksi" options={transactionTypeOptions} onClose={() => setTypeModalRow(null)} onSubmit={value => {
+    {typeModalRow ? <SimpleChoiceModal title="Ubah Tipe Transaksi" label="Transaction Type" placeholder="Pilih tipe transaksi" options={transactionTypeOptions} onClose={() => setTypeModalRow(null)} onSubmit={value => {
       setRows(current => current.map(row => row.id === typeModalRow.id ? {
         ...row,
         tipeTransaksi: value
@@ -933,7 +968,7 @@ export default function AttachmentsPage() {
       setTypeModalRow(null);
     }} /> : null}
 
-      {linkModalRow ? <SimpleChoiceModal title="Hubungkan ke Transaksi" label="Transaksi" placeholder="Pilih transaksi..." options={LINK_TRANSACTIONS} onClose={() => setLinkModalRow(null)} onSubmit={value => {
+    {linkModalRow ? <SimpleChoiceModal title="Hubungkan ke Transaksi" label="Transaksi" placeholder="Pilih transaksi..." options={LINK_TRANSACTIONS} onClose={() => setLinkModalRow(null)} onSubmit={value => {
       setRows(current => current.map(row => row.id === linkModalRow.id ? {
         ...row,
         transaksi: value
@@ -941,6 +976,6 @@ export default function AttachmentsPage() {
       setLinkModalRow(null);
     }} /> : null}
 
-      {createModalRow ? <SimpleChoiceModal title="Buat Transaksi Baru" label="Transaksi apa yang ingin Anda buat?" placeholder="Pilih tipe transaksi..." options={newTransactionTypeOptions} submitLabel="Tambahkan" onClose={() => setCreateModalRow(null)} onSubmit={() => setCreateModalRow(null)} /> : null}
-    </div>;
+    {createModalRow ? <SimpleChoiceModal title="Buat Transaksi Baru" label="Transaksi apa yang ingin Anda buat?" placeholder="Pilih tipe transaksi..." options={newTransactionTypeOptions} submitLabel="Tambahkan" onClose={() => setCreateModalRow(null)} onSubmit={() => setCreateModalRow(null)} /> : null}
+  </div>;
 }
