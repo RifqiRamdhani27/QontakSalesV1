@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const TAX_ITEMS = [
     {
@@ -146,18 +146,22 @@ export default function Pajak() {
                 >
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                         <div>
-                            <span
+                            <Link
+                                to="/daftar-lainnya"
                                 style={{
-                                    display: "block",
+                                    display: "inline-block", 
                                     fontSize: "14px",
                                     color: t.crumb,
                                     fontWeight: 400,
                                     lineHeight: 1.2,
                                     marginBottom: "4px",
+                                    textDecoration: "none", 
+                                    cursor: "pointer",
+                                    transition: "color 0.2s ease"
                                 }}
                             >
                                 Daftar Lainnya
-                            </span>
+                            </Link>
                             <h1
                                 style={{
                                     margin: 0,

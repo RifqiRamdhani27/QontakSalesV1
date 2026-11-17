@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { useOutletContext } from "react-router-dom";
+import { useOutletContext, Link } from "react-router-dom";
 
 const LIGHT_T = {
   bg: "#ffffff",
@@ -261,9 +261,22 @@ export default function SyaratPembayaran() {
       <header style={{ backgroundColor: t.headerBg, padding: "20px 32px 16px", borderBottom: `1px solid ${t.headerBorder}` }}>
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "16px", flexWrap: "wrap" }}>
           <div>
-            <p style={{ fontSize: "12px", fontWeight: 500, color: t.crumb, margin: "0 0 4px 0", letterSpacing: "-0.01em" }}>
+            <Link
+              to="/daftar-lainnya"
+              style={{
+                display: "inline-block",
+                fontSize: "14px",
+                color: t.crumb,
+                fontWeight: 400,
+                lineHeight: 1.2,
+                marginBottom: "4px",
+                textDecoration: "none",
+                cursor: "pointer",
+                transition: "color 0.2s ease"
+              }}
+            >
               Daftar Lainnya
-            </p>
+            </Link>
             <h1 style={{ fontSize: "23px", fontWeight: 700, color: t.title, margin: 0, letterSpacing: "-0.01em" }}>
               Syarat Pembayaran
             </h1>
@@ -288,8 +301,16 @@ export default function SyaratPembayaran() {
       </header>
 
       <main style={{ width: "100%", padding: "24px 32px", boxSizing: "border-box", backgroundColor: t.mainBg }}>
-        <div style={{ backgroundColor: t.cardBg, border: `1px solid ${t.cardBorder}`, borderRadius: "2px", padding: "24px", boxShadow: t.cardShadow }}>
-
+        <div style={{
+          backgroundColor: t.cardBg,
+          padding: 20,
+          borderRadius: 12,
+          overflow: "hidden",
+          boxShadow: isDark
+            ? "0 8px 30px rgba(201, 77, 0, 0.2), 0 0 0 1px rgba(229, 184, 92, 0.15)"
+            : "0 4px 12px rgba(0, 0, 0, 0.22)",
+          border: isDark ? "1px solid #634f27" : "1px solid transparent"
+        }}>
           <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
             <div style={{ position: "relative", width: "230px" }}>
               <span style={{ position: "absolute", top: 0, bottom: 0, left: "10px", display: "flex", alignItems: "center", pointerEvents: "none", color: t.searchIcon }}>

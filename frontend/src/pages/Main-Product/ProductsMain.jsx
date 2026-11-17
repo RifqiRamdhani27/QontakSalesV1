@@ -1805,9 +1805,7 @@ function ProductListPanel({ onOpenCategoryModal, onAction }) {
             </div>
           </div>
 
-          {/* ========================================== */}
           {/* BARIS PAGINASI */}
-          {/* ========================================== */}
           <div className="flex flex-col sm:flex-row items-center justify-between mt-5 pt-3 pb-2 text-[13px] text-slate-600 gap-4">
             <div className="flex flex-wrap items-center gap-6">
               <div className="flex items-center gap-2.5">
@@ -1893,7 +1891,7 @@ function ProductListPanel({ onOpenCategoryModal, onAction }) {
 function StockAdjustmentListPanel() {
   const [search, setSearch] = useState("");
   const [adjustments] = useState([]);
-  const [isLoading, setIsLoading] = useState(true); // Default TRUE agar spinner muncul dulu
+  const [isLoading, setIsLoading] = useState(true); 
   const [showFilter, setShowFilter] = useState(false);
   const [showExport, setShowExport] = useState(false);
 
@@ -1949,7 +1947,7 @@ function StockAdjustmentListPanel() {
 function GoodsRequireApprovalPanel() {
   const [search, setSearch] = useState("");
   const [transactions] = useState([]);
-  const [isLoading, setIsLoading] = useState(true); // Default TRUE agar spinner muncul dulu
+  const [isLoading, setIsLoading] = useState(true); 
   const [showFilter, setShowFilter] = useState(false);
 
   useEffect(() => {
