@@ -10,13 +10,18 @@ import {
   Gear,
   Plus,
 } from "@phosphor-icons/react";
-import {
-  btnModalCancel,
-  btnModalSubmit,
-} from "@/components/ui/styles";
+import { btnModalCancel, btnModalSubmit } from "@/components/ui/styles";
 
-function useFloating(open, setOpen, triggerRef, panelRef, minWidth = 0, estHeight = 280) {
+function useFloating(
+  open,
+  setOpen,
+  triggerRef,
+  panelRef,
+  minWidth = 0,
+  estHeight = 280,
+) {
   const [pos, setPos] = useState(null);
+
   useLayoutEffect(() => {
     if (!open) {
       setPos(null);
@@ -26,10 +31,12 @@ function useFloating(open, setOpen, triggerRef, panelRef, minWidth = 0, estHeigh
     const update = () => {
       const el = triggerRef.current;
       if (!el) return;
+
       const r = el.getBoundingClientRect();
       const width = Math.max(r.width, minWidth);
       const below = window.innerHeight - r.bottom;
       const openUp = below < estHeight && r.top > below;
+
       setPos({
         left: Math.max(8, Math.min(r.left, window.innerWidth - width - 8)),
         width,
@@ -43,6 +50,7 @@ function useFloating(open, setOpen, triggerRef, panelRef, minWidth = 0, estHeigh
       if (panelRef.current?.contains(e.target)) return;
       setOpen(false);
     };
+
     const onKey = (e) => e.key === "Escape" && setOpen(false);
 
     update();
@@ -50,21 +58,19 @@ function useFloating(open, setOpen, triggerRef, panelRef, minWidth = 0, estHeigh
     window.addEventListener("scroll", update, true);
     document.addEventListener("mousedown", onDown);
     document.addEventListener("keydown", onKey);
+
     return () => {
       window.removeEventListener("resize", update);
       window.removeEventListener("scroll", update, true);
       document.removeEventListener("mousedown", onDown);
       document.removeEventListener("keydown", onKey);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   return pos;
 }
 
-/* ---------------------------------------------------------------
-   Select custom (satu ikon panah saja)
----------------------------------------------------------------- */
+/* Select custom */
 function Select({
   value,
   onChange,
@@ -78,7 +84,14 @@ function Select({
   const [open, setOpen] = useState(false);
   const triggerRef = useRef(null);
   const panelRef = useRef(null);
-  const pos = useFloating(open, setOpen, triggerRef, panelRef, minPanelWidth, 260);
+  const pos = useFloating(
+    open,
+    setOpen,
+    triggerRef,
+    panelRef,
+    minPanelWidth,
+    260,
+  );
 
   const selected = options.find((o) => String(o.value) === String(value));
 
@@ -100,6 +113,7 @@ function Select({
         >
           {selected ? selected.label : placeholder}
         </span>
+
         <CaretDown
           size={13}
           weight="bold"
@@ -128,8 +142,10 @@ function Select({
             {options.length === 0 && (
               <div className="px-3 py-2 text-sm text-[#9aa2ab]">No options</div>
             )}
+
             {options.map((o) => {
               const active = String(o.value) === String(value);
+
               return (
                 <div
                   key={o.value}
@@ -144,8 +160,13 @@ function Select({
                   }`}
                 >
                   <span className="truncate">{o.label}</span>
+
                   {active && (
-                    <Check size={14} weight="bold" className="shrink-0 text-[#1d4ed8]" />
+                    <Check
+                      size={14}
+                      weight="bold"
+                      className="shrink-0 text-[#1d4ed8]"
+                    />
                   )}
                 </div>
               );
@@ -157,22 +178,34 @@ function Select({
   );
 }
 
-/* ---------------------------------------------------------------
-   Date picker custom (value & onChange memakai format DD/MM/YYYY,
-   sama seperti state asli halaman ini)
----------------------------------------------------------------- */
+/* Date picker custom */
 const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
+
 const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
 const pad = (n) => String(n).padStart(2, "0");
 const toDMY = (y, m, d) => `${pad(d)}/${pad(m + 1)}/${y}`;
+
 const parseDMY = (v) => {
   if (!v) return null;
+
   const [d, m, y] = v.split("/").map(Number);
+
   if (!y || !m || !d) return null;
+
   return { y, m: m - 1, d };
 };
 
@@ -184,33 +217,38 @@ function DatePicker({ value, onChange, placeholder = "DD/MM/YYYY" }) {
 
   const parsed = parseDMY(value);
   const now = new Date();
+
   const [view, setView] = useState({
     y: parsed ? parsed.y : now.getFullYear(),
     m: parsed ? parsed.m : now.getMonth(),
   });
 
-  // Saat dibuka, tampilkan bulan dari tanggal terpilih
   useEffect(() => {
     if (open) {
       const p = parseDMY(value);
       const n = new Date();
+
       setView({
         y: p ? p.y : n.getFullYear(),
         m: p ? p.m : n.getMonth(),
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   const shiftMonth = (delta) => {
     setView((v) => {
       const d = new Date(v.y, v.m + delta, 1);
-      return { y: d.getFullYear(), m: d.getMonth() };
+
+      return {
+        y: d.getFullYear(),
+        m: d.getMonth(),
+      };
     });
   };
 
   const firstDay = new Date(view.y, view.m, 1).getDay();
   const daysInMonth = new Date(view.y, view.m + 1, 0).getDate();
+
   const cells = [
     ...Array(firstDay).fill(null),
     ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
@@ -233,6 +271,7 @@ function DatePicker({ value, onChange, placeholder = "DD/MM/YYYY" }) {
         <span className={value ? "text-[#30343a]" : "text-[#9aa2ab]"}>
           {value || placeholder}
         </span>
+
         <CalendarBlank size={16} className="shrink-0 text-[#626a73]" />
       </button>
 
@@ -252,7 +291,6 @@ function DatePicker({ value, onChange, placeholder = "DD/MM/YYYY" }) {
               transformOrigin: pos.top !== undefined ? "top" : "bottom",
             }}
           >
-            {/* Navigasi bulan */}
             <div className="mb-2 flex items-center justify-between">
               <button
                 type="button"
@@ -261,9 +299,11 @@ function DatePicker({ value, onChange, placeholder = "DD/MM/YYYY" }) {
               >
                 <CaretLeft size={14} weight="bold" />
               </button>
+
               <span className="text-sm font-semibold text-[#1e293b]">
                 {MONTHS[view.m]} {view.y}
               </span>
+
               <button
                 type="button"
                 onClick={() => shiftMonth(1)}
@@ -273,7 +313,6 @@ function DatePicker({ value, onChange, placeholder = "DD/MM/YYYY" }) {
               </button>
             </div>
 
-            {/* Nama hari */}
             <div className="grid grid-cols-7 text-center">
               {WEEKDAYS.map((w) => (
                 <div
@@ -285,13 +324,14 @@ function DatePicker({ value, onChange, placeholder = "DD/MM/YYYY" }) {
               ))}
             </div>
 
-            {/* Tanggal */}
             <div className="grid grid-cols-7 gap-y-0.5 text-center">
               {cells.map((d, i) => {
                 if (d === null) return <div key={`e${i}`} />;
+
                 const str = toDMY(view.y, view.m, d);
                 const isSelected = str === value;
                 const isToday = str === todayStr;
+
                 return (
                   <button
                     key={str}
@@ -314,7 +354,6 @@ function DatePicker({ value, onChange, placeholder = "DD/MM/YYYY" }) {
               })}
             </div>
 
-            {/* Footer */}
             <div className="mt-2 flex justify-end border-t border-[#f1f5f9] pt-2">
               <button
                 type="button"
@@ -334,26 +373,29 @@ function DatePicker({ value, onChange, placeholder = "DD/MM/YYYY" }) {
   );
 }
 
-/* ---------------------------------------------------------------
-   Opsi dropdown (sama seperti halaman quote asli)
----------------------------------------------------------------- */
+/* Opsi dropdown */
 const QUOTE_TYPE_OPTIONS = [{ value: "Sales Quote", label: "Sales Quote" }];
+
 const CUSTOMER_OPTIONS = [
   { value: "Customer A", label: "Customer A" },
   { value: "Customer B", label: "Customer B" },
 ];
+
 const TERM_OPTIONS = ["Net 30", "Net 15", "Net 45", "Net 60"].map((t) => ({
   value: t,
   label: t,
 }));
+
 const WAREHOUSE_OPTIONS = [
   { value: "Warehouse 1", label: "Warehouse 1" },
   { value: "Warehouse 2", label: "Warehouse 2" },
 ];
+
 const PRODUCT_OPTIONS = [
   { value: "Product A", label: "Product A" },
   { value: "Product B", label: "Product B" },
 ];
+
 const DISCOUNT_TYPE_OPTIONS = [
   { value: "%", label: "%" },
   { value: "Rp", label: "Rp" },
@@ -361,6 +403,35 @@ const DISCOUNT_TYPE_OPTIONS = [
 
 export default function CreateSalesInvoicePage() {
   const navigate = useNavigate();
+
+  const [themeMode, setThemeMode] = useState(
+    () => localStorage.getItem("app_theme") || "light",
+  );
+
+  const isDark = themeMode === "dark";
+
+  useEffect(() => {
+    const syncTheme = () => {
+      setThemeMode(localStorage.getItem("app_theme") || "light");
+    };
+
+    window.addEventListener("themeChanged", syncTheme);
+    window.addEventListener("storage", syncTheme);
+
+    return () => {
+      window.removeEventListener("themeChanged", syncTheme);
+      window.removeEventListener("storage", syncTheme);
+    };
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.dataset.invoiceTheme = isDark ? "dark" : "light";
+
+    return () => {
+      delete document.documentElement.dataset.invoiceTheme;
+    };
+  }, [isDark]);
+
   const [customer, setCustomer] = useState("");
   const [email, setEmail] = useState("");
   const [billingAddress, setBillingAddress] = useState("");
@@ -455,31 +526,192 @@ export default function CreateSalesInvoicePage() {
 
   const handleFileChange = (event) => {
     const selectedFiles = Array.from(event.target.files || []);
-
     setFiles(selectedFiles.slice(0, 5));
   };
 
   return (
-    <div className="min-h-full bg-white text-[#30343b]">
+    <div
+      className={`sales-invoice-root min-h-full ${isDark ? "dash-dark" : ""}`}
+    >
       <style>{`
+        .sales-invoice-root {
+          background: #ffffff;
+          color: #30343b;
+          min-height: 100%;
+          transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .sales-invoice-root.dash-dark {
+          background: #252525;
+          color: #e5e5e5;
+        }
+
+        .sales-invoice-root.dash-dark h1,
+        .sales-invoice-root.dash-dark label,
+        .sales-invoice-root.dash-dark th,
+        .sales-invoice-root.dash-dark td,
+        .sales-invoice-root.dash-dark span,
+        .sales-invoice-root.dash-dark p {
+          color: #e5e5e5;
+        }
+
+        .sales-invoice-root.dash-dark input:not([type="checkbox"]):not([type="file"]),
+        .sales-invoice-root.dash-dark textarea,
+        .sales-invoice-root.dash-dark select {
+          background-color: #303030 !important;
+          color: #e5e5e5 !important;
+          border-color: #505050 !important;
+        }
+
+        .sales-invoice-root.dash-dark input::placeholder,
+        .sales-invoice-root.dash-dark textarea::placeholder {
+          color: #999999 !important;
+        }
+
+        .sales-invoice-root.dash-dark button:not(.inv-pop button) {
+          color: inherit;
+        }
+
+        .sales-invoice-root.dash-dark .rounded-xl.border,
+        .sales-invoice-root.dash-dark .rounded-md.border {
+          border-color: #484848;
+        }
+
+        .sales-invoice-root.dash-dark table {
+          background: #2b2b2b;
+        }
+
+        .sales-invoice-root.dash-dark thead tr {
+          background: #343b39 !important;
+        }
+
+        .sales-invoice-root.dash-dark th,
+        .sales-invoice-root.dash-dark td {
+          border-color: #484848 !important;
+        }
+
+        .sales-invoice-root.dash-dark .border-dashed {
+          border-color: #484848 !important;
+        }
+
+        .sales-invoice-root.dash-dark .border-t,
+        .sales-invoice-root.dash-dark .border-b {
+          border-color: #484848 !important;
+        }
+
+        .sales-invoice-root.dash-dark .bg-white {
+          background-color: #303030 !important;
+        }
+
+        .sales-invoice-root.dash-dark .text-\\[\\#252a31\\],
+        .sales-invoice-root.dash-dark .text-\\[\\#292e34\\],
+        .sales-invoice-root.dash-dark .text-\\[\\#30343a\\],
+        .sales-invoice-root.dash-dark .text-\\[\\#30343b\\] {
+          color: #e5e5e5 !important;
+        }
+
+        .sales-invoice-root.dash-dark .text-\\[\\#464c53\\],
+        .sales-invoice-root.dash-dark .text-\\[\\#59616a\\],
+        .sales-invoice-root.dash-dark .text-\\[\\#555b63\\],
+        .sales-invoice-root.dash-dark .text-\\[\\#747c85\\] {
+          color: #b8b8b8 !important;
+        }
+
+        .sales-invoice-root.dash-dark .inv-pop {
+          background: #303030 !important;
+          border-color: #505050 !important;
+          color: #e5e5e5 !important;
+        }
+
+        .sales-invoice-root.dash-dark .inv-pop span,
+        .sales-invoice-root.dash-dark .inv-pop div {
+          color: #e5e5e5;
+        }
+
+        html[data-invoice-theme="dark"] .inv-pop {
+          background: #303030 !important;
+          border-color: #505050 !important;
+          color: #e5e5e5 !important;
+        }
+
+        html[data-invoice-theme="dark"] .inv-pop span,
+        html[data-invoice-theme="dark"] .inv-pop div {
+          color: #e5e5e5;
+        }
+
+        html[data-invoice-theme="dark"] .inv-pop button:not(.bg-\\[\\#2563eb\\]) {
+          color: #e5e5e5;
+        }
+
+        html[data-invoice-theme="dark"] .inv-pop button:hover {
+          background-color: #424242 !important;
+        }
+
+        html[data-invoice-theme="dark"] .inv-pop .bg-\\[\\#eff6ff\\] {
+          background-color: #3d3d3d !important;
+        }
+
+        html[data-invoice-theme="dark"] .inv-pop .text-\\[\\#1d4ed8\\],
+        html[data-invoice-theme="dark"] .inv-pop .text-\\[\\#2563eb\\] {
+          color: #c5a15e !important;
+        }
+
+        .sales-invoice-root .create-button {
+          background-color: #eef4ff;
+          color: #5875c9;
+          border: 1px solid #d7e3ff;
+          box-shadow: 0 4px 8px rgba(88, 117, 201, 0.12);
+        }
+
+        .sales-invoice-root .create-button:hover {
+          background-color: #e1ebff;
+          color: #3f57b8;
+          box-shadow: 0 8px 14px rgba(88, 117, 201, 0.2);
+        }
+
+        .sales-invoice-root.dash-dark .create-button {
+          background-color: #453a27;
+          color: #d8b56d;
+          border: 1px solid #705b35;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .sales-invoice-root.dash-dark .create-button:hover {
+          background-color: #55452c;
+          color: #f0d08a;
+          box-shadow: 0 8px 14px rgba(0, 0, 0, 0.28);
+        }
+
         input[type="checkbox"] {
           accent-color: #2563eb;
           outline: none;
           box-shadow: none;
         }
+
         input[type="checkbox"]:focus,
         input[type="checkbox"]:focus-visible {
           outline: none !important;
           box-shadow: none !important;
         }
+
         input[type="checkbox"]:focus-visible {
           box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.35) !important;
         }
+
         @keyframes invPopIn {
-          from { opacity: 0; transform: translateY(-6px) scale(0.98); }
-          to   { opacity: 1; transform: translateY(0) scale(1); }
+          from {
+            opacity: 0;
+            transform: translateY(-6px) scale(0.98);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
         }
-        .inv-pop { animation: invPopIn 0.16s ease-out; }
+
+        .inv-pop {
+          animation: invPopIn 0.16s ease-out;
+        }
       `}</style>
 
       <div className="w-full px-6 pt-6 pb-8">
@@ -489,7 +721,16 @@ export default function CreateSalesInvoicePage() {
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="mb-1.5 flex cursor-pointer items-center gap-1 text-sm font-semibold text-[#5875c9] hover:text-[#3f57b8] focus:outline-none"
+              className="mb-1.5 flex cursor-pointer items-center gap-1 text-sm font-semibold focus:outline-none"
+              style={{
+                color: isDark ? "#c5a15e" : "#5875c9",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = isDark ? "#e2bd75" : "#3f57b8";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = isDark ? "#c5a15e" : "#5875c9";
+              }}
             >
               Sales
             </button>
@@ -509,15 +750,24 @@ export default function CreateSalesInvoicePage() {
 
         <div
           className="mt-5 rounded-xl border border-[#d4dbe2] bg-white"
-          style={{ boxShadow: "0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.06)" }}
+          style={{
+            boxShadow:
+              "0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.06)",
+            backgroundColor: isDark ? "#303030" : "#ffffff",
+            borderColor: isDark ? "#484848" : "#d4dbe2",
+          }}
         >
-          {/* Top: Customer + Email + Total */}
-          <div className="border-b border-dashed border-[#e2e6ea] px-5 py-5">
+          {/* Top */}
+          <div
+            className="border-b border-dashed border-[#e2e6ea] px-5 py-5"
+            style={{ borderColor: isDark ? "#484848" : undefined }}
+          >
             <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-5">
               <div>
                 <label className="mb-2 block text-sm font-medium text-[#30343a]">
                   Customer <span className="text-red-500">*</span>
                 </label>
+
                 <Select
                   value={customer}
                   onChange={setCustomer}
@@ -530,6 +780,7 @@ export default function CreateSalesInvoicePage() {
                 <label className="mb-2 block text-sm font-medium text-[#30343a]">
                   Email
                 </label>
+
                 <input
                   type="email"
                   value={email}
@@ -547,13 +798,14 @@ export default function CreateSalesInvoicePage() {
             </div>
           </div>
 
-          {/* Middle: Detail fields */}
+          {/* Middle */}
           <div className="px-5 py-5">
             <div className="grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2 xl:grid-cols-4">
               <div>
                 <label className="mb-2 block text-sm font-medium text-[#30343a]">
                   Billing address
                 </label>
+
                 <textarea
                   value={billingAddress}
                   onChange={(e) => setBillingAddress(e.target.value)}
@@ -566,6 +818,7 @@ export default function CreateSalesInvoicePage() {
                 <label className="mb-2 block text-sm font-medium text-[#30343a]">
                   Transaction date
                 </label>
+
                 <DatePicker
                   value={transactionDate}
                   onChange={setTransactionDate}
@@ -574,12 +827,18 @@ export default function CreateSalesInvoicePage() {
                 <label className="mb-2 mt-4 block text-sm font-medium text-[#30343a]">
                   Due date
                 </label>
+
                 <DatePicker value={dueDate} onChange={setDueDate} />
 
                 <label className="mb-2 mt-4 block text-sm font-medium text-[#30343a]">
                   Term
                 </label>
-                <Select value={term} onChange={setTerm} options={TERM_OPTIONS} />
+
+                <Select
+                  value={term}
+                  onChange={setTerm}
+                  options={TERM_OPTIONS}
+                />
               </div>
 
               <div>
@@ -587,6 +846,7 @@ export default function CreateSalesInvoicePage() {
                   Transaction no.
                   <Gear size={14} className="text-[#7b848d]" />
                 </label>
+
                 <input
                   value={transactionNo}
                   onChange={(e) => setTransactionNo(e.target.value)}
@@ -596,6 +856,7 @@ export default function CreateSalesInvoicePage() {
                 <label className="mb-2 mt-4 block text-sm font-medium text-[#30343a]">
                   Customer reference no.
                 </label>
+
                 <input
                   value={customerReferenceNo}
                   onChange={(e) => setCustomerReferenceNo(e.target.value)}
@@ -605,6 +866,7 @@ export default function CreateSalesInvoicePage() {
                 <label className="mb-2 mt-4 block text-sm font-medium text-[#30343a]">
                   Warehouse
                 </label>
+
                 <Select
                   value={warehouse}
                   onChange={setWarehouse}
@@ -617,6 +879,7 @@ export default function CreateSalesInvoicePage() {
                 <label className="mb-2 block text-sm font-medium text-[#30343a]">
                   Tag
                 </label>
+
                 <input
                   value={tag}
                   onChange={(e) => setTag(e.target.value)}
@@ -642,7 +905,10 @@ export default function CreateSalesInvoicePage() {
             <div className="mt-5 overflow-x-auto">
               <table className="w-full min-w-[1100px] border-collapse">
                 <thead>
-                  <tr className="h-11 bg-[#EDFFFD]">
+                  <tr
+                    className="h-11 bg-[#EDFFFD]"
+                    style={{ backgroundColor: isDark ? "#343b39" : "#EDFFFD" }}
+                  >
                     <th className="w-[250px] border-y border-[#d9dfe5] px-2 text-left text-sm font-semibold">
                       Product
                     </th>
@@ -698,17 +964,29 @@ export default function CreateSalesInvoicePage() {
               <button
                 type="button"
                 onClick={addItem}
-                className="mt-2 flex items-center gap-1.5 text-sm font-medium text-[#5875c9] hover:text-[#3f57b8] focus:outline-none"
+                className="mt-2 flex items-center gap-1.5 text-sm font-medium focus:outline-none"
+                style={{
+                  color: isDark ? "#c5a15e" : "#5875c9",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = isDark ? "#e2bd75" : "#3f57b8";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = isDark ? "#c5a15e" : "#5875c9";
+                }}
               >
                 <Plus size={14} />
                 Add product
               </button>
             </div>
 
-            {/* Bottom: Message/Memo/Attachments + Summary */}
+            {/* Bottom */}
             <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-[380px_1fr]">
               <div>
-                <label className="mb-2 block text-sm font-medium">Message</label>
+                <label className="mb-2 block text-sm font-medium">
+                  Message
+                </label>
+
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
@@ -716,7 +994,10 @@ export default function CreateSalesInvoicePage() {
                   className="h-20 w-full resize-none rounded-md border border-[#cfd6de] px-3 py-2 text-sm outline-none placeholder:text-[#99a1aa] focus:border-[#4B61DD]"
                 />
 
-                <label className="mb-2 mt-4 block text-sm font-medium">Memo</label>
+                <label className="mb-2 mt-4 block text-sm font-medium">
+                  Memo
+                </label>
+
                 <textarea
                   value={memo}
                   onChange={(e) => setMemo(e.target.value)}
@@ -727,8 +1008,24 @@ export default function CreateSalesInvoicePage() {
                 <label className="mb-2 mt-4 block text-sm font-medium">
                   Attachments
                 </label>
+
                 <div className="flex h-10 items-center overflow-hidden rounded-md border border-[#cfd6de]">
-                  <label className="cursor-pointer border-r border-[#cfd6de] px-3 text-sm font-medium text-[#5875c9]">
+                  <label
+                    className="cursor-pointer border-r border-[#cfd6de] px-3 text-sm font-medium"
+                    style={{
+                      color: isDark ? "#c5a15e" : "#5875c9",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = isDark
+                        ? "#e2bd75"
+                        : "#3f57b8";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = isDark
+                        ? "#c5a15e"
+                        : "#5875c9";
+                    }}
+                  >
                     Choose file
                     <input
                       type="file"
@@ -737,6 +1034,7 @@ export default function CreateSalesInvoicePage() {
                       className="hidden"
                     />
                   </label>
+
                   <span className="px-3 text-xs text-[#98a0a8]">
                     or drag or drop file here
                   </span>
@@ -769,6 +1067,7 @@ export default function CreateSalesInvoicePage() {
 
                 <div className="flex items-center justify-between py-1.5 text-sm">
                   <span>Discount</span>
+
                   <div className="flex items-center gap-2">
                     <Select
                       className="w-[84px]"
@@ -778,6 +1077,7 @@ export default function CreateSalesInvoicePage() {
                       minPanelWidth={84}
                       buttonClassName="!h-8"
                     />
+
                     <input
                       type="number"
                       min="0"
@@ -829,36 +1129,10 @@ export default function CreateSalesInvoicePage() {
 
               <button
                 type="button"
-                className={`${btnModalSubmit} group relative flex items-center justify-center gap-2 border-none text-white focus:outline-none transition-all duration-200`}
-                style={{
-                  backgroundColor: "rgba(23, 140, 204, 1)",
-                  boxShadow:
-                    "0 4px 6px -1px rgba(23, 140, 204, 0.4), 0 2px 4px -1px rgba(23, 140, 204, 0.2)",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "rgba(22, 129, 191, 1)";
-                  e.currentTarget.style.boxShadow =
-                    "0 10px 15px -3px rgba(23, 95, 133, 0.5), 0 4px 4px -1px rgba(23, 95, 133, 0.3)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "rgba(23, 140, 204, 1)";
-                  e.currentTarget.style.boxShadow =
-                    "0 4px 6px -1px rgba(23, 140, 204, 0.4), 0 2px 4px -1px rgba(23, 140, 204, 0.2)";
-                  e.currentTarget.style.transform = "translateY(0)";
-                }}
-                onMouseDown={(e) => {
-                  e.currentTarget.style.transform = "translateY(1px)";
-                  e.currentTarget.style.boxShadow =
-                    "0 2px 4px -1px rgba(23, 140, 204, 0.4)";
-                }}
-                onMouseUp={(e) => {
-                  e.currentTarget.style.transform = "translateY(-2px)";
-                  e.currentTarget.style.boxShadow =
-                    "0 10px 15px -3px rgba(23, 140, 204, 0.5), 0 4px 6px -2px rgba(23, 140, 204, 0.3)";
-                }}
+                className={`${btnModalSubmit} create-button group relative flex items-center justify-center gap-2 border-none font-semibold focus:outline-none transition-all duration-200`}
               >
                 Create
-                <CaretDown size={12} />
+                <CaretDown size={12} weight="bold" />
               </button>
             </div>
           </div>

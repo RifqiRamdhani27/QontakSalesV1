@@ -2,11 +2,11 @@
 
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { gsap } from 'gsap';
-import galleryImg1 from "@/assets/Accounting-1.jpg"; 
-import galleryImg2 from "@/assets/Accounting-2.jpg"; 
-import galleryImg3 from "@/assets/Accounting-3.jpg"; 
-import galleryImg4 from "@/assets/Accounting-4.jpg"; 
-import galleryImg5 from "@/assets/Accounting-5.jpg"; 
+import galleryImg1 from "@/assets/Accounting-1.webp";
+import galleryImg2 from "@/assets/Accounting-2.webp";
+import galleryImg3 from "@/assets/Accounting-3.webp";
+import galleryImg4 from "@/assets/Accounting-4.webp";
+import galleryImg5 from "@/assets/Accounting-5.webp";
 
 const DEFAULT_ITEMS = [
   { image: galleryImg1, label: 'img-1', link: '#' },

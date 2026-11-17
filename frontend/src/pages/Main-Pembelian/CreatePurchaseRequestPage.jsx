@@ -1,9 +1,29 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { CaretDown, Gear } from "@phosphor-icons/react";
 
 export default function CreatePurchaseRequestPage() {
   const navigate = useNavigate();
+
+  const [themeMode, setThemeMode] = useState(
+    localStorage.getItem("app_theme") || "light",
+  );
+
+  useEffect(() => {
+    const syncTheme = () => {
+      setThemeMode(localStorage.getItem("app_theme") || "light");
+    };
+
+    window.addEventListener("themeChanged", syncTheme);
+    window.addEventListener("storage", syncTheme);
+
+    return () => {
+      window.removeEventListener("themeChanged", syncTheme);
+      window.removeEventListener("storage", syncTheme);
+    };
+  }, []);
+
+  const isDark = themeMode === "dark";
 
   const [approver, setApprover] = useState("");
   const [approverEmail, setApproverEmail] = useState("");
@@ -24,50 +44,173 @@ export default function CreatePurchaseRequestPage() {
     navigate("/pembelian");
   };
 
+  const inputClass =
+    "h-9 w-full rounded-md border border-[#cfd6de] bg-white px-3 text-sm text-[#30343b] outline-none focus:border-[#4B61DD]";
+
+  const selectClass =
+    "h-9 w-full appearance-none rounded-md border border-[#cfd6de] bg-white pl-3 pr-9 text-sm text-[#30343b] outline-none focus:border-[#4B61DD]";
+
+  const labelClass = "mb-1.5 block text-sm font-medium text-[#30343a]";
+
   return (
-    <div className="min-h-full bg-[#f5f7fa] text-[#4b5563]">
-      <div className="w-full">
-        <div className="flex items-start justify-between border-b border-[#dfe3ea] px-[15px] pb-[10px] pt-[2px]">
+    <div
+      className={
+        isDark
+          ? "dash-dark pr-root min-h-full"
+          : "pr-root min-h-full bg-white text-[#30343b]"
+      }
+    >
+      <style>{`
+        .dash-dark.pr-root {
+          background-color: #121212 !important;
+          color: #f1f5f9 !important;
+        }
+
+        .dash-dark.pr-root .bg-white {
+          background-color: #1e1e1e !important;
+        }
+
+        .dash-dark.pr-root h1,
+        .dash-dark.pr-root .text-\\[\\#273142\\] {
+          color: #f1f5f9 !important;
+        }
+
+        .dash-dark.pr-root label,
+        .dash-dark.pr-root .text-\\[\\#30343a\\],
+        .dash-dark.pr-root .text-\\[\\#30343b\\],
+        .dash-dark.pr-root .text-\\[\\#4b5563\\],
+        .dash-dark.pr-root .text-\\[\\#4f5866\\],
+        .dash-dark.pr-root .text-\\[\\#56606e\\],
+        .dash-dark.pr-root .text-\\[\\#606977\\],
+        .dash-dark.pr-root .text-\\[\\#667080\\] {
+          color: #d1d5db !important;
+        }
+
+        .dash-dark.pr-root input:not([type="checkbox"]):not([type="file"]),
+        .dash-dark.pr-root select,
+        .dash-dark.pr-root textarea {
+          background-color: #292929 !important;
+          color: #f1f5f9 !important;
+          border-color: #444 !important;
+        }
+
+        .dash-dark.pr-root input::placeholder,
+        .dash-dark.pr-root textarea::placeholder {
+          color: #858585 !important;
+        }
+
+        .dash-dark.pr-root input[type="checkbox"] {
+          accent-color: #c9a15b;
+        }
+
+        .dash-dark.pr-root .border,
+        .dash-dark.pr-root .border-t,
+        .dash-dark.pr-root .border-b,
+        .dash-dark.pr-root .border-r {
+          border-color: #3d3d3d !important;
+        }
+
+        .dash-dark.pr-root .border-dashed {
+          border-color: #444 !important;
+        }
+
+        .dash-dark.pr-root .bg-\\[\\#EDFFFD\\] {
+          background-color: #292929 !important;
+        }
+
+        .dash-dark.pr-root .pr-product-header {
+          background-color: #181818 !important;
+          border-color: #3d3d3d !important;
+        }
+
+        .dash-dark.pr-root .pr-product-header > div {
+          color: #ffffff !important;
+        }
+
+        .dash-dark.pr-root .bg-\\[\\#edf0f3\\] {
+          background-color: #292929 !important;
+        }
+
+        .dash-dark.pr-root .bg-\\[\\#fafbfc\\],
+        .dash-dark.pr-root .hover\\:bg-\\[\\#f7f8fa\\]:hover {
+          background-color: #292929 !important;
+        }
+
+        .dash-dark.pr-root button.bg-white {
+          background-color: #292929 !important;
+          color: #d1d5db !important;
+        }
+
+        .dash-dark.pr-root .shadow-\\[0_1px_3px_rgba\\(0\\,0\\,0\\,0\\.04\\)\\] {
+          box-shadow: none !important;
+        }
+
+        .dash-dark.pr-root .pr-file-label,
+        .dash-dark.pr-root .pr-file-label span {
+          color: #c9a15b !important;
+        }
+
+        .dash-dark.pr-root .pr-file-label:hover,
+        .dash-dark.pr-root .pr-file-label:hover span {
+          color: #dfbd7c !important;
+        }
+
+        .dash-dark.pr-root .pr-create-button {
+          background-color: #c9a15b !important;
+          color: #1e1e1e !important;
+          border-color: #c9a15b !important;
+        }
+
+        .dash-dark.pr-root .pr-create-button:hover {
+          background-color: #dfbd7c !important;
+          border-color: #dfbd7c !important;
+        }
+      `}</style>
+
+      <div className="w-full px-6 pb-8 pt-6">
+        <div className="flex items-center justify-between">
           <div>
-            <div className="text-[9px] font-medium text-[#7084d8]">
+            <div
+              className={`text-sm font-medium transition-colors ${
+                isDark
+                  ? "text-[#c9a15b] hover:text-[#dfbd7c]"
+                  : "text-[#7084d8] hover:text-[#536bc7]"
+              }`}
+            >
               Pembelian
             </div>
 
-            <h1 className="mt-[4px] text-[16px] font-semibold leading-none text-[#273142]">
+            <h1 className="mt-1 text-2xl font-semibold text-[#273142]">
               Buat Permintaan Pembelian
             </h1>
           </div>
 
-          <div className="relative mt-[1px]">
+          <div className="relative">
             <select
               defaultValue="Permintaan Pembelian"
-              className="h-[25px] w-[138px] appearance-none rounded-[5px] border border-[#d4d9e1] bg-white px-[9px] pr-[25px] text-[9px] text-[#4b5563] outline-none"
+              className="h-9 w-52 appearance-none rounded-md border border-[#cfd6de] bg-white pl-3 pr-9 text-sm text-[#30343b] outline-none focus:border-[#4B61DD]"
             >
               <option value="Faktur Pembelian">Faktur Pembelian</option>
-
               <option value="Tukar Faktur Pembelian">
                 Tukar Faktur Pembelian
               </option>
-
               <option value="Pesanan Pembelian">Pesanan Pembelian</option>
-
               <option value="Penawaran Pembelian">Penawaran Pembelian</option>
-
               <option value="Permintaan Pembelian">Permintaan Pembelian</option>
             </select>
 
             <CaretDown
-              size={10}
+              size={14}
               weight="bold"
-              className="pointer-events-none absolute right-[8px] top-1/2 -translate-y-1/2 text-[#6b7280]"
+              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#6b7280]"
             />
           </div>
         </div>
 
-        <div className="mx-[1px] border-x border-b border-[#dfe3ea] bg-white">
-          <div className="grid grid-cols-[1fr_1fr_1fr] gap-x-[14px] px-[15px] py-[10px]">
+        <div className="mt-5 overflow-hidden rounded-xl border border-[#d4dbe2] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
+          <div className="grid grid-cols-3 gap-5 px-5 py-5">
             <div>
-              <label className="mb-[5px] block text-[9px] font-semibold text-[#374151]">
+              <label className={labelClass}>
                 Staf penyetuju <span className="text-red-500">*</span>
               </label>
 
@@ -75,7 +218,7 @@ export default function CreatePurchaseRequestPage() {
                 <select
                   value={approver}
                   onChange={(e) => setApprover(e.target.value)}
-                  className="h-[26px] w-full appearance-none rounded-[4px] border border-[#cfd5de] bg-white px-[9px] pr-[25px] text-[9px] text-[#6b7280] outline-none"
+                  className={selectClass}
                 >
                   <option value="">Pilih staf</option>
                   <option value="Staf A">Staf A</option>
@@ -84,15 +227,15 @@ export default function CreatePurchaseRequestPage() {
                 </select>
 
                 <CaretDown
-                  size={10}
+                  size={14}
                   weight="bold"
-                  className="pointer-events-none absolute right-[8px] top-1/2 -translate-y-1/2 text-[#697386]"
+                  className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#697386]"
                 />
               </div>
             </div>
 
             <div>
-              <label className="mb-[5px] block text-[9px] font-semibold text-[#374151]">
+              <label className={labelClass}>
                 Email penyetuju <span className="text-red-500">*</span>
               </label>
 
@@ -101,26 +244,24 @@ export default function CreatePurchaseRequestPage() {
                 value={approverEmail}
                 onChange={(e) => setApproverEmail(e.target.value)}
                 placeholder="e.g. john@example.com"
-                className="h-[26px] w-full rounded-[4px] border border-[#cfd5de] bg-white px-[9px] text-[9px] text-[#374151] outline-none placeholder:text-[#98a0ad]"
+                className={inputClass}
               />
             </div>
 
             <div />
           </div>
 
-          <div className="mx-[15px] border-t border-dashed border-[#e4e7ec]" />
+          <div className="mx-5 border-t border-dashed border-[#e2e6ea]" />
 
-          <div className="grid grid-cols-[1fr_1fr_1fr] gap-x-[14px] px-[15px] py-[10px]">
+          <div className="grid grid-cols-3 gap-5 px-5 py-5">
             <div>
-              <label className="mb-[5px] block text-[9px] font-semibold text-[#374151]">
-                Nama supplier
-              </label>
+              <label className={labelClass}>Nama supplier</label>
 
               <div className="relative">
                 <select
                   value={supplier}
                   onChange={(e) => setSupplier(e.target.value)}
-                  className="h-[26px] w-full appearance-none rounded-[4px] border border-[#cfd5de] bg-white px-[9px] pr-[25px] text-[9px] text-[#6b7280] outline-none"
+                  className={selectClass}
                 >
                   <option value="">Pilih supplier</option>
                   <option value="Supplier A">Supplier A</option>
@@ -129,22 +270,20 @@ export default function CreatePurchaseRequestPage() {
                 </select>
 
                 <CaretDown
-                  size={10}
+                  size={14}
                   weight="bold"
-                  className="pointer-events-none absolute right-[8px] top-1/2 -translate-y-1/2 text-[#697386]"
+                  className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#697386]"
                 />
               </div>
 
-              <div className="mt-[9px]">
-                <label className="mb-[5px] block text-[9px] font-semibold text-[#374151]">
-                  Email supplier
-                </label>
+              <div className="mt-4">
+                <label className={labelClass}>Email supplier</label>
 
                 <div className="relative">
                   <select
                     value={supplierEmail}
                     onChange={(e) => setSupplierEmail(e.target.value)}
-                    className="h-[26px] w-full appearance-none rounded-[4px] border border-[#cfd5de] bg-[#edf0f3] px-[9px] pr-[25px] text-[9px] text-[#9aa2ad] outline-none"
+                    className="h-9 w-full appearance-none rounded-md border border-[#cfd6de] bg-[#edf0f3] pl-3 pr-9 text-sm text-[#9aa2ad] outline-none"
                   >
                     <option value="">e.g. john@example.com</option>
                     <option value="supplier@example.com">
@@ -153,58 +292,50 @@ export default function CreatePurchaseRequestPage() {
                   </select>
 
                   <CaretDown
-                    size={10}
+                    size={14}
                     weight="bold"
-                    className="pointer-events-none absolute right-[8px] top-1/2 -translate-y-1/2 text-[#8f98a5]"
+                    className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#8f98a5]"
                   />
                 </div>
               </div>
             </div>
 
             <div>
-              <label className="mb-[5px] block text-[9px] font-semibold text-[#374151]">
-                Alamat supplier
-              </label>
+              <label className={labelClass}>Alamat supplier</label>
 
               <textarea
                 value={supplierAddress}
                 onChange={(e) => setSupplierAddress(e.target.value)}
-                className="h-[75px] w-full resize-none rounded-[4px] border border-[#cfd5de] bg-[#edf0f3] px-[9px] py-[7px] text-[9px] text-[#6b7280] outline-none"
+                className="h-[110px] w-full resize-none rounded-md border border-[#cfd6de] bg-[#edf0f3] px-3 py-2 text-sm text-[#6b7280] outline-none"
               />
 
-              <div className="mt-[9px]">
-                <label className="mb-[5px] block text-[9px] font-semibold text-[#374151]">
+              <div className="mt-4">
+                <label className={labelClass}>
                   Tanggal transaksi <span className="text-red-500">*</span>
                 </label>
 
-                <div className="relative">
-                  <input
-                    type="date"
-                    value={transactionDate}
-                    onChange={(e) => setTransactionDate(e.target.value)}
-                    className="h-[26px] w-full rounded-[4px] border border-[#cfd5de] bg-white px-[9px] text-[9px] text-[#374151] outline-none"
-                  />
-                </div>
+                <input
+                  type="date"
+                  value={transactionDate}
+                  onChange={(e) => setTransactionDate(e.target.value)}
+                  className={inputClass}
+                />
               </div>
 
-              <div className="mt-[9px]">
-                <label className="mb-[5px] block text-[9px] font-semibold text-[#374151]">
-                  Tanggal jatuh tempo
-                </label>
+              <div className="mt-4">
+                <label className={labelClass}>Tanggal jatuh tempo</label>
 
-                <div className="relative">
-                  <input
-                    type="date"
-                    value={dueDate}
-                    onChange={(e) => setDueDate(e.target.value)}
-                    className="h-[26px] w-full rounded-[4px] border border-[#cfd5de] bg-white px-[9px] text-[9px] text-[#374151] outline-none"
-                  />
-                </div>
+                <input
+                  type="date"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  className={inputClass}
+                />
               </div>
             </div>
 
             <div>
-              <label className="mb-[5px] block text-[9px] font-semibold text-[#374151]">
+              <label className={labelClass}>
                 Urgensi <span className="text-red-500">*</span>
               </label>
 
@@ -212,31 +343,31 @@ export default function CreatePurchaseRequestPage() {
                 <select
                   value={urgency}
                   onChange={(e) => setUrgency(e.target.value)}
-                  className="h-[26px] w-full appearance-none rounded-[4px] border border-[#cfd5de] bg-white pl-[28px] pr-[25px] text-[9px] text-[#4b5563] outline-none"
+                  className="h-9 w-full appearance-none rounded-md border border-[#cfd6de] bg-white pl-9 pr-9 text-sm text-[#4b5563] outline-none focus:border-[#4B61DD]"
                 >
                   <option value="Rendah">Rendah</option>
                   <option value="Sedang">Sedang</option>
                   <option value="Tinggi">Tinggi</option>
                 </select>
 
-                <span className="absolute left-[9px] top-1/2 -translate-y-1/2 text-[11px] font-bold text-[#e7b62d]">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-[#e7b62d]">
                   ⌃
                 </span>
 
                 <CaretDown
-                  size={10}
+                  size={14}
                   weight="bold"
-                  className="pointer-events-none absolute right-[8px] top-1/2 -translate-y-1/2 text-[#697386]"
+                  className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#697386]"
                 />
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-[1fr_1fr_1fr] gap-x-[14px] px-[15px] pb-[10px]">
+          <div className="grid grid-cols-3 gap-5 px-5 pb-5">
             <div>
-              <label className="mb-[5px] flex items-center gap-[4px] text-[9px] font-semibold text-[#374151]">
+              <label className={`${labelClass} flex items-center gap-2`}>
                 No Transaksi
-                <Gear size={10} className="text-[#929aa7]" />
+                <Gear size={15} className="text-[#929aa7]" />
               </label>
 
               <input
@@ -244,66 +375,62 @@ export default function CreatePurchaseRequestPage() {
                 value={transactionNumber}
                 onChange={(e) => setTransactionNumber(e.target.value)}
                 placeholder="[Auto]"
-                className="h-[26px] w-full rounded-[4px] border border-[#cfd5de] bg-white px-[9px] text-[9px] text-[#374151] outline-none placeholder:text-[#98a0ad]"
+                className={inputClass}
               />
             </div>
 
             <div>
-              <label className="mb-[5px] block text-[9px] font-semibold text-[#374151]">
-                Tahun anggaran terkait
-              </label>
+              <label className={labelClass}>Tahun anggaran terkait</label>
 
               <input
                 type="text"
                 value={budgetYear}
                 onChange={(e) => setBudgetYear(e.target.value)}
-                className="h-[26px] w-full rounded-[4px] border border-[#cfd5de] bg-white px-[9px] text-[9px] text-[#374151] outline-none"
+                className={inputClass}
               />
             </div>
 
             <div>
-              <label className="mb-[5px] block text-[9px] font-semibold text-[#374151]">
-                Tag
-              </label>
+              <label className={labelClass}>Tag</label>
 
               <input
                 type="text"
                 value={tag}
                 onChange={(e) => setTag(e.target.value)}
                 placeholder="Pilih tag"
-                className="h-[26px] w-full rounded-[4px] border border-[#cfd5de] bg-white px-[9px] text-[9px] text-[#374151] outline-none placeholder:text-[#98a0ad]"
+                className={inputClass}
               />
             </div>
           </div>
 
-          <div className="mx-[15px] border-t border-dashed border-[#e4e7ec]" />
+          <div className="mx-5 border-t border-dashed border-[#e2e6ea]" />
 
-          <div className="px-[15px] pb-[10px] pt-[10px]">
-            <div className="grid grid-cols-[1.5fr_2fr_0.6fr_0.7fr] border-b border-[#d3d8e0] bg-[#f7f8fa]">
-              <div className="px-[6px] py-[8px] text-[8px] font-semibold text-[#4f5866]">
+          <div className="px-5 py-5">
+            <div className="pr-product-header grid grid-cols-[1.5fr_2fr_0.6fr_0.7fr] border-b border-[#d3d8e0] bg-[#EDFFFD]">
+              <div className="px-3 py-3 text-sm font-semibold text-[#4f5866]">
                 Produk
               </div>
 
-              <div className="px-[6px] py-[8px] text-[8px] font-semibold text-[#4f5866]">
+              <div className="px-3 py-3 text-sm font-semibold text-[#4f5866]">
                 Deskripsi
               </div>
 
-              <div className="px-[6px] py-[8px] text-[8px] font-semibold text-[#4f5866]">
+              <div className="px-3 py-3 text-sm font-semibold text-[#4f5866]">
                 Kuantitas
               </div>
 
-              <div className="px-[6px] py-[8px] text-[8px] font-semibold text-[#4f5866]">
+              <div className="px-3 py-3 text-sm font-semibold text-[#4f5866]">
                 Unit
               </div>
             </div>
 
-            <div className="grid min-h-[43px] grid-cols-[1.5fr_2fr_0.6fr_0.7fr] border-b border-dashed border-[#e2e5ea]">
-              <div className="px-[5px] py-[5px]">
-                <div className="relative w-[387px]">
+            <div className="grid min-h-[58px] grid-cols-[1.5fr_2fr_0.6fr_0.7fr] border-b border-dashed border-[#e2e6ea]">
+              <div className="px-2 py-2">
+                <div className="relative">
                   <select
                     value={product}
                     onChange={(e) => setProduct(e.target.value)}
-                    className="h-[26px] w-full appearance-none rounded-[4px] border border-[#cfd5de] bg-white px-[9px] pr-[25px] text-[8px] text-[#8b94a2] outline-none"
+                    className={selectClass}
                   >
                     <option value="">Pilih produk</option>
                     <option value="Produk A">Produk A</option>
@@ -312,9 +439,9 @@ export default function CreatePurchaseRequestPage() {
                   </select>
 
                   <CaretDown
-                    size={10}
+                    size={14}
                     weight="bold"
-                    className="pointer-events-none absolute right-[8px] top-1/2 -translate-y-1/2 text-[#697386]"
+                    className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#697386]"
                   />
                 </div>
               </div>
@@ -325,77 +452,81 @@ export default function CreatePurchaseRequestPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-[1.05fr_1.05fr_1fr] gap-x-[14px] px-[15px] pt-[7px]">
+          <div className="grid grid-cols-[1.05fr_1.05fr_1fr] gap-5 px-5 pt-2">
             <div>
-              <label className="mb-[5px] block text-[9px] font-semibold text-[#374151]">
-                Pesan
-              </label>
+              <label className={labelClass}>Pesan</label>
 
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Pesan"
-                className="h-[51px] w-full resize-none rounded-[4px] border border-[#cfd5de] bg-white px-[9px] py-[7px] text-[9px] text-[#374151] outline-none placeholder:text-[#98a0ad]"
+                className="h-[110px] w-full resize-none rounded-md border border-[#cfd6de] bg-white px-3 py-2 text-sm text-[#30343b] outline-none placeholder:text-[#98a0ad] focus:border-[#4B61DD]"
               />
             </div>
 
             <div />
 
-            <div className="pt-[1px]">
-              <div className="flex h-[33px] items-center justify-between rounded-[4px] border border-[#cfd5de] bg-white px-[12px]">
-                <span className="text-[9px] font-semibold text-[#56606e]">
+            <div className="pt-1">
+              <div className="flex h-10 items-center justify-between rounded-md border border-[#cfd6de] bg-white px-3">
+                <span className="text-sm font-medium text-[#56606e]">
                   Total barang
                 </span>
 
-                <span className="text-[9px] font-semibold text-[#56606e]">
+                <span className="text-sm font-medium text-[#56606e]">
                   0 Barang
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="px-[15px] pt-[13px]">
-            <div className="w-[360px]">
-              <label className="mb-[5px] block text-[9px] font-semibold text-[#374151]">
-                Memo
-              </label>
+          <div className="px-5 pt-5">
+            <div className="w-[360px] max-w-full">
+              <label className={labelClass}>Memo</label>
 
               <textarea
                 value={memo}
                 onChange={(e) => setMemo(e.target.value)}
                 placeholder="Memo"
-                className="h-[51px] w-full resize-none rounded-[4px] border border-[#cfd5de] bg-white px-[9px] py-[7px] text-[9px] text-[#374151] outline-none placeholder:text-[#98a0ad]"
+                className="h-[110px] w-full resize-none rounded-md border border-[#cfd6de] bg-white px-3 py-2 text-sm text-[#30343b] outline-none placeholder:text-[#98a0ad] focus:border-[#4B61DD]"
               />
             </div>
           </div>
 
-          <div className="px-[15px] pb-[22px] pt-[14px]">
-            <label className="mb-[5px] block text-[9px] font-semibold text-[#374151]">
-              Lampiran
-            </label>
+          <div className="px-5 pb-6 pt-5">
+            <label className={labelClass}>Lampiran</label>
 
-            <div className="flex h-[24px] w-[360px] items-center rounded-[4px] border border-[#cfd5de] bg-white">
-              <label className="flex h-full cursor-pointer items-center border-r border-[#cfd5de] bg-[#fafbfc] px-[8px] text-[8px] text-[#667080]">
+            <div
+              className={`flex h-10 w-[360px] max-w-full items-center rounded-md border ${
+                isDark ? "border-[#996515]" : "border-[#7084d8]"
+              } bg-white`}
+            >
+              <label
+                className={`pr-file-label flex h-full cursor-pointer items-center border-r px-3 text-sm font-medium transition-colors ${
+                  isDark
+                    ? "border-[#996515] bg-[#333333] text-[#c9a15b] hover:text-[#dfbd7c]"
+                    : "border-[#7084d8] bg-[#f5f7ff] text-[#7084d8] hover:text-[#536bc7]"
+                }`}
+              >
                 <input type="file" className="hidden" />
-                Choose file
+                <span>Choose file</span>
               </label>
 
-              <span className="px-[8px] text-[8px] text-[#a2a9b4]">
+              <span className="px-3 text-sm text-[#a2a9b4]">
                 atau tarik & lepas file di sini
               </span>
             </div>
 
-            <div className="mt-[4px] text-[8px] leading-[12px] text-[#9aa2ad]">
+            <div className="mt-2 text-xs leading-5 text-[#9aa2ad]">
               File dapat berupa Excel, Word, PDF, JPG, PNG, atau ZIP (maksimum 5
               file dan 10 MB per file).
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-[8px] border-t border-[#e1e4e9] px-[15px] py-[12px]">
+          <div className="flex items-center justify-end gap-3 border-t border-[#e1e4e9] px-5 py-4">
             <button
               type="button"
               onClick={handleCancel}
-              className="h-[26px] rounded-[4px] bg-white px-[10px] text-[9px] font-medium text-[#606977]"
+              className="h-9 rounded-md bg-white px-4 text-sm font-medium text-[#606977] hover:bg-[#f7f8fa]"
             >
               Batalkan
             </button>
@@ -403,7 +534,11 @@ export default function CreatePurchaseRequestPage() {
             <button
               type="button"
               disabled
-              className="h-[26px] rounded-[4px] bg-[#e9edf2] px-[11px] text-[9px] font-medium text-[#9ba3af]"
+              className={`pr-create-button h-9 rounded-md border px-4 text-sm font-medium transition-colors ${
+                isDark
+                  ? "border-[#c9a15b] bg-[#c9a15b] text-[#1e1e1e] hover:bg-[#dfbd7c]"
+                  : "border-[#7084d8] bg-[#7084d8] text-white hover:bg-[#536bc7]"
+              }`}
             >
               Buat permintaan
             </button>
