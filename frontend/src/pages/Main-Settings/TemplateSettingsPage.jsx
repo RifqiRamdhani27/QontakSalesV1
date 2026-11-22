@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { CaretDown, Trash, Info,Envelope, FilePdf, WhatsappLogo, } from "@phosphor-icons/react";
+import { CaretDown, Trash, Info, Envelope, FilePdf, WhatsappLogo } from "@phosphor-icons/react";
 import {
   selectBase,
   inputBase,
@@ -20,6 +20,7 @@ import {
   templateErrorMessage,
   useTemplateSetting,
 } from "@/services/useSetting";
+
 const TabEmail = ["Sales Invoice", "Sales Quote", "Sales Order", "Purchase Order"];
 const TabPDF = ["General Setting", "Customize PDF"];
 const TabWA = ["Sales Template Message", "Order Template Message"];
@@ -59,6 +60,204 @@ function templateLabel(value) {
   return Object.hasOwn(templateLabels, value) ? templateLabels[value] : value.replace(/^Template (?=\d+$)/, "Templat ");
 }
 
+const linkButton =
+  "border-0 bg-transparent p-0 text-[13px] font-semibold text-brand enabled:cursor-pointer enabled:hover:underline disabled:cursor-not-allowed disabled:opacity-50";
+
+
+/* ---------- Shared building blocks ---------- */
+
+function EditButton({ onClick }) {
+  return (
+    <button
+      type="button"
+      className="group Btn relative !w-[100px] !h-[40px] !text-[12px] overflow-hidden"
+      onClick={onClick}
+    >
+      <span className="transition-opacity duration-100 delay-200 group-hover:delay-0 group-hover:opacity-0">
+        Edit
+      </span>
+
+      <svg
+        className="svg pointer-events-none absolute top-1/2 -translate-y-1/2
+               !w-[14px] !m-0 !right-auto !left-[calc(100%-32px)]
+               transition-all duration-300 group-hover:delay-75
+               group-hover:!left-1/2 group-hover:!-translate-x-1/2"
+        viewBox="0 0 512 512"
+      >
+        <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z" />
+      </svg>
+    </button>
+  );
+}
+
+function SectionTitle({ title, subtitle }) {
+  return (
+    <div className="border-b border-slate-100 pb-4">
+      <h2 className="m-0 text-[19px] font-bold text-gray-900">{title}</h2>
+      {subtitle && <p className="m-0 mt-1 text-sm text-slate-500">{subtitle}</p>}
+    </div>
+  );
+}
+
+function SubHeading({ title, children }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <h3 className="m-0 text-[15px] font-bold text-gray-900">{title}</h3>
+      {children}
+    </div>
+  );
+}
+
+function EditField({ label, children }) {
+  return (
+    <div>
+      <label className={formLabel}>{label}</label>
+      {children}
+    </div>
+  );
+}
+
+function CheckRow({ label, description, checked, disabled, onChange }) {
+  return (
+    <label className={`flex select-none items-start gap-2.5 ${disabled ? "" : "cursor-pointer"}`}>
+      <input
+        type="checkbox"
+        className="mt-0.5 h-4 w-4 rounded accent-brand enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+        checked={checked}
+        disabled={disabled}
+        onChange={onChange}
+      />
+      <span>
+        <span className="block text-sm text-gray-700">{label}</span>
+        {description && (
+          <span className="mt-0.5 block text-[13px] text-slate-500">{description}</span>
+        )}
+      </span>
+    </label>
+  );
+}
+
+function LabelCheckRow({ label, checked, disabled, editing, value, maxLength = 30, onToggle, onValue }) {
+  return (
+    <div className="flex items-center gap-3">
+      <CheckRow label={label} checked={checked} disabled={disabled} onChange={onToggle} />
+      {editing && (
+        <div className="w-[220px]">
+          <input
+            type="text"
+            className={inputBase}
+            placeholder={label}
+            maxLength={maxLength}
+            value={value}
+            onChange={(event) => onValue(event.target.value)}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RadioOption({ name, label, checked, onChange }) {
+  return (
+    <label className="flex cursor-pointer select-none items-center gap-2 text-sm text-gray-700">
+      <input
+        type="radio"
+        name={name}
+        className="h-4 w-4 cursor-pointer accent-brand"
+        checked={checked}
+        onChange={onChange}
+      />
+      {label}
+    </label>
+  );
+}
+
+function ToggleSwitch({ checked, onChange }) {
+  return (
+    <label className="flex cursor-pointer select-none items-center">
+      <input
+        type="checkbox"
+        className="peer sr-only"
+        checked={checked}
+        onChange={onChange}
+      />
+      <span className="relative h-[22px] w-10 rounded-full bg-slate-300 transition-colors peer-checked:bg-brand after:absolute after:left-[3px] after:top-[3px] after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-[18px]"></span>
+    </label>
+  );
+}
+
+function ToggleRow({ label, info, checked, onChange }) {
+  return (
+    <div className="flex items-center justify-between border-b border-slate-100 py-3.5">
+      <span className="text-sm font-semibold text-gray-700">{label}</span>
+      <span className="flex items-center gap-2">
+        <ToggleSwitch checked={checked} onChange={onChange} />
+        {info && <Info size={16} className="text-slate-400" />}
+      </span>
+    </div>
+  );
+}
+
+function InlineEditActions({ editing, onStart, onCancel, onSave }) {
+  if (!editing) return <EditButton onClick={onStart} />;
+  return (
+    <span className="flex gap-2">
+      <button type="button" className={btnModalCancel} onClick={onCancel}>
+        Batal
+      </button>
+      <button type="button" className={btnModalSubmit} onClick={onSave}>
+        Simpan
+      </button>
+    </span>
+  );
+}
+
+function SavedNote({ saved }) {
+  if (!saved) return null;
+  return <p className="m-0 text-[13px] font-semibold text-green-600">Templat tersimpan.</p>;
+}
+
+function TemplateLoading() {
+  return (
+    <div className="flex items-center justify-center p-16">
+      <span className={pageSpinner} />
+    </div>
+  );
+}
+
+function TemplateError({ error }) {
+  if (!error) return null;
+  return (
+    <p className="m-0 whitespace-pre-line text-[13px] font-semibold text-red-600" role="alert">
+      {error}
+    </p>
+  );
+}
+
+function TemplateActions({ error, saved, children }) {
+  return (
+    <div className="mt-6 flex items-center justify-end gap-3 border-t border-gray-200 pt-5">
+      <TemplateError error={error} />
+      <SavedNote saved={saved} />
+      {children}
+    </div>
+  );
+}
+
+
+/* ---------- Tab navigation ---------- */
+function TabSelectField({ icon: Icon, label, children }) {
+  return (
+    <div className="w-[220px] max-md:w-full">
+      <div className="mb-[7px] flex items-center gap-2 text-slate-600">
+        <Icon size={16} className="shrink-0" />
+        <label className={`${formLabel} m-0 leading-none`}>{label}</label>
+      </div>
+      {children}
+    </div>
+  );
+}
+
 function TabNav({
   tab,
   setTab,
@@ -70,12 +269,8 @@ function TabNav({
   setWhatsappTemplate,
 }) {
   return (
-    <div className="flex flex-wrap gap-3">
-      <div>
-        <div className="flex items-center gap-3">
-          <Envelope />
-         <label className={formLabel}>Templat Email</label>
-        </div>
+    <div className="flex flex-wrap gap-4">
+      <TabSelectField icon={Envelope} label="Templat Email">
         <select
           className={selectBase}
           value={tab === "email" ? emailTemplate : ""}
@@ -94,13 +289,9 @@ function TabNav({
             </option>
           ))}
         </select>
-      </div>
+      </TabSelectField>
 
-      <div>
-        <div className="flex items-center gap-3">
-          <FilePdf />
-          <label className={formLabel}> Templat PDF</label>
-         </div>
+      <TabSelectField icon={FilePdf} label="Templat PDF">
         <select
           className={selectBase}
           value={tab === "pdf" ? pdfTemplate : ""}
@@ -119,13 +310,9 @@ function TabNav({
             </option>
           ))}
         </select>
-      </div>
+      </TabSelectField>
 
-      <div>
-        <div className="flex items-center gap-3">
-        <WhatsappLogo />
-        <label className={formLabel}>Templat WhatsApp</label>
-       </div>
+      <TabSelectField icon={WhatsappLogo} label="Templat WhatsApp">
         <select
           className={selectBase}
           value={tab === "whatsapp" ? whatsappTemplate : ""}
@@ -144,48 +331,13 @@ function TabNav({
             </option>
           ))}
         </select>
-      </div>
+      </TabSelectField>
     </div>
   );
 }
 
-function SectionTitle({ title }) {
-  return (
-    <div className="flex flex-col gap-3">
-      <h2 className="font-semibold text-gray-600">{title}</h2>
-      <hr className="border border-slate-300" />
-    </div>
-  );
-}
 
-function SavedNote({ saved }) {
-  if (!saved) return null;
-  return (
-    <p className="m-0 text-[13px] font-semibold text-green-600">
-      Templat tersimpan.
-    </p>
-  );
-}
-
-function TemplateLoading() {
-  return (
-    <div className="flex items-center justify-center p-16">
-      <span className={pageSpinner} />
-    </div>
-  );
-}
-
-function TemplateError({ error }) {
-  if (!error) return null;
-  return (
-    <p
-      className="m-0 whitespace-pre-line text-[13px] font-semibold text-red-600"
-      role="alert"
-    >
-      {error}
-    </p>
-  );
-}
+/* ---------- Email ---------- */
 
 const emailTemplates = {
   "Sales Invoice": {
@@ -249,102 +401,51 @@ function EmailTemplateForm({ name }) {
 
   return (
     <div>
-      <SectionTitle title={`Templat Email ${templateLabel(name)}`} />
-      <div className="mt-2 pt-3">
-        <div className="flex gap-15 items-center mt-3 pt-5">
-          <label className={formLabel}>Subjek</label>
+      <SectionTitle
+        title={`Templat Email ${templateLabel(name)}`}
+        subtitle="Atur subjek dan isi pesan email yang dikirim untuk dokumen ini."
+      />
+
+      <div className="mt-5 flex flex-col gap-[18px]">
+        <EditField label="Subjek">
           <input
             type="text"
             className={inputBase}
             value={values.subject}
             onChange={(event) => setField("subject", event.target.value)}
           />
-        </div>
+        </EditField>
 
-        <div className="flex gap-15 mt-3 pt-5">
-          <label className={formLabel}>Pesan</label>
+        <EditField label="Pesan">
           <textarea
             rows="10"
             className={textareaBase}
             value={values.message}
             onChange={(event) => setField("message", event.target.value)}
           />
-        </div>
+        </EditField>
 
-        <div className="flex flex-col gap-3 mt-3 pt-5">
-          <label className={formLabel}>Variabel</label>
-          <p>{template.variables}</p>
-        </div>
-
-        <div className="flex items-center justify-end gap-4 mt-3 pt-5">
-          <TemplateError error={error} />
-          <SavedNote saved={saved} />
-          <button
-            className={btnModalCancel}
-            disabled={!isDirty}
-            onClick={reset}
-          >
-            Atur Ulang
-          </button>
-          <button
-            className={btnModalSubmit}
-            disabled={saving || !canEdit}
-            onClick={() => save()}
-          >
-            {saving ? "Menyimpan..." : "Perbarui Templat"}
-          </button>
-        </div>
+        <EditField label="Variabel">
+          <p className="m-0 break-words text-[13px] leading-relaxed text-slate-500">
+            {template.variables}
+          </p>
+        </EditField>
       </div>
+
+      <TemplateActions error={error} saved={saved}>
+        <button className={btnModalCancel} disabled={!isDirty} onClick={reset}>
+          Atur Ulang
+        </button>
+        <button className={btnModalSubmit} disabled={saving || !canEdit} onClick={() => save()}>
+          {saving ? "Menyimpan..." : "Perbarui Templat"}
+        </button>
+      </TemplateActions>
     </div>
   );
 }
 
-function CheckboxRow({ label, checked, onChange, disabled }) {
-  return (
-    <label
-      className={
-        disabled
-          ? "flex items-center gap-2.5 py-2 text-sm text-slate-400"
-          : "flex cursor-pointer items-center gap-2.5 py-2 text-sm text-slate-700"
-      }
-    >
-      <input
-        type="checkbox"
-        className="h-4 w-4 cursor-pointer accent-blue-600 disabled:cursor-not-allowed"
-        checked={checked}
-        disabled={disabled}
-        onChange={onChange}
-      />
-      {label}
-    </label>
-  );
-}
 
-function ToggleSwitch({ checked, onChange }) {
-  return (
-    <label className="flex cursor-pointer select-none items-center">
-      <input
-        type="checkbox"
-        className="peer sr-only"
-        checked={checked}
-        onChange={onChange}
-      />
-      <span className="relative h-[22px] w-10 rounded-full bg-slate-300 transition-colors peer-checked:bg-brand after:absolute after:left-[3px] after:top-[3px] after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-[18px]"></span>
-    </label>
-  );
-}
-
-function ToggleRow({ label, info, checked, onChange }) {
-  return (
-    <div className="flex items-center justify-between border-b border-slate-100 py-3">
-      <span className="text-sm font-semibold text-slate-700">{label}</span>
-      <span className="flex items-center gap-2">
-        <ToggleSwitch checked={checked} onChange={onChange} />
-        {info && <Info size={16} className="text-slate-400" />}
-      </span>
-    </div>
-  );
-}
+/* ---------- PDF: general settings ---------- */
 
 function SignatureForSelect({ selected, setSelected, setSaved }) {
   const dropdown = useDropdown();
@@ -401,9 +502,7 @@ function SignatureForSelect({ selected, setSelected, setSaved }) {
           </span>
         ))}
         {selected.length === 0 && (
-          <span className="px-1 text-sm text-slate-400">
-            Pilih dokumen
-          </span>
+          <span className="px-1 text-sm text-slate-400">Pilih dokumen</span>
         )}
         <CaretDown size={16} className="ml-auto text-slate-400" />
       </div>
@@ -432,9 +531,7 @@ function SignatureForSelect({ selected, setSelected, setSaved }) {
             }}
           >
             Semua
-            {selected.length === options.length && (
-              <span className="text-brand">✓</span>
-            )}
+            {selected.length === options.length && <span className="text-brand">✓</span>}
           </button>
           <div className="max-h-[220px] overflow-y-auto">
             {visible.map((item) => (
@@ -452,15 +549,11 @@ function SignatureForSelect({ selected, setSelected, setSaved }) {
                 }}
               >
                 {templateLabel(item)}
-                {selected.includes(item) && (
-                  <span className="text-brand">✓</span>
-                )}
+                {selected.includes(item) && <span className="text-brand">✓</span>}
               </button>
             ))}
             {visible.length === 0 && (
-              <p className="px-3 py-2 text-sm text-slate-400">
-                Tidak ada hasil yang cocok
-              </p>
+              <p className="px-3 py-2 text-sm text-slate-400">Tidak ada hasil yang cocok</p>
             )}
           </div>
         </DropdownPanel>
@@ -609,8 +702,12 @@ function GeneralSetting() {
 
   return (
     <div>
-      <SectionTitle title="Pengaturan PDF" />
-      <div className="mt-2 pt-3">
+      <SectionTitle
+        title="Pengaturan PDF"
+        subtitle="Atur elemen umum yang tampil pada semua dokumen PDF."
+      />
+
+      <div className="mt-2">
         <ToggleRow
           label="Gunakan Kaki Halaman"
           info
@@ -626,9 +723,7 @@ function GeneralSetting() {
           label="Gunakan Tanda Air Draf"
           info
           checked={values.use_draft_watermark}
-          onChange={() =>
-            setField("use_draft_watermark", !values.use_draft_watermark)
-          }
+          onChange={() => setField("use_draft_watermark", !values.use_draft_watermark)}
         />
         <ToggleRow
           label="Gunakan Kode QR Mekaripay"
@@ -636,166 +731,154 @@ function GeneralSetting() {
           checked={values.use_qr_code}
           onChange={() => setField("use_qr_code", !values.use_qr_code)}
         />
+      </div>
 
-        {values.use_signature && (
-          <div>
-            <div className="mt-5 flex items-center justify-end">
-              <button
-                type="button"
-                className="flex cursor-pointer items-center gap-1.5 border-0 bg-transparent p-0 text-sm font-semibold text-red-600 hover:text-red-700"
-                onClick={clearSignature}
-              >
-                <Trash size={15} />
-                Hapus
-              </button>
-            </div>
+      {values.use_signature && (
+        <div className="mt-5">
+          <div className="flex items-center justify-end">
+            <button
+              type="button"
+              className="flex cursor-pointer items-center gap-1.5 border-0 bg-transparent p-0 text-[13px] font-semibold text-red-600 hover:underline"
+              onClick={clearSignature}
+            >
+              <Trash size={15} />
+              Hapus
+            </button>
+          </div>
 
-            <div className="mt-3">
-              <label className={formLabel}>Gunakan tanda tangan ini untuk</label>
+          <div className="mt-3">
+            <EditField label="Gunakan tanda tangan ini untuk">
               <SignatureForSelect
                 selected={values.signature_types}
                 setSelected={(next) => setField("signature_types", next)}
                 setSaved={setSaved}
               />
+            </EditField>
+          </div>
+
+          <div className="mt-4 flex flex-col gap-5 lg:flex-row">
+            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 p-6">
+              {imageUrl && (
+                <img
+                  src={imageUrl}
+                  alt="Tanda tangan"
+                  className="mb-2 h-16 w-16 object-contain"
+                />
+              )}
+              <label className="cursor-pointer text-sm font-semibold text-brand hover:underline">
+                Pilih Berkas
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  className="hidden"
+                  onChange={onSignaturePick}
+                />
+              </label>
+              {signatureFile && (
+                <span className="mt-1 text-[13px] text-slate-600">{signatureFile.name}</span>
+              )}
+              {fileError && (
+                <span className="mt-1 text-[13px] text-red-600">{fileError}</span>
+              )}
+              <p className="m-0 mt-2 text-[13px] text-slate-500">
+                ukuran yang disarankan:
+                <br />
+                100x100 (px)
+              </p>
             </div>
 
-            <div className="mt-4 flex flex-col gap-5 lg:flex-row">
-              <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 p-6">
-                {imageUrl && (
-                  <img
-                    src={imageUrl}
-                    alt="Tanda tangan"
-                    className="mb-2 h-16 w-16 object-contain"
-                  />
-                )}
-                <label className="cursor-pointer text-sm font-semibold text-brand hover:underline">
-                  Pilih Berkas
-                  <input
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp"
-                    className="hidden"
-                    onChange={onSignaturePick}
-                  />
-                </label>
-                {signatureFile && (
-                  <span className="mt-1 text-[13px] text-slate-600">
-                    {signatureFile.name}
-                  </span>
-                )}
-                {fileError && (
-                  <span className="mt-1 text-[13px] text-red-600">
-                    {fileError}
-                  </span>
-                )}
-                <p className="mt-2 m-0 text-[13px] text-slate-500">
-                  ukuran yang disarankan:
-                  <br />
-                  100x100 (px)
-                </p>
-              </div>
-
-              <div className="flex flex-1 flex-col gap-3">
-                {signatureRows.map((row, index) => (
-                  <div key={index} className="flex gap-3">
+            <div className="flex flex-1 flex-col gap-3">
+              {signatureRows.map((row, index) => (
+                <div key={index} className="flex gap-3">
+                  <div className="w-[190px] shrink-0">
                     <select
                       className={selectBase}
                       value={row.option}
-                      onChange={(event) =>
-                        updateRow(index, { option: event.target.value })
-                      }
+                      onChange={(event) => updateRow(index, { option: event.target.value })}
                     >
                       <option value="">Kustom (Ketik Manual)</option>
                       <option value="[User Name]">Nama pengguna</option>
                       <option value="[Company Name]">Nama perusahaan</option>
                     </select>
+                  </div>
+                  <div className="flex-1">
                     <input
                       type="text"
                       className={inputBase}
                       value={row.option === "" ? row.text : resolveRow(row)}
                       disabled={row.option !== ""}
-                      onChange={(event) =>
-                        updateRow(index, { text: event.target.value })
-                      }
+                      onChange={(event) => updateRow(index, { text: event.target.value })}
                     />
                   </div>
-                ))}
+                </div>
+              ))}
+
+              <div className="flex items-center justify-between">
                 <button
                   type="button"
-                  className="cursor-pointer self-end border-0 bg-transparent p-0 text-sm font-semibold text-brand hover:underline"
+                  className={linkButton}
+                  onClick={() =>
+                    setField("signature_rows", [...signatureRows, { option: "", text: "" }])
+                  }
+                >
+                  + Tambah tanda tangan lain
+                </button>
+                <button
+                  type="button"
+                  className={linkButton}
                   onClick={() => setShowPreview(!showPreview)}
                 >
                   Pratinjau
                 </button>
-                {showPreview && (
-                  <div className="self-end rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
-                    {imageUrl ? (
-                      <img
-                        src={imageUrl}
-                        alt="Tanda tangan"
-                        className="mb-2 h-[100px] w-[100px] object-contain"
-                      />
-                    ) : (
-                      <div className="mb-10" />
-                    )}
-                    <div className="mb-2 w-52 border-b border-slate-400" />
-                    {signatureRows
-                      .map(resolveRow)
-                      .filter(Boolean)
-                      .map((line, index) => (
-                        <p
-                          key={index}
-                          className={
-                            index === 0
-                              ? "m-0 font-semibold text-slate-900"
-                              : "m-0"
-                          }
-                        >
-                          {line}
-                        </p>
-                      ))}
-                  </div>
-                )}
               </div>
+
+              {showPreview && (
+                <div className="self-end rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+                  {imageUrl ? (
+                    <img
+                      src={imageUrl}
+                      alt="Tanda tangan"
+                      className="mb-2 h-[100px] w-[100px] object-contain"
+                    />
+                  ) : (
+                    <div className="mb-10" />
+                  )}
+                  <div className="mb-2 w-52 border-b border-slate-400" />
+                  {signatureRows
+                    .map(resolveRow)
+                    .filter(Boolean)
+                    .map((line, index) => (
+                      <p
+                        key={index}
+                        className={index === 0 ? "m-0 font-semibold text-slate-900" : "m-0"}
+                      >
+                        {line}
+                      </p>
+                    ))}
+                </div>
+              )}
             </div>
-
-            <button
-              type="button"
-              className={btnModalSubmit}
-              onClick={() =>
-                setField("signature_rows", [
-                  ...signatureRows,
-                  { option: "", text: "" },
-                ])
-              }
-            >
-              + Tambah Tanda Tangan Lain
-            </button>
           </div>
-        )}
-
-        <hr className="mt-5 border-slate-200" />
-        <p className="mt-4 text-[13px] text-slate-500">
-          Catatan: Kami tidak menjamin bahwa tanda tangan digital yang dicetak melalui fitur ini telah memenuhi peraturan perundang-undangan atau tersertifikasi secara hukum. Untuk informasi lebih lanjut, kunjungi{" "}
-          <span className="cursor-pointer text-brand hover:underline">
-            here
-          </span>
-        </p>
-
-        <div className="flex items-center justify-end gap-4 mt-3 pt-5">
-          <TemplateError error={error} />
-          <SavedNote saved={saved} />
-          <button
-            className={btnModalSubmit}
-            disabled={saving || !canEdit}
-            onClick={handleSave}
-          >
-            {saving ? "Menyimpan..." : "Simpan"}
-          </button>
         </div>
-      </div>
+      )}
+
+      <hr className="mt-5 border-slate-200" />
+      <p className="m-0 mt-4 text-[13px] text-slate-500">
+        Catatan: Kami tidak menjamin bahwa tanda tangan digital yang dicetak melalui fitur ini telah memenuhi peraturan perundang-undangan atau tersertifikasi secara hukum. Untuk informasi lebih lanjut, kunjungi{" "}
+        <span className="cursor-pointer text-brand hover:underline">di sini</span>.
+      </p>
+
+      <TemplateActions error={error} saved={saved}>
+        <button className={btnModalSubmit} disabled={saving || !canEdit} onClick={handleSave}>
+          {saving ? "Menyimpan..." : "Simpan"}
+        </button>
+      </TemplateActions>
     </div>
   );
 }
+
+
+/* ---------- PDF: customize ---------- */
 
 const PdfDateFormats = [
   "28-08-2023",
@@ -803,6 +886,53 @@ const PdfDateFormats = [
   "28 August 2023",
   "08/28/2023",
   "08-28-2023",
+];
+
+const LOGO_POSITIONS = [
+  ["Left", "Kiri"],
+  ["Center", "Tengah"],
+  ["Right", "Kanan"],
+];
+
+// [label, showField, labelField?, maxLength?]
+const COMPANY_ROWS = [
+  ["Nama Perusahaan", "showCompanyName"],
+  ["Alamat", "showCompanyAddress"],
+  ["Email", "showCompanyEmail", "labelCompanyEmail"],
+  ["Telepon", "showCompanyPhone", "labelCompanyPhone"],
+  ["Situs Web", "showCompanyWeb"],
+  ["Faks", "showCompanyFax"],
+  ["NPWP", "showCompanyTax"],
+];
+
+const RECIPIENT_ROWS = [
+  ["Nama", "showRecipientName", "labelRecipientName"],
+  ["Nama Perusahaan", "showRecipientCompany", "labelRecipientCompany"],
+  ["Nama Lengkap", "showRecipientFullName", "labelRecipientFullName"],
+  ["Alamat", "showRecipientAddress", "labelRecipientAddress"],
+  ["Telepon", "showRecipientTelephone", "labelRecipientTelephone"],
+  ["Email", "showRecipientEmail", "labelRecipientEmail"],
+];
+
+const TRANSACTION_ROWS = [
+  ["Referensi pelanggan", "showCustomerRef", "labelCustomerRef", 30],
+  ["DPP Nilai Lain", "showOtherDpp"],
+  ["Penanda", "showTags"],
+  ["Gudang", "showWarehouse"],
+];
+
+const TABLE_ROWS = [
+  ["Kode Produk", "showTableProduct"],
+  ["Deskripsi", "showTableDescription"],
+  ["Jumlah dan satuan", "showTableQty", "labelTableQty", 20],
+  ["Harga per satuan", "showTablePrice", "labelTablePrice", 20],
+  ["Diskon", "showTableDiscount", "labelTableDiscount", 20],
+  ["Pajak", "showTableTax", "labelTableTax", 20],
+];
+
+const MESSAGE_ROWS = [
+  ["Pesan", "showMessage"],
+  ["Memo", "showMemo"],
 ];
 
 function defaultPdfHeader() {
@@ -941,6 +1071,23 @@ function validPdfTemplate(documentType, template) {
   return options.includes(template) ? template : "Template 1";
 }
 
+function DocumentTypeSelect({ value, onChange }) {
+  return (
+    <select className={selectBase} value={value} onChange={(event) => onChange(event.target.value)}>
+      <option value="" disabled>
+        Pilih dokumen
+      </option>
+      <optgroup label="PENJUALAN">
+        <option value="Sales Invoice">Faktur Penjualan</option>
+        <option value="Sales Order">Pesanan Penjualan</option>
+      </optgroup>
+      <optgroup label="PEMBELIAN">
+        <option value="Purchase Invoice">Faktur Pembelian</option>
+      </optgroup>
+    </select>
+  );
+}
+
 function CustomizePdf() {
   const [documentType, setDocumentType] = useState("");
   const [contentTab, setContentTab] = useState("Header");
@@ -990,9 +1137,7 @@ function CustomizePdf() {
         setDraft(initial);
         setSavedSettings(initial);
         setDocumentType(initialDocumentType);
-        setPreviewTemplate(
-          validPdfTemplate(initialDocumentType, uiState.template)
-        );
+        setPreviewTemplate(validPdfTemplate(initialDocumentType, uiState.template));
       })
       .catch((requestError) => {
         if (!cancelled) {
@@ -1030,6 +1175,15 @@ function CustomizePdf() {
         template: nextTemplate,
       })
       .catch(() => {});
+  }
+
+  function handleDocumentTypeChange(nextDocumentType) {
+    setDocumentType(nextDocumentType);
+    setContentTab("Header");
+    setEditingCompanyInfo(false);
+    setEditingTransactionInfo(false);
+    setPreviewTemplate("Template 1");
+    persistPdfUiState(nextDocumentType, "Template 1");
   }
 
   function updateHeader(field, value) {
@@ -1124,527 +1278,225 @@ function CustomizePdf() {
     }
   }
 
+  const renderHeaderRows = (rows) =>
+    rows.map(([label, field, labelField]) => (
+      <LabelCheckRow
+        key={field}
+        label={label}
+        checked={draftHeader[field]}
+        disabled={editingCompanyInfo}
+        editing={editingCompanyInfo && Boolean(labelField)}
+        value={labelField ? draftHeader[labelField] : ""}
+        onToggle={() => updateHeader(field, !draftHeader[field])}
+        onValue={(value) => updateHeader(labelField, value)}
+      />
+    ));
+
+  const renderContentRows = (rows) =>
+    rows.map(([label, field, labelField, maxLength]) => (
+      <LabelCheckRow
+        key={field}
+        label={label}
+        checked={draftContent[field]}
+        disabled={editingTransactionInfo}
+        editing={editingTransactionInfo && Boolean(labelField)}
+        value={labelField ? draftContent[labelField] : ""}
+        maxLength={maxLength}
+        onToggle={() => updateContent(field, !draftContent[field])}
+        onValue={(value) => updateContent(labelField, value)}
+      />
+    ));
+
+  const contentCheck = (label, field, description) => (
+    <CheckRow
+      label={label}
+      description={description}
+      checked={draftContent[field]}
+      onChange={() => updateContent(field, !draftContent[field])}
+    />
+  );
+
   if (loading) return <TemplateLoading />;
+
+  const documentTypeField = (
+    <div className="mt-5 grid grid-cols-2 gap-[18px] max-md:grid-cols-1">
+      <EditField label="Jenis dokumen">
+        <DocumentTypeSelect value={documentType} onChange={handleDocumentTypeChange} />
+      </EditField>
+    </div>
+  );
 
   if (documentType === "") {
     return (
       <div>
-        <SectionTitle title="Sesuaikan PDF" />
-        <div className="mt-2 pt-3">
-          <div className="flex gap-15 items-center mt-3 pt-5">
-            <label className={formLabel}>Jenis dokumen</label>
-            <select
-              className={selectBase}
-              value={documentType}
-              onChange={(event) => {
-                const nextDocumentType = event.target.value;
-                setDocumentType(nextDocumentType);
-                setContentTab("Header");
-                setEditingCompanyInfo(false);
-                setEditingTransactionInfo(false);
-                setPreviewTemplate("Template 1");
-                persistPdfUiState(nextDocumentType, "Template 1");
-              }}
-            >
-              <option value="" disabled>
-                Pilih dokumen
-              </option>
-              <optgroup label="PENJUALAN">
-                <option value="Sales Invoice">Faktur Penjualan</option>
-                <option value="Sales Order">Pesanan Penjualan</option>
-              </optgroup>
-              <optgroup label="PEMBELIAN">
-                <option value="Purchase Invoice">Faktur Pembelian</option>
-              </optgroup>
-            </select>
-          </div>
-          <div className="mt-5 flex min-h-[300px] items-center justify-center rounded-lg border border-dashed border-slate-300">
-            <p className="m-0 text-sm text-slate-500">
-              Templat PDF akan tampil di sini. Pilih jenis dokumen untuk mengatur templat PDF.
-            </p>
-          </div>
+        <SectionTitle
+          title="Sesuaikan PDF"
+          subtitle="Sesuaikan kepala dan isi dokumen PDF, lalu lihat pratinjaunya."
+        />
+        {documentTypeField}
+        <div className="mt-5 flex min-h-[300px] items-center justify-center rounded-lg border border-dashed border-slate-300">
+          <p className="m-0 text-sm text-slate-500">
+            Templat PDF akan tampil di sini. Pilih jenis dokumen untuk mengatur templat PDF.
+          </p>
         </div>
       </div>
     );
   }
 
+  const tabClass = (active) =>
+    active
+      ? "flex-1 cursor-pointer rounded-md border-0 bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm"
+      : "flex-1 cursor-pointer rounded-md border-0 bg-transparent px-3 py-2 text-sm font-semibold text-slate-500 hover:text-black";
+
   return (
     <div>
-      <SectionTitle title="Sesuaikan PDF" />
-      <div className="mt-2 pt-3">
-        <div className="flex gap-15 items-center mt-3 pt-5">
-          <label className={formLabel}>Jenis dokumen</label>
-          <select
-            className={selectBase}
-            value={documentType}
-            onChange={(event) => {
-              const nextDocumentType = event.target.value;
-              setDocumentType(nextDocumentType);
-              setContentTab("Header");
-              setEditingCompanyInfo(false);
-              setEditingTransactionInfo(false);
-              setPreviewTemplate("Template 1");
-              persistPdfUiState(nextDocumentType, "Template 1");
-            }}
-          >
-            <option value="" disabled>
-              Pilih dokumen
-            </option>
-            <optgroup label="PENJUALAN">
-              <option value="Sales Invoice">Faktur Penjualan</option>
-              <option value="Sales Order">Pesanan Penjualan</option>
-            </optgroup>
-            <optgroup label="PEMBELIAN">
-              <option value="Purchase Invoice">Faktur Pembelian</option>
-            </optgroup>
-          </select>
-        </div>
+      <SectionTitle
+        title="Sesuaikan PDF"
+        subtitle="Sesuaikan kepala dan isi dokumen PDF, lalu lihat pratinjaunya."
+      />
+      {documentTypeField}
 
-        <div className="mt-5 flex flex-col gap-4 lg:flex-row">
-          <div className="flex-1">
-            <div className="flex gap-1 rounded-lg bg-slate-100 p-1">
-              <button
-                type="button"
-                className={
-                  contentTab === "Header"
-                    ? "flex-1 cursor-pointer rounded-md border-0 bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow"
-                    : "flex-1 cursor-pointer rounded-md border-0 bg-transparent px-3 py-2 text-sm font-semibold text-slate-500"
-                }
-                onClick={() => setContentTab("Header")}
-              >
-                Kepala Dokumen
-              </button>
-              <button
-                type="button"
-                className={
-                  contentTab === "Content"
-                    ? "flex-1 cursor-pointer rounded-md border-0 bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow"
-                    : "flex-1 cursor-pointer rounded-md border-0 bg-transparent px-3 py-2 text-sm font-semibold text-slate-500"
-                }
-                onClick={() => setContentTab("Content")}
-              >
-                Isi Dokumen
-              </button>
-            </div>
+      <div className="mt-5 flex flex-col gap-4 lg:flex-row">
+        <div className="flex-1">
+          <div className="flex gap-1 rounded-lg bg-slate-100 p-1">
+            <button
+              type="button"
+              className={tabClass(contentTab === "Header")}
+              onClick={() => setContentTab("Header")}
+            >
+              Kepala Dokumen
+            </button>
+            <button
+              type="button"
+              className={tabClass(contentTab === "Content")}
+              onClick={() => setContentTab("Content")}
+            >
+              Isi Dokumen
+            </button>
+          </div>
 
-
-
-            {contentTab === "Header" && (
-              <div className="mt-5 flex flex-col gap-4">
-                <ToggleRow
-                  label="Tampilkan logo perusahaan pada PDF"
-                  checked={draftHeader.showLogo}
-                  onChange={() =>
-                    updateHeader("showLogo", !draftHeader.showLogo)
-                  }
-                />
-                {company && !company.logoUrl && (
-                  <p className="m-0 text-[13px] text-slate-500">
-                    Belum ada logo. Unggah logo di halaman{" "}
-                    <Link
-                      to="/settings/company"
-                      className="font-semibold text-brand hover:underline"
-                    >
-                      Perusahaan
-                    </Link>
-                    .
-                  </p>
-                )}
-                {company?.logoUrl && !company.showLogoInReport && (
-                  <p className="m-0 text-[13px] text-slate-500">
-                    Logo tidak tampil secara bawaan karena “Tampilkan logo pada laporan” di halaman{" "}
-                    <Link
-                      to="/settings/company"
-                      className="font-semibold text-brand hover:underline"
-                    >
-                      Perusahaan
-                    </Link>{" "}
-                    nonaktif. Aktifkan sakelar di atas untuk menampilkannya.
-                  </p>
-                )}
-                {draftHeader.showLogo && (
-                  <div>
-                    <label className={formLabel}>Posisi logo</label>
-                    <div className="flex gap-6">
-                      <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-700">
-                        <input
-                          type="radio"
-                          name="logo_position"
-                          className="h-4 w-4 cursor-pointer accent-blue-600"
-                          checked={draftHeader.logoPosition === "Left"}
-                          onChange={() => updateHeader("logoPosition", "Left")}
-                        />
-                        Kiri
-                      </label>
-                      <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-700">
-                        <input
-                          type="radio"
-                          name="logo_position"
-                          className="h-4 w-4 cursor-pointer accent-blue-600"
-                          checked={draftHeader.logoPosition === "Center"}
-                          onChange={() =>
-                            updateHeader("logoPosition", "Center")
-                          }
-                        />
-                        Tengah
-                      </label>
-                      <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-700">
-                        <input
-                          type="radio"
-                          name="logo_position"
-                          className="h-4 w-4 cursor-pointer accent-blue-600"
-                          checked={draftHeader.logoPosition === "Right"}
-                          onChange={() =>
-                            updateHeader("logoPosition", "Right")
-                          }
-                        />
-                        Kanan
-                      </label>
-                    </div>
+          {contentTab === "Header" && (
+            <div className="mt-5 flex flex-col gap-4">
+              <ToggleRow
+                label="Tampilkan logo perusahaan pada PDF"
+                checked={draftHeader.showLogo}
+                onChange={() => updateHeader("showLogo", !draftHeader.showLogo)}
+              />
+              {company && !company.logoUrl && (
+                <p className="m-0 text-[13px] text-slate-500">
+                  Belum ada logo. Unggah logo di halaman{" "}
+                  <Link to="/settings/company" className="font-semibold text-brand hover:underline">
+                    Perusahaan
+                  </Link>
+                  .
+                </p>
+              )}
+              {company?.logoUrl && !company.showLogoInReport && (
+                <p className="m-0 text-[13px] text-slate-500">
+                  Logo tidak tampil secara bawaan karena “Tampilkan logo pada laporan” di halaman{" "}
+                  <Link to="/settings/company" className="font-semibold text-brand hover:underline">
+                    Perusahaan
+                  </Link>{" "}
+                  nonaktif. Aktifkan sakelar di atas untuk menampilkannya.
+                </p>
+              )}
+              {draftHeader.showLogo && (
+                <EditField label="Posisi logo">
+                  <div className="flex gap-6">
+                    {LOGO_POSITIONS.map(([value, label]) => (
+                      <RadioOption
+                        key={value}
+                        name="logo_position"
+                        label={label}
+                        checked={draftHeader.logoPosition === value}
+                        onChange={() => updateHeader("logoPosition", value)}
+                      />
+                    ))}
                   </div>
-                )}
-                <div>
-                  <label className={formLabel}>Judul dokumen</label>
-                  <div className="flex gap-3">
+                </EditField>
+              )}
+
+              <EditField label="Judul dokumen">
+                <div className="flex gap-3">
+                  <div className="flex-1">
                     <input
                       type="text"
                       className={inputBase}
                       placeholder="Indonesia"
                       value={draftHeader.titleId}
-                      onChange={(event) =>
-                        updateHeader("titleId", event.target.value)
-                      }
+                      onChange={(event) => updateHeader("titleId", event.target.value)}
                     />
+                  </div>
+                  <div className="flex-1">
                     <input
                       type="text"
                       className={inputBase}
                       placeholder="Inggris"
                       value={draftHeader.titleEn}
-                      onChange={(event) =>
-                        updateHeader("titleEn", event.target.value)
-                      }
+                      onChange={(event) => updateHeader("titleEn", event.target.value)}
                     />
                   </div>
-                  <CheckboxRow
+                </div>
+                <div className="mt-3">
+                  <CheckRow
                     label="Terapkan untuk keduanya"
                     checked={draftHeader.applyForBoth}
-                    onChange={() =>
-                      updateHeader("applyForBoth", !draftHeader.applyForBoth)
-                    }
+                    onChange={() => updateHeader("applyForBoth", !draftHeader.applyForBoth)}
                   />
                 </div>
+              </EditField>
 
-                <hr className="border-slate-200" />
+              <hr className="m-0 border-slate-200" />
 
-                <div className="flex items-center justify-between">
-                  <label className={formLabel + " m-0"}>Informasi perusahaan</label>
-                  {editingCompanyInfo ? (
-                    <span className="flex gap-2">
-                      <button
-                        type="button"
-                        className={btnModalCancel}
-                        onClick={cancelEditCompanyInfo}
-                      >
-                        Batal
-                      </button>
-                      <button
-                        type="button"
-                        className={btnModalSubmit}
-                        onClick={saveEditCompanyInfo}
-                      >
-                        Simpan
-                      </button>
-                    </span>
-                  ) : (
-                    <button
-                      type="button"
-                      className="cursor-pointer border-0 bg-transparent p-0 text-sm font-semibold text-brand hover:underline"
-                      onClick={startEditCompanyInfo}
-                    >
-                      Ubah informasi
-                    </button>
-                  )}
-                </div>
-                {editingCompanyInfo && (
-                  <p className="m-0 text-[13px] text-slate-500">
-                    Informasi perusahaan dan penerima yang diubah hanya tersedia dalam satu versi bahasa.
-                  </p>
-                )}
-
-                <CheckboxRow
-                  label="Nama Perusahaan"
-                  checked={draftHeader.showCompanyName}
-                  disabled={editingCompanyInfo}
-                  onChange={() =>
-                    updateHeader("showCompanyName", !draftHeader.showCompanyName)
-                  }
+              <SubHeading title="Informasi perusahaan">
+                <InlineEditActions
+                  editing={editingCompanyInfo}
+                  onStart={startEditCompanyInfo}
+                  onCancel={cancelEditCompanyInfo}
+                  onSave={saveEditCompanyInfo}
                 />
-                <CheckboxRow
-                  label="Alamat"
-                  checked={draftHeader.showCompanyAddress}
-                  disabled={editingCompanyInfo}
-                  onChange={() =>
-                    updateHeader("showCompanyAddress", !draftHeader.showCompanyAddress)
-                  }
-                />
-                <div className="flex items-center gap-3">
-                  <CheckboxRow
-                    label="Email"
-                    checked={draftHeader.showCompanyEmail}
-                    disabled={editingCompanyInfo}
-                    onChange={() =>
-                      updateHeader("showCompanyEmail", !draftHeader.showCompanyEmail)
-                    }
-                  />
-                  {editingCompanyInfo && (
-                    <input
-                      type="text"
-                      className={inputBase + " max-w-[220px]"}
-                      placeholder="Email"
-                      maxLength={30}
-                      value={draftHeader.labelCompanyEmail}
-                      onChange={(event) =>
-                        updateHeader("labelCompanyEmail", event.target.value)
-                      }
-                    />
-                  )}
-                </div>
-                <div className="flex items-center gap-3">
-                  <CheckboxRow
-                    label="Telepon"
-                    checked={draftHeader.showCompanyPhone}
-                    disabled={editingCompanyInfo}
-                    onChange={() =>
-                      updateHeader("showCompanyPhone", !draftHeader.showCompanyPhone)
-                    }
-                  />
-                  {editingCompanyInfo && (
-                    <input
-                      type="text"
-                      className={inputBase + " max-w-[220px]"}
-                      placeholder="Telepon"
-                      maxLength={30}
-                      value={draftHeader.labelCompanyPhone}
-                      onChange={(event) =>
-                        updateHeader("labelCompanyPhone", event.target.value)
-                      }
-                    />
-                  )}
-                </div>
-                <CheckboxRow
-                  label="Situs Web"
-                  checked={draftHeader.showCompanyWeb}
-                  disabled={editingCompanyInfo}
-                  onChange={() =>
-                    updateHeader("showCompanyWeb", !draftHeader.showCompanyWeb)
-                  }
-                />
-                <CheckboxRow
-                  label="Faks"
-                  checked={draftHeader.showCompanyFax}
-                  disabled={editingCompanyInfo}
-                  onChange={() =>
-                    updateHeader("showCompanyFax", !draftHeader.showCompanyFax)
-                  }
-                />
-                <CheckboxRow
-                  label="NPWP"
-                  checked={draftHeader.showCompanyTax}
-                  disabled={editingCompanyInfo}
-                  onChange={() =>
-                    updateHeader("showCompanyTax", !draftHeader.showCompanyTax)
-                  }
-                />
+              </SubHeading>
+              {editingCompanyInfo && (
+                <p className="m-0 text-[13px] text-slate-500">
+                  Informasi perusahaan dan penerima yang diubah hanya tersedia dalam satu versi bahasa.
+                </p>
+              )}
+              {renderHeaderRows(COMPANY_ROWS)}
 
-                <label className={formLabel + " mt-2"}>Informasi penerima</label>
-                <div className="flex items-center gap-3">
-                  <CheckboxRow
-                    label="Nama"
-                    checked={draftHeader.showRecipientName}
-                    disabled={editingCompanyInfo}
-                    onChange={() =>
-                      updateHeader("showRecipientName", !draftHeader.showRecipientName)
-                    }
-                  />
-                  {editingCompanyInfo && (
-                    <input
-                      type="text"
-                      className={inputBase + " max-w-[220px]"}
-                      placeholder="Nama"
-                      maxLength={30}
-                      value={draftHeader.labelRecipientName}
-                      onChange={(event) =>
-                        updateHeader("labelRecipientName", event.target.value)
-                      }
-                    />
-                  )}
-                </div>
-                <div className="flex items-center gap-3">
-                  <CheckboxRow
-                    label="Nama Perusahaan"
-                    checked={draftHeader.showRecipientCompany}
-                    disabled={editingCompanyInfo}
-                    onChange={() =>
-                      updateHeader(
-                        "showRecipientCompany",
-                        !draftHeader.showRecipientCompany
-                      )
-                    }
-                  />
-                  {editingCompanyInfo && (
-                    <input
-                      type="text"
-                      className={inputBase + " max-w-[220px]"}
-                      placeholder="Nama Perusahaan"
-                      maxLength={30}
-                      value={draftHeader.labelRecipientCompany}
-                      onChange={(event) =>
-                        updateHeader("labelRecipientCompany", event.target.value)
-                      }
-                    />
-                  )}
-                </div>
-                <div className="flex items-center gap-3">
-                  <CheckboxRow
-                    label="Nama Lengkap"
-                    checked={draftHeader.showRecipientFullName}
-                    disabled={editingCompanyInfo}
-                    onChange={() =>
-                      updateHeader(
-                        "showRecipientFullName",
-                        !draftHeader.showRecipientFullName
-                      )
-                    }
-                  />
-                  {editingCompanyInfo && (
-                    <input
-                      type="text"
-                      className={inputBase + " max-w-[220px]"}
-                      placeholder="Nama Lengkap"
-                      maxLength={30}
-                      value={draftHeader.labelRecipientFullName}
-                      onChange={(event) =>
-                        updateHeader("labelRecipientFullName", event.target.value)
-                      }
-                    />
-                  )}
-                </div>
-                <div className="flex items-center gap-3">
-                  <CheckboxRow
-                    label="Alamat"
-                    checked={draftHeader.showRecipientAddress}
-                    disabled={editingCompanyInfo}
-                    onChange={() =>
-                      updateHeader(
-                        "showRecipientAddress",
-                        !draftHeader.showRecipientAddress
-                      )
-                    }
-                  />
-                  {editingCompanyInfo && (
-                    <input
-                      type="text"
-                      className={inputBase + " max-w-[220px]"}
-                      placeholder="Alamat"
-                      maxLength={30}
-                      value={draftHeader.labelRecipientAddress}
-                      onChange={(event) =>
-                        updateHeader("labelRecipientAddress", event.target.value)
-                      }
-                    />
-                  )}
-                </div>
-                <div className="flex items-center gap-3">
-                  <CheckboxRow
-                    label="Telepon"
-                    checked={draftHeader.showRecipientTelephone}
-                    disabled={editingCompanyInfo}
-                    onChange={() =>
-                      updateHeader(
-                        "showRecipientTelephone",
-                        !draftHeader.showRecipientTelephone
-                      )
-                    }
-                  />
-                  {editingCompanyInfo && (
-                    <input
-                      type="text"
-                      className={inputBase + " max-w-[220px]"}
-                      placeholder="Telepon"
-                      maxLength={30}
-                      value={draftHeader.labelRecipientTelephone}
-                      onChange={(event) =>
-                        updateHeader("labelRecipientTelephone", event.target.value)
-                      }
-                    />
-                  )}
-                </div>
-                <div className="flex items-center gap-3">
-                  <CheckboxRow
-                    label="Email"
-                    checked={draftHeader.showRecipientEmail}
-                    disabled={editingCompanyInfo}
-                    onChange={() =>
-                      updateHeader(
-                        "showRecipientEmail",
-                        !draftHeader.showRecipientEmail
-                      )
-                    }
-                  />
-                  {editingCompanyInfo && (
-                    <input
-                      type="text"
-                      className={inputBase + " max-w-[220px]"}
-                      placeholder="Email"
-                      maxLength={30}
-                      value={draftHeader.labelRecipientEmail}
-                      onChange={(event) =>
-                        updateHeader("labelRecipientEmail", event.target.value)
-                      }
-                    />
-                  )}
-                </div>
+              <SubHeading title="Informasi penerima" />
+              {renderHeaderRows(RECIPIENT_ROWS)}
 
-                <div className="mt-2">
-                  <CheckboxRow
-                    label="Bidang kustom"
-                    checked={draftHeader.showCustomFields}
-                    onChange={() =>
-                      updateHeader("showCustomFields", !draftHeader.showCustomFields)
-                    }
-                  />
-                  <p className="m-0 pl-7 text-[13px] text-slate-500">
-                    Semua bidang kustom yang aktif akan tampil pada laporan.
-                  </p>
-                </div>
+              <CheckRow
+                label="Bidang kustom"
+                description="Semua bidang kustom yang aktif akan tampil pada laporan."
+                checked={draftHeader.showCustomFields}
+                onChange={() => updateHeader("showCustomFields", !draftHeader.showCustomFields)}
+              />
 
-                <div className="flex gap-15 items-center mt-2">
-                  <label className={formLabel}>Ukuran isi</label>
+              <div className="grid grid-cols-2 gap-[18px] max-md:grid-cols-1">
+                <EditField label="Ukuran isi">
                   <select
                     className={selectBase}
                     value={draftHeader.contentSize}
-                    onChange={(event) =>
-                      updateHeader("contentSize", event.target.value)
-                    }
+                    onChange={(event) => updateHeader("contentSize", event.target.value)}
                   >
                     <option value="Large">Besar</option>
                     <option value="Medium">Sedang</option>
                     <option value="Small">Kecil</option>
                   </select>
-                </div>
+                </EditField>
               </div>
-            )}
+            </div>
+          )}
 
-            {contentTab === "Content" && (
-              <div className="mt-5 flex flex-col gap-1">
-                <div className="flex gap-15 items-center py-2">
-                  <label className={formLabel}>Format tanggal</label>
+          {contentTab === "Content" && (
+            <div className="mt-5 flex flex-col gap-4">
+              <div className="grid grid-cols-2 gap-[18px] max-md:grid-cols-1">
+                <EditField label="Format tanggal">
                   <select
                     className={selectBase}
                     value={draftContent.dateFormat}
-                    onChange={(event) =>
-                      updateContent("dateFormat", event.target.value)
-                    }
+                    onChange={(event) => updateContent("dateFormat", event.target.value)}
                   >
                     {PdfDateFormats.map((item) => (
                       <option key={item} value={item}>
@@ -1652,333 +1504,96 @@ function CustomizePdf() {
                       </option>
                     ))}
                   </select>
-                </div>
-                <div className="flex items-center justify-between">
-                  <label className={formLabel + " m-0"}>Informasi transaksi</label>
-                  {editingTransactionInfo ? (
-                    <span className="flex gap-2">
-                      <button
-                        type="button"
-                        className={btnModalCancel}
-                        onClick={cancelEditTransactionInfo}
-                      >
-                        Batal
-                      </button>
-                      <button
-                        type="button"
-                        className={btnModalSubmit}
-                        onClick={saveEditTransactionInfo}
-                      >
-                        Simpan
-                      </button>
-                    </span>
-                  ) : (
-                    <button
-                      type="button"
-                      className="cursor-pointer border-0 bg-transparent p-0 text-sm font-semibold text-brand hover:underline"
-                      onClick={startEditTransactionInfo}
-                    >
-                      Ubah informasi
-                    </button>
-                  )}
-                </div>
-                <div className="flex items-center gap-3">
-                  <CheckboxRow
-                    label="Referensi pelanggan"
-                    checked={draftContent.showCustomerRef}
-                    disabled={editingTransactionInfo}
-                    onChange={() =>
-                      updateContent(
-                        "showCustomerRef",
-                        !draftContent.showCustomerRef
-                      )
-                    }
-                  />
-                  {editingTransactionInfo && (
-                    <input
-                      type="text"
-                      className={inputBase + " max-w-[220px]"}
-                      placeholder="Referensi pelanggan"
-                      maxLength={30}
-                      value={draftContent.labelCustomerRef}
-                      onChange={(event) =>
-                        updateContent("labelCustomerRef", event.target.value)
-                      }
-                    />
-                  )}
-                </div>
-                <CheckboxRow
-                  label="DPP Nilai Lain"
-                  checked={draftContent.showOtherDpp}
-                  disabled={editingTransactionInfo}
-                  onChange={() =>
-                    updateContent("showOtherDpp", !draftContent.showOtherDpp)
-                  }
-                />
-                <CheckboxRow
-                  label="Penanda"
-                  checked={draftContent.showTags}
-                  disabled={editingTransactionInfo}
-                  onChange={() =>
-                    updateContent("showTags", !draftContent.showTags)
-                  }
-                />
-                <CheckboxRow
-                  label="Gudang"
-                  checked={draftContent.showWarehouse}
-                  disabled={editingTransactionInfo}
-                  onChange={() =>
-                    updateContent("showWarehouse", !draftContent.showWarehouse)
-                  }
-                />
-
-                <label className={formLabel + " mt-4"}>Tabel</label>
-                <CheckboxRow
-                  label="Kode Produk"
-                  checked={draftContent.showTableProduct}
-                  disabled={editingTransactionInfo}
-                  onChange={() =>
-                    updateContent(
-                      "showTableProduct",
-                      !draftContent.showTableProduct
-                    )
-                  }
-                />
-                <CheckboxRow
-                  label="Deskripsi"
-                  checked={draftContent.showTableDescription}
-                  disabled={editingTransactionInfo}
-                  onChange={() =>
-                    updateContent(
-                      "showTableDescription",
-                      !draftContent.showTableDescription
-                    )
-                  }
-                />
-                <div className="flex items-center gap-3">
-                  <CheckboxRow
-                    label="Jumlah dan satuan"
-                    checked={draftContent.showTableQty}
-                    disabled={editingTransactionInfo}
-                    onChange={() =>
-                      updateContent("showTableQty", !draftContent.showTableQty)
-                    }
-                  />
-                  {editingTransactionInfo && (
-                    <input
-                      type="text"
-                      className={inputBase + " max-w-[220px]"}
-                      placeholder="Jumlah dan satuan"
-                      maxLength={20}
-                      value={draftContent.labelTableQty}
-                      onChange={(event) =>
-                        updateContent("labelTableQty", event.target.value)
-                      }
-                    />
-                  )}
-                </div>
-                <div className="flex items-center gap-3">
-                  <CheckboxRow
-                    label="Harga per satuan"
-                    checked={draftContent.showTablePrice}
-                    disabled={editingTransactionInfo}
-                    onChange={() =>
-                      updateContent(
-                        "showTablePrice",
-                        !draftContent.showTablePrice
-                      )
-                    }
-                  />
-                  {editingTransactionInfo && (
-                    <input
-                      type="text"
-                      className={inputBase + " max-w-[220px]"}
-                      placeholder="Harga per satuan"
-                      maxLength={20}
-                      value={draftContent.labelTablePrice}
-                      onChange={(event) =>
-                        updateContent("labelTablePrice", event.target.value)
-                      }
-                    />
-                  )}
-                </div>
-                <div className="flex items-center gap-3">
-                  <CheckboxRow
-                    label="Diskon"
-                    checked={draftContent.showTableDiscount}
-                    disabled={editingTransactionInfo}
-                    onChange={() =>
-                      updateContent(
-                        "showTableDiscount",
-                        !draftContent.showTableDiscount
-                      )
-                    }
-                  />
-                  {editingTransactionInfo && (
-                    <input
-                      type="text"
-                      className={inputBase + " max-w-[220px]"}
-                      placeholder="Diskon"
-                      maxLength={20}
-                      value={draftContent.labelTableDiscount}
-                      onChange={(event) =>
-                        updateContent("labelTableDiscount", event.target.value)
-                      }
-                    />
-                  )}
-                </div>
-                <div className="flex items-center gap-3">
-                  <CheckboxRow
-                    label="Pajak"
-                    checked={draftContent.showTableTax}
-                    disabled={editingTransactionInfo}
-                    onChange={() =>
-                      updateContent("showTableTax", !draftContent.showTableTax)
-                    }
-                  />
-                  {editingTransactionInfo && (
-                    <input
-                      type="text"
-                      className={inputBase + " max-w-[220px]"}
-                      placeholder="Pajak"
-                      maxLength={20}
-                      value={draftContent.labelTableTax}
-                      onChange={(event) =>
-                        updateContent("labelTableTax", event.target.value)
-                      }
-                    />
-                  )}
-                </div>
-
-                <label className={formLabel + " mt-4"}>Pesan dan memo</label>
-                <CheckboxRow
-                  label="Pesan"
-                  checked={draftContent.showMessage}
-                  disabled={editingTransactionInfo}
-                  onChange={() =>
-                    updateContent("showMessage", !draftContent.showMessage)
-                  }
-                />
-                <CheckboxRow
-                  label="Memo"
-                  checked={draftContent.showMemo}
-                  disabled={editingTransactionInfo}
-                  onChange={() =>
-                    updateContent("showMemo", !draftContent.showMemo)
-                  }
-                />
-
-                <CheckboxRow
-                  label="Informasi pembayaran"
-                  checked={draftContent.showPaymentInfo}
-                  onChange={() =>
-                    updateContent(
-                      "showPaymentInfo",
-                      !draftContent.showPaymentInfo
-                    )
-                  }
-                />
-                <CheckboxRow
-                  label="Terbilang"
-                  checked={draftContent.showAmountInWords}
-                  onChange={() =>
-                    updateContent(
-                      "showAmountInWords",
-                      !draftContent.showAmountInWords
-                    )
-                  }
-                />
-                <p className="m-0 pl-7 text-[13px] text-slate-500">
-                  Pilih nominal yang akan ditampilkan pada dokumen.
-                </p>
-                <div className="flex gap-6 pl-7">
-                  <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-700">
-                    <input
-                      type="radio"
-                      name="amount_nominal"
-                      className="h-4 w-4 cursor-pointer accent-blue-600"
-                      checked={draftContent.amountNominal === "Total"}
-                      onChange={() =>
-                        updateContent("amountNominal", "Total")
-                      }
-                    />
-                    Total
-                  </label>
-                  <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-700">
-                    <input
-                      type="radio"
-                      name="amount_nominal"
-                      className="h-4 w-4 cursor-pointer accent-blue-600"
-                      checked={draftContent.amountNominal === "Balance due"}
-                      onChange={() =>
-                        updateContent("amountNominal", "Balance due")
-                      }
-                    />
-                    Sisa tagihan
-                  </label>
-                </div>
-
-                <CheckboxRow
-                  label="Tanda tangan"
-                  checked={draftContent.showSignature}
-                  onChange={() =>
-                    updateContent("showSignature", !draftContent.showSignature)
-                  }
-                />
-                <p className="m-0 pl-7 text-[13px] text-slate-500">
-                  Anda dapat mengunggah tanda tangan di pengaturan PDF
-                </p>
-
-                <CheckboxRow
-                  label="Kaki halaman"
-                  checked={draftContent.showFooter}
-                  onChange={() =>
-                    updateContent("showFooter", !draftContent.showFooter)
-                  }
-                />
-                <p className="m-0 pl-7 text-[13px] text-slate-500">
-                  Menampilkan nomor transaksi dan nomor halaman
-                </p>
-
-                <CheckboxRow
-                  label="Catatan kaki"
-                  checked={draftContent.showFootnote}
-                  onChange={() =>
-                    updateContent("showFootnote", !draftContent.showFootnote)
-                  }
-                />
-                <p className="m-0 pl-7 text-[13px] text-slate-500">
-                  Catatan tambahan di bagian bawah dokumen.
-                </p>
-                <textarea
-                  rows="2"
-                  className={
-                    inputBase +
-                    " mt-1 ml-7 w-auto disabled:bg-slate-100 disabled:text-slate-500"
-                  }
-                  placeholder="Masukkan catatan kaki"
-                  maxLength={30}
-                  value={draftContent.footnoteText}
-                  disabled={!draftContent.showFootnote}
-                  onChange={(event) =>
-                    updateContent("footnoteText", event.target.value)
-                  }
-                />
-                <p className="m-0 pl-7 text-[13px] text-slate-400">
-                  {draftContent.footnoteText.length} / 30
-                </p>
+                </EditField>
               </div>
-            )}
-          </div>
 
-          <div className="flex-1 rounded-lg border border-slate-200 bg-slate-50 p-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <label className="m-0 text-sm font-semibold text-slate-700">
-                  Pratinjau templat
-                </label>
+              <hr className="m-0 border-slate-200" />
+
+              <SubHeading title="Informasi transaksi">
+                <InlineEditActions
+                  editing={editingTransactionInfo}
+                  onStart={startEditTransactionInfo}
+                  onCancel={cancelEditTransactionInfo}
+                  onSave={saveEditTransactionInfo}
+                />
+              </SubHeading>
+              {renderContentRows(TRANSACTION_ROWS)}
+
+              <SubHeading title="Tabel" />
+              {renderContentRows(TABLE_ROWS)}
+
+              <SubHeading title="Pesan dan memo" />
+              {renderContentRows(MESSAGE_ROWS)}
+
+              <hr className="m-0 border-slate-200" />
+
+              {contentCheck("Informasi pembayaran", "showPaymentInfo")}
+
+              <div className="flex flex-col gap-3">
+                {contentCheck(
+                  "Terbilang",
+                  "showAmountInWords",
+                  "Pilih nominal yang akan ditampilkan pada dokumen."
+                )}
+                <div className="flex gap-6 pl-[26px]">
+                  <RadioOption
+                    name="amount_nominal"
+                    label="Total"
+                    checked={draftContent.amountNominal === "Total"}
+                    onChange={() => updateContent("amountNominal", "Total")}
+                  />
+                  <RadioOption
+                    name="amount_nominal"
+                    label="Sisa tagihan"
+                    checked={draftContent.amountNominal === "Balance due"}
+                    onChange={() => updateContent("amountNominal", "Balance due")}
+                  />
+                </div>
+              </div>
+
+              {contentCheck(
+                "Tanda tangan",
+                "showSignature",
+                "Anda dapat mengunggah tanda tangan di pengaturan PDF."
+              )}
+              {contentCheck(
+                "Kaki halaman",
+                "showFooter",
+                "Menampilkan nomor transaksi dan nomor halaman."
+              )}
+
+              <div className="flex flex-col gap-2">
+                {contentCheck(
+                  "Catatan kaki",
+                  "showFootnote",
+                  "Catatan tambahan di bagian bawah dokumen."
+                )}
+                <div className="pl-[26px]">
+                  <textarea
+                    rows="2"
+                    className={`${textareaBase} disabled:bg-slate-100 disabled:text-slate-500`}
+                    placeholder="Masukkan catatan kaki"
+                    maxLength={30}
+                    value={draftContent.footnoteText}
+                    disabled={!draftContent.showFootnote}
+                    onChange={(event) => updateContent("footnoteText", event.target.value)}
+                  />
+                  <p className="m-0 mt-1 text-[13px] text-slate-400">
+                    {draftContent.footnoteText.length} / 30
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="flex-1 rounded-lg border border-slate-200 bg-slate-50 p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <label className={`${formLabel} m-0 whitespace-nowrap`}>Pratinjau templat</label>
+              <div className="w-[180px]">
                 <select
-                  className={selectBase + " max-w-[180px]"}
+                  className={selectBase}
                   value={previewTemplate}
                   onChange={(event) => {
                     const nextTemplate = event.target.value;
@@ -1993,49 +1608,47 @@ function CustomizePdf() {
                   ))}
                 </select>
               </div>
-              <div className="flex justify-end gap-2">
-                <button
-                  type="button"
-                  className="cursor-pointer rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
-                  disabled={!isDirty}
-                  onClick={resetDraft}
-                >
-                  Atur Ulang Templat
-                </button>
-                <button
-                  type="button"
-                  className={btnModalSubmit}
-                  disabled={saving || !canEdit}
-                  onClick={saveDraft}
-                >
-                  {saving ? "Menyimpan..." : "Simpan"}
-                </button>
-                {saved && (
-                  <span className="self-center text-[13px] font-semibold text-green-600">
-                    Templat tersimpan.
-                  </span>
-                )}
-                {error && (
-                  <span className="self-center whitespace-pre-line text-[13px] font-semibold text-red-600">
-                    {error}
-                  </span>
-                )}
-              </div>
             </div>
-            <p className="m-0 mt-3 text-[13px] text-slate-500">
-              Pratinjau diperbarui otomatis. Perubahan berlaku untuk semua templat pada jenis dokumen yang dipilih.
-            </p>
-            <div className="mt-5 overflow-x-auto pb-1">
-              <div className="pdf-sheet mx-auto flex min-h-[900px] w-full min-w-[560px] max-w-[794px] flex-col px-8 py-8 text-slate-800 sm:px-10">
-                <PdfPaper
-                  template={previewTemplate}
-                  documentType={documentType}
-                  header={draft[documentType].header}
-                  content={draft[documentType].content}
-                  company={company}
-                  general={general}
-                />
-              </div>
+            <div className="flex justify-end gap-2.5">
+              <button
+                type="button"
+                className={btnModalCancel}
+                disabled={!isDirty}
+                onClick={resetDraft}
+              >
+                Atur Ulang Templat
+              </button>
+              <button
+                type="button"
+                className={btnModalSubmit}
+                disabled={saving || !canEdit}
+                onClick={saveDraft}
+              >
+                {saving ? "Menyimpan..." : "Simpan"}
+              </button>
+            </div>
+          </div>
+
+          {(saved || error) && (
+            <div className="mt-3 flex justify-end gap-3">
+              <TemplateError error={error} />
+              <SavedNote saved={saved} />
+            </div>
+          )}
+
+          <p className="m-0 mt-3 text-[13px] text-slate-500">
+            Pratinjau diperbarui otomatis. Perubahan berlaku untuk semua templat pada jenis dokumen yang dipilih.
+          </p>
+          <div className="mt-5 overflow-x-auto pb-1">
+            <div className="pdf-sheet mx-auto flex min-h-[900px] w-full min-w-[560px] max-w-[794px] flex-col px-8 py-8 text-slate-800 sm:px-10">
+              <PdfPaper
+                template={previewTemplate}
+                documentType={documentType}
+                header={draft[documentType].header}
+                content={draft[documentType].content}
+                company={company}
+                general={general}
+              />
             </div>
           </div>
         </div>
@@ -2043,6 +1656,9 @@ function CustomizePdf() {
     </div>
   );
 }
+
+
+/* ---------- WhatsApp ---------- */
 
 const whatsappTemplates = {
   "Sales Template Message": {
@@ -2117,60 +1733,57 @@ function WhatsappTemplateForm({ name }) {
 
   return (
     <div>
-      <SectionTitle title={templateLabel(name)} />
-      <div className="mt-2 pt-3">
-        <div className="flex flex-col gap-3 mt-3 pt-5">
-          <label className={formLabel}>Pesan</label>
+      <SectionTitle
+        title={templateLabel(name)}
+        subtitle="Atur isi pesan WhatsApp yang dikirim ke pelanggan."
+      />
+
+      <div className="mt-5 flex flex-col gap-[18px]">
+        <EditField label="Pesan">
           <textarea
             rows="4"
             className={textareaBase}
             value={values.message}
             onChange={(event) => setField("message", event.target.value)}
           />
-        </div>
+        </EditField>
 
-        <div className="mt-4">
-          <CheckboxRow
+        <div className="flex flex-col gap-2.5">
+          <CheckRow
             label="Pesan kaki halaman"
             checked={values.show_footer}
             onChange={() => setField("show_footer", !values.show_footer)}
           />
           <textarea
             rows="2"
-            className={textareaBase + " mt-2 disabled:bg-slate-100 disabled:text-slate-500"}
+            className={`${textareaBase} disabled:bg-slate-100 disabled:text-slate-500`}
             value={values.footer}
             disabled={!values.show_footer}
             onChange={(event) => setField("footer", event.target.value)}
           />
         </div>
 
-        <div className="flex flex-col gap-3 mt-4 pt-5">
-          <label className={formLabel}>Variabel yang tersedia</label>
-          <p>{template.variables}</p>
-        </div>
-
-        <div className="flex items-center justify-end gap-4 mt-3 pt-5">
-          <TemplateError error={error} />
-          <SavedNote saved={saved} />
-          <button
-            className={btnModalCancel}
-            disabled={!isDirty}
-            onClick={reset}
-          >
-            Atur Ulang
-          </button>
-          <button
-            className={btnModalSubmit}
-            disabled={saving || !canEdit}
-            onClick={() => save()}
-          >
-            {saving ? "Menyimpan..." : "Simpan Templat"}
-          </button>
-        </div>
+        <EditField label="Variabel yang tersedia">
+          <p className="m-0 break-words text-[13px] leading-relaxed text-slate-500">
+            {template.variables}
+          </p>
+        </EditField>
       </div>
+
+      <TemplateActions error={error} saved={saved}>
+        <button className={btnModalCancel} disabled={!isDirty} onClick={reset}>
+          Atur Ulang
+        </button>
+        <button className={btnModalSubmit} disabled={saving || !canEdit} onClick={() => save()}>
+          {saving ? "Menyimpan..." : "Simpan Templat"}
+        </button>
+      </TemplateActions>
     </div>
   );
 }
+
+
+/* ---------- Page ---------- */
 
 export default function TemplatePage() {
   const [tab, setTab] = useState(TabEmail.some((name) => canAccessSettingsTemplate(emailTemplates[name].key)) ? "email" : canAccessSettingsTemplate("pdf_general") ? "pdf" : "whatsapp");
@@ -2194,10 +1807,11 @@ export default function TemplatePage() {
   }, []);
 
   return (
-    <div className="p-5 ft-12 max-md:p-[18]">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="p-7 max-md:p-[18px]">
+      <div className="mb-6 flex items-start ">
         <h2 className="m-0 text-[28px] font-bold text-gray-900">Templat</h2>
       </div>
+
       <TabNav
         tab={tab}
         setTab={setTab}
@@ -2209,17 +1823,13 @@ export default function TemplatePage() {
         setWhatsappTemplate={setWhatsappTemplate}
       />
 
-      <div className="mb-6 mt-4 p-6 rounded-[10px] bg-white shadow">
+      <div className="company-card mb-6 mt-4 rounded-[10px] bg-white p-6">
         {tab === "email" && (
           <EmailTemplateForm key={emailTemplate} name={emailTemplate} />
         )}
 
         {tab === "pdf" &&
-          (pdfTemplate === "General Setting" ? (
-            <GeneralSetting />
-          ) : (
-            <CustomizePdf />
-          ))}
+          (pdfTemplate === "General Setting" ? <GeneralSetting /> : <CustomizePdf />)}
 
         {tab === "whatsapp" && (
           <WhatsappTemplateForm key={whatsappTemplate} name={whatsappTemplate} />

@@ -6,7 +6,7 @@ export const btnPrimary =
 export const btnSecondary =
   "inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-md border border-gray-300 bg-white px-2.5 py-[7px] text-xs font-semibold transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60";
 
-  export const btn =
+export const btn =
   "inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-md border border-gray-300 bg-white px-2.5 py-[7px] text-xs font-semibold transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60";
 
 export const btnDangerOutline =
@@ -65,8 +65,7 @@ export const inputBase =
   "w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition-[border-color,box-shadow] placeholder:text-slate-400 focus:border-brand focus:shadow-[0_0_0_3px_rgba(37,99,235,0.1)] disabled:cursor-not-allowed disabled:bg-slate-100";
 
 export const selectBase =
-  "w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition-[border-color,box-shadow] focus:border-brand focus:shadow-[0_0_0_3px_rgba(37,99,235,0.1)] disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500";
-
+  "w-full appearance-none rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 pr-9 text-sm text-gray-900 outline-none transition-[border-color,box-shadow] focus:border-brand focus:shadow-[0_0_0_3px_rgba(37,99,235,0.1)] disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500";
 export const textareaBase =
   "w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-[11px] text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-brand disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500";
 
