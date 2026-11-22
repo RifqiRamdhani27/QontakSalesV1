@@ -125,6 +125,8 @@ class MemberViewSet(viewsets.ModelViewSet):
         return Response(data, status=status.HTTP_201_CREATED)
 
     def perform_update(self, serializer):
+        if getattr(self.request.user, "is_admin", False) and self.request.user.role != "MANAGER":
+            raise PermissionDenied("Admin hanya dapat mengubah status admin pengguna.")
         if serializer.instance.role == "MANAGER" and self.request.user.role != "MANAGER":
             raise PermissionDenied("Owner tidak dapat diubah oleh akun lain.")
         validate_settings_assignment(self.request.user, serializer.validated_data, serializer.instance)
@@ -132,13 +134,36 @@ class MemberViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         member = self.get_object()
-        if member.role == "MANAGER" or member == request.user:
+        if member.role == "MANAGER" or getattr(member, "is_admin", False) or member == request.user:
             return Response(
-                {"detail": "Owner tidak dapat dihapus."},
+                {"detail": "Owner atau admin tidak dapat dihapus."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         member.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=["post"], url_path="set-admin")
+    def set_admin(self, request, pk=None):
+        member = self.get_object()
+        is_admin = request.data.get("is_admin")
+        if not isinstance(is_admin, bool):
+            return Response(
+                {"detail": "Nilai is_admin harus true atau false."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if member.role == "MANAGER":
+            return Response(
+                {"detail": "Pemilik perusahaan tidak dapat diubah status adminnya."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if member.pk == request.user.pk and not is_admin:
+            return Response(
+                {"detail": "Tidak dapat mencabut status admin akun sendiri."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        member.is_admin = is_admin
+        member.save(update_fields=["is_admin"])
+        return Response(MemberSerializer(member).data)
 
     @action(detail=True, methods=["post"], url_path="resend-invitation")
     def resend_invitation(self, request, pk=None):
