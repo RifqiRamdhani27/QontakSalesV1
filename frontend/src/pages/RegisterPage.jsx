@@ -15,12 +15,14 @@ import { keyframes } from "@emotion/react";
 import api from "@/services/api";
 import bgImage from "@/assets/meeting.jpg";
 import LoadingPopup from "@/components/ui/LoadingPopup";
+import SuccessCard from "@/components/ui/SuccesNotifications";
 
 const ACCENT = "#7DD3FC";
 const BTN = "#0089c8ff";
 const ACCENT_HOVER = "rgba(20, 118, 176, 1)";
 const ACCENT_LIGHT = "#21c6f3ff";
 const PANEL_BG = "#0B1120";
+
 
 const FacebookLogo = ({ size = 18 }) => (
   <svg
@@ -146,6 +148,11 @@ function FloatingInput({ name, label, type = "text", secret = false, value, onCh
     });
   };
 
+  const handleFocus = () => {
+    if (locked) setLocked(false);
+    setFocused(true);
+  };
+
   return (
     <Box
       position="relative"
@@ -168,7 +175,7 @@ function FloatingInput({ name, label, type = "text", secret = false, value, onCh
         inputMode={type === "email" ? "email" : undefined}
         value={value}
         onChange={onChange}
-        onFocus={() => setFocused(true)}
+        onFocus={handleFocus}
         onBlur={() => setFocused(false)}
         autoComplete="new-password"
         readOnly={locked}
@@ -267,6 +274,7 @@ export default function RegisterPage() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
   if (localStorage.getItem("access_token")) return <Navigate to="/dashboard" replace />;
 
@@ -289,7 +297,7 @@ export default function RegisterPage() {
         password: form.password,
         company_name: form.company_name,
       });
-      navigate("/login");
+      setSuccess(true);
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed");
     } finally {
@@ -504,6 +512,13 @@ export default function RegisterPage() {
       </Flex>
 
       <LoadingPopup open={loading} message="Creating account..." />
+      <SuccessCard
+        open={success}
+        title="Sign up berhasil!"
+        subtitle="Akun kamu sudah dibuat. Mengarahkan ke login..."
+        duration={2600}
+        onClose={() => navigate("/login")}
+      />
     </Flex>
   );
 }

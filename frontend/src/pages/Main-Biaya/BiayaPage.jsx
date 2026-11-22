@@ -287,7 +287,7 @@ export default function BiayaPage() {
           Saldo adalah untuk semua jangka waktu, kecuali ada pernyataan lain
         </p>
 
-        <div className="rounded-xl border border-slate-300 bg-white">
+        <div className="rounded-xl border main-card bg-white">
           <div className="flex items-center justify-between px-4 py-4">
             <h2 className="text-[20px] font-semibold text-slate-800">
               Daftar Biaya
@@ -303,7 +303,7 @@ export default function BiayaPage() {
               <button
                 type="button"
                 onClick={() => setImportOpen(true)}
-                className="flex h-8 items-center border border-slate-300 bg-white px-3 text-[12px] text-slate-600 hover:bg-slate-50"
+                className="flex h-8 items-center border border-slate-300 bg-white px-3 text-[12px] text-slate-600 rounded-lg hover:bg-slate-50"
               >
                 Impor
               </button>
@@ -314,7 +314,7 @@ export default function BiayaPage() {
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                   placeholder="Pencarian..."
-                  className="h-8 w-[165px] border border-slate-300 bg-white px-3 pr-8 text-[12px] outline-none focus:border-blue-500"
+                  className="h-8 w-[165px] rounded-lg border border-slate-300 bg-white px-3 pr-8 text-[12px] outline-none focus:border-blue-500"
                 />
 
                 <button
@@ -513,7 +513,19 @@ export default function BiayaPage() {
         .bi-dark .bg-white { background-color: #121212 !important; }
         .bi-dark .bg-slate-50 { background-color: #1a1a1a !important; }
         .bi-dark .border-slate-200,
-        .bi-dark .border-slate-300 { border-color: #634f27 !important; }
+        .bi-dark .border-slate-300 { 
+          border-color: #8b550eff !important;
+          outline: none
+        }
+        .bi-dark .main-card { 
+          background-color: #1a1a1a !important;
+          border-color: #8b550eff !important;
+          box-shadow: 0 4px 14px rgba(229, 184, 92, 0.25) !important;
+        }
+        .main-card { 
+          box-shadow: 0 8px 24px rgba(225, 225, 225, 0.93) !important;
+          border-color: #03aeecff !important;
+        }
         .bi-dark .border-amber-200 { border-color: #634f27 !important; }
 
         /* Teks */
@@ -535,14 +547,19 @@ export default function BiayaPage() {
 
         /* Tombol utama -> emas */
         .bi-dark .bg-sky-700,
-        .bi-dark .bg-sky-600 { background-color: #E5B85C !important; color: #121212 !important; }
+        .bi-dark .bg-sky-600 { 
+          background: #e08d33 !important; 
+          box-shadow: 0 4px 8px rgba(254, 92, 23, 0.49) !important;
+        }
         .bi-dark .hover\\:bg-sky-800:hover,
-        .bi-dark .hover\\:bg-sky-700:hover { background-color: #f0c978 !important; }
+        .bi-dark .hover\\:bg-sky-700:hover { background: #e08c33df !important; }
         .bi-dark .bg-sky-600.text-white,
-        .bi-dark .bg-sky-700.text-white { color: #121212 !important; }
+        .bi-dark .bg-sky-700.text-white { color: #e6e6e6f5 !important; }
 
         /* Header kartu, header tabel, footer tabel */
-        .bi-dark .bg-sky-100 { background-color: #d38e0d69 !important; }
+        .bi-dark .bg-sky-100 { 
+          background-color: #e08c33c1 !important; 
+        }
         .bi-dark thead .text-sky-700 { color: #f1f5f9 !important; }
         .bi-dark .bg-sky-50 { background-color: rgba(229,184,92,0.15) !important; }
         .bi-dark .bg-amber-50 { background-color: rgba(245,158,11,0.15) !important; }
@@ -551,10 +568,16 @@ export default function BiayaPage() {
         .bi-dark .ring-sky-500 { --tw-ring-color: #E5B85C !important; }
         /* Light Mode */
         .hover\\:ring-sky-300:hover { --tw-ring-color: #04bfeef0 !important; }
+
         /* Dark Mode */
-        .bi-dark .border-biaya { border-color: #E5B85C !important; }
+        .bi-dark .border-biaya { 
+        border-color: #E5B85C !important; 
+        }
+
         /* Light Mode */
-        .border-biaya { border-color: #04bfeef0 !important; }
+        .border-biaya { 
+        border-color: #04bfeef0 !important; 
+        }
 
         /* Hover umum */
         .bi-dark .hover\\:bg-slate-50:hover,
@@ -567,13 +590,31 @@ export default function BiayaPage() {
           background-color: #262626 !important;
           color: #f1f5f9 !important;
           border-color: #634f27 !important;
+          outline: none !important;          
+          box-shadow: none !important;       
         }
-        .bi-dark input:focus { border-color: #E5B85C !important; }
+        .bi-dark input:focus {
+          border-color: #da7b00ff !important;
+          outline: none !important;          
+          box-shadow: none !important;      
+        }
         .bi-dark ::placeholder { color: #94a3b8; }
 
         /* Shadow hover kartu ringkasan */
         .bi-dark .stat-card:hover {
-          box-shadow: 0 6px 18px rgba(229, 184, 92, 0.45) !important;
+          box-shadow: 0 6px 18px rgba(192, 103, 15, 0.75) !important;
+          border-color: #975c0fff !important;
+        }
+        .bi-dark .stat-card {
+          background-color: #1a1a1a !important;
+          border-color: #975c0fff !important;
+          box-shadow: 0 4px 14px rgba(229, 184, 92, 0.25) !important;
+        }
+        .stat-card {
+          box-shadow: 0 8px 24px rgba(225, 225, 225, 0.93) !important;
+        }
+        .stat-card:hover {
+          box-shadow: 0 8px 24px rgba(109, 109, 109, 0.46) !important;
         }
       `}</style>
 

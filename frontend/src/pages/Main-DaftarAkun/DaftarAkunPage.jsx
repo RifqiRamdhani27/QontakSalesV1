@@ -213,7 +213,7 @@ function RoundCheckbox({ checked, onChange, title, isDark }) {
       style={{
         width: "15px",
         height: "15px",
-        borderRadius: "50%",
+        borderRadius: "30%",
         border: checked ? `1.5px solid ${activeColor}` : `1.5px solid ${inactiveBorder}`,
         backgroundColor: checked ? activeBg : (isDark ? "#262626" : "#FFFFFF"),
         display: "inline-flex",
@@ -260,6 +260,7 @@ export default function DaftarAkunPage() {
 
   const [selectedIds, setSelectedIds] = useState([]);
   const [tindakanOpen, setTindakanOpen] = useState(false);
+  const [tindakanClosing, setTindakanClosing] = useState(false);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -285,6 +286,14 @@ export default function DaftarAkunPage() {
   }, []);
 
   const isDark = themeMode === "dark";
+
+  const closeTindakan = () => {
+    setTindakanClosing(true);
+    setTimeout(() => {
+      setTindakanOpen(false);
+      setTindakanClosing(false);
+    }, 150);
+  };
 
   const accounts = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -597,7 +606,7 @@ export default function DaftarAkunPage() {
           <Box position="relative">
             <Button
               className="dd-btn"
-              onClick={() => setTindakanOpen(!tindakanOpen)}
+              onClick={() => (tindakanOpen ? closeTindakan() : setTindakanOpen(true))}
               bg="#1d62a4ff"
               color="white"
               _hover={{ bg: "#163859" }}
@@ -621,10 +630,14 @@ export default function DaftarAkunPage() {
 
             {tindakanOpen && (
               <>
-                <Box position="fixed" inset={0} zIndex={90} onClick={() => setTindakanOpen(false)} />
+                <Box
+                  className={tindakanClosing ? "dd-backdrop-out" : "dd-backdrop-in"}
+                  position="fixed" inset={0} zIndex={90}
+                  onClick={closeTindakan}
+                />
 
                 <Box
-                  className="dd-card"
+                  className={`dd-card ${tindakanClosing ? "dd-pop-out" : "dd-pop-in"}`}
                   position="absolute"
                   right={0}
                   top="44px"
@@ -642,7 +655,7 @@ export default function DaftarAkunPage() {
                     align="center" gap={3} px={4} py={2.5} cursor="pointer"
                     fontSize="13px" color="#1E293B" fontWeight="500"
                     _hover={{ bg: "#F1F5F9" }}
-                    onClick={() => { setTindakanOpen(false); openCreate(); }}
+                    onClick={() => { closeTindakan(); openCreate(); }}
                   >
                     <Plus size={16} className="dd-item-tindakan" />
                     <Text>Buat Akun Baru</Text>
@@ -653,7 +666,7 @@ export default function DaftarAkunPage() {
                       align="center" gap={3} px={4} py={2.5} cursor="pointer"
                       fontSize="13px" color="#DC2626" fontWeight="600"
                       _hover={{ bg: "#FEF2F2" }}
-                      onClick={() => { setTindakanOpen(false); setBulkDeleteOpen(true); }}
+                      onClick={() => { closeTindakan(); setBulkDeleteOpen(true); }}
                       className="dd-item dd-danger"
                     >
                       <Trash size={16} color="#DC2626" />
@@ -665,7 +678,7 @@ export default function DaftarAkunPage() {
                     align="center" gap={3} px={4} py={2.5} cursor="pointer"
                     fontSize="13px" color="#1E293B" fontWeight="500"
                     _hover={{ bg: "#F1F5F9" }}
-                    onClick={() => { setTindakanOpen(false); navigate("/tutup-buku"); }}
+                    onClick={() => { closeTindakan(); navigate("/tutup-buku"); }}
                     className="dd-item"
                   >
                     <BookOpen size={16} className="dd-item-tindakan" />
@@ -678,7 +691,7 @@ export default function DaftarAkunPage() {
                     align="center" gap={3} px={4} py={2.5} cursor="pointer"
                     fontSize="13px" color="#1E293B" fontWeight="500"
                     _hover={{ bg: "#f1f5f91a" }}
-                    onClick={() => { setTindakanOpen(false); exportCOAToXLSX(); }}
+                    onClick={() => { closeTindakan(); exportCOAToXLSX(); }}
                   >
                     <FileXls size={16} className="dd-item-tindakan" />
                     <Text>Ekspor Akun (.xlsx)</Text>
@@ -721,7 +734,7 @@ export default function DaftarAkunPage() {
 
       <Box
         bg="white" borderRadius="lg" border="1px solid" borderColor="#E2E8F0"
-        boxShadow="0 2px 6px rgba(0,0,0,0.06)"
+        boxShadow="0 2px 14px rgba(0, 0, 0, 0.16)"
         overflow="hidden"
         className="dd-card"
       >
@@ -832,13 +845,13 @@ export default function DaftarAkunPage() {
                       className={isSelected ? "dd-row dd-row-sel" : "dd-row"}
                       style={{
                         borderBottom: "1px solid #F1F5F9",
-                        background: isSelected ? "#F0F9FF" : "white",
+                        background: isSelected ? "#f7fafcff" : "white",
                         fontSize: "13px",
                         fontWeight: "400",
                         color: "#334155",
                         height: "36px",
                       }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = isSelected ? "#E0F2FE" : "#F8FAFC"}
+                      onMouseEnter={(e) => e.currentTarget.style.background = isSelected ? "#f5fafdff" : "#F8FAFC"}
                       onMouseLeave={(e) => e.currentTarget.style.background = isSelected ? "#F0F9FF" : "white"}
                     >
                       <td style={{ padding: "6px 12px", textAlign: "center" }}>
@@ -958,7 +971,7 @@ export default function DaftarAkunPage() {
             </Flex>
 
             <VStack
-              gap={4} p={6} flex={1} overflowY="auto"
+              gap={4} p={6} flex={10} overflowY="auto"
               css={{
                 "&::-webkit-scrollbar": { width: "6px" },
                 "&::-webkit-scrollbar-track": { background: "transparent" },
@@ -1314,7 +1327,7 @@ export default function DaftarAkunPage() {
       .dash-dark .dd-error p { color: #f87171; }
       .dash-dark .dd-error { background: rgba(239,68,68,0.15); border-color: #7f1d1d; }
 
-      .dash-dark .dd-card { background: #121212; border-color: #634f27; }
+      .dash-dark .dd-card { background: #121212; border-color: #634f27; box-shadow: 0 4px 12px rgba(196, 133, 7, 0.17); }
       .dash-dark .dd-foot { background: #1a1a1a; border-color: #634f27; }
       .dash-dark .dd-item:hover { background: #2d2d2dff; }
       .dash-dark .dd-item-tindakan { color: #db9d00ff; }
@@ -1398,6 +1411,21 @@ export default function DaftarAkunPage() {
         0% { background-position: 100% 50%; }
         100% { background-position: 0 50%; }
       }
+      @keyframes ddPopIn {
+        from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      @keyframes ddPopOut {
+        from { opacity: 1; transform: translateY(0) scale(1); }
+        to   { opacity: 0; transform: translateY(-6px) scale(0.98); }
+      }
+      @keyframes ddFadeIn  { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes ddFadeOut { from { opacity: 1; } to { opacity: 0; } }
+
+      .dd-pop-in  { animation: ddPopIn 0.16s cubic-bezier(0.22, 1, 0.36, 1) both; transform-origin: top right; }
+      .dd-pop-out { animation: ddPopOut 0.15s cubic-bezier(0.4, 0, 1, 1) both; transform-origin: top right; pointer-events: none; }
+      .dd-backdrop-in  { animation: ddFadeIn 0.15s ease-out both; }
+      .dd-backdrop-out { animation: ddFadeOut 0.15s ease-in both; pointer-events: none; }
     `}</style>
     </Box>
   );

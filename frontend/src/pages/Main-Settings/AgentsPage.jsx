@@ -85,7 +85,7 @@ export default function AgentsPage() {
       console.error("Fetch agents error:", error);
       alert(
         error.response?.data?.detail ||
-          "Gagal mengambil data agen."
+        "Gagal mengambil data agen."
       );
     } finally {
       setLoading(false);
@@ -274,7 +274,7 @@ export default function AgentsPage() {
 
       alert(
         error.response?.data?.detail ||
-          "Gagal menghapus agen."
+        "Gagal menghapus agen."
       );
     } finally {
       setDeleteLoading(false);
@@ -286,9 +286,8 @@ export default function AgentsPage() {
   // =========================
   const getInitial = (agent) => {
     const name =
-      `${agent.first_name || ""} ${
-        agent.last_name || ""
-      }`.trim();
+      `${agent.first_name || ""} ${agent.last_name || ""
+        }`.trim();
 
     return (
       name.charAt(0) ||
@@ -297,49 +296,43 @@ export default function AgentsPage() {
     ).toUpperCase();
   };
 
-  // =========================
   // RENDER
-  // =========================
   return (
     <div className="mx-auto max-w-[1400px] p-6 max-md:p-4">
 
       {/* HEADER */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4 max-md:items-stretch">
         <div className="flex items-center gap-3.5">
-          <div className="flex h-[52px] w-[52px] items-center justify-center rounded-[10px] bg-brand text-white">
-            <UserPlus size={26} weight="bold" />
-          </div>
-
           <div>
             <h1 className="m-0 text-[28px] font-bold text-gray-900 max-md:text-2xl">
               Agen
             </h1>
-            <p className="m-0 mt-1 text-sm text-slate-500">
-              Kelola data agen QontakSales
+            <p className="m-0 text-sm text-slate-500">
+              Kelola data agen anda.
             </p>
           </div>
         </div>
 
         <button
-  type="button"
-  className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 disabled:opacity-60 max-md:w-full"
-  onClick={openCreate}
-  disabled={!canAccessSettings("agents", "create")}
->
-  <Plus size={18} />
-  Tambah Agen
-</button>
+          type="button"
+          className="ang-btn max-md:w-full max-md:justify-center"
+          onClick={openCreate}
+          disabled={!canAccessSettings("agents", "create")}
+        >
+          <Plus size={18} />
+          Tambah Agen
+        </button>
       </div>
 
       {/* STATISTICS */}
       <div className="mb-6 grid grid-cols-3 gap-4 max-md:grid-cols-1">
 
-        <div className={statCard}>
+        <div className={`${statCard} company-card`}>
           <span className={statLabel}>Total Agen</span>
           <strong className="text-[28px] text-gray-900">{agents.length}</strong>
         </div>
 
-        <div className={statCard}>
+        <div className={`${statCard} company-card`}>
           <span className={statLabel}>Manajer</span>
           <strong className="text-[28px] text-gray-900">
             {
@@ -351,7 +344,7 @@ export default function AgentsPage() {
           </strong>
         </div>
 
-        <div className={statCard}>
+        <div className={`${statCard} company-card`}>
           <span className={statLabel}>Agen</span>
           <strong className="text-[28px] text-gray-900">
             {
@@ -366,8 +359,7 @@ export default function AgentsPage() {
       </div>
 
       {/* TABLE CARD */}
-      <div className={tableCard}>
-
+      <div className={`${tableCard} company-card`}>
         {loading ? (
           <div className="flex min-h-[300px] flex-col items-center justify-center gap-2.5 p-10 text-slate-500">
             <div className={`${pageSpinner} h-[22px] w-[22px]`} />
@@ -387,7 +379,7 @@ export default function AgentsPage() {
 
             <button
               type="button"
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
+              className="ang-btn"
               onClick={openCreate}
               disabled={!canAccessSettings("agents", "create")}
             >
@@ -400,11 +392,11 @@ export default function AgentsPage() {
             <table className={`${tableBase} min-w-[760px]`}>
               <thead>
                 <tr>
-                  <th className={th}>Agen</th>
-                  <th className={th}>Email</th>
-                  <th className={th}>Telepon</th>
-                  <th className={th}>Peran</th>
-                  <th className={th}>Tindakan</th>
+                  <th className={`${th} text-center`}>Agen</th>
+                  <th className={`${th} text-center`}>Email</th>
+                  <th className={`${th} text-center`}>Telepon</th>
+                  <th className={`${th} text-center`}>Peran</th>
+                  <th className={`${th} text-center`}>Tindakan</th>
                 </tr>
               </thead>
 
@@ -448,50 +440,49 @@ export default function AgentsPage() {
                     </td>
 
                     {/* EMAIL */}
-                    <td className={td}>{agent.email}</td>
+                    <td className={`${td} text-center`}>{agent.email}</td>
 
                     {/* PHONE */}
-                    <td className={td}>{agent.phone || "-"}</td>
+                    <td className={`${td} text-center`}>{agent.phone || "-"}</td>
 
                     {/* ROLE */}
-                    <td className={td}>
+                    <td className={`${td} text-center`}>
                       <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-[5px] text-xs font-semibold ${
-                          agent.role === "MANAGER"
-                            ? "bg-purple-100 text-purple-700"
-                            : "bg-blue-100 text-blue-700"
-                        }`}
+                        className={`inline-flex items-center rounded-full px-2.5 py-[5px] text-xs font-semibold ${agent.role === "MANAGER"
+                          ? "bg-purple-100 text-purple-700"
+                          : "bg-blue-100 text-blue-700"
+                          }`}
                       >
                         {agent.role}
                       </span>
                     </td>
 
                     {/* ACTIONS */}
-                    <td className={td}>
-                      <div className="flex items-center gap-2 max-md:flex-col max-md:items-stretch">
+                    <td className={`${td} text-center`}>
+                      <div className="flex items-center gap-3.5 max-md:flex-col max-md:items-stretch">
 
                         <button
                           type="button"
-                          className={`${btnSecondary} max-md:justify-center`}
+                          className="Btn"
                           disabled={!canAccessSettings("agents", "edit")}
-                          onClick={() =>
-                            openEdit(agent)
-                          }
+                          onClick={() => openEdit(agent)}
                         >
-                          <Pencil size={14} />
-                          Ubah
+                          Edit
+                          <svg className="svg" viewBox="0 0 512 512">
+                            <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z" />
+                          </svg>
                         </button>
 
                         <button
                           type="button"
-                          className={`${btnDangerOutline} max-md:justify-center`}
+                          className="BtnDanger"
                           disabled={!canAccessSettings("agents", "delete")}
-                          onClick={() =>
-                            setDeleteId(agent.id)
-                          }
+                          onClick={() => setDeleteId(agent.id)}
                         >
-                          <Trash size={14} />
                           Hapus
+                          <svg className="svg" viewBox="0 0 448 512">
+                            <path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z" />
+                          </svg>
                         </button>
 
                       </div>
@@ -549,7 +540,7 @@ export default function AgentsPage() {
                 {/* AVATAR */}
                 <div className="mb-[22px] flex flex-col items-center gap-3">
 
-                  <div className="flex h-[90px] w-[90px] items-center justify-center overflow-hidden rounded-full bg-blue-100 text-[30px] font-bold text-blue-700">
+                  <div className="flex h-[90px] w-[90px] items-center justify-center overflow-hidden rounded-full bg-slate-100 text-[30px] font-semibold text-slate-500 ring-4 ring-white dark:bg-slate-700 dark:text-slate-200 dark:ring-slate-800">
                     {avatarPreview ? (
                       <img
                         src={avatarPreview}

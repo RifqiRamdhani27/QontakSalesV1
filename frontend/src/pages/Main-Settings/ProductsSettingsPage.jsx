@@ -1,11 +1,18 @@
 import { useEffect, useState } from "react";
-import { MagnifyingGlass, Pencil, PencilSimple, Trash, X } from "@phosphor-icons/react";
+import { MagnifyingGlass, PencilSimple, Trash, X } from "@phosphor-icons/react";
 import {
   btnModalCancel,
   btnModalSubmit,
   formLabel,
   inputBase,
+  modalCloseButton,
+  modalFooter,
+  modalHeader,
+  modalOverlay,
+  modalPanel,
+  modalTitle,
   pageSpinner,
+  selectBase,
   textareaBase,
 } from "@/components/ui/styles";
 import api, { extractError } from "@/services/settingsApi";
@@ -46,14 +53,18 @@ const DEFAULT_REMINDER = {
   email_body: "Terdapat kelompok produksi barang yang akan kedaluwarsa pada [TanggalKedaluwarsa].",
 };
 
+const linkButton =
+  "border-0 bg-transparent p-0 text-[13px] font-semibold text-brand enabled:cursor-pointer enabled:hover:underline disabled:cursor-not-allowed disabled:opacity-50";
+
+
 function MainTab({ mainPage, setMainPage }) {
   return (
     <div className="flex gap-3">
       <button
         className={
           mainPage
-            ? "border-b border-brand bg-white p-2 text-brand"
-            : "p-2 text-gray-400 hover:border-b hover:border-gray-500 hover:bg-gray-50 hover:text-black"
+            ? "border-b border-brand bg-white p-2 text-brand focus:outline-none"
+            : "rounded-t-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-black focus:outline-none"
         }
         onClick={() => setMainPage(true)}
         disabled={!canAccessSettingsFeature("Product: Good & Services")}
@@ -64,14 +75,50 @@ function MainTab({ mainPage, setMainPage }) {
       <button
         className={
           !mainPage
-            ? "border-b border-brand bg-white p-2 text-brand"
-            : "p-2 text-gray-400 hover:border-b hover:border-gray-500 hover:bg-gray-50 hover:text-black"
+            ? "border-b border-brand bg-white p-2 text-brand focus:outline-none"
+            : "rounded-t-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-black focus:outline-none"
         }
         onClick={() => setMainPage(false)}
         disabled={!canAccessSettingsFeature("Product: Warehouse")}
       >
         Gudang
       </button>
+    </div>
+  );
+}
+
+function EditButton({ onClick }) {
+  return (
+    <button
+      type="button"
+      className="group Btn relative !w-[100px] !h-[40px] !text-[12px] overflow-hidden"
+      onClick={onClick}
+    >
+      <span className="transition-opacity duration-100 delay-200 group-hover:delay-0 group-hover:opacity-0">
+        Edit
+      </span>
+
+      <svg
+        className="svg pointer-events-none absolute top-1/2 -translate-y-1/2
+               !w-[14px] !m-0 !right-auto !left-[calc(100%-32px)]
+               transition-all duration-300 group-hover:delay-75
+               group-hover:!left-1/2 group-hover:!-translate-x-1/2"
+        viewBox="0 0 512 512"
+      >
+        <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z" />
+      </svg>
+    </button>
+  );
+}
+
+function SectionHeading({ title, subtitle, showEdit, onEdit }) {
+  return (
+    <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-4 pt-7 first:pt-0">
+      <div>
+        <h2 className="m-0 text-[19px] font-bold text-gray-900">{title}</h2>
+        {subtitle && <p className="m-0 mt-1 text-sm text-slate-500">{subtitle}</p>}
+      </div>
+      {showEdit && <EditButton onClick={onEdit} />}
     </div>
   );
 }
@@ -85,52 +132,53 @@ function SettingRow({ label, children }) {
   );
 }
 
-function SectionHeading({ title, editing, onEdit }) {
+function CheckRow({ label, description, checked, disabled, onChange }) {
   return (
-    <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 pt-5 first:pt-0">
-      <h3 className="m-0 text-[15px] font-bold text-gray-900">{title}</h3>
-      {onEdit && !editing && (
-        <button
-          type="button"
-          className="cursor-pointer rounded-md border-0 bg-transparent p-[5px] text-slate-500 transition-colors hover:bg-slate-100"
-          onClick={onEdit}
-          aria-label={`Ubah ${title}`}
-        >
-          <Pencil size={16} />
-        </button>
-      )}
-    </div>
+    <label className={`flex select-none items-start gap-2.5 ${disabled ? "" : "cursor-pointer"}`}>
+      <input
+        type="checkbox"
+        className="mt-0.5 h-4 w-4 rounded accent-brand enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+        checked={checked}
+        disabled={disabled}
+        onChange={onChange}
+      />
+      <span>
+        <span className="block text-sm text-gray-700">{label}</span>
+        {description && (
+          <span className="mt-0.5 block text-[13px] text-slate-500">{description}</span>
+        )}
+      </span>
+    </label>
   );
 }
 
-function ToggleSwitch({ checked, onChange }) {
+function ToggleSwitch({ label, checked, disabled, onChange }) {
   return (
-    <label className="flex cursor-pointer select-none items-center gap-3">
-      <input type="checkbox" className="peer sr-only" checked={checked} onChange={onChange} />
-      <span className="relative h-[22px] w-10 rounded-full bg-slate-300 transition-colors peer-checked:bg-brand after:absolute after:left-[3px] after:top-[3px] after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-[18px]"></span>
+    <label className={`flex select-none items-center gap-3 ${disabled ? "" : "cursor-pointer"}`}>
+      <input
+        type="checkbox"
+        className="peer sr-only"
+        checked={checked}
+        disabled={disabled}
+        onChange={onChange}
+      />
+      <span className="relative h-[22px] w-10 rounded-full bg-slate-300 transition-colors peer-checked:bg-brand peer-disabled:opacity-60 after:absolute after:left-[3px] after:top-[3px] after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-[18px]"></span>
+      <span className="text-sm font-semibold text-gray-700">{label}</span>
     </label>
   );
 }
 
 function SetLink({ children, onClick }) {
   return (
-    <button
-      type="button"
-      className="cursor-pointer border-0 bg-transparent p-0 text-[13px] font-semibold text-brand hover:underline"
-      onClick={onClick}
-    >
+    <button type="button" className={linkButton} onClick={onClick}>
       {children}
     </button>
   );
 }
 
-function StatusText({ active }) {
-  return <span className="text-sm text-gray-900">{active ? "Aktif" : "Nonaktif"}</span>;
-}
-
 function SaveActions({ saving, error, onCancel, onSave }) {
   return (
-    <div className="pt-4">
+    <div className="mt-6 border-t border-gray-200 pt-5">
       {error && <p className="m-0 mb-3 whitespace-pre-line text-sm text-red-600">{error}</p>}
       <div className="flex justify-end gap-2.5">
         <button type="button" className={btnModalCancel} onClick={onCancel} disabled={saving}>
@@ -144,17 +192,31 @@ function SaveActions({ saving, error, onCancel, onSave }) {
   );
 }
 
-function ModalShell({ title, children, footer }) {
+function SettingStatus({ loading, error }) {
+  if (loading) {
+    return (
+      <div className="company-card mb-6 mt-4 flex items-center justify-center rounded-[10px] bg-white p-16">
+        <span className={pageSpinner} />
+      </div>
+    );
+  }
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-900/55 p-5">
-      <div className="max-h-[90vh] w-full overflow-y-auto rounded-xl bg-white shadow-[0_20px_50px_rgba(0,0,0,0.2)]">
-        <div className="border-b border-gray-200 px-[22px] py-[18px]">
-          <h3 className="m-0 text-[19px] font-bold text-gray-900">{title}</h3>
+    <div className="company-card mb-6 mt-4 rounded-[10px] bg-white p-6 text-sm text-red-600">{error}</div>
+  );
+}
+
+function ModalShell({ title, onClose, maxWidth = "max-w-[560px]", children, footer }) {
+  return (
+    <div className={modalOverlay}>
+      <div className={`${modalPanel} flex ${maxWidth} flex-col`}>
+        <div className={`${modalHeader} shrink-0`}>
+          <h3 className={`${modalTitle} font-bold`}>{title}</h3>
+          <button type="button" className={modalCloseButton} onClick={onClose}>
+            <X size={20} />
+          </button>
         </div>
-        <div className="px-[22px] py-5">{children}</div>
-        <div className="flex justify-end gap-2.5 border-t border-gray-200 px-[22px] py-4">
-          {footer}
-        </div>
+        <div className="flex-1 overflow-y-auto px-[22px] py-5">{children}</div>
+        <div className={`${modalFooter} shrink-0`}>{footer}</div>
       </div>
     </div>
   );
@@ -246,208 +308,198 @@ function ListSetModal({ title, nameLabel, addLabel, searchPlaceholder, noun, url
   };
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-900/55 p-5">
-      <div className="flex max-h-[90vh] w-full max-w-[520px] flex-col overflow-hidden rounded-xl bg-white shadow-[0_20px_50px_rgba(0,0,0,0.2)]">
-        <div className="relative shrink-0 border-b border-gray-200 px-[22px] py-[18px] pr-[52px]">
-          <h3 className="m-0 text-[19px] font-bold text-gray-900">{title}</h3>
+    <ModalShell
+      title={title}
+      onClose={onClose}
+      footer={
+        <button type="button" className={btnModalSubmit} onClick={onClose}>
+          Selesai
+        </button>
+      }
+    >
+      <div className="mb-4 flex items-center gap-2.5">
+        <div className="relative flex-1">
+          <MagnifyingGlass
+            size={18}
+            className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-slate-500"
+          />
+          <input
+            type="text"
+            placeholder={searchPlaceholder}
+            className="input w-full !max-w-full !pl-[38px]"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+          />
+        </div>
+        {editable && (
           <button
             type="button"
-            className="absolute right-4 top-[18px] cursor-pointer rounded-md border-0 bg-transparent p-[5px] text-slate-500 transition-colors hover:bg-slate-100"
-            onClick={onClose}
+            className="shrink-0 cursor-pointer rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-[13px] font-semibold text-gray-700 transition-colors hover:bg-slate-50"
+            onClick={() => {
+              setAdding(true);
+              setEditingId(null);
+              setDeleteId(null);
+              setError("");
+            }}
           >
-            <X size={20} />
+            {addLabel}
           </button>
-        </div>
+        )}
+      </div>
 
-        <div className="flex-1 overflow-y-auto px-[22px] py-5">
-          <div className="mb-4 flex items-center gap-2.5">
-            <div className="flex flex-1 items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2">
-              <MagnifyingGlass size={17} className="shrink-0 text-slate-500" />
+      <div className="flex items-center gap-3 rounded-lg bg-slate-50 px-3 py-2.5">
+        <div className={`${formLabel} m-0 flex-1`}>{nameLabel}</div>
+        <div className="w-[76px]"></div>
+      </div>
+
+      {loading && <p className="m-0 px-3 py-3 text-sm text-slate-500">Memuat...</p>}
+      {error && <p className="m-0 whitespace-pre-line px-3 py-2.5 text-sm text-red-600">{error}</p>}
+      {!loading && !error && visibleRows.length === 0 && !adding && (
+        <p className="m-0 px-3 py-3 text-sm text-slate-500">
+          {search ? `Tidak ada ${noun} yang cocok.` : `Belum ada ${noun}.`}
+        </p>
+      )}
+
+      <div className="flex flex-col">
+        {adding && (
+          <div className="flex items-center gap-2.5 border-b border-slate-100 px-3 py-2.5">
+            <div className="flex-1">
               <input
                 type="text"
-                placeholder={searchPlaceholder}
-                className="w-full border-0 text-sm text-gray-900 outline-none placeholder:text-slate-400"
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
+                className={inputBase}
+                value={newName}
+                maxLength={100}
+                autoFocus
+                onChange={(event) => setNewName(event.target.value)}
               />
             </div>
-            {editable && (
-              <button
-                type="button"
-                className="shrink-0 cursor-pointer rounded-lg border border-gray-300 bg-white px-3.5 py-2 text-[13px] font-semibold text-gray-700 transition-colors hover:bg-slate-50"
-                onClick={() => {
-                  setAdding(true);
-                  setEditingId(null);
-                  setDeleteId(null);
-                  setError("");
-                }}
-              >
-                {addLabel}
-              </button>
-            )}
+            <button
+              type="button"
+              className="cursor-pointer border-0 bg-transparent px-2 py-1 text-[13px] font-semibold text-slate-600 hover:text-black"
+              disabled={busy}
+              onClick={() => {
+                setAdding(false);
+                setNewName("");
+                setError("");
+              }}
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              className={`${linkButton} px-2 py-1`}
+              disabled={busy}
+              onClick={confirmAdd}
+            >
+              Simpan
+            </button>
           </div>
+        )}
 
-          <div className="flex items-center gap-3 rounded-lg bg-slate-50 px-3 py-2.5">
-            <div className={`${formLabel} flex-1 m-0`}>{nameLabel}</div>
-            <div className="w-[76px]"></div>
-          </div>
-
-          {loading && <p className="m-0 px-3 py-3 text-sm text-slate-500">Memuat...</p>}
-          {error && (
-            <p className="m-0 whitespace-pre-line px-3 py-2.5 text-sm text-red-600">{error}</p>
-          )}
-          {!loading && !error && visibleRows.length === 0 && !adding && (
-            <p className="m-0 px-3 py-3 text-sm text-slate-500">
-              {search ? `Tidak ada ${noun} yang cocok.` : `Belum ada ${noun}.`}
-            </p>
-          )}
-
-          <div className="flex flex-col">
-            {adding && (
-              <div className="flex items-center gap-2.5 border-b border-slate-100 px-3 py-2.5">
+        {visibleRows.map((row) => (
+          <div key={row.id} className="flex items-center gap-3 border-b border-slate-100 px-3 py-2.5">
+            <div className="flex-1">
+              {editingId === row.id ? (
                 <input
                   type="text"
-                  className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-brand"
-                  value={newName}
+                  className={inputBase}
+                  value={editName}
                   maxLength={100}
                   autoFocus
-                  onChange={(event) => setNewName(event.target.value)}
+                  onChange={(event) => setEditName(event.target.value)}
                 />
+              ) : (
+                <span className="text-sm text-gray-900">{row.name}</span>
+              )}
+            </div>
+            <div className="flex w-[76px] justify-end gap-1">
+              {editingId === row.id ? (
+                <>
+                  <button
+                    type="button"
+                    className="cursor-pointer border-0 bg-transparent px-1.5 py-1 text-[13px] font-semibold text-slate-600 hover:text-black"
+                    disabled={busy}
+                    onClick={() => {
+                      setEditingId(null);
+                      setError("");
+                    }}
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="button"
+                    className={`${linkButton} px-1.5 py-1`}
+                    disabled={busy}
+                    onClick={() => confirmEdit(row)}
+                  >
+                    Simpan
+                  </button>
+                </>
+              ) : (
+                editable && (
+                  <>
+                    <button
+                      type="button"
+                      className="cursor-pointer rounded-md border-0 bg-transparent p-1.5 text-slate-500 transition-colors hover:bg-slate-100"
+                      onClick={() => {
+                        setEditingId(row.id);
+                        setEditName(row.name);
+                        setAdding(false);
+                        setDeleteId(null);
+                        setError("");
+                      }}
+                    >
+                      <PencilSimple size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      className="cursor-pointer rounded-md border-0 bg-transparent p-1.5 text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600"
+                      onClick={() => {
+                        setDeleteId(deleteId === row.id ? null : row.id);
+                        setEditingId(null);
+                        setAdding(false);
+                        setError("");
+                      }}
+                    >
+                      <Trash size={16} />
+                    </button>
+                  </>
+                )
+              )}
+            </div>
+          </div>
+        ))}
+
+        {deleteId !== null && (
+          <div className="border-b border-slate-100 px-3 py-2.5">
+            <div className="rounded-lg bg-red-50 px-3.5 py-2.5">
+              <div className="text-sm font-semibold text-red-700">Hapus {noun}?</div>
+              <p className="m-0 mt-0.5 text-[13px] text-red-600">
+                Data {noun} yang dihapus tidak dapat dipulihkan.
+              </p>
+              <div className="mt-2 flex justify-end gap-2.5">
                 <button
                   type="button"
                   className="cursor-pointer border-0 bg-transparent px-2 py-1 text-[13px] font-semibold text-slate-600 hover:text-black"
                   disabled={busy}
-                  onClick={() => {
-                    setAdding(false);
-                    setNewName("");
-                    setError("");
-                  }}
+                  onClick={() => setDeleteId(null)}
                 >
                   Batal
                 </button>
                 <button
                   type="button"
-                  className="cursor-pointer border-0 bg-transparent px-2 py-1 text-[13px] font-semibold text-brand hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+                  className="cursor-pointer rounded-lg border-0 bg-red-600 px-3 py-1.5 text-[13px] font-semibold text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
                   disabled={busy}
-                  onClick={confirmAdd}
+                  onClick={() => confirmDelete(rows.find((item) => item.id === deleteId))}
                 >
-                  Simpan
+                  Hapus
                 </button>
               </div>
-            )}
-
-            {visibleRows.map((row) => (
-              <div key={row.id} className="flex items-center gap-3 border-b border-slate-100 px-3 py-2.5">
-                <div className="flex-1">
-                  {editingId === row.id ? (
-                    <input
-                      type="text"
-                      className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-brand"
-                      value={editName}
-                      maxLength={100}
-                      autoFocus
-                      onChange={(event) => setEditName(event.target.value)}
-                    />
-                  ) : (
-                    <span className="text-sm text-gray-900">{row.name}</span>
-                  )}
-                </div>
-                <div className="flex w-[76px] justify-end gap-1">
-                  {editingId === row.id ? (
-                    <>
-                      <button
-                        type="button"
-                        className="cursor-pointer border-0 bg-transparent px-1.5 py-1 text-[13px] font-semibold text-slate-600 hover:text-black"
-                        disabled={busy}
-                        onClick={() => {
-                          setEditingId(null);
-                          setError("");
-                        }}
-                      >
-                        Batal
-                      </button>
-                      <button
-                        type="button"
-                        className="cursor-pointer border-0 bg-transparent px-1.5 py-1 text-[13px] font-semibold text-brand hover:underline disabled:cursor-not-allowed disabled:opacity-50"
-                        disabled={busy}
-                        onClick={() => confirmEdit(row)}
-                      >
-                        Simpan
-                      </button>
-                    </>
-                  ) : (
-                    editable && (
-                      <>
-                        <button
-                          type="button"
-                          className="cursor-pointer rounded-md border-0 bg-transparent p-1.5 text-slate-500 transition-colors hover:bg-slate-100"
-                          onClick={() => {
-                            setEditingId(row.id);
-                            setEditName(row.name);
-                            setAdding(false);
-                            setDeleteId(null);
-                            setError("");
-                          }}
-                        >
-                          <PencilSimple size={16} />
-                        </button>
-                        <button
-                          type="button"
-                          className="cursor-pointer rounded-md border-0 bg-transparent p-1.5 text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600"
-                          onClick={() => {
-                            setDeleteId(deleteId === row.id ? null : row.id);
-                            setEditingId(null);
-                            setAdding(false);
-                            setError("");
-                          }}
-                        >
-                          <Trash size={16} />
-                        </button>
-                      </>
-                    )
-                  )}
-                </div>
-              </div>
-            ))}
-
-            {deleteId !== null && (
-              <div className="border-b border-slate-100 px-3 py-2.5">
-                <div className="rounded-lg bg-red-50 px-3.5 py-2.5">
-                  <div className="text-sm font-semibold text-red-700">Hapus {noun}?</div>
-                  <p className="m-0 mt-0.5 text-[13px] text-red-600">
-                    Data {noun} yang dihapus tidak dapat dipulihkan.
-                  </p>
-                  <div className="mt-2 flex justify-end gap-2.5">
-                    <button
-                      type="button"
-                      className="cursor-pointer border-0 bg-transparent px-2 py-1 text-[13px] font-semibold text-slate-600 hover:text-black"
-                      disabled={busy}
-                      onClick={() => setDeleteId(null)}
-                    >
-                      Batal
-                    </button>
-                    <button
-                      type="button"
-                      className="cursor-pointer rounded-lg border-0 bg-red-600 px-3 py-1.5 text-[13px] font-semibold text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
-                      disabled={busy}
-                      onClick={() => confirmDelete(rows.find((item) => item.id === deleteId))}
-                    >
-                      Hapus
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
-        </div>
-
-        <div className="flex shrink-0 justify-end border-t border-gray-200 px-[22px] py-4">
-          <button type="button" className={btnModalSubmit} onClick={onClose}>
-            Selesai
-          </button>
-        </div>
+        )}
       </div>
-    </div>
+    </ModalShell>
   );
 }
 
@@ -542,6 +594,8 @@ function BatchReminderModal({ editable, onClose }) {
   return (
     <ModalShell
       title="Atur pengingat kelompok produksi"
+      maxWidth="max-w-[780px]"
+      onClose={onClose}
       footer={
         <>
           <button type="button" className={btnModalCancel} onClick={onClose} disabled={saving}>
@@ -569,7 +623,7 @@ function BatchReminderModal({ editable, onClose }) {
           {error && <p className="m-0 mb-4 whitespace-pre-line text-sm text-red-600">{error}</p>}
           {current && (
             <div className="flex gap-5 max-md:flex-col">
-              <div className="w-[240px] shrink-0 border-r border-slate-100 pr-4 max-md:w-full max-md:border-r-0 max-md:border-b max-md:pr-0 max-md:pb-4">
+              <div className="w-[240px] shrink-0 border-r border-slate-100 pr-4 max-md:w-full max-md:border-b max-md:border-r-0 max-md:pb-4 max-md:pr-0">
                 {reminders.map((row, index) => (
                   <button
                     key={index}
@@ -591,12 +645,8 @@ function BatchReminderModal({ editable, onClose }) {
                 ))}
 
                 {editable && (
-                  <button
-                    type="button"
-                    className="cursor-pointer border-0 bg-transparent p-0 text-[13px] font-semibold text-brand hover:underline"
-                    onClick={addReminder}
-                  >
-                    Tambah pengingat baru
+                  <button type="button" className={linkButton} onClick={addReminder}>
+                    + Tambah pengingat baru
                   </button>
                 )}
               </div>
@@ -630,39 +680,41 @@ function BatchReminderModal({ editable, onClose }) {
                 </div>
 
                 <div className="mb-4">
-                  <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">
-                    Kirim pengingat
-                  </label>
+                  <label className={formLabel}>Kirim pengingat</label>
                   <div className="flex flex-wrap items-center gap-2.5">
-                    <input
-                      type="number"
-                      min="1"
-                      className="w-[80px] rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition-[border-color,box-shadow] focus:border-brand focus:shadow-[0_0_0_3px_rgba(37,99,235,0.1)] disabled:cursor-not-allowed disabled:bg-slate-100"
-                      value={current.interval_value}
-                      disabled={!editable}
-                      onChange={(event) => setField("interval_value", event.target.value)}
-                    />
-                    <select
-                      className="w-[110px] rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition-[border-color,box-shadow] focus:border-brand focus:shadow-[0_0_0_3px_rgba(37,99,235,0.1)] disabled:cursor-not-allowed disabled:bg-slate-100"
-                      value={current.interval_unit}
-                      disabled={!editable}
-                      onChange={(event) => setField("interval_unit", event.target.value)}
-                    >
-                      {REMINDER_UNIT_OPTIONS.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="w-[80px]">
+                      <input
+                        type="number"
+                        min="1"
+                        className={inputBase}
+                        value={current.interval_value}
+                        disabled={!editable}
+                        onChange={(event) => setField("interval_value", event.target.value)}
+                      />
+                    </div>
+                    <div className="w-[120px]">
+                      <select
+                        className={selectBase}
+                        value={current.interval_unit}
+                        disabled={!editable}
+                        onChange={(event) => setField("interval_unit", event.target.value)}
+                      >
+                        {REMINDER_UNIT_OPTIONS.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                     {REMINDER_TIMING_OPTIONS.map((option) => (
                       <label
                         key={option.value}
-                        className="flex cursor-pointer select-none items-center gap-2 text-sm text-gray-700"
+                        className={`flex select-none items-center gap-2 text-sm text-gray-700 ${editable ? "cursor-pointer" : ""}`}
                       >
                         <input
                           type="radio"
                           name="reminder-timing"
-                          className="h-4 w-4 accent-brand"
+                          className="h-4 w-4 accent-brand enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
                           checked={current.timing === option.value}
                           disabled={!editable}
                           onChange={() => setField("timing", option.value)}
@@ -674,9 +726,7 @@ function BatchReminderModal({ editable, onClose }) {
                 </div>
 
                 <div className="mb-4">
-                  <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">
-                    Subjek email
-                  </label>
+                  <label className={formLabel}>Subjek email</label>
                   <input
                     type="text"
                     className={inputBase}
@@ -686,10 +736,8 @@ function BatchReminderModal({ editable, onClose }) {
                   />
                 </div>
 
-                <div className="mb-0">
-                  <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">
-                    Isi email
-                  </label>
+                <div>
+                  <label className={formLabel}>Isi email</label>
                   <textarea
                     rows="5"
                     className={textareaBase}
@@ -715,6 +763,8 @@ function GoodsAndServicesTab({ saved, save }) {
   const [batchReminderModalOpen, setBatchReminderModalOpen] = useState(false);
 
   const editable = canAccessSettingsFeature("Product: Good & Services", "edit");
+  const values = subfeatures.draft ?? saved;
+  const readOnly = !subfeatures.editing;
 
   const submitSubfeatures = () => {
     const payload = {};
@@ -725,8 +775,11 @@ function GoodsAndServicesTab({ saved, save }) {
   };
 
   return (
-    <div className="mb-6 mt-4 rounded-[10px] bg-white p-6 shadow-sm">
-      <SectionHeading title="Pengaturan dasar" />
+    <div className="company-card mb-6 mt-4 rounded-[10px] bg-white p-6">
+      <SectionHeading
+        title="Pengaturan dasar"
+        subtitle="Kelola kategori, satuan, dan metode penilaian persediaan produk."
+      />
       <SettingRow label="Kategori produk">
         <SetLink onClick={() => setCategoryModalOpen(true)}>
           {editable ? "Atur kategori produk" : "Lihat kategori produk"}
@@ -743,21 +796,21 @@ function GoodsAndServicesTab({ saved, save }) {
 
       <SectionHeading
         title="Pengaturan subfitur"
-        editing={subfeatures.editing}
-        onEdit={editable ? subfeatures.start : undefined}
+        subtitle="Aktifkan fitur tambahan sesuai kebutuhan bisnis Anda."
+        showEdit={editable && !subfeatures.editing}
+        onEdit={subfeatures.start}
       />
-      {SUBFEATURES.map(([field, label]) => (
-        <SettingRow key={field} label={label}>
-          {subfeatures.editing ? (
-            <ToggleSwitch
-              checked={subfeatures.draft[field]}
-              onChange={() => subfeatures.toggleField(field)}
-            />
-          ) : (
-            <StatusText active={saved[field]} />
-          )}
-        </SettingRow>
-      ))}
+      <div className="mt-5 grid grid-cols-2 gap-x-[18px] gap-y-3.5 max-md:grid-cols-1">
+        {SUBFEATURES.map(([field, label]) => (
+          <CheckRow
+            key={field}
+            label={label}
+            checked={Boolean(values[field])}
+            disabled={readOnly}
+            onChange={() => subfeatures.toggleField(field)}
+          />
+        ))}
+      </div>
       {subfeatures.editing && (
         <SaveActions
           saving={subfeatures.saving}
@@ -767,7 +820,10 @@ function GoodsAndServicesTab({ saved, save }) {
         />
       )}
 
-      <SectionHeading title="Pengaturan lainnya" />
+      <SectionHeading
+        title="Pengaturan lainnya"
+        subtitle="Atur pengingat dan opsi tambahan lainnya."
+      />
       <SettingRow label="Pengingat kelompok produksi">
         <SetLink onClick={() => setBatchReminderModalOpen(true)}>
           {editable ? "Atur pengingat batch" : "Lihat pengingat batch"}
@@ -811,26 +867,27 @@ function GoodsAndServicesTab({ saved, save }) {
 function WarehouseTab({ saved, save }) {
   const storage = useEditing(saved, save, "Gagal menyimpan pengaturan gudang.");
 
+  const editable = canAccessSettingsFeature("Product: Warehouse", "edit");
+  const values = storage.draft ?? saved;
+
   return (
-    <div className="mb-6 mt-4 rounded-[10px] bg-white p-6 shadow-sm">
+    <div className="company-card mb-6 mt-4 rounded-[10px] bg-white p-6">
       <SectionHeading
         title="Lokasi penyimpanan"
-        editing={storage.editing}
-        onEdit={canAccessSettingsFeature("Product: Warehouse", "edit") ? storage.start : undefined}
+        subtitle="Kelola lokasi penyimpanan di gudang hingga tingkat tertentu, seperti area, rak, atau wadah."
+        showEdit={editable && !storage.editing}
+        onEdit={storage.start}
       />
-      <p className="m-0 py-3.5 text-[13px] leading-relaxed text-slate-500">
-        Dengan mengaktifkan fitur ini, Anda dapat mengelola lokasi penyimpanan di gudang hingga tingkat tertentu, seperti area, rak, atau wadah.
-      </p>
-      <SettingRow label="Status fitur">
-        {storage.editing ? (
-          <ToggleSwitch
-            checked={storage.draft.enable_storage_location}
-            onChange={() => storage.toggleField("enable_storage_location")}
-          />
-        ) : (
-          <StatusText active={saved.enable_storage_location} />
-        )}
-      </SettingRow>
+
+      <div className="mt-5">
+        <ToggleSwitch
+          label="Aktifkan lokasi penyimpanan"
+          checked={Boolean(values.enable_storage_location)}
+          disabled={!storage.editing}
+          onChange={() => storage.toggleField("enable_storage_location")}
+        />
+      </div>
+
       {storage.editing && (
         <SaveActions
           saving={storage.saving}
@@ -858,15 +915,7 @@ export default function ProductsPage() {
       <MainTab mainPage={mainPage} setMainPage={setMainPage} />
 
       {!saved ? (
-        loading ? (
-          <div className="mb-6 mt-4 flex items-center justify-center rounded-[10px] bg-white p-16 shadow-sm">
-            <span className={pageSpinner} />
-          </div>
-        ) : (
-          <div className="mb-6 mt-4 rounded-[10px] bg-white p-6 text-sm text-red-600 shadow-sm">
-            {loadError}
-          </div>
-        )
+        <SettingStatus loading={loading} error={loadError} />
       ) : mainPage ? (
         <GoodsAndServicesTab saved={saved} save={save} />
       ) : (

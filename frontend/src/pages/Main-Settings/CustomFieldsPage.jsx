@@ -20,6 +20,12 @@ import {
   btnDangerOutline,
   btnModalCancel,
   btnModalSubmit,
+  modalCloseButton,
+  modalFooter,
+  modalHeader,
+  modalOverlay,
+  modalPanel,
+  modalTitle,
   tableBase,
   tableWrapper,
   td,
@@ -211,6 +217,9 @@ const typeResetValues = {
   mainOption: -1,
 };
 
+const linkButton =
+  "border-0 bg-transparent p-0 text-left text-[13px] font-semibold text-brand enabled:cursor-pointer enabled:hover:underline disabled:cursor-not-allowed disabled:opacity-50";
+
 function capitalize(value) {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
@@ -299,7 +308,7 @@ function validateForm(form) {
     form.useMaxChar &&
     !(Number(form.maxChars) >= 1)
   ) {
-    return "Maximum character must be at least 1.";
+    return "Batas maksimal karakter minimal 1.";
   }
 
   if (
@@ -335,10 +344,90 @@ function validateForm(form) {
   return "";
 }
 
+
+/* ---------- Shared building blocks ---------- */
+
+function ModalShell({
+  title,
+  onClose,
+  maxWidth = "max-w-[560px]",
+  bodyClassName = "px-[22px] py-5",
+  footerClassName = "",
+  children,
+  footer,
+}) {
+  return (
+    <div className={modalOverlay}>
+      <div className={`${modalPanel} flex ${maxWidth} flex-col`}>
+        <div className={`${modalHeader} shrink-0`}>
+          <h3 className={`${modalTitle} font-bold`}>{title}</h3>
+          <button type="button" className={modalCloseButton} onClick={onClose}>
+            <X size={20} />
+          </button>
+        </div>
+        <div className={`flex-1 overflow-y-auto ${bodyClassName}`}>{children}</div>
+        <div className={`${modalFooter} shrink-0 ${footerClassName}`}>{footer}</div>
+      </div>
+    </div>
+  );
+}
+
+function CheckRow({ label, description, checked, disabled, onChange }) {
+  return (
+    <label className={`flex select-none items-start gap-2.5 ${disabled ? "" : "cursor-pointer"}`}>
+      <input
+        type="checkbox"
+        className="mt-0.5 h-4 w-4 rounded accent-brand enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+        checked={checked}
+        disabled={disabled}
+        onChange={onChange}
+      />
+      <span>
+        <span className="block text-sm text-gray-700">{label}</span>
+        {description && (
+          <span className="mt-0.5 block text-[13px] text-slate-500">{description}</span>
+        )}
+      </span>
+    </label>
+  );
+}
+
+function RadioRow({ name, label, description, checked, onChange }) {
+  return (
+    <label className="flex cursor-pointer select-none items-start gap-2.5">
+      <input
+        type="radio"
+        name={name}
+        className="mt-0.5 h-4 w-4 cursor-pointer accent-brand"
+        checked={checked}
+        onChange={onChange}
+      />
+      <span>
+        <span className="block text-sm text-gray-700">{label}</span>
+        {description &&
+          [].concat(description).map((line) => (
+            <span key={line} className="mt-0.5 block text-[13px] text-slate-500">
+              {line}
+            </span>
+          ))}
+      </span>
+    </label>
+  );
+}
+
+function FormSection({ title, children }) {
+  return (
+    <div className="flex flex-col gap-3 border-t border-gray-200 pt-4">
+      {title && <h3 className="m-0 text-[15px] font-bold text-gray-900">{title}</h3>}
+      {children}
+    </div>
+  );
+}
+
 function PreviewField({ label }) {
   return (
     <div className="flex flex-col gap-1">
-      <p className="text-[13px] font-medium text-slate-500">{label}</p>
+      <p className="m-0 text-[13px] font-medium text-slate-500">{label}</p>
 
       <div className="h-[10px] w-full rounded-sm bg-slate-200" />
     </div>
@@ -352,7 +441,7 @@ function PreviewCustomField({ name, type, mustFilled, mainOptionLabel }) {
 
   return (
     <div className="rounded-md border border-dashed border-blue-400 bg-white p-4">
-      <p className="text-[13px] font-medium text-slate-600">
+      <p className="m-0 text-[13px] font-medium text-slate-600">
         {name}
         {mustFilled && <span className="ml-1 text-red-600">*</span>}
       </p>
@@ -374,46 +463,37 @@ function PreviewCustomField({ name, type, mustFilled, mainOptionLabel }) {
   );
 }
 
+
+/* ---------- Modals ---------- */
+
 function AddPopUp({ showQuotaPopup, setShowQuotaPopup }) {
+  if (!showQuotaPopup) return null;
+
   return (
-    <>
-      {showQuotaPopup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="w-full max-w-[500px] rounded-xl bg-white p-6 shadow-lg">
-            <div className="mb-5 flex flex-col gap-4">
-              <h2 className="text-lg font-bold text-gray-800">
-                Tambah kuota bidang kustom
-              </h2>
+    <ModalShell
+      title="Tambah kuota bidang kustom"
+      maxWidth="max-w-[500px]"
+      onClose={() => setShowQuotaPopup(false)}
+      footer={
+        <>
+          <button onClick={() => setShowQuotaPopup(false)} className={btnModalCancel}>
+            OK, Mengerti
+          </button>
 
-              <hr className="border-slate-300"></hr>
-            </div>
+          <button className={btnModalSubmit}>Hubungi Tim Qontak</button>
+        </>
+      }
+    >
+      <div className="flex flex-col gap-2">
+        <p className="m-0 font-bold text-gray-800">
+          199.000 per bidang kustom per tahun
+        </p>
 
-            <div className="flex flex-col gap-2">
-              <p className="font-bold text-gray-800">
-                199.000 per bidang kustom per tahun
-              </p>
-
-              <p className="text-sm leading-6 text-slate-500">
-                Hubungi tim Jurnal melalui tombol berikut atau kirim email ke haloqontak@qontak.com untuk menambah kuota Anda.
-              </p>
-            </div>
-
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                onClick={() => setShowQuotaPopup(false)}
-                className={btnModalCancel}
-              >
-                OK, Mengerti
-              </button>
-
-              <button className={btnModalSubmit}>
-                Hubungi Tim Qontak
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+        <p className="m-0 text-sm leading-6 text-slate-500">
+          Hubungi tim Jurnal melalui tombol berikut atau kirim email ke haloqontak@qontak.com untuk menambah kuota Anda.
+        </p>
+      </div>
+    </ModalShell>
   );
 }
 
@@ -491,139 +571,119 @@ function ReorderPopUp({ onClose, onReorder }) {
     }
   }
 
+  const moveButton =
+    "cursor-pointer rounded-md border-0 bg-transparent p-1.5 text-slate-500 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent";
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-      <div className="w-full max-w-[550px] rounded-xl bg-white p-6 shadow-lg">
-        <div className="mb-5 flex flex-col gap-4">
-          <h2 className="text-lg font-bold text-gray-800">
-            Ubah urutan bidang kustom
-          </h2>
+    <ModalShell
+      title="Ubah urutan bidang kustom"
+      maxWidth="max-w-[550px]"
+      onClose={onClose}
+      footer={
+        <>
+          <button onClick={onClose} disabled={saving} className={btnModalCancel}>
+            Batal
+          </button>
 
-          <hr className="border-slate-300"></hr>
-        </div>
+          <button onClick={handleSave} disabled={!dirty || saving} className={btnModalSubmit}>
+            {saving ? "Menyimpan..." : "Simpan Perubahan"}
+          </button>
+        </>
+      }
+    >
+      <div className="flex flex-col gap-4">
+        <select className={selectBase} value={page} onChange={handlePageChange}>
+          <option value="" disabled>
+            Pilih Halaman
+          </option>
 
-        <div className="flex flex-col gap-4">
-          <select
-            className={selectBase}
-            value={page}
-            onChange={handlePageChange}
-          >
+          {pageOptions.map((item) => (
+            <option key={item} value={item}>
+              {fieldLabel(item)}
+            </option>
+          ))}
+        </select>
+
+        {needsSubPage && (
+          <select className={selectBase} value={subPage} onChange={handleSubPageChange}>
             <option value="" disabled>
-              Pilih Halaman
+              Pilih subhalaman
             </option>
 
-            {pageOptions.map((item) => (
+            {subPages.map((item) => (
               <option key={item} value={item}>
                 {fieldLabel(item)}
               </option>
             ))}
           </select>
+        )}
 
-          {needsSubPage && (
-            <select
-              className={selectBase}
-              value={subPage}
-              onChange={handleSubPageChange}
-            >
-              <option value="" disabled>
-                Pilih subhalaman
-              </option>
+        {loading && (
+          <div className="flex justify-center py-8">
+            <div className={`${pageSpinner} h-7 w-7`} />
+          </div>
+        )}
 
-              {subPages.map((item) => (
-                <option key={item} value={item}>
-                  {fieldLabel(item)}
-                </option>
-              ))}
-            </select>
-          )}
-
-          {loading && (
-            <div className="flex justify-center py-8">
-              <div className={`${pageSpinner} h-7 w-7`} />
-            </div>
-          )}
-
-          {!loading && items !== null && items.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <p className="font-bold text-gray-800">
-                Halaman ini belum memiliki bidang kustom
-              </p>
-
-              <p className="mt-1 text-sm text-slate-500">
-                Silakan tambahkan bidang kustom.
-              </p>
-            </div>
-          )}
-
-          {!loading && items !== null && items.length > 0 && (
-            <ul className="m-0 flex max-h-[300px] list-none flex-col gap-2 overflow-y-auto p-0">
-              {items.map((item, index) => (
-                <li
-                  key={item.id}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-gray-200 px-3 py-2"
-                >
-                  <div className="min-w-0">
-                    <p className="m-0 truncate text-sm font-semibold text-gray-800">
-                      {item.name}
-                    </p>
-
-                    <p className="m-0 text-xs text-slate-500">
-                      {fieldLabel(capitalize(item.field_type))} · {fieldLabel(capitalize(item.status))}
-                    </p>
-                  </div>
-
-                  <div className="flex shrink-0 gap-1">
-                    <button
-                      type="button"
-                      onClick={() => moveItem(index, -1)}
-                      disabled={index === 0 || saving}
-                      aria-label="Pindahkan ke atas"
-                      className="cursor-pointer rounded-md border-0 bg-transparent p-1.5 text-slate-500 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
-                    >
-                      <ArrowUp size={16} />
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => moveItem(index, 1)}
-                      disabled={index === items.length - 1 || saving}
-                      aria-label="Pindahkan ke bawah"
-                      className="cursor-pointer rounded-md border-0 bg-transparent p-1.5 text-slate-500 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
-                    >
-                      <ArrowDown size={16} />
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-
-          {error !== "" && (
-            <p className="m-0 whitespace-pre-line text-sm text-red-600">
-              {error}
+        {!loading && items !== null && items.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <p className="m-0 font-bold text-gray-800">
+              Halaman ini belum memiliki bidang kustom
             </p>
-          )}
-        </div>
 
-        <div className="mt-6 flex justify-end gap-3">
-          <button
-            onClick={onClose}
-            disabled={saving}
-            className={btnModalCancel}
-          >
-            Batal
-          </button>
+            <p className="m-0 mt-1 text-sm text-slate-500">
+              Silakan tambahkan bidang kustom.
+            </p>
+          </div>
+        )}
 
-          <button
-            onClick={handleSave}
-            disabled={!dirty || saving}
-            className={btnModalSubmit}
-          >
-            Simpan Perubahan
-          </button>
-        </div>
+        {!loading && items !== null && items.length > 0 && (
+          <ul className="m-0 flex max-h-[300px] list-none flex-col gap-2 overflow-y-auto p-0">
+            {items.map((item, index) => (
+              <li
+                key={item.id}
+                className="flex items-center justify-between gap-3 rounded-lg border border-gray-200 px-3 py-2"
+              >
+                <div className="min-w-0">
+                  <p className="m-0 truncate text-sm font-semibold text-gray-800">
+                    {item.name}
+                  </p>
+
+                  <p className="m-0 text-xs text-slate-500">
+                    {fieldLabel(capitalize(item.field_type))} · {fieldLabel(capitalize(item.status))}
+                  </p>
+                </div>
+
+                <div className="flex shrink-0 gap-1">
+                  <button
+                    type="button"
+                    onClick={() => moveItem(index, -1)}
+                    disabled={index === 0 || saving}
+                    aria-label="Pindahkan ke atas"
+                    className={moveButton}
+                  >
+                    <ArrowUp size={16} />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => moveItem(index, 1)}
+                    disabled={index === items.length - 1 || saving}
+                    aria-label="Pindahkan ke bawah"
+                    className={moveButton}
+                  >
+                    <ArrowDown size={16} />
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {error !== "" && (
+          <p className="m-0 whitespace-pre-line text-sm text-red-600">{error}</p>
+        )}
       </div>
-    </div>
+    </ModalShell>
   );
 }
 
@@ -739,590 +799,37 @@ function CustomFieldFormPopUp({ field, onClose, onSubmit }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-      <div className="flex max-h-[90vh] w-full max-w-[920px] flex-col overflow-hidden rounded-xl bg-white shadow-lg">
-        <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-6 py-4">
-          <h2 className="text-lg font-bold text-gray-800">
-            {isEdit ? "Ubah bidang kustom" : "Tambah bidang kustom"}
-          </h2>
-
-          <button
-            onClick={handleClose}
-            className="cursor-pointer rounded-md border-0 bg-transparent p-1 text-slate-500 transition-colors hover:bg-slate-100"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        <div className="flex flex-1 flex-col gap-6 overflow-y-auto px-6 py-5 md:flex-row">
-          <div className="flex w-full flex-col gap-5 md:w-[340px] md:shrink-0">
-            <div>
-              <label className={formLabel}>
-                Nama bidang kustom <span className="text-red-600">*</span>
-              </label>
-
-              <input
-                type="text"
-                maxLength={25}
-                value={form.name}
-                onChange={(event) => update({ name: event.target.value })}
-                className={inputBase}
-              />
-
-              <p className="mt-1 text-right text-xs text-slate-500">
-                {form.name.length} / 25
-              </p>
-            </div>
-
-            <div>
-              <label className={formLabel}>
-                Halaman <span className="text-red-600">*</span>
-              </label>
-
-              <select
-                value={form.page}
-                onChange={handlePageChange}
-                className={`${selectBase} cursor-pointer appearance-none`}
-              >
-                <option value="" disabled>
-                  Pilih halaman
-                </option>
-
-                {pageOptions.map((item) => (
-                  <option key={item} value={item}>
-                    {fieldLabel(item)}
-                  </option>
-                ))}
-              </select>
-
-              {subPages.length > 0 && (
-                <div className="relative mt-3">
-                  <button
-                    type="button"
-                    ref={subPageRef}
-                    onClick={() => setShowSubPageList((prev) => !prev)}
-                    className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-gray-300 bg-white px-3 py-[9px] text-left"
-                  >
-                    <span className="text-sm text-slate-500">
-                      {selectedSubPageCount === 0
-                        ? subPagePlaceholder
-                        : `${selectedSubPageCount} halaman dipilih`}
-                    </span>
-
-                    <CaretDown
-                      size={16}
-                      className={`shrink-0 text-slate-400 transition-transform ${showSubPageList ? "rotate-180" : ""}`}
-                    />
-                  </button>
-
-                  {showSubPageList && (
-                    <DropdownPanel
-                      rect={subPageRef.current?.getBoundingClientRect()}
-                      triggerRef={subPageRef}
-                      onClose={() => setShowSubPageList(false)}
-                      maxHeight={200}
-                      variant="settings"
-                      className="flex flex-col gap-1 rounded-lg border border-gray-200 bg-white p-2 shadow-lg"
-                    >
-                      <label className="flex items-center gap-2 text-sm text-gray-700">
-                        <input
-                          type="checkbox"
-                          checked={allChecked}
-                          onChange={toggleSelectAll}
-                          className="h-4 w-4 accent-brand"
-                        />
-
-                        Pilih semua
-                      </label>
-
-                      {subPages.map((item) => (
-                        <label
-                          key={item}
-                          className="flex items-center gap-2 text-sm text-gray-700"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={form.subPages.includes(item)}
-                            onChange={() => toggleSubPage(item)}
-                            className="h-4 w-4 accent-brand"
-                          />
-
-                          {fieldLabel(item)}
-                        </label>
-                      ))}
-                    </DropdownPanel>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div>
-              <label className={formLabel}>
-                Jenis bidang kustom <span className="text-red-600">*</span>
-              </label>
-
-              <select
-                value={form.fieldType}
-                onChange={handleTypeChange}
-                className={`${selectBase} cursor-pointer appearance-none`}
-              >
-                <option value="" disabled>
-                  Pilih jenis bidang kustom
-                </option>
-
-                {typeOptions.map((item) => (
-                  <option key={item.label} value={item.label}>
-                    {fieldLabel(item.label)} — {item.desc}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {form.fieldType === "Text" && (
-              <div className="flex flex-col gap-3 border-t border-gray-200 pt-4">
-                <label className="flex items-center gap-2 text-sm text-gray-700">
-                  <input
-                    type="checkbox"
-                    checked={form.useMaxChar}
-                    onChange={(event) =>
-                      update({ useMaxChar: event.target.checked })
-                    }
-                    className="h-4 w-4 accent-brand"
-                  />
-
-                  Memiliki batas maksimal karakter sebanyak
-                </label>
-
-                {form.useMaxChar && (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      min={1}
-                      max={1000}
-                      value={form.maxChars}
-                      onChange={(event) =>
-                        update({ maxChars: Number(event.target.value) })
-                      }
-                      className={`${inputBase} w-28`}
-                    />
-
-                    <span className="text-sm text-slate-500">Karakter</span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {form.fieldType === "Number" && (
-              <div className="flex flex-col gap-3 border-t border-gray-200 pt-4">
-                <label className="flex items-center gap-2 text-sm text-gray-700">
-                  <input
-                    type="checkbox"
-                    checked={form.useDecimal}
-                    onChange={(event) =>
-                      update({ useDecimal: event.target.checked })
-                    }
-                    className="h-4 w-4 accent-brand"
-                  />
-
-                  Use fractions (decimals)
-                </label>
-
-                <p className="text-sm font-semibold text-gray-800">
-                  Teks tambahan
-                </p>
-
-                <label className="flex items-start gap-2 text-sm text-gray-700">
-                  <input
-                    type="radio"
-                    name="additionalText"
-                    checked={form.additionalText === "none"}
-                    onChange={() => update({ additionalText: "none" })}
-                    className="mt-0.5 h-4 w-4 accent-brand"
-                  />
-
-                  <span>
-                    Without addition
-                  </span>
-                </label>
-
-                <div className="flex flex-col gap-1">
-                  <label className="flex items-start gap-2 text-sm text-gray-700">
-                    <input
-                      type="radio"
-                      name="additionalText"
-                      checked={form.additionalText === "prefix"}
-                      onChange={() => update({ additionalText: "prefix" })}
-                      className="mt-0.5 h-4 w-4 accent-brand"
-                    />
-
-                    <span>
-                      Awalan
-                      <span className="block text-xs text-slate-500">
-                        Teks ditambahkan sebelum angka.
-                      </span>
-                      <span className="block text-xs text-slate-500">
-                        Contoh: Simbol mata uang (Rp50.000)
-                      </span>
-                    </span>
-                  </label>
-
-                  {form.additionalText === "prefix" && (
-                    <input
-                      type="text"
-                      maxLength={30}
-                      value={form.prefixText}
-                      onChange={(event) =>
-                        update({ prefixText: event.target.value })
-                      }
-                      className={inputBase}
-                    />
-                  )}
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="flex items-start gap-2 text-sm text-gray-700">
-                    <input
-                      type="radio"
-                      name="additionalText"
-                      checked={form.additionalText === "suffix"}
-                      onChange={() => update({ additionalText: "suffix" })}
-                      className="mt-0.5 h-4 w-4 accent-brand"
-                    />
-
-                    <span>
-                      Akhiran
-                      <span className="block text-xs text-slate-500">
-                        Teks ditambahkan setelah angka.
-                      </span>
-                      <span className="block text-xs text-slate-500">
-                        Contoh: Panjang produk (5 cm)
-                      </span>
-                    </span>
-                  </label>
-
-                  {form.additionalText === "suffix" && (
-                    <input
-                      type="text"
-                      maxLength={30}
-                      value={form.suffixText}
-                      onChange={(event) =>
-                        update({ suffixText: event.target.value })
-                      }
-                      className={inputBase}
-                    />
-                  )}
-                </div>
-              </div>
-            )}
-
-            {form.fieldType === "Date" && (
-              <div className="flex flex-col gap-3 border-t border-gray-200 pt-4">
-                <p className="text-sm font-semibold text-gray-800">
-                  Pemilihan tanggal pada bidang kustom
-                </p>
-
-                <label className="flex items-start gap-2 text-sm text-gray-700">
-                  <input
-                    type="radio"
-                    name="dateSelection"
-                    checked={form.dateSelection === "none"}
-                    onChange={() => update({ dateSelection: "none" })}
-                    className="mt-0.5 h-4 w-4 accent-brand"
-                  />
-
-                  <span>
-                    Kosong
-                    <span className="block text-xs text-slate-500">
-                      Tanggal harus dipilih secara manual
-                    </span>
-                  </span>
-                </label>
-
-                <label className="flex items-start gap-2 text-sm text-gray-700">
-                  <input
-                    type="radio"
-                    name="dateSelection"
-                    checked={form.dateSelection === "today"}
-                    onChange={() => update({ dateSelection: "today" })}
-                    className="mt-0.5 h-4 w-4 accent-brand"
-                  />
-
-                  <span>
-                    Tanggal hari ini
-                    <span className="block text-xs text-slate-500">
-                      Dipilih otomatis saat membuat atau menambah transaksi, produk, dan kontak
-                    </span>
-                  </span>
-                </label>
-              </div>
-            )}
-
-            {form.fieldType === "Dropdown" && (
-              <div className="flex flex-col gap-3 border-t border-gray-200 pt-4">
-                <label className="flex items-center gap-2 text-sm text-gray-700">
-                  <input
-                    type="checkbox"
-                    checked={form.multiSelect}
-                    onChange={(event) =>
-                      update({ multiSelect: event.target.checked })
-                    }
-                    className="h-4 w-4 accent-brand"
-                  />
-
-                  Dapat memilih lebih dari satu pilihan
-                </label>
-
-                <p className="text-sm font-semibold text-gray-800">
-                  Pilihan ({form.options.length})
-                </p>
-
-                {form.options.map((item, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      maxLength={100}
-                      value={item}
-                      onChange={(event) =>
-                        handleOptionChange(index, event.target.value)
-                      }
-                      className={inputBase}
-                    />
-
-                    <label className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-xs text-gray-600">
-                      <input
-                        type="checkbox"
-                        checked={form.mainOption === index}
-                        onChange={() =>
-                          update({
-                            mainOption: form.mainOption === index ? -1 : index,
-                          })
-                        }
-                        className="h-4 w-4 accent-brand"
-                      />
-
-                      Jadikan pilihan utama
-                    </label>
-
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteOption(index)}
-                      disabled={form.options.length <= 1}
-                      className="shrink-0 cursor-pointer rounded-full border-0 bg-transparent p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-slate-400"
-                    >
-                      <Minus size={16} />
-                    </button>
-                  </div>
-                ))}
-
-                <button
-                  type="button"
-                  onClick={handleAddOption}
-                  disabled={form.options.length >= 50}
-                  className="cursor-pointer border-0 bg-transparent p-0 text-left text-sm font-semibold text-brand disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  Tambah opsi
-                </button>
-              </div>
-            )}
-
-            <div className="flex flex-col gap-3 border-t border-gray-200 pt-4">
-              <p className="text-sm font-semibold text-gray-800">
-                Pengaturan tambahan
-              </p>
-
-              <label className="flex items-center gap-2 text-sm text-gray-700">
-                <input
-                  type="checkbox"
-                  checked={form.mustFilled}
-                  onChange={(event) =>
-                    update({ mustFilled: event.target.checked })
-                  }
-                  className="h-4 w-4 accent-brand"
-                />
-
-                Bidang kustom wajib diisi
-              </label>
-
-              {form.page !== "" && (
-                <label className="flex items-center gap-2 text-sm text-gray-700">
-                  <input
-                    type="checkbox"
-                    checked={form.showInPrint}
-                    onChange={(event) =>
-                      update({ showInPrint: event.target.checked })
-                    }
-                    className="h-4 w-4 accent-brand"
-                  />
-
-                  Tampilkan bidang kustom saat dicetak
-                </label>
-              )}
-            </div>
-          </div>
-
-          <div className="flex w-full flex-col gap-3 md:w-full">
-            <p className="text-sm font-semibold text-gray-800">Pratinjau</p>
-
-            {form.page === "" ? (
-              <div className="flex h-full min-h-[300px] flex-col items-center justify-center gap-1 rounded-lg bg-slate-50 p-4 text-center">
-                <Table size={28} className="text-brand" />
-
-                <p className="text-sm font-medium text-gray-800">
-                  Pratinjau bidang kustom akan tampil di sini
-                </p>
-
-                <p className="text-xs text-slate-500">
-                  Pilih halaman terlebih dahulu.
-                </p>
-              </div>
-            ) : form.page === "Products" ? (
-              <div className="flex flex-col gap-3 rounded-lg bg-slate-50 p-4">
-                <div className="flex gap-6">
-                  <div className="flex flex-1 flex-col gap-2.5">
-                    <PreviewField label="Nama Produk" />
-
-                    <div className="grid grid-cols-2 gap-x-6">
-                      <PreviewField label="Kode Produk/SKU" />
-                      <PreviewField label="Barcode" />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-x-6">
-                      <PreviewField label="Satuan" />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-x-6">
-                      <PreviewField label="Kategori Produk" />
-                    </div>
-
-                    <PreviewField label="Deskripsi" />
-
-                    <div className="grid grid-cols-2 gap-x-6">
-                      <PreviewField label="Tipe Produk" />
-                    </div>
-                  </div>
-
-                  <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-md bg-slate-200">
-                    <ImageIcon size={26} className="text-slate-400" />
-                  </div>
-                </div>
-
-                <PreviewCustomField
-                  name={form.name}
-                  type={form.fieldType}
-                  mustFilled={form.mustFilled}
-                  mainOptionLabel={mainOptionLabel}
-                />
-
-                <div className="flex gap-6 border-b border-slate-200">
-                  <p className="-mb-px border-b-2 border-blue-500 pb-2 text-[13px] font-medium text-blue-500">
-                    Harga &amp; persediaan
-                  </p>
-
-                  <p className="pb-2 text-[13px] font-medium text-slate-500">
-                    Pengaturan bundle
-                  </p>
-                </div>
-
-                <div className="flex flex-col gap-2.5">
-                  <div className="grid grid-cols-2 gap-x-6">
-                    <PreviewField label="Saya beli produk ini" />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-x-6">
-                    <PreviewField label="Saya jual produk ini" />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-x-6">
-                    <PreviewField label="Monitor persediaan barang" />
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-3 rounded-lg bg-slate-50 p-4">
-                {previewRows.map((row, rowIdx) => (
-                  <div
-                    key={rowIdx}
-                    className="grid grid-cols-2 gap-x-6 gap-y-2.5"
-                  >
-                    {row.map((label) => (
-                      <PreviewField key={label} label={label} />
-                    ))}
-                  </div>
-                ))}
-
-                <PreviewCustomField
-                  name={form.name}
-                  type={form.fieldType}
-                  mustFilled={form.mustFilled}
-                  mainOptionLabel={mainOptionLabel}
-                />
-
-                <div className="flex flex-col gap-2 border-t border-slate-200 pt-3">
-                  <div className="grid grid-cols-6 gap-x-4">
-                    {tableHeaders.map((header) => (
-                      <p
-                        key={header}
-                        className="text-[11px] font-semibold text-slate-600"
-                      >
-                        {header}
-                      </p>
-                    ))}
-                  </div>
-
-                  <div className="h-[10px] w-full rounded-sm bg-slate-200" />
-                </div>
-
-                {bottomRows.length > 0 && (
-                  <div className="grid grid-cols-2 gap-x-6 gap-y-2.5 border-t border-slate-200 pt-3">
-                    {bottomRows.map((label) => (
-                      <PreviewField key={label} label={label} />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="relative flex shrink-0 items-center justify-end gap-3 border-t border-gray-200 px-6 py-4">
+    <ModalShell
+      title={isEdit ? "Ubah bidang kustom" : "Tambah bidang kustom"}
+      maxWidth="max-w-[920px]"
+      bodyClassName="flex flex-col gap-6 px-[22px] py-5 md:flex-row"
+      footerClassName="relative"
+      onClose={handleClose}
+      footer={
+        <>
           {error !== "" && (
-            <p className="m-0 mr-auto whitespace-pre-line text-sm text-red-600">
-              {error}
-            </p>
+            <p className="m-0 mr-auto whitespace-pre-line text-sm text-red-600">{error}</p>
           )}
 
-          <button
-            onClick={handleClose}
-            disabled={saving}
-            className={btnModalCancel}
-          >
+          <button onClick={handleClose} disabled={saving} className={btnModalCancel}>
             Batal
           </button>
 
-          <button
-            onClick={handleSubmit}
-            disabled={saving}
-            className={btnModalSubmit}
-          >
+          <button onClick={handleSubmit} disabled={saving} className={btnModalSubmit}>
             {saving ? "Menyimpan..." : "Simpan"}
           </button>
 
           {showConfirmLeave && (
             <div className="absolute bottom-[70px] right-6 z-10 w-[270px] rounded-lg border border-gray-200 bg-white p-4 shadow-lg">
-              <p className="text-sm font-bold text-gray-800">
-                Keluar dari proses ini?
-              </p>
+              <p className="m-0 text-sm font-bold text-gray-800">Keluar dari proses ini?</p>
 
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="m-0 mt-1 text-sm text-slate-500">
                 Data yang telah Anda isi tidak akan disimpan.
               </p>
 
               <div className="mt-3 flex justify-end gap-2">
-                <button
-                  onClick={() => setShowConfirmLeave(false)}
-                  className={btnModalCancel}
-                >
-                  Lanjutkan {isEdit ? "editing" : "addition"}
+                <button onClick={() => setShowConfirmLeave(false)} className={btnModalCancel}>
+                  Lanjutkan {isEdit ? "mengubah" : "menambah"}
                 </button>
 
                 <button onClick={onClose} className={btnModalSubmit}>
@@ -1331,11 +838,422 @@ function CustomFieldFormPopUp({ field, onClose, onSubmit }) {
               </div>
             </div>
           )}
+        </>
+      }
+    >
+      <div className="flex w-full flex-col gap-5 md:w-[340px] md:shrink-0">
+        <div>
+          <label className={formLabel}>
+            Nama bidang kustom <span className="text-red-600">*</span>
+          </label>
+
+          <input
+            type="text"
+            maxLength={25}
+            value={form.name}
+            onChange={(event) => update({ name: event.target.value })}
+            className={inputBase}
+          />
+
+          <p className="m-0 mt-1 text-right text-xs text-slate-500">{form.name.length} / 25</p>
         </div>
+
+        <div>
+          <label className={formLabel}>
+            Halaman <span className="text-red-600">*</span>
+          </label>
+
+          <select
+            value={form.page}
+            onChange={handlePageChange}
+            className={`${selectBase} cursor-pointer appearance-none`}
+          >
+            <option value="" disabled>
+              Pilih halaman
+            </option>
+
+            {pageOptions.map((item) => (
+              <option key={item} value={item}>
+                {fieldLabel(item)}
+              </option>
+            ))}
+          </select>
+
+          {subPages.length > 0 && (
+            <div className="relative mt-3">
+              <button
+                type="button"
+                ref={subPageRef}
+                onClick={() => setShowSubPageList((prev) => !prev)}
+                className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-gray-300 bg-white px-3 py-[9px] text-left"
+              >
+                <span className="text-sm text-slate-500">
+                  {selectedSubPageCount === 0
+                    ? subPagePlaceholder
+                    : `${selectedSubPageCount} halaman dipilih`}
+                </span>
+
+                <CaretDown
+                  size={16}
+                  className={`shrink-0 text-slate-400 transition-transform ${showSubPageList ? "rotate-180" : ""}`}
+                />
+              </button>
+
+              {showSubPageList && (
+                <DropdownPanel
+                  rect={subPageRef.current?.getBoundingClientRect()}
+                  triggerRef={subPageRef}
+                  onClose={() => setShowSubPageList(false)}
+                  maxHeight={200}
+                  variant="settings"
+                  className="flex flex-col gap-2 rounded-lg border border-gray-200 bg-white p-3 shadow-lg"
+                >
+                  <CheckRow label="Pilih semua" checked={allChecked} onChange={toggleSelectAll} />
+
+                  {subPages.map((item) => (
+                    <CheckRow
+                      key={item}
+                      label={fieldLabel(item)}
+                      checked={form.subPages.includes(item)}
+                      onChange={() => toggleSubPage(item)}
+                    />
+                  ))}
+                </DropdownPanel>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div>
+          <label className={formLabel}>
+            Jenis bidang kustom <span className="text-red-600">*</span>
+          </label>
+
+          <select
+            value={form.fieldType}
+            onChange={handleTypeChange}
+            className={`${selectBase} cursor-pointer appearance-none`}
+          >
+            <option value="" disabled>
+              Pilih jenis bidang kustom
+            </option>
+
+            {typeOptions.map((item) => (
+              <option key={item.label} value={item.label}>
+                {fieldLabel(item.label)} — {item.desc}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {form.fieldType === "Text" && (
+          <FormSection>
+            <CheckRow
+              label="Memiliki batas maksimal karakter sebanyak"
+              checked={form.useMaxChar}
+              onChange={(event) => update({ useMaxChar: event.target.checked })}
+            />
+
+            {form.useMaxChar && (
+              <div className="flex items-center gap-2">
+                <div className="w-28">
+                  <input
+                    type="number"
+                    min={1}
+                    max={1000}
+                    value={form.maxChars}
+                    onChange={(event) => update({ maxChars: Number(event.target.value) })}
+                    className={inputBase}
+                  />
+                </div>
+
+                <span className="text-sm text-slate-500">Karakter</span>
+              </div>
+            )}
+          </FormSection>
+        )}
+
+        {form.fieldType === "Number" && (
+          <FormSection>
+            <CheckRow
+              label="Gunakan pecahan (desimal)"
+              checked={form.useDecimal}
+              onChange={(event) => update({ useDecimal: event.target.checked })}
+            />
+
+            <h3 className="m-0 text-[15px] font-bold text-gray-900">Teks tambahan</h3>
+
+            <RadioRow
+              name="additionalText"
+              label="Tanpa tambahan"
+              checked={form.additionalText === "none"}
+              onChange={() => update({ additionalText: "none" })}
+            />
+
+            <div className="flex flex-col gap-2">
+              <RadioRow
+                name="additionalText"
+                label="Awalan"
+                description={[
+                  "Teks ditambahkan sebelum angka.",
+                  "Contoh: Simbol mata uang (Rp50.000)",
+                ]}
+                checked={form.additionalText === "prefix"}
+                onChange={() => update({ additionalText: "prefix" })}
+              />
+
+              {form.additionalText === "prefix" && (
+                <input
+                  type="text"
+                  maxLength={30}
+                  value={form.prefixText}
+                  onChange={(event) => update({ prefixText: event.target.value })}
+                  className={inputBase}
+                />
+              )}
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <RadioRow
+                name="additionalText"
+                label="Akhiran"
+                description={[
+                  "Teks ditambahkan setelah angka.",
+                  "Contoh: Panjang produk (5 cm)",
+                ]}
+                checked={form.additionalText === "suffix"}
+                onChange={() => update({ additionalText: "suffix" })}
+              />
+
+              {form.additionalText === "suffix" && (
+                <input
+                  type="text"
+                  maxLength={30}
+                  value={form.suffixText}
+                  onChange={(event) => update({ suffixText: event.target.value })}
+                  className={inputBase}
+                />
+              )}
+            </div>
+          </FormSection>
+        )}
+
+        {form.fieldType === "Date" && (
+          <FormSection title="Pemilihan tanggal pada bidang kustom">
+            <RadioRow
+              name="dateSelection"
+              label="Kosong"
+              description="Tanggal harus dipilih secara manual"
+              checked={form.dateSelection === "none"}
+              onChange={() => update({ dateSelection: "none" })}
+            />
+
+            <RadioRow
+              name="dateSelection"
+              label="Tanggal hari ini"
+              description="Dipilih otomatis saat membuat atau menambah transaksi, produk, dan kontak"
+              checked={form.dateSelection === "today"}
+              onChange={() => update({ dateSelection: "today" })}
+            />
+          </FormSection>
+        )}
+
+        {form.fieldType === "Dropdown" && (
+          <FormSection>
+            <CheckRow
+              label="Dapat memilih lebih dari satu pilihan"
+              checked={form.multiSelect}
+              onChange={(event) => update({ multiSelect: event.target.checked })}
+            />
+
+            <h3 className="m-0 text-[15px] font-bold text-gray-900">
+              Pilihan ({form.options.length})
+            </h3>
+
+            {form.options.map((item, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    maxLength={100}
+                    value={item}
+                    onChange={(event) => handleOptionChange(index, event.target.value)}
+                    className={inputBase}
+                  />
+                </div>
+
+                <label className="flex shrink-0 cursor-pointer select-none items-center gap-1.5 whitespace-nowrap text-xs text-gray-600">
+                  <input
+                    type="checkbox"
+                    checked={form.mainOption === index}
+                    onChange={() =>
+                      update({ mainOption: form.mainOption === index ? -1 : index })
+                    }
+                    className="h-4 w-4 cursor-pointer rounded accent-brand"
+                  />
+
+                  Jadikan pilihan utama
+                </label>
+
+                <button
+                  type="button"
+                  onClick={() => handleDeleteOption(index)}
+                  disabled={form.options.length <= 1}
+                  className="shrink-0 cursor-pointer rounded-full border-0 bg-transparent p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-slate-400"
+                >
+                  <Minus size={16} />
+                </button>
+              </div>
+            ))}
+
+            <button
+              type="button"
+              onClick={handleAddOption}
+              disabled={form.options.length >= 50}
+              className={linkButton}
+            >
+              + Tambah opsi
+            </button>
+          </FormSection>
+        )}
+
+        <FormSection title="Pengaturan tambahan">
+          <CheckRow
+            label="Bidang kustom wajib diisi"
+            checked={form.mustFilled}
+            onChange={(event) => update({ mustFilled: event.target.checked })}
+          />
+
+          {form.page !== "" && (
+            <CheckRow
+              label="Tampilkan bidang kustom saat dicetak"
+              checked={form.showInPrint}
+              onChange={(event) => update({ showInPrint: event.target.checked })}
+            />
+          )}
+        </FormSection>
       </div>
-    </div>
+
+      <div className="flex w-full flex-col gap-3 md:w-full">
+        <h3 className="m-0 text-[15px] font-bold text-gray-900">Pratinjau</h3>
+
+        {form.page === "" ? (
+          <div className="flex h-full min-h-[300px] flex-col items-center justify-center gap-1 rounded-lg bg-slate-50 p-4 text-center">
+            <Table size={28} className="text-brand" />
+
+            <p className="m-0 text-sm font-medium text-gray-800">
+              Pratinjau bidang kustom akan tampil di sini
+            </p>
+
+            <p className="m-0 text-xs text-slate-500">Pilih halaman terlebih dahulu.</p>
+          </div>
+        ) : form.page === "Products" ? (
+          <div className="flex flex-col gap-3 rounded-lg bg-slate-50 p-4">
+            <div className="flex gap-6">
+              <div className="flex flex-1 flex-col gap-2.5">
+                <PreviewField label="Nama Produk" />
+
+                <div className="grid grid-cols-2 gap-x-6">
+                  <PreviewField label="Kode Produk/SKU" />
+                  <PreviewField label="Barcode" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-x-6">
+                  <PreviewField label="Satuan" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-x-6">
+                  <PreviewField label="Kategori Produk" />
+                </div>
+
+                <PreviewField label="Deskripsi" />
+
+                <div className="grid grid-cols-2 gap-x-6">
+                  <PreviewField label="Tipe Produk" />
+                </div>
+              </div>
+
+              <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-md bg-slate-200">
+                <ImageIcon size={26} className="text-slate-400" />
+              </div>
+            </div>
+
+            <PreviewCustomField
+              name={form.name}
+              type={form.fieldType}
+              mustFilled={form.mustFilled}
+              mainOptionLabel={mainOptionLabel}
+            />
+
+            <div className="flex gap-6 border-b border-slate-200">
+              <p className="m-0 -mb-px border-b-2 border-blue-500 pb-2 text-[13px] font-medium text-blue-500">
+                Harga &amp; persediaan
+              </p>
+
+              <p className="m-0 pb-2 text-[13px] font-medium text-slate-500">
+                Pengaturan bundle
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-2.5">
+              <div className="grid grid-cols-2 gap-x-6">
+                <PreviewField label="Saya beli produk ini" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-x-6">
+                <PreviewField label="Saya jual produk ini" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-x-6">
+                <PreviewField label="Monitor persediaan barang" />
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3 rounded-lg bg-slate-50 p-4">
+            {previewRows.map((row, rowIdx) => (
+              <div key={rowIdx} className="grid grid-cols-2 gap-x-6 gap-y-2.5">
+                {row.map((label) => (
+                  <PreviewField key={label} label={label} />
+                ))}
+              </div>
+            ))}
+
+            <PreviewCustomField
+              name={form.name}
+              type={form.fieldType}
+              mustFilled={form.mustFilled}
+              mainOptionLabel={mainOptionLabel}
+            />
+
+            <div className="flex flex-col gap-2 border-t border-slate-200 pt-3">
+              <div className="grid grid-cols-6 gap-x-4">
+                {tableHeaders.map((header) => (
+                  <p key={header} className="m-0 text-[11px] font-semibold text-slate-600">
+                    {header}
+                  </p>
+                ))}
+              </div>
+
+              <div className="h-[10px] w-full rounded-sm bg-slate-200" />
+            </div>
+
+            {bottomRows.length > 0 && (
+              <div className="grid grid-cols-2 gap-x-6 gap-y-2.5 border-t border-slate-200 pt-3">
+                {bottomRows.map((label) => (
+                  <PreviewField key={label} label={label} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </ModalShell>
   );
 }
+
+
+/* ---------- Page ---------- */
 
 export default function CustomFieldsPage() {
   const canManage = canManageCustomFields();
@@ -1407,22 +1325,17 @@ export default function CustomFieldsPage() {
 
   return (
     <div className="p-7 max-md:p-[18px]">
-      <div className="mb-6 flex items-start justify-between gap-4">
+      <div className="mb-6 flex items-start justify-between gap-4 max-md:flex-col">
         <div>
-          <h1 className="m-0 text-[28px] font-bold text-gray-900 max-md:text-2xl">
-            Custom field
-          </h1>
-          <p className="m-0 mt-1.5 text-slate-500">
+          <h2 className="m-0 text-[28px] font-bold text-gray-900">Custom field</h2>
+          <p className="m-0 mt-1.5 text-sm text-slate-500">
             Kelola bidang kustom untuk transaksi dan produk Anda.
           </p>
         </div>
 
         {canManage && (
           <div className="flex gap-3">
-            <button
-              onClick={() => setShowReorderPopup(true)}
-              className={btnModalCancel}
-            >
+            <button onClick={() => setShowReorderPopup(true)} className={btnModalCancel}>
               Ubah urutan bidang kustom
             </button>
 
@@ -1433,70 +1346,62 @@ export default function CustomFieldsPage() {
         )}
       </div>
 
-      <div className="mb-6 mt-4 rounded-[10px] bg-white p-6 shadow-sm">
-        <div className="flex flex-col gap-2">
-          <p className="text-md font-bold text-gray-800">
+      <div className="company-card mb-6 mt-4 rounded-[10px] bg-white p-6">
+        <div className="border-b border-slate-100 pb-5">
+          <h2 className="m-0 text-[19px] font-bold text-gray-900">
             Kuota Bidang Kustom : {remainingQuota}
-          </p>
+          </h2>
 
-          <div className="flex items-center gap-2">
-            <p className="text-sm text-slate-500">
-              Atur bidang kustom sesuai kebutuhan bisnis Anda. Perlu lebih banyak bidang kustom?
-            </p>
-
+          <p className="m-0 mt-1 flex flex-wrap items-center gap-x-2 text-sm text-slate-500">
+            Atur bidang kustom sesuai kebutuhan bisnis Anda. Perlu lebih banyak bidang kustom?
             <button
+              type="button"
               onClick={() => setShowQuotaPopup(true)}
-              className="text-sm text-blue-500 hover:cursor-pointer"
+              className={`${linkButton} text-sm`}
             >
               Tambah Kuota Bidang Kustom
             </button>
-          </div>
-
-          <hr className="mt-6 border-gray-300" />
+          </p>
         </div>
 
-        <div className="mt-6">
-          <div className="flex items-center justify-between gap-4">
-            <div className="w-[200px]">
-              <select
-                className={`${selectBase} w-[150px]`}
-                value={statusFilter}
-                onChange={(event) => setStatusFilter(event.target.value)}
-              >
-                {statusOptions.map((item) => (
-                  <option key={item.value} value={item.value}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+        <div className="mt-5 flex items-center justify-between gap-4 max-md:flex-col max-md:items-stretch">
+          <div className="w-[170px] max-md:w-full">
+            <select
+              className={selectBase}
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value)}
+            >
+              {statusOptions.map((item) => (
+                <option key={item.value} value={item.value}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
-            <div className="flex w-[280px] items-center gap-2 rounded-lg border border-slate-300 px-3 py-[9px] max-md:w-auto">
-              <MagnifyingGlass
-                size={19}
-                className="shrink-0 text-slate-500"
-              />
+          <div className="relative w-[280px] max-md:w-full">
+            <MagnifyingGlass
+              size={18}
+              className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-slate-500"
+            />
 
-              <input
-                type="text"
-                placeholder="Cari bidang kustom"
-                value={searchInput}
-                onChange={(event) => setSearchInput(event.target.value)}
-                className="w-full border-0 bg-transparent text-sm outline-none"
-              />
-            </div>
+            <input
+              type="text"
+              placeholder="Cari bidang kustom"
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
+              className="input w-full !max-w-full !pl-[38px]"
+            />
           </div>
         </div>
 
         {error !== "" ? (
           <div className="flex flex-col items-center justify-center p-20 text-center">
-            <h2 className="text-base font-bold text-gray-800">
+            <h2 className="m-0 text-base font-bold text-gray-800">
               Gagal memuat bidang kustom
             </h2>
 
-            <p className="mt-1 whitespace-pre-line text-sm text-red-600">
-              {error}
-            </p>
+            <p className="m-0 mt-1 whitespace-pre-line text-sm text-red-600">{error}</p>
           </div>
         ) : loading && fields.length === 0 ? (
           <div className="flex justify-center p-20">
@@ -1504,20 +1409,20 @@ export default function CustomFieldsPage() {
           </div>
         ) : fields.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-20 text-center">
-            <h2 className="text-base font-bold text-gray-800">
+            <h2 className="m-0 text-base font-bold text-gray-800">
               {isFiltering
                 ? "Bidang kustom tidak ditemukan"
                 : "Daftar bidang kustom akan tampil di sini"}
             </h2>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="m-0 mt-1 text-sm text-slate-500">
               {isFiltering
                 ? "Coba ubah filter status atau kata kunci pencarian."
                 : "Tambahkan bidang kustom melalui tombol Tambah bidang kustom"}
             </p>
           </div>
         ) : (
-          <div className={`${tableWrapper} mt-6`}>
+          <div className={`${tableWrapper} mt-5`}>
             <table className={tableBase}>
               <thead>
                 <tr>
@@ -1533,9 +1438,7 @@ export default function CustomFieldsPage() {
               <tbody>
                 {fields.map((field) => (
                   <tr key={field.id} className={trHover}>
-                    <td className={`${td} font-semibold text-gray-800`}>
-                      {field.name}
-                    </td>
+                    <td className={`${td} font-semibold text-gray-800`}>{field.name}</td>
 
                     <td className={td}>
                       <p className="m-0">{fieldLabel(capitalize(field.page))}</p>
@@ -1579,9 +1482,7 @@ export default function CustomFieldsPage() {
                               disabled={busyId === field.id}
                               className={btn}
                             >
-                              {field.status === "active"
-                                ? "Nonaktifkan"
-                                : "Aktifkan"}
+                              {field.status === "active" ? "Nonaktifkan" : "Aktifkan"}
                             </button>
 
                             <button
@@ -1605,10 +1506,7 @@ export default function CustomFieldsPage() {
         )}
       </div>
 
-      <AddPopUp
-        showQuotaPopup={showQuotaPopup}
-        setShowQuotaPopup={setShowQuotaPopup}
-      />
+      <AddPopUp showQuotaPopup={showQuotaPopup} setShowQuotaPopup={setShowQuotaPopup} />
 
       {formTarget && (
         <CustomFieldFormPopUp
@@ -1620,10 +1518,7 @@ export default function CustomFieldsPage() {
       )}
 
       {showReorderPopup && (
-        <ReorderPopUp
-          onClose={() => setShowReorderPopup(false)}
-          onReorder={reorder}
-        />
+        <ReorderPopUp onClose={() => setShowReorderPopup(false)} onReorder={reorder} />
       )}
 
       <ConfirmDialog
@@ -1634,9 +1529,7 @@ export default function CustomFieldsPage() {
         onConfirm={() => handleDelete(deleteTarget)}
         title="Hapus bidang kustom?"
         message={
-          deleteTarget
-            ? `"${deleteTarget.name}" akan dihapus dari formulir Anda.`
-            : ""
+          deleteTarget ? `"${deleteTarget.name}" akan dihapus dari formulir Anda.` : ""
         }
         action="delete"
       />

@@ -15,6 +15,7 @@ const DARK_IDS = [
   "home", "section-dark-testimonial", "section-dark-2", "section-dark-3",
   "terms-hero", "terms-footer",
   "privacy-hero", "privacy-footer",
+  "help-hero", // Pusat Bantuan (hero bg cta.jpg gelap)
 ];
 
 const getDarkSections = () => {
@@ -26,6 +27,13 @@ const getDarkSections = () => {
   document.querySelectorAll("[data-nav-dark]").forEach((el) => found.add(el));
   return Array.from(found);
 };
+
+/* Cek sinkron: apakah titik tengah navbar sedang berada di atas section gelap */
+const isOverDark = (sections) =>
+  sections.some((el) => {
+    const r = el.getBoundingClientRect();
+    return r.top <= NAV_MID && r.bottom > NAV_MID;
+  });
 
 function useScrolled(threshold = 24) {
   const [scrolled, setScrolled] = useState(false);
@@ -56,6 +64,9 @@ function useDarkNav(pathname) {
         setDark(false);
         return;
       }
+
+      // set state awal langsung (tanpa menunggu callback observer) supaya tidak ada flash terang
+      setDark(isOverDark(sections));
 
       const bottom = Math.max(window.innerHeight - NAV_MID - 1, 0);
       io = new IntersectionObserver(
@@ -161,6 +172,7 @@ const Navbar = memo(function Navbar() {
       color={isDarkSection ? "white" : C.ink}
       transition={`color 100ms ${EASE}`}
     >
+      {/* Background gelap (saat scroll di atas section gelap, mis. hero cta.jpg) */}
       <Box
         aria-hidden position="absolute" inset={0} zIndex={-1} pointerEvents="none"
         bg="rgba(9, 13, 22, 0.88)"
@@ -170,6 +182,7 @@ const Navbar = memo(function Navbar() {
         opacity={showDarkBg ? 1 : 0}
         transition={`opacity 400ms ${EASE}`}
       />
+      {/* Background terang (saat scroll di atas section terang) */}
       <Box
         aria-hidden position="absolute" inset={0} zIndex={-1} pointerEvents="none"
         bg="rgba(255, 255, 255, 0.7)"

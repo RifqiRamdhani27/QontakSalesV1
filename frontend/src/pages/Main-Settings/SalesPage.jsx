@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { BellRinging, EnvelopeSimple, MagnifyingGlass, Pencil, X } from "@phosphor-icons/react";
+import { BellRinging, EnvelopeSimple, MagnifyingGlass, X } from "@phosphor-icons/react";
 import {
   btnModalCancel,
   btnModalSubmit,
-  btnSecondary,
   formLabel,
   inputBase,
   modalCloseButton,
@@ -112,8 +111,8 @@ function MainTab({ mainPage, setMainPage }) {
       <button
         className={
           mainPage
-            ? "border-b border-brand bg-white p-2 text-brand"
-            : "p-2 text-gray-400 hover:border-b hover:border-gray-500 hover:bg-gray-50 hover:text-black"
+            ? "border-b border-brand bg-white p-2 text-brand focus:outline-none"
+            : "rounded-t-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-black focus:outline-none"
         }
         onClick={() => setMainPage(true)}
         disabled={!canAccessSettingsFeature("Sales: Form settings")}
@@ -124,8 +123,8 @@ function MainTab({ mainPage, setMainPage }) {
       <button
         className={
           !mainPage
-            ? "border-b border-brand bg-white p-2 text-brand"
-            : "p-2 text-gray-400 hover:border-b hover:border-gray-500 hover:bg-gray-50 hover:text-black"
+            ? "border-b border-brand bg-white p-2 text-brand focus:outline-none"
+            : "rounded-t-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-black focus:outline-none"
         }
         onClick={() => setMainPage(false)}
         disabled={!canAccessSettingsFeature("Sales: Invoice reminder")}
@@ -144,9 +143,24 @@ function CardHeader({ title, subtitle, showEdit, onEdit }) {
         <p className="m-0 mt-1 text-sm text-slate-500">{subtitle}</p>
       </div>
       {showEdit && (
-        <button type="button" className={btnSecondary} onClick={onEdit}>
-          <Pencil size={14} />
-          <span>Ubah</span>
+        <button
+          type="button"
+          className="group Btn relative !w-[100px] !h-[40px] !text-[12px] overflow-hidden"
+          onClick={onEdit}
+        >
+          <span className="transition-opacity duration-100 delay-200 group-hover:delay-0 group-hover:opacity-0">
+            Edit
+          </span>
+
+          <svg
+            className="svg pointer-events-none absolute top-1/2 -translate-y-1/2
+               !w-[14px] !m-0 !right-auto !left-[calc(100%-32px)]
+               transition-all duration-300 group-hover:delay-75
+               group-hover:!left-1/2 group-hover:!-translate-x-1/2"
+            viewBox="0 0 512 512"
+          >
+            <path d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z" />
+          </svg>
         </button>
       )}
     </div>
@@ -183,7 +197,7 @@ function CheckRow({ label, description, checked, disabled, onChange }) {
     <label className={`flex select-none items-start gap-2.5 ${disabled ? "" : "cursor-pointer"}`}>
       <input
         type="checkbox"
-        className="mt-0.5 h-4 w-4 accent-brand enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+        className="mt-0.5 h-4 w-4 rounded accent-brand enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
         checked={checked}
         disabled={disabled}
         onChange={onChange}
@@ -201,13 +215,13 @@ function CheckRow({ label, description, checked, disabled, onChange }) {
 function SettingStatus({ loading, error }) {
   if (loading) {
     return (
-      <div className="mb-6 mt-4 flex items-center justify-center rounded-[10px] bg-white p-16 shadow-sm">
+      <div className="company-card mb-6 mt-4 flex items-center justify-center rounded-[10px] bg-white p-16">
         <span className={pageSpinner} />
       </div>
     );
   }
   return (
-    <div className="mb-6 mt-4 rounded-[10px] bg-white p-6 text-sm text-red-600 shadow-sm">{error}</div>
+    <div className="company-card mb-6 mt-4 rounded-[10px] bg-white p-6 text-sm text-red-600">{error}</div>
   );
 }
 
@@ -222,7 +236,7 @@ function FormSetting() {
   const readOnly = !form.editing;
 
   return (
-    <div className="mb-6 mt-4 rounded-[10px] bg-white p-6 shadow-sm">
+    <div className="company-card mb-6 mt-4 rounded-[10px] bg-white p-6">
       <CardHeader
         title="Pengaturan Penjualan"
         subtitle="Atur opsi bawaan yang dipakai saat membuat penawaran dan faktur penjualan."
@@ -403,7 +417,7 @@ function ReminderIntervalModal({ interval, intervals, onClose, onSaved }) {
           <label className="mt-1 flex cursor-pointer select-none items-center gap-2.5">
             <input
               type="checkbox"
-              className="h-4 w-4 cursor-pointer accent-brand"
+              className="h-4 w-4 rounded cursor-pointer accent-brand"
               checked={form.include_pdf}
               onChange={() => setField("include_pdf", !form.include_pdf)}
             />
@@ -483,13 +497,16 @@ function ExemptPickerModal({
         </div>
 
         <div className="flex-1 overflow-y-auto px-[22px] py-5">
-          <div className="mb-4 flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-[9px]">
-            <MagnifyingGlass size={19} className="shrink-0 text-slate-500" />
+          <div className="relative mb-4 w-full">
+            <MagnifyingGlass
+              size={18}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 z-10 pointer-events-none"
+            />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={searchPlaceholder}
-              className="w-full border-0 outline-none"
+              className="input w-full !pl-[38px] !max-w-full"
             />
           </div>
 
@@ -633,7 +650,7 @@ function InvoiceReminder() {
   };
 
   return (
-    <div className="mb-6 mt-4 rounded-[10px] bg-white p-6 shadow-sm">
+    <div className="company-card mb-6 mt-4 rounded-[10px] bg-white p-6">
       <CardHeader
         title="Pengaturan Pengingat Faktur"
         subtitle="Atur pengingat email otomatis untuk faktur yang mendekati jatuh tempo."
@@ -681,9 +698,8 @@ function InvoiceReminder() {
                 <div key={interval.id} className="flex items-center">
                   {index > 0 && <span className="h-px w-8 bg-gray-300" />}
                   <div
-                    className={`relative flex h-[92px] w-[130px] flex-col items-center justify-end gap-2 rounded-md border border-gray-300 bg-white pb-2.5 shadow-sm ${
-                      controlsDisabled ? "opacity-60" : ""
-                    }`}
+                    className={`relative flex h-[92px] w-[130px] flex-col items-center justify-end gap-2 rounded-md border border-gray-300 bg-white pb-2.5 shadow-sm ${controlsDisabled ? "opacity-60" : ""
+                      }`}
                   >
                     <button
                       type="button"
@@ -749,7 +765,7 @@ function InvoiceReminder() {
           <label className="flex select-none items-center gap-2.5">
             <input
               type="checkbox"
-              className="h-4 w-4 accent-brand enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+              className="h-4 w-4 rounded accent-brand enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
               checked={values.exempt_by_amount}
               disabled={controlsDisabled}
               onChange={() => toggleField("exempt_by_amount")}
@@ -773,7 +789,7 @@ function InvoiceReminder() {
           <label className="flex select-none items-center gap-2.5">
             <input
               type="checkbox"
-              className="h-4 w-4 accent-brand enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+              className="h-4 w-4 rounded accent-brand enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
               checked={values.exempt_by_customer}
               disabled={controlsDisabled}
               onChange={() => toggleField("exempt_by_customer")}
@@ -797,7 +813,7 @@ function InvoiceReminder() {
             <label className="flex select-none items-center gap-2.5">
               <input
                 type="checkbox"
-                className="h-4 w-4 accent-brand enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                className="h-4 w-4 rounded accent-brand enabled:cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
                 checked={Boolean(values[field])}
                 disabled={controlsDisabled}
                 onChange={() => toggleField(field)}
