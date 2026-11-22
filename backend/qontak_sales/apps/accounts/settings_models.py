@@ -372,3 +372,30 @@ class CompanyProductionSetting(models.Model):
     production_plan_date_mode = models.CharField(max_length=10, choices=[("required", "required"), ("optional", "optional"), ("hidden", "hidden")], default="required")
     allow_backdated_plan_date = models.BooleanField(default=False)
     allow_partial_production = models.BooleanField(default=False)
+
+
+class LandingAppearance(models.Model):
+    SINGLETON_PK = 1
+
+    content = models.JSONField(blank=True, default=dict)
+    published_at = models.DateTimeField(blank=True, null=True)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        blank=True,
+        null=True,
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Landing appearance"
+        verbose_name_plural = "Landing appearance"
+
+    def __str__(self):
+        return f"Landing appearance ({self.published_at or 'belum dipublikasikan'})"
+
+    @classmethod
+    def load(cls):
+        item, _created = cls.objects.get_or_create(pk=cls.SINGLETON_PK)
+        return item
