@@ -24,7 +24,7 @@ from qontak_sales.apps.regions.models import City, Province
 from .invitations import hash_token, issue_invitation
 from .models import Company, ProductionSetting, Role
 from .settings_permissions import SETTINGS_MODULES
-from .settings_models import AccountMapping, ApprovalRule, Billing, CompanyProductionSetting, CustomField, Invitation, InvoiceReminder, InvoiceReminderInterval, ProductBatchReminder, ProductSetting, PurchaseSetting, SalesFormSetting, TaggingRule, TemplateSetting
+from .settings_models import AccountMapping, ApprovalRule, Billing, CompanyProductionSetting, CustomField, Invitation, InvoiceReminder, InvoiceReminderInterval, LandingAppearance, ProductBatchReminder, ProductSetting, PurchaseSetting, SalesFormSetting, TaggingRule, TemplateSetting
 
 User = get_user_model()
 
@@ -190,6 +190,103 @@ class SettingsIntegrationTests(APITestCase):
         self.call("put", "settings/production-settings/", {"production_plan_date_mode": "invalid"}, expected=400)
         self.assertFalse(CompanyProductionSetting.objects.exists())
 
+    def test_admin_can_read_publish_and_verify_appearance(self):
+        self.admin = User.objects.create_user(username="appearance-admin", email="appearance-admin@example.test", password=self.password, role="AGENT", is_admin=True, company=self.company)
+        self.client.force_authenticate(self.admin)
+        access = self.call("get", "settings/access/").data
+        self.assertFalse(access["is_owner"])
+        self.assertTrue(access["is_admin"])
+        self.assertTrue(all(access["modules"]["appearance"].values()))
+        self.assertTrue(all(access["features"]["Appearance"].values()))
+        self.assertTrue(self.call("get", "settings/appearance/").data["can_edit"])
+        content = {
+            "hero": {"title": "Integration hero", "description": "Integration description", "buttonText": "Start", "image": "/assets/hero.png"},
+            "closing": {"title": "Integration closing", "description": "Closing description", "buttonText": "Start", "secondaryButtonText": "Demo"},
+            "faqs": [{"id": "integration-faq", "q": "Integration question?", "a": "Integration answer."}],
+            "contact": {"whatsapp": "", "instagram": "", "email": ""},
+            "testimonial": {"quote": "Integration quote", "name": "Integration customer", "position": "Manager", "image": "/assets/customer.png"},
+            "gallery": [{"label": f"Gallery {index}", "image": f"/assets/gallery-{index}.png"} for index in range(5)],
+            "newsletter": {"title": "Integration newsletter", "description": "Newsletter description"},
+            "workspace": {"greeting": "Integration greeting", "bannerTitle": "Integration banner", "trainingTitle": "Integration training", "trainingDescription": "Training description"},
+        }
+        published = self.call("put", "settings/appearance/", {"content": content}).data
+        self.assertEqual(published["content"], content)
+        self.assertIsNotNone(published["published_at"])
+        saved = self.call("get", "settings/appearance/").data
+        self.assertEqual(saved["content"], content)
+        self.assertTrue(saved["can_edit"])
+        public = self.call("get", "landing/appearance/", client=APIClient()).data
+        self.assertEqual(public["content"], content)
+        self.assertEqual(public["published_at"], published["published_at"])
+        self.assertEqual(LandingAppearance.objects.get(pk=LandingAppearance.SINGLETON_PK).updated_by_id, self.admin.pk)
+
+    def test_owner_and_agents_cannot_access_appearance(self):
+        role = Role.objects.create(code="appearance-editor", name="Appearance editor", company=self.company)
+        role.authorities.create(feature="Setting", sub_feature="Appearance", see=True, create=True, edit=True, can_delete=True)
+        cases = [
+            (self.manager, {}, []),
+            (self.agent, {}, []),
+            (self.agent, {"existing": ["administrator"]}, []),
+            (self.agent, {"existing": ["ultimate"], "list_manager": True}, []),
+            (self.agent, {"authority": ["Setting.Appearance.View", "Setting.Appearance.Create/Add", "Setting.Appearance.Edit", "Setting.Appearance.Delete"]}, []),
+            (self.agent, {}, [role]),
+        ]
+        for user, config, roles in cases:
+            with self.subTest(user=user.username, config=config, custom_role=bool(roles)):
+                user.role_config = config
+                user.save(update_fields=["role_config"])
+                user.roles.set(roles)
+                self.client.force_authenticate(user)
+                access = self.call("get", "settings/access/").data
+                self.assertFalse(access["is_admin"])
+                self.assertFalse(any(access["modules"]["appearance"].values()))
+                self.assertFalse(any(access["features"]["Appearance"].values()))
+                self.call("get", "settings/appearance/", expected=403)
+                self.call("put", "settings/appearance/", {"content": {}}, expected=403)
+        self.assertFalse(LandingAppearance.objects.exists())
+
+    def test_owner_with_admin_status_can_access_appearance(self):
+        self.manager.is_admin = True
+        self.manager.save(update_fields=["is_admin"])
+        self.client.force_authenticate(self.manager)
+        access = self.call("get", "settings/access/").data
+        self.assertTrue(access["is_owner"])
+        self.assertTrue(access["is_admin"])
+        self.assertTrue(all(access["modules"]["appearance"].values()))
+        self.assertTrue(all(access["features"]["Appearance"].values()))
+        payload = self.call("get", "settings/appearance/").data
+        self.assertTrue(payload["can_edit"])
+        content = {
+            "hero": {"title": "Owner admin hero", "description": "Owner admin description", "buttonText": "Start", "image": "/assets/hero.png"},
+            "closing": {"title": "Owner closing", "description": "Owner closing description", "buttonText": "Start", "secondaryButtonText": "Demo"},
+            "faqs": [{"id": "owner-faq", "q": "Owner question?", "a": "Owner answer."}],
+            "contact": {"whatsapp": "", "instagram": "", "email": ""},
+            "testimonial": {"quote": "Owner quote", "name": "Owner customer", "position": "Manager", "image": "/assets/customer.png"},
+            "gallery": [{"label": f"Gallery {index}", "image": f"/assets/gallery-{index}.png"} for index in range(5)],
+            "newsletter": {"title": "Owner newsletter", "description": "Owner newsletter description"},
+            "workspace": {"greeting": "Owner greeting", "bannerTitle": "Owner banner", "trainingTitle": "Owner training", "trainingDescription": "Owner training description"},
+        }
+        published = self.call("put", "settings/appearance/", {"content": content})
+        self.assertIsNotNone(published.data["published_at"])
+        self.assertEqual(LandingAppearance.objects.get(pk=LandingAppearance.SINGLETON_PK).updated_by_id, self.manager.pk)
+
+    def test_inactive_and_companyless_managers_cannot_access_appearance(self):
+        cases = [{"status": "inactive"}, {"is_active": False}, {"company": None}]
+        for changes in cases:
+            with self.subTest(changes=changes):
+                self.manager.status = "active"
+                self.manager.is_active = True
+                self.manager.company = self.company
+                for field, value in changes.items():
+                    setattr(self.manager, field, value)
+                self.manager.save(update_fields=["status", "is_active", "company"])
+                access = self.call("get", "settings/access/").data
+                self.assertFalse(access["is_owner"])
+                self.assertFalse(any(access["modules"]["appearance"].values()))
+                self.call("get", "settings/appearance/", expected=403)
+                self.call("put", "settings/appearance/", {"content": {}}, expected=403)
+        self.assertFalse(LandingAppearance.objects.exists())
+
     def test_agent_with_view_grants_can_read_but_not_write_settings(self):
         features = [feature for module, names in SETTINGS_MODULES.items() if module not in ("company", "agents", "user-management") for feature in names]
         self.agent.role_config = {"authority": [f"Setting.{feature}.View" for feature in features]}
@@ -213,7 +310,7 @@ class SettingsIntegrationTests(APITestCase):
 
     def test_unauthenticated_settings_access_is_denied(self):
         public = APIClient()
-        for path in ["sales/form-settings/", "custom-fields/", "settings/profile/", "settings/members/", "settings/roles/"]:
+        for path in ["sales/form-settings/", "custom-fields/", "settings/profile/", "settings/members/", "settings/roles/", "settings/access/", "settings/appearance/"]:
             with self.subTest(path=path):
                 self.call("get", path, expected=401, client=public)
 
@@ -435,6 +532,67 @@ class SettingsIntegrationTests(APITestCase):
         self.assertEqual(list(self.agent.roles.values_list("pk", flat=True)), [self.shared_role.pk])
         self.call("post", "token/", {"email": self.agent.email, "password": self.password}, expected=400, client=APIClient())
 
+    def test_admin_can_grant_and_revoke_admin_but_not_owner(self):
+        self.admin = User.objects.create_user(username="set-admin-actor", email="set-admin-actor@example.test", password=self.password, role="AGENT", is_admin=True, company=self.company)
+        self.client.force_authenticate(self.manager)
+        self.call("post", f"settings/members/{self.agent.pk}/set-admin/", {"is_admin": True}, expected=403)
+        self.client.force_authenticate(self.agent)
+        self.call("post", f"settings/members/{self.agent.pk}/set-admin/", {"is_admin": True}, expected=403)
+        self.client.force_authenticate(self.admin)
+        self.call("post", f"settings/members/{self.agent.pk}/set-admin/", {"is_admin": "yes"}, expected=400)
+        self.call("post", f"settings/members/{self.manager.pk}/set-admin/", {"is_admin": True}, expected=400)
+        response = self.call("post", f"settings/members/{self.agent.pk}/set-admin/", {"is_admin": True})
+        self.assertTrue(response.data["is_admin"])
+        self.agent.refresh_from_db()
+        self.assertTrue(self.agent.is_admin)
+        self.assertEqual(self.agent.role, "AGENT")
+        self.call("post", f"settings/members/{self.agent.pk}/set-admin/", {"is_admin": False})
+        self.agent.refresh_from_db()
+        self.assertFalse(self.agent.is_admin)
+        self.manager.refresh_from_db()
+        self.assertEqual(self.manager.role, "MANAGER")
+
+    def test_admin_keeps_previous_role_settings_access(self):
+        self.agent.role_config = {"existing": ["administrator"], "authority": [], "restriction": [], "list_manager": False}
+        self.agent.is_admin = True
+        self.agent.save(update_fields=["is_admin", "role_config"])
+        self.client.force_authenticate(self.agent)
+        access = self.call("get", "settings/access/").data
+        self.assertTrue(access["is_admin"])
+        self.assertTrue(all(access["modules"]["appearance"].values()))
+        # Izin lama tetap: administrator = lihat saja, dan itu tidak berubah setelah jadi admin.
+        for module in ("company", "agents", "sales", "purchases", "products", "productions", "template", "custom-fields", "account-mapping", "approval-rules", "tagging-rules"):
+            with self.subTest(module=module):
+                self.assertTrue(access["modules"][module]["view"])
+                self.assertFalse(access["modules"][module]["create"])
+        self.assertTrue(access["modules"]["user-management"]["view"])
+        self.assertFalse(access["modules"]["user-management"]["create"])
+        self.assertFalse(access["modules"]["user-management"]["edit"])
+        self.assertFalse(access["modules"]["user-management"]["delete"])
+        self.call("get", "sales/form-settings/")
+        self.call("put", "sales/form-settings/", {}, expected=403)
+        self.call("get", "settings/members/")
+        self.call("post", "settings/members/", {"username": "admin-invite", "email": "admin-invite@example.test"}, expected=403)
+        self.call("delete", f"settings/members/{self.agent.pk}/", expected=403)
+
+    def test_admin_without_previous_grants_only_gets_appearance_and_user_list(self):
+        plain = User.objects.create_user(username="plain-admin", email="plain-admin@example.test", password=self.password, role="AGENT", is_admin=True, company=self.company)
+        self.client.force_authenticate(plain)
+        access = self.call("get", "settings/access/").data
+        self.assertTrue(access["is_admin"])
+        self.assertTrue(all(access["modules"]["appearance"].values()))
+        self.assertTrue(access["modules"]["user-management"]["view"])
+        self.assertFalse(access["modules"]["user-management"]["create"])
+        self.assertFalse(access["modules"]["sales"]["view"])
+        self.assertFalse(access["modules"]["company"]["view"])
+        self.call("get", "settings/members/")
+        self.call("post", f"settings/members/{self.agent.pk}/set-admin/", {"is_admin": True})
+
+    def test_admin_cannot_touch_appearance_of_other_company(self):
+        self.admin = User.objects.create_user(username="scoped-admin", email="scoped-admin@example.test", password=self.password, role="AGENT", is_admin=True, company=self.company)
+        self.client.force_authenticate(self.admin)
+        self.call("post", f"settings/members/{self.other_agent.pk}/set-admin/", {"is_admin": True}, expected=404)
+
     def test_ownership_transfer_is_explicit_and_company_scoped(self):
         self.call("post", f"settings/members/{self.other_agent.pk}/transfer-ownership/", {"confirm": "TRANSFER"}, expected=404)
         self.call("post", f"settings/members/{self.agent.pk}/transfer-ownership/", {"confirm": "not-confirmed"}, expected=400)
@@ -501,13 +659,14 @@ class SettingsMigrationPreservationTests(TransactionTestCase):
         before = HistoricalUser.objects.filter(pk=user.pk).values(*fields).get()
         try:
             executor = MigrationExecutor(connection)
-            executor.migrate([("accounts", "0007_settings_profile_integration")])
+            executor.migrate([("accounts", "0009_customuser_is_admin")])
             after = User.objects.filter(pk=user.pk).values(*fields).get()
             self.assertEqual(before, after)
             self.assertEqual(User.objects.get(pk=user.pk).role_config, {})
+            self.assertFalse(User.objects.get(pk=user.pk).is_admin)
             self.assertEqual(list(User.objects.get(pk=user.pk).roles.values_list("pk", flat=True)), [role.pk])
             self.assertEqual(Company.objects.get(pk=company.pk).bank_name, "Preserved bank")
             self.assertEqual(ProductionSetting.objects.get(pk=production.pk).production_plan_date_mode, "optional")
             self.assertIsNone(Role.objects.get(pk=role.pk).company_id)
         finally:
-            MigrationExecutor(connection).migrate([("accounts", "0007_settings_profile_integration")])
+            MigrationExecutor(connection).migrate([("accounts", "0009_customuser_is_admin")])
