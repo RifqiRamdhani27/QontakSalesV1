@@ -152,8 +152,9 @@ class MemberSerializer(serializers.ModelSerializer):
             "role",
             "roles",
             "role_config",
+            "is_admin",
         ]
-        read_only_fields = ["id", "username", "role"]
+        read_only_fields = ["id", "username", "role", "is_admin"]
 
     def validate_email(self, value):
         value = value.lower().strip()
