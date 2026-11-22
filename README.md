@@ -44,6 +44,7 @@ Platform ini menyediakan rangkaian modul lengkap untuk memenuhi kebutuhan siklus
 | ** Manajemen Aset Tetap** | Registrasi aset, monitoring nilai perolehan, masa manfaat, dan kalkulasi akumulasi penyusutan. |
 | ** Produksi & Pemenuhan** | Manajemen alur produksi barang dari bahan baku hingga pemenuhan pesanan (*Fulfillment*) pelanggan. |
 | ** Dark Mode & Responsif** | Dukungan tampilan tema gelap (*Dark Mode*) |
+| ** Appearance (khusus Admin)** | Pengaturan teks, gambar, testimoni, galeri, dan kontak yang tampil di halaman publik serta beranda aplikasi, lengkap dengan pratinjau langsung per bagian. Hanya user dengan status admin (`is_admin`) yang bisa membuka menu ini. |
 
 ---
 
@@ -168,13 +169,91 @@ pip install -r requirements.txt
 # Jalankan migrasi basis data
 python manage.py migrate
 
-# Buat akun Superuser / Admin
+# Buat akun Superuser Django (bukan status admin aplikasi)
 python manage.py createsuperuser
 
 # Jalankan server API
 python manage.py runserver 8000
 ```
 Backend akan aktif di: `http://localhost:8000`
+
+### 2. Menjadikan User Admin (Status `is_admin`)
+
+Ada dua role di aplikasi ini: `MANAGER` (pemilik perusahaan) dan `AGENT`.
+
+- **`MANAGER`** — akses penuh ke seluruh pengaturan **kecuali** Appearance.
+- **`AGENT`** — akses sesuai peran kustom yang diberikan; Appearance selalu tertutup.
+
+Di atas role itu ada status tambahan **admin** (`is_admin`), bukan role ketiga. Status admin bersifat **tambahan, bukan pengganti**: saat user dijadikan admin, role dan peran kustomnya tidak berubah sama sekali. Semua menu Settings yang tadinya bisa dibuka tetap bisa dibuka, lalu ditambah **Settings → Appearance**. Yang dikunci untuk admin hanya pengelolaan user biasa (undang/ubah/hapus) — itu tetap wewenang `MANAGER`.
+
+Status admin **tidak bisa diberikan dari dalam aplikasi untuk pertama kali**. User harus sudah terdaftar lebih dulu (diundang lewat Pengaturan pengguna atau daftar sendiri), lalu kolom `is_admin` diubah manual lewat PostgreSQL. Setelah punya satu admin, admin itu bisa menjadikan user lain admin lewat **Settings → Pengaturan pengguna**.
+
+#### Langkah lewat `psql`
+
+```bash
+# Masuk ke database (sesuaikan user, nama database, dan host dengan backend/.env)
+psql -U qontak -d qontak_sales_v1 -h localhost
+```
+
+```sql
+-- Lihat user yang ada beserta status adminnya
+SELECT id, email, username, role, is_admin, status FROM accounts_customuser ORDER BY id;
+
+-- Jadikan admin (ganti email dengan user yang dituju)
+UPDATE accounts_customuser
+SET is_admin = true
+WHERE email = 'orang@perusahaan.com';
+
+-- Cabut status admin
+UPDATE accounts_customuser
+SET is_admin = false
+WHERE email = 'orang@perusahaan.com';
+```
+
+Atau satu baris tanpa masuk ke shell `psql`:
+
+```bash
+psql -U qontak -d qontak_sales_v1 -c \
+  "UPDATE accounts_customuser SET is_admin = true WHERE email='orang@perusahaan.com';"
+```
+
+Verifikasi hasilnya:
+
+```bash
+psql -U qontak -d qontak_sales_v1 -c \
+  "SELECT id, email, role, is_admin FROM accounts_customuser WHERE is_admin = true;"
+```
+
+Alternatif tanpa `psql` — lewat Django shell di folder `backend`:
+
+```bash
+python manage.py shell -c "
+from django.contrib.auth import get_user_model
+User = get_user_model()
+user = User.objects.get(email='orang@perusahaan.com')
+user.is_admin = True
+user.save(update_fields=['is_admin'])
+print(user.email, user.role, user.is_admin)
+"
+```
+
+#### Syarat agar admin benar-benar bisa masuk ke Appearance
+
+1. Migrasi sudah dijalankan: `python manage.py migrate accounts` (migrasi `0009_customuser_is_admin`).
+2. Kolom `is_admin` bernilai `true` — dicek dengan query di atas.
+3. User punya `company_id` yang terisi, `status = 'active'`, dan `is_active = true`. Akun tanpa perusahaan atau nonaktif tetap ditolak walau `is_admin`-nya true.
+4. User **login ulang**. JWT dan `localStorage.user_role` di browser masih menyimpan data lama; hak akses baru dibaca dari `GET /api/settings/access/` saat halaman Settings dibuka.
+
+Setelah login ulang, menu **Appearance** muncul di sidebar Settings, dan tombol **Jadikan admin / Cabut admin** tersedia di kolom Tindakan pada daftar pengguna.
+
+#### Aturan yang dijaga backend
+
+- Hanya user dengan `is_admin = true` yang boleh membuka Appearance dan memanggil `POST /api/settings/members/<id>/set-admin/`.
+- `MANAGER` tidak bisa menjadikan siapa pun admin, dan user `MANAGER` tidak bisa diubah status adminnya lewat endpoint itu.
+- Admin tidak bisa mencabut status admin miliknya sendiri.
+- User dengan `is_admin = true` dan user `MANAGER` tidak bisa dihapus dari daftar pengguna.
+- Admin tetap memakai izin Settings lamanya (dari `role_config`/peran kustom) ditambah Appearance; admin tidak bisa mengundang, mengubah, atau menghapus user biasa.
+- Perubahan status admin hanya berlaku pada company yang sama; user company lain menghasilkan `404`.
 
 ### Seed Data Wilayah
 
