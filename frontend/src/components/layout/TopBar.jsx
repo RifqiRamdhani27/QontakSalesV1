@@ -279,6 +279,89 @@ export default function TopBar({ onMenuClick }) {
 
   return (
     <>
+      <style>{`
+        .switch {
+          --switch_width: 2em;
+          --switch_height: 1em;
+          --thumb_color: #e8e8e8;
+          --track_color: #e8e8e8;
+          --track_active_color: #b8660dff;
+          --outline_color: #464646ff;
+          font-size: 13.5px; 
+          position: relative;
+          display: inline-block;
+          width: var(--switch_width);
+          height: var(--switch_height);
+          margin: 0 8px; 
+        }
+
+        /* Sembunyikan checkbox bawaan */
+        .switch input {
+          opacity: 0;
+          width: 0;
+          height: 0;
+        }
+
+        .slider {
+          box-sizing: border-box;
+          border: 2px solid var(--outline_color);
+          position: absolute;
+          cursor: pointer;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: var(--track_color);
+          transition: .15s;
+          border-radius: var(--switch_height);
+        }
+
+        .slider:before {
+          box-sizing: border-box;
+          position: absolute;
+          content: "";
+          height: var(--switch_height);
+          width: var(--switch_height);
+          border: 2px solid var(--outline_color);
+          border-radius: 100%;
+          left: -2px;
+          bottom: -2px;
+          background-color: var(--thumb_color);
+          transform: translateY(-0.2em);
+          box-shadow: 0 0.2em 0 var(--outline_color);
+          transition: .15s;
+        }
+
+        input:checked + .slider {
+          background-color: var(--track_active_color);
+        }
+
+        input:focus-visible + .slider {
+          box-shadow: 0 0 0 2px var(--track_active_color);
+        }
+
+        input:hover + .slider:before {
+          transform: translateY(-0.3em);
+          box-shadow: 0 0.3em 0 var(--outline_color);
+        }
+
+        input:checked + .slider:before {
+          transform: translateX(calc(var(--switch_width) - var(--switch_height))) translateY(-0.2em);
+        }
+
+        input:hover:checked + .slider:before {
+          transform: translateX(calc(var(--switch_width) - var(--switch_height))) translateY(-0.3em);
+          box-shadow: 0 0.3em 0 var(--outline_color);
+        }
+
+        /* Penyesuaian Warna Switch untuk Dark Mode */
+        .dark-mode-switch {
+          --outline_color: #fdfdfdff; 
+          --track_color: #e08d33;
+          --thumb_color: #f19532ff;
+        }
+      `}</style>
+
       {isImpersonating && (
         <Box bg="blue.500" color="white" px={4} py={2}>
           <HStack justify="center" gap={3}>
@@ -324,6 +407,18 @@ export default function TopBar({ onMenuClick }) {
           <List size={22} color="currentColor" />
         </Box>
 
+        {/* ========================================== */}
+        {/* SWITCH TOGGLE (DI SEBELAH KIRI SUPPORT)    */}
+        {/* ========================================== */}
+        <label className={`switch ${themeMode === "dark" ? "dark-mode-switch" : ""}`} title="Ganti Tema">
+          <input 
+            type="checkbox" 
+            checked={themeMode === "dark"} 
+            onChange={(e) => handleThemeChange(e.target.checked ? "dark" : "light")} 
+          />
+          <span className="slider"></span>
+        </label>
+
         {/* Support */}
         <Box
           as="a"
@@ -343,8 +438,8 @@ export default function TopBar({ onMenuClick }) {
         >
           <svg
             width="20"
-            height="22"
-            viewBox="0 0 22 24"
+            height="20"
+            viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
           >
@@ -388,39 +483,6 @@ export default function TopBar({ onMenuClick }) {
           >
             <path
               d="M11.9946 16H12.0036M10 10.5V10C10 8.89543 10.8954 8 12 8C13.1046 8 14 8.89543 14 10V10.1213C14 10.6839 13.7765 11.2235 13.3787 11.6213L12 13M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </Box>
-
-        {/* Riwayat / Time */}
-        <Box
-          cursor="pointer"
-          p={2}
-          borderRadius="md"
-          color={currentTheme.text}
-          _hover={{
-            bg: currentTheme.hoverBg,
-            color: themeMode === "dark" ? "#E5B85C" : currentTheme.text,
-          }}
-          transition="all 0.2s ease"
-          display="flex"
-          alignItems="center"
-          title="History"
-          onClick={() => navigate("/history")}
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M15.71 15.18L12.61 13.33C12.07 13.01 11.63 12.24 11.63 11.61V7.51M22 12C22 17.52 17.52 22 12 22C6.48 22 2 17.52 2 12C2 6.48 6.48 2 12 2C17.52 2 22 6.48 22 12Z"
               stroke="currentColor"
               strokeWidth="1.5"
               strokeLinecap="round"
@@ -641,26 +703,38 @@ export default function TopBar({ onMenuClick }) {
                       <HStack
                         p={3}
                         cursor="pointer"
-                        _hover={{ bg: currentTheme.hoverBg }}
+                        _hover={{
+                          bg: themeMode === "dark" ? "#333333" : "muted",
+                          color: themeMode === "dark" ? "#E5B85C" : "inherit"
+                        }}
                         onClick={() => {
                           setShowProfile(true);
                           setShowMenu(false);
                         }}
                       >
-                        <UserCircle size={16} color={currentTheme.text} />
+                        <UserCircle 
+                          size={16} 
+                          color={themeMode === "dark" ? "currentColor" : currentTheme.text} 
+                        />
                         <Text fontSize="sm">Profil saya</Text>
                       </HStack>
                     )}
                     <HStack
                       p={3}
                       cursor="pointer"
-                      _hover={{ bg: currentTheme.hoverBg }}
+                      _hover={{
+                        bg: themeMode === "dark" ? "#333333" : "muted",
+                        color: themeMode === "dark" ? "#E5B85C" : "inherit"
+                      }}
                       onClick={() => {
                         navigate("/settings");
                         setShowMenu(false);
                       }}
                     >
-                      <Gear size={16} color={currentTheme.text} />
+                      <Gear 
+                        size={16} 
+                        color={themeMode === "dark" ? "currentColor" : currentTheme.text} 
+                      />
                       <Text fontSize="sm">Settings</Text>
                     </HStack>
 
@@ -668,17 +742,23 @@ export default function TopBar({ onMenuClick }) {
                       <HStack
                         p={3}
                         cursor="pointer"
-                        _hover={{ bg: currentTheme.hoverBg }}
+                        _hover={{
+                          bg: themeMode === "dark" ? "#333333" : "muted",
+                          color: themeMode === "dark" ? "#E5B85C" : "inherit"
+                        }}
                         onClick={
                           isImpersonating ? handleSwitchBack : openSwitchSubmenu
                         }
                       >
                         {isImpersonating ? (
-                          <ArrowUUpLeft size={16} color={currentTheme.text} />
+                          <ArrowUUpLeft 
+                            size={16} 
+                            color={themeMode === "dark" ? "currentColor" : currentTheme.text} 
+                          />
                         ) : (
                           <ArrowsClockwise
                             size={16}
-                            color={currentTheme.text}
+                            color={themeMode === "dark" ? "currentColor" : currentTheme.text}
                           />
                         )}
                         <Text fontSize="sm">
@@ -690,17 +770,25 @@ export default function TopBar({ onMenuClick }) {
                     <HStack
                       p={3}
                       cursor="pointer"
-                      _hover={{ bg: currentTheme.hoverBg }}
+                      _hover={{
+                        bg: themeMode === "dark" ? "#333333" : "muted",
+                        color: themeMode === "dark" ? "#E5B85C" : "inherit"
+                      }}
                       onClick={() => setShowThemeSubmenu(true)}
                     >
-                      <PaintBrush size={16} color={currentTheme.text} />
+                      <PaintBrush 
+                        size={16} 
+                        color={themeMode === "dark" ? "currentColor" : currentTheme.text} 
+                      />
                       <Text fontSize="sm">Change Themes</Text>
                     </HStack>
 
                     <HStack
                       p={3}
                       cursor="pointer"
-                      _hover={{ bg: currentTheme.hoverBg }}
+                      _hover={{ 
+                        bg: themeMode === "dark" ? "rgba(255, 8, 8, 0.15)" : "red.50" 
+                      }}
                       color="destructive"
                       onClick={handleLogout}
                     >
