@@ -165,9 +165,9 @@ class MemberSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             "id", "username", "email", "first_name", "last_name",
-            "status", "type", "access_time_limit", "role", "roles",
+            "status", "type", "access_time_limit", "role", "roles", "is_admin",
         ]
-        read_only_fields = ["id", "role"]
+        read_only_fields = ["id", "role", "is_admin"]
 
 class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
     username_field = "email"
