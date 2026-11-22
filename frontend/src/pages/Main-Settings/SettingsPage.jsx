@@ -1,40 +1,59 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Box, VStack, HStack, Text, Link as ChakraLink } from "@chakra-ui/react";
 import { Link as RouterLink, useLocation } from "react-router-dom";
 import { CaretDown, CaretLeft, CaretRight } from "@phosphor-icons/react";
+import {
+  ArrowsLeftRight,
+  BookmarkSimple,
+  Buildings,
+  Factory,
+  Package,
+  PaintBrush,
+  Receipt,
+  SealCheck,
+  ShoppingCart,
+  SquaresFour,
+  Tag,
+  Textbox,
+  UserGear,
+  UsersThree,
+} from "@phosphor-icons/react";
 import "./SettingsPage.css";
 import api, { extractError } from "@/services/settingsApi";
 import { setSettingsAccess } from "@/services/settingsAccess";
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
+import PageLoader from "@/components/ui/PageLoader";
 
-import CompanyPage from "@/pages/Main-Settings/CompanyPage";
-import UserManagementPage from "@/pages/Main-Settings/UserManagementPage";
-import SalesPage from "@/pages/Main-Settings/SalesPage";
-import PurchasesSettingsPage from "@/pages/Main-Settings/PurchasesSettingsPage";
-import ProductsSettingsPage from "@/pages/Main-Settings/ProductsSettingsPage";
-import ProductionsSettingsPage from "@/pages/Main-Settings/ProductionsSettingsPage";
-import TemplateSettingsPage from "@/pages/Main-Settings/TemplateSettingsPage";
-import CustomFieldsPage from "@/pages/Main-Settings/CustomFieldsPage";
-import AccountMappingPage from "@/pages/Main-Settings/AccountMappingPage";
-import BillingsPage from "@/pages/Main-Settings/BillingsPage";
-import ApprovalRulesPage from "@/pages/Main-Settings/ApprovalRulesPage";
-import TaggingRulesPage from "@/pages/Main-Settings/TaggingRulesPage";
-import AgentsPage from "@/pages/Main-Settings/AgentsPage";
+const CompanyPage = lazy(() => import("@/pages/Main-Settings/CompanyPage"));
+const UserManagementPage = lazy(() => import("@/pages/Main-Settings/UserManagementPage"));
+const SalesPage = lazy(() => import("@/pages/Main-Settings/SalesPage"));
+const PurchasesSettingsPage = lazy(() => import("@/pages/Main-Settings/PurchasesSettingsPage"));
+const ProductsSettingsPage = lazy(() => import("@/pages/Main-Settings/ProductsSettingsPage"));
+const ProductionsSettingsPage = lazy(() => import("@/pages/Main-Settings/ProductionsSettingsPage"));
+const TemplateSettingsPage = lazy(() => import("@/pages/Main-Settings/TemplateSettingsPage"));
+const CustomFieldsPage = lazy(() => import("@/pages/Main-Settings/CustomFieldsPage"));
+const AccountMappingPage = lazy(() => import("@/pages/Main-Settings/AccountMappingPage"));
+const BillingsPage = lazy(() => import("@/pages/Main-Settings/BillingsPage"));
+const ApprovalRulesPage = lazy(() => import("@/pages/Main-Settings/ApprovalRulesPage"));
+const TaggingRulesPage = lazy(() => import("@/pages/Main-Settings/TaggingRulesPage"));
+const AgentsPage = lazy(() => import("@/pages/Main-Settings/AgentsPage"));
+const AppearancePage = lazy(() => import("@/pages/Main-Settings/AppearancePage"));
 
 const SETTINGS_MENU = [
-  { id: "company", label: "Perusahaan", path: "/settings/company", component: CompanyPage },
-  { id: "agents", label: "Agen", path: "/settings/agents", component: AgentsPage },
-  { id: "user-management", label: "Pengaturan pengguna", path: "/settings/user-management", component: UserManagementPage },
-  { id: "sales", label: "Penjualan", path: "/settings/sales", component: SalesPage, hasDropdown: true },
-  { id: "purchases", label: "Pembelian", path: "/settings/purchases", component: PurchasesSettingsPage },
-  { id: "products", label: "Produk", path: "/settings/products", component: ProductsSettingsPage, hasDropdown: true },
-  { id: "productions", label: "Produksi", path: "/settings/productions", component: ProductionsSettingsPage },
-  { id: "template", label: "Templat", path: "/settings/template", component: TemplateSettingsPage, hasDropdown: true },
-  { id: "custom-fields", label: "Custom field", path: "/settings/custom-fields", component: CustomFieldsPage },
-  { id: "account-mapping", label: "Pemetaan Akun", path: "/settings/account-mapping", component: AccountMappingPage },
-  { id: "billings", label: "Tagihan", path: "/settings/billings", component: BillingsPage },
-  { id: "approval-rules", label: "Aturan approval", path: "/settings/approval-rules", component: ApprovalRulesPage },
-  { id: "tagging-rules", label: "Aturan tagging", path: "/settings/tagging-rules", component: TaggingRulesPage },
+  { id: "company", label: "Perusahaan", path: "/settings/company", component: CompanyPage, Icon: Buildings },
+  { id: "appearance", label: "Appearance", path: "/settings/appearance", component: AppearancePage, Icon: PaintBrush },
+  { id: "agents", label: "Agen", path: "/settings/agents", component: AgentsPage, Icon: UsersThree },
+  { id: "user-management", label: "Pengaturan pengguna", path: "/settings/user-management", component: UserManagementPage, Icon: UserGear },
+  { id: "sales", label: "Penjualan", path: "/settings/sales", component: SalesPage, hasDropdown: true, Icon: Tag },
+  { id: "purchases", label: "Pembelian", path: "/settings/purchases", component: PurchasesSettingsPage, Icon: ShoppingCart },
+  { id: "products", label: "Produk", path: "/settings/products", component: ProductsSettingsPage, hasDropdown: true, Icon: Package },
+  { id: "productions", label: "Produksi", path: "/settings/productions", component: ProductionsSettingsPage, Icon: Factory },
+  { id: "template", label: "Templat", path: "/settings/template", component: TemplateSettingsPage, hasDropdown: true, Icon: Textbox },
+  { id: "custom-fields", label: "Custom field", path: "/settings/custom-fields", component: CustomFieldsPage, Icon: SquaresFour },
+  { id: "account-mapping", label: "Pemetaan Akun", path: "/settings/account-mapping", component: AccountMappingPage, Icon: ArrowsLeftRight },
+  { id: "billings", label: "Tagihan", path: "/settings/billings", component: BillingsPage, Icon: Receipt },
+  { id: "approval-rules", label: "Aturan approval", path: "/settings/approval-rules", component: ApprovalRulesPage, Icon: SealCheck },
+  { id: "tagging-rules", label: "Aturan tagging", path: "/settings/tagging-rules", component: TaggingRulesPage, Icon: BookmarkSimple },
 ];
 
 export default function Pengaturan() {
@@ -78,10 +97,13 @@ export default function Pengaturan() {
     };
   }, []);
 
-  const availableItems = SETTINGS_MENU.filter((item) => access?.modules?.[item.id]?.view === true);
+  const canViewItem = (item) =>
+    access?.modules?.[item.id]?.view === true &&
+    (item.id !== "appearance" || access?.is_admin === true);
+  const availableItems = SETTINGS_MENU.filter(canViewItem);
   const activeItem =
     SETTINGS_MENU.find((item) => location.pathname === item.path || location.pathname.startsWith(item.path + "/")) || availableItems[0];
-  const ActiveComponent = activeItem && access?.modules?.[activeItem.id]?.view === true ? activeItem.component : null;
+  const ActiveComponent = activeItem && canViewItem(activeItem) ? activeItem.component : null;
 
   return (
     <HStack data-qontak-settings="" className={isDark ? "settings-dark" : ""} align="stretch" gap={0} minW={0} style={{ height: "calc(100vh - 60px)", overflow: "hidden" }} bg={isDark ? "#121212" : "#F5F7FA"}>
@@ -122,46 +144,56 @@ export default function Pengaturan() {
           }}
         >
           {availableItems.map((item) => {
-          const isActive = item.id === activeItem?.id;
-          const isOpen = openDropdown === item.id;
-          return (
-            <Box key={item.id}>
-              <ChakraLink
-                as={RouterLink}
-                to={item.path}
-                display="flex"
-                alignItems="center"
-                justifyContent="space-between"
-                px={3}
-                py={2.5}
-                borderRadius="md"
-                fontSize="sm"
-                fontWeight={isActive ? "semibold" : "normal"}
-                bg={isActive ? (isDark ? "rgba(229,184,92,0.15)" : "#EEF0FE") : "transparent"}
-                color={isActive ? "primary" : "foreground"}
-                _hover={{ bg: isActive ? (isDark ? "rgba(229,184,92,0.15)" : "#EEF0FE") : (isDark ? "#2D2D2D" : "muted"), textDecoration: "none" }}
-                transition="all 150ms ease"
-                onClick={() => {
-                  if (item.hasDropdown) {
-                    setOpenDropdown(isOpen ? null : item.id);
-                  }
-                }}
-              >
-                <Text>{item.label}</Text>
-                {item.hasDropdown && (
-                  <CaretDown
-                    size={14}
-                    style={{
-                      transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
-                      transition: "transform 150ms ease",
-                      flexShrink: 0,
-                    }}
-                  />
-                )}
-              </ChakraLink>
-            </Box>
-          );
-        })}
+            const isActive = item.id === activeItem?.id;
+            const isOpen = openDropdown === item.id;
+            const ItemIcon = item.Icon;
+            return (
+              <Box key={item.id}>
+                <ChakraLink
+                  as={RouterLink}
+                  to={item.path}
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  gap={2}
+                  px={3}
+                  py={2.5}
+                  borderRadius="md"
+                  fontSize="sm"
+                  fontWeight={isActive ? "semibold" : "normal"}
+                  bg={isActive ? (isDark ? "rgba(229,184,92,0.15)" : "#EEF0FE") : "transparent"}
+                  color={isActive ? "primary" : "foreground"}
+                  _hover={{ bg: isActive ? (isDark ? "rgba(229,184,92,0.15)" : "#EEF0FE") : (isDark ? "#2D2D2D" : "muted"), textDecoration: "none" }}
+                  transition="all 150ms ease"
+                  aria-current={isActive ? "page" : undefined}
+                  onClick={() => {
+                    if (item.hasDropdown) {
+                      setOpenDropdown(isOpen ? null : item.id);
+                    }
+                  }}
+                >
+                  <HStack gap={2.5} minW={0} flex={1}>
+                    {ItemIcon && (
+                      <Box as="span" display="flex" flexShrink={0} opacity={isActive ? 1 : 0.7} aria-hidden="true">
+                        <ItemIcon size={17} weight={isActive ? "fill" : "regular"} />
+                      </Box>
+                    )}
+                    <Text truncate>{item.label}</Text>
+                  </HStack>
+                  {item.hasDropdown && (
+                    <CaretDown
+                      size={14}
+                      style={{
+                        transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+                        transition: "transform 150ms ease",
+                        flexShrink: 0,
+                      }}
+                    />
+                  )}
+                </ChakraLink>
+              </Box>
+            );
+          })}
         </VStack>
 
         <Box
@@ -206,10 +238,12 @@ export default function Pengaturan() {
         {accessError ? (
           <Box p={7}><Text color="red.600">{accessError}</Text></Box>
         ) : !access ? (
-          <Box p={7}><Text color="gray.600">Memuat hak akses pengaturan...</Text></Box>
+          <PageLoader label="Memuat hak akses pengaturan…" />
         ) : ActiveComponent ? (
           <ErrorBoundary key={activeItem.id}>
-            <ActiveComponent />
+            <Suspense fallback={<PageLoader label="Memuat halaman pengaturan…" />}>
+              <ActiveComponent />
+            </Suspense>
           </ErrorBoundary>
         ) : (
           <Box p={7} role="alert">
