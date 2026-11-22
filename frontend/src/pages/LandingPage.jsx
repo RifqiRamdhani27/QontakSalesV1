@@ -1,25 +1,26 @@
 import { useState, useEffect, useRef, memo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Button, Container, Heading, HStack, SimpleGrid, Stack, Text, VStack } from "@chakra-ui/react";
+import { Box, Button, Container, Flex, Heading, HStack, SimpleGrid, Stack, Text, VStack } from "@chakra-ui/react";
 import {
   ArrowRight, CaretDown, Rocket, ShieldCheck, Sparkle,
-  Check, Lock, CloudArrowUp, Users, Quotes, Bank, TreeStructure, Lightning, CertificateIcon
+  Check, Lock, CloudArrowUp, Users, Quotes, Bank, TreeStructure, Lightning, CertificateIcon,
+  WhatsappLogo, InstagramLogo,
 } from "@phosphor-icons/react";
 import AnimatedContent from "./AnimatedContent";
-import brandFooter from "@/assets/Ino-Finance-Footer.png";
-import ctaBg from "@/assets/cta.jpg";
-import brandLogoWhite from "@/assets/Ino-Finance-Footer.png";
-import brandLogoBlack from "@/assets/Ino-Finance.png";
+import imgStartup from "@/assets/imgStartup.webp";
+import imgCorporate from "@/assets/imgCorporate.webp";
+import imgAkuntan from "@/assets/imgAkuntan.webp";
+import {
+  APPEARANCE_EVENT,
+  dropLegacyLocalStorage,
+  getInstagramUrl,
+  getPublishedContent,
+  getWhatsappUrl,
+  refreshPublishedContent,
+} from "@/services/appearanceSettings";
+import brandLogoWhite from "@/assets/Ino-Finance-Footer.webp";
+import brandLogoBlack from "@/assets/Ino-Finance.webp";
 import AccordionGallery from "./AccordionGallery";
-import galleryImg1 from "@/assets/Accounting-1.jpg";
-import galleryImg2 from "@/assets/Accounting-2.jpg";
-import galleryImg3 from "@/assets/Accounting-3.jpg";
-import galleryImg4 from "@/assets/Accounting-4.jpg";
-import galleryImg5 from "@/assets/Accounting-5.jpg";
-import imgStartup from "@/assets/imgStartup.jpg";
-import imgCorporate from "@/assets/imgCorporate.jpg";
-import imgAkuntan from "@/assets/imgAkuntan.jpg";
-import profilePic from "@/assets/profile-rizal.jpg";
 import MagicRings from "./MagicRings";
 import PixelCard from "./PixelCard";
 
@@ -40,34 +41,28 @@ const navLinks = [
   { label: "Fitur", id: "fitur" }, { label: "FAQ", id: "faq" },
 ];
 
+const stepIcons = [Bank, TreeStructure, Lightning, CertificateIcon,];
+
 const solutions = [
   {
     image: imgStartup,
     tag: "Startup & Agresif",
     title: "Startup & Skala Cepat",
-    desc: "Pembukuan kas harian otomatis, pemantauan runway dan burn rate real-time, serta integrasi langsung payment gateway e-commerce."
+    desc: "Pembukuan kas harian otomatis, pemantauan runway dan burn rate real-time, serta integrasi langsung payment gateway e-commerce.",
   },
   {
     image: imgCorporate,
     tag: "Multi-Entitas",
     title: "Korporasi & Multi-Cabang",
-    desc: "Buku besar multi-entitas, konsolidasi mata uang asing otomatis, alur persetujuan PO/Invoice berjenjang, dan tata kelola grup."
+    desc: "Buku besar multi-entitas, konsolidasi mata uang asing otomatis, alur persetujuan PO/Invoice berjenjang, dan tata kelola grup.",
   },
   {
     image: imgAkuntan,
     tag: "KAP & Pajak",
     title: "Akuntan Publik & Konsultan Pajak",
     desc: "Laporan keuangan standar PSAK/IFRS, audit trail digital anti-manipulasi, serta integrasi e-Faktur dan pelaporan pajak langsung.",
-    dark: true
+    dark: true,
   },
-];
-
-const galleryItems = [
-  { image: galleryImg1, label: 'Penjualan' },
-  { image: galleryImg2, label: 'Pembelian' },
-  { image: galleryImg3, label: 'Jurnal Umum' },
-  { image: galleryImg4, label: 'Laporan Laba Rugi' },
-  { image: galleryImg5, label: 'Customer' }
 ];
 
 const steps = [
@@ -77,8 +72,6 @@ const steps = [
   { title: "Terbitkan Laporan Neraca", desc: "Hasilkan laporan neraca, laba rugi, dan arus kas komprehensif dalam satu klik, siap dibagikan ke dewan direksi.", badge: "Laporan Real-Time" },
 ];
 
-const stepIcons = [Bank, TreeStructure, Lightning, CertificateIcon,];
-
 const security = [
   { icon: Lock, title: "Enkripsi Tingkat Perbankan (AES-256)", desc: "Seluruh data pembukuan dan kredensial bank dienkripsi saat transit (TLS 1.3) maupun saat istirahat dengan enkripsi AES-256." },
   { icon: ShieldCheck, title: "Sertifikasi SOC-2 & ISO 27001", desc: "Infrastruktur cloud teraudit secara berkala untuk memenuhi standar kepatuhan tata kelola dan privasi informasi korporasi global." },
@@ -86,18 +79,16 @@ const security = [
   { icon: Users, title: "Hak Akses Berbasis Peran (RBAC) Ketat", desc: "Atur wewenang persetujuan transfer, akses viewing laporan, dan modifikasi jurnal berdasar jabatan staf finance secara granular." },
 ];
 
-const faqs = [
-  { q: "Apakah Jurnal ERP ini sesuai dengan standar akuntansi Indonesia (PSAK)?", a: "Ya. Laporan keuangan disusun mengikuti PSAK dan IFRS, termasuk PSAK 71 dan 73, lengkap dengan audit trail digital." },
-  { q: "Bagaimana keamanan data finansial dan riwayat transaksi perusahaan kami?", a: "Data dienkripsi AES-256 saat disimpan dan TLS 1.3 saat dikirim, dilindungi RBAC ketat, serta dicadangkan otomatis setiap hari di multi-region." },
-  { q: "Berapa lama proses migrasi data dari software akuntansi lama (seperti Excel/SAP/QuickBooks)?", a: "Untuk bisnis kecil sampai menengah, migrasi umumnya selesai dalam hitungan hari. Tim kami membantu memetakan COA dan saldo awal." },
-  { q: "Apakah mendukung multi-cabang dan multi-entitas perusahaan?", a: "Ya. Setiap entitas punya buku besar sendiri, dan laporan dapat dikonsolidasikan otomatis termasuk konversi mata uang asing." },
+const footerCols = [
+  { heading: "SOLUSI", items: ["Untuk Startup Finansial", "Korporasi & Multi-Cabang", "KAP & Konsultan Pajak", "Scaleup B2B SaaS"] },
+  { heading: "FITUR", items: ["Jurnal Umum & Buku Besar", "Rekonsiliasi Bank API", "e-Faktur & Pajak Otomatis", "Audit Trail Digital", "Konsolidasi Multi-Mata Uang"] },
+  { heading: "PERUSAHAAN", items: ["Tentang Jurnal ERP", "Kemitraan Perbankan", "Blog & Studi Kasus", "Karir Tim FinTech"] },
+  { heading: "KEPATUHAN & LEGALITAS", items: ["Keamanan ISO 27001", "Laporan SOC-2 Type II", "Standar PSAK & IFRS", "SLA & Ketentuan Layanan"] },
 ];
 
-const footerCols = [
-  { h: "SOLUSI", items: ["Untuk Startup Finansial", "Korporasi & Multi-Cabang", "KAP & Konsultan Pajak", "Scaleup B2B SaaS"] },
-  { h: "FITUR", items: ["Jurnal Umum & Buku Besar", "Rekonsiliasi Bank API", "e-Faktur & Pajak Otomatis", "Audit Trail Digital", "Konsolidasi Multi-Mata Uang"] },
-  { h: "PERUSAHAAN", items: ["Tentang Jurnal ERP", "Kemitraan Perbankan", "Blog & Studi Kasus", "Karir Tim FinTech"] },
-  { h: "KEPATUHAN & LEGALITAS", items: ["Keamanan ISO 27001", "Laporan SOC-2 Type II", "Standar PSAK & IFRS", "SLA & Ketentuan Layanan"] },
+const legalLinks = [
+  { label: "Syarat Penggunaan", url: "/terms" },
+  { label: "Kebijakan Privasi", url: "/privacy" },
 ];
 
 const plans = [
@@ -229,9 +220,37 @@ const Eyebrow = ({ children, color = C.sky }) => (
 const Title = ({ children, dark, size = "4xl" }) => (
   <Heading as="h2" fontSize={{ base: "2xl", md: size === "4xl" ? "4xl" : "3xl" }} lineHeight="1.1" fontWeight="700" color={dark ? "white" : C.ink} textAlign="center" fontFamily={FONT}>{children}</Heading>
 );
+const HERO_HIGHLIGHT = "Dibangun untuk Pertumbuhan";
+const HeroTitle = ({ text }) => {
+  const at = text.indexOf(HERO_HIGHLIGHT);
+  if (at < 0) return text;
+  return (
+    <>
+      {text.slice(0, at)}
+      <Text as="span" color={C.sky300}>{HERO_HIGHLIGHT}</Text>
+      {text.slice(at + HERO_HIGHLIGHT.length)}
+    </>
+  );
+};
 const Pill = ({ children, color = C.sky300, border = "rgba(56,189,248,.25)" }) => (
   <Box px={3} py={1} borderRadius="full" bg="rgba(2,6,23,.8)" border="1px solid" borderColor={border} fontSize="11px" fontWeight="600" color={color}>{children}</Box>
 );
+
+/**
+ * Latar hero digambar sebagai background CSS, bukan elemen <img>.
+ * Dengan `background-size: cover` ukuran latar selalu sama persis dengan
+ * kotak hero, berapa pun dimensi gambar yang diunggah admin.
+ */
+const heroBackground = (image) => {
+  if (!image) return undefined;
+  const safe = String(image).replace(/["\\\n\r]/g, (match) => encodeURIComponent(match));
+  return {
+    backgroundImage: `url("${safe}")`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+  };
+};
 
 const CtaBtn = ({ children, onClick, size = "lg", outline, ...rest }) => (
   <Button
@@ -367,7 +386,6 @@ const Navbar = memo(function Navbar() {
   );
 });
 
-
 {/* Faq */ }
 function FaqItem({ q, a }) {
   const [open, setOpen] = useState(false);
@@ -408,7 +426,6 @@ function FaqItem({ q, a }) {
     </Box>
   );
 }
-
 
 {/* Price */ }
 function PlanContent({ p, onClick, selected }) {
@@ -463,7 +480,6 @@ function PlanContent({ p, onClick, selected }) {
     </VStack>
   );
 }
-
 
 function PlanCard({ p, selected, onSelect, onClick }) {
   const [ref, inView] = useInView("150px");
@@ -557,6 +573,36 @@ function PricingSection({ onRegister, onContact }) {
 export default function LandingPage() {
   const navigate = useNavigate();
   const register = () => navigate("/register");
+  const [content, setContent] = useState(getPublishedContent);
+  const faqs = content.faqs;
+  const instagramUrl = getInstagramUrl(content.contact.instagram);
+  const whatsappUrl = getWhatsappUrl(content.contact.whatsapp);
+  useEffect(() => {
+    dropLegacyLocalStorage();
+    let cancelled = false;
+    const pull = () => {
+      refreshPublishedContent()
+        .then((next) => {
+          if (!cancelled) setContent(next);
+        })
+        .catch(() => {
+          // Offline atau API mati: cache lokal / konten bawaan tetap tampil.
+        });
+    };
+    pull();
+    const sync = () => pull();
+    window.addEventListener(APPEARANCE_EVENT, sync);
+    window.addEventListener("focus", sync);
+    window.addEventListener("pageshow", sync);
+    document.addEventListener("visibilitychange", sync);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(APPEARANCE_EVENT, sync);
+      window.removeEventListener("focus", sync);
+      window.removeEventListener("pageshow", sync);
+      document.removeEventListener("visibilitychange", sync);
+    };
+  }, []);
   useEffect(() => {
     if (document.getElementById("jerp-font")) return;
     const pre = document.createElement("link");
@@ -583,8 +629,17 @@ export default function LandingPage() {
       <Navbar />
 
       {/* Home */}
-      <Box id="home" position="relative" overflow="hidden" color="white" pt={{ base: 36, md: 44 }} pb={{ base: 20, md: 32 }}>
-        <Box as="img" src={ctaBg} alt="" decoding="async" position="absolute" inset={0} w="full" h="full" objectFit="cover" />
+      <Box
+        id="home"
+        position="relative"
+        overflow="hidden"
+        color="white"
+        bg="#020617"
+        pt={{ base: 36, md: 44 }}
+        pb={{ base: 20, md: 32 }}
+        minH={{ base: "560px", md: "680px" }}
+        style={heroBackground(content.hero.image)}
+      >
         <Box position="absolute" inset={0} bg="linear-gradient(180deg, rgba(2,6,23,.7), rgba(2,6,23,.86))" />
         <Box
           aria-hidden position="absolute" top="-200px" left="14%" w="900px" h="650px" pointerEvents="none"
@@ -599,14 +654,12 @@ export default function LandingPage() {
             trigger="mount" stagger={0.12} distance={40}
             style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "32px", textAlign: "center" }}
           >
-            <Heading as="h1" fontSize={{ base: "4xl", md: "6xl", lg: "7xl" }} lineHeight="1" fontWeight="700" maxW="896px">
-              Jurnal ERP Keuangan Modern. <Text as="span" color={C.sky300}>Dibangun untuk Pertumbuhan</Text> Bisnis Kamu.
-            </Heading>
+            <Heading as="h1" fontSize={{ base: "4xl", md: "6xl", lg: "7xl" }} lineHeight="1" fontWeight="700" maxW="896px"><HeroTitle text={content.hero.title} /></Heading>
             <Text fontSize={{ base: "md", md: "xl" }} color="#CBD5E1" maxW="768px" lineHeight="1.4">
-              Kelola pembukuan umum, rekonsiliasi bank instan, pengelolaan produk, dan kepatuhan pajak dalam satu ekosistem terpadu — cepat, akurat, dan berstandar audit global.
+              {content.hero.description}
             </Text>
             <Stack direction={{ base: "column", sm: "row" }} gap={4} align="center" pt={2}>
-              <CtaBtn onClick={register}>Mulai Sekarang</CtaBtn>
+              <CtaBtn onClick={register} bg={C.sky} _hover={{ bg: C.skyHover, transform: "scale(1.02)", borderColor: "rgba(0, 208, 255, 0.7)", shadow: "0 8px 18px rgba(14, 164, 233, 0.9)" }}>{content.hero.buttonText}</CtaBtn>
               <Text fontSize="sm" fontWeight="600" color={C.soft}>
                 Eksplorasi modul lengkap secara gratis & Siap pakai.
               </Text>
@@ -627,13 +680,13 @@ export default function LandingPage() {
               </Text>
               <Box w="full" pt={2}>
                 <AccordionGallery
-                  items={galleryItems}
+                  items={content.gallery}
                   defaultIndex={2}
                   expandRatio={0.52}
                   trigger="hover"
                   accentColor="#ffffff"
                   overlayColor="#060010"
-                  textColor="#ffffff"
+                  textColor={C.sky}
                   grayscale
                   showLabels
                   duration={0.6}
@@ -739,17 +792,15 @@ export default function LandingPage() {
               <Box w="48px" h="48px" borderRadius="full" bg="rgba(14,165,233,.15)" border="1px solid rgba(56,189,248,.3)" color={C.sky400} display="flex" alignItems="center" justifyContent="center">
                 <Quotes size={24} weight="fill" />
               </Box>
-              <Heading as="blockquote" fontSize={{ base: "xl", md: "4xl" }} lineHeight="1.15" fontWeight="600" color="white">
-                “Sejak beralih ke Inotal Finance, waktu closing pembukuan akhir bulan kami berkurang dari 14 hari menjadi hanya 2 jam. Visibilitas arus kas real-time mengubah cara direksi mengambil keputusan finansial.”
-              </Heading>
+              <Heading as="blockquote" fontSize={{ base: "xl", md: "4xl" }} lineHeight="1.15" fontWeight="600" color="white">“{content.testimonial.quote}”</Heading>
               <VStack gap={0}>
-                <Box
-                  as="img" src={profilePic} alt="Rizal Umaris" loading="lazy" decoding="async"
+                {content.testimonial.image && (<Box
+                  as="img" src={content.testimonial.image} alt={content.testimonial.name} loading="lazy" decoding="async"
                   w="56px" h="56px" borderRadius="full" border="2px solid" borderColor={C.sky500}
                   objectFit="cover" mb={3}
-                />
-                <Text fontWeight="700" color="white">Rizal Umaris</Text>
-                <Text fontSize="xs" color={C.soft}>CEO PT Telur Asin Sejahtera</Text>
+                />)}
+                <Text fontWeight="700" color="white">{content.testimonial.name}</Text>
+                <Text fontSize="xs" color={C.soft}>{content.testimonial.position}</Text>
               </VStack>
             </VStack>
           </Container>
@@ -884,6 +935,7 @@ export default function LandingPage() {
               <VStack gap={2}>
                 <Eyebrow color={C.sky400}>Keamanan & Integritas Data Finansial</Eyebrow>
                 <Title dark>Perlindungan Standar Perbankan, <Text as="span" color={C.sky400}>Terjamin Sejak Awal.</Text></Title>
+                <Text color={C.soft} mt={4} maxW="2xl">Setiap lapisan sistem dirancang untuk menjaga kerahasiaan, integritas, dan ketersediaan data keuangan perusahaan kamu.</Text>
               </VStack>
             </Reveal>
             <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} gap={10} w="full">
@@ -913,7 +965,7 @@ export default function LandingPage() {
       </Box>
 
       {/* FAQ */}
-      <Box id="faq" scrollMarginTop="70px" py={24} bg={C.bg}>
+      <Box display={faqs.length ? undefined : "none"} id="faq" scrollMarginTop="70px" py={24} bg={C.bg}>
         <Container maxW="3xl">
           <VStack gap={14}>
             <Reveal>
@@ -921,7 +973,7 @@ export default function LandingPage() {
             </Reveal>
             <VStack gap={4} w="full">
               {faqs.map((f, i) => (
-                <Reveal key={f.q} delay={i * 0.08} style={{ width: "100%" }}>
+                <Reveal key={f.id} delay={i * 0.08} style={{ width: "100%" }}>
                   <FaqItem q={f.q} a={f.a} />
                 </Reveal>
               ))}
@@ -940,11 +992,11 @@ export default function LandingPage() {
         <Container maxW="4xl" position="relative" zIndex={1}>
           <Reveal>
             <VStack gap={6} textAlign="center">
-              <Heading as="h2" fontSize={{ base: "4xl", md: "6xl" }} lineHeight="1" color="white">Sederhanakan Pembukuan Bisnis Kamu Sekarang.</Heading>
-              <Text fontSize="xl" color="#CBD5E1" maxW="xl">Tingkatkan akurasi pembukuan dan percepat pertumbuhan perusahaan dengan Jurnal ERP. Siap pakai dalam hitungan menit tanpa ribet.</Text>
+              <Heading as="h2" fontSize={{ base: "4xl", md: "6xl" }} lineHeight="1" color="white">{content.closing.title}</Heading>
+              <Text fontSize="xl" color="#CBD5E1" maxW="xl">{content.closing.description}</Text>
               <Stack direction={{ base: "column", sm: "row" }} gap={4} pt={4}>
-                <CtaBtn onClick={register}>Mulai Sekarang Gratis</CtaBtn>
-                <CtaBtn outline onClick={() => navigate("/contact")}>Jadwalkan Demo Korporat</CtaBtn>
+                <CtaBtn onClick={register}>{content.closing.buttonText}</CtaBtn>
+                <CtaBtn outline onClick={() => navigate("/contact")}>{content.closing.secondaryButtonText}</CtaBtn>
               </Stack>
             </VStack>
           </Reveal>
@@ -956,8 +1008,8 @@ export default function LandingPage() {
         <Container maxW="7xl">
           <VStack gap={16} align="stretch">
             <VStack align="start" gap={3} pb={16} borderBottom="1px solid #1E293B" maxW="672px">
-              <Heading as="h3" fontSize="2xl" color="white">Dapatkan Insight Finansial & Regulasi Akuntansi Mingguan</Heading>
-              <Text fontSize="sm" color={C.soft}>Kiat perpajakan e-Faktur, template rasio likuiditas CFO, dan rilis fitur ERP mutakhir langsung di inbox email kamu.</Text>
+              <Heading as="h3" fontSize="2xl" color="white">{content.newsletter.title}</Heading>
+              <Text fontSize="sm" color={C.soft}>{content.newsletter.description}</Text>
               <HStack as="form" w="full" maxW="448px" gap={3} pt={3} onSubmit={(e) => e.preventDefault()}>
                 <Box
                   as="input"
@@ -992,13 +1044,141 @@ export default function LandingPage() {
                 <Button type="submit" borderRadius="full" px={5} height="50px" bg={C.sky500} color="white" _hover={{ bg: C.sky }}>Langganan</Button>
               </HStack>
               <Text fontSize="11px" color="#64748B">Dengan berlangganan, Anda menyetujui Kebijakan Privasi dan Perlindungan Data Finansial kami.</Text>
+              {(content.contact.email || whatsappUrl || instagramUrl) && (
+                <Box
+                  as="ul"
+                  role="list"
+                  aria-label="Kontak sosial"
+                  display="flex"
+                  alignItems="center"
+                  flexWrap="wrap"
+                  gap={5}
+                  mt={6}
+                  p={0}
+                  listStyleType="none"
+                  css={{
+                    "--social-surface": "#ffffff",
+                    "--social-ink": C.ink,
+                    "--social-focus": C.sky400,
+                    "--social-size": "50px",
+                    "--social-duration": "300ms",
+                    "--social-ease": "ease-in-out",
+                    "--social-gmail": "#EA4335",
+                    "--social-whatsapp": "#25D366",
+                    "--social-instagram": "linear-gradient(45deg, #405de6, #5b51db, #b33ab4, #c135b4, #e1306c, #fd1f1f)",
+                    "& .landing-social-item": {
+                      position: "relative",
+                    },
+                    "& .landing-social-link": {
+                      position: "relative",
+                      overflow: "hidden",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: "var(--social-size)",
+                      height: "var(--social-size)",
+                      borderRadius: "50%",
+                      background: "var(--social-surface)",
+                      color: "var(--social-ink)",
+                      textDecoration: "none",
+                      transition: "color var(--social-duration) var(--social-ease), box-shadow var(--social-duration) var(--social-ease)",
+                    },
+                    "& .landing-social-link:is(:hover, :focus-visible)": {
+                      color: "var(--social-surface)",
+                      boxShadow: "3px 2px 45px 0 rgb(0 0 0 / 12%)",
+                    },
+                    "& .landing-social-link:focus-visible": {
+                      outline: "2px solid var(--social-focus)",
+                      outlineOffset: "4px",
+                    },
+                    "& .landing-social-fill": {
+                      position: "absolute",
+                      inset: 0,
+                      background: "var(--social-brand)",
+                      transform: "translateY(100%)",
+                      transition: "transform var(--social-duration) var(--social-ease)",
+                    },
+                    "& .landing-social-link:is(:hover, :focus-visible) .landing-social-fill": {
+                      transform: "translateY(0)",
+                    },
+                    "& .landing-social-link svg": {
+                      position: "relative",
+                      zIndex: 1,
+                      width: "30px",
+                      height: "30px",
+                    },
+                    "& .landing-social-tooltip": {
+                      position: "absolute",
+                      bottom: "calc(100% + 12px)",
+                      left: "50%",
+                      transform: "translate(-50%, 8px)",
+                      padding: "6px 10px",
+                      borderRadius: "5px",
+                      background: "var(--social-brand)",
+                      color: "var(--social-surface)",
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      whiteSpace: "nowrap",
+                      opacity: 0,
+                      visibility: "hidden",
+                      pointerEvents: "none",
+                      zIndex: 2,
+                      transition: "opacity var(--social-duration) var(--social-ease), transform var(--social-duration) var(--social-ease), visibility var(--social-duration) var(--social-ease)",
+                    },
+                    "& .landing-social-item:is(:hover, :focus-within) .landing-social-tooltip": {
+                      opacity: 1,
+                      visibility: "visible",
+                      transform: "translate(-50%, 0)",
+                    },
+                    "@media (prefers-reduced-motion: reduce)": {
+                      "& .landing-social-link, & .landing-social-fill, & .landing-social-tooltip": {
+                        transition: "none",
+                      },
+                    },
+                  }}
+                >
+                  {content.contact.email && (
+                    <Box as="li" className="landing-social-item" style={{ "--social-brand": "var(--social-gmail)" }}>
+                      <Box as="a" className="landing-social-link" data-social="gmail" href={`mailto:${content.contact.email}`} aria-label={`Gmail: ${content.contact.email}`}>
+                        <span className="landing-social-fill" aria-hidden="true" />
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
+                          <path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z" />
+                        </svg>
+                      </Box>
+                      <span className="landing-social-tooltip" aria-hidden="true">Gmail</span>
+                    </Box>
+                  )}
+                  {whatsappUrl && (
+                    <Box as="li" className="landing-social-item" style={{ "--social-brand": "var(--social-whatsapp)" }}>
+                      <Box as="a" className="landing-social-link" data-social="whatsapp" href={whatsappUrl} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp: ${content.contact.whatsapp}`}>
+                        <span className="landing-social-fill" aria-hidden="true" />
+                        <WhatsappLogo size={30} weight="fill" aria-hidden="true" />
+                      </Box>
+                      <span className="landing-social-tooltip" aria-hidden="true">WhatsApp</span>
+                    </Box>
+                  )}
+                  {instagramUrl && (
+                    <Box as="li" className="landing-social-item" style={{ "--social-brand": "var(--social-instagram)" }}>
+                      <Box as="a" className="landing-social-link" data-social="instagram" href={instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                        <span className="landing-social-fill" aria-hidden="true" />
+                        <InstagramLogo size={30} weight="fill" aria-hidden="true" />
+                      </Box>
+                      <span className="landing-social-tooltip" aria-hidden="true">Instagram</span>
+                    </Box>
+                  )}
+                </Box>
+              )}
             </VStack>
 
             <SimpleGrid columns={{ base: 2, md: 4 }} gap={8}>
               {footerCols.map((col) => (
-                <VStack key={col.h} align="start" gap={4}>
-                  <Text fontSize="xs" fontWeight="700" letterSpacing="0.05em" color="white">{col.h}</Text>
-                  {col.items.map((it) => <Text key={it} fontSize="sm" color={C.soft}>{it}</Text>)}
+                <VStack key={col.heading} align="start" gap={4}>
+                  <Text fontSize="xs" fontWeight="700" letterSpacing="0.05em" color="white">{col.heading}</Text>
+                  {col.items.map((item, index) => (
+                    <Text key={index} fontSize="sm" color={C.soft} textDecoration="none" overflowWrap="anywhere">
+                      {item}
+                    </Text>
+                  ))}
                 </VStack>
               ))}
             </SimpleGrid>
@@ -1006,12 +1186,13 @@ export default function LandingPage() {
             {/* Copyright */}
             <Stack direction={{ base: "column", md: "row" }} justify="space-between" align="center" pt={8} borderTop="1px solid #1E293B" gap={4}>
               <HStack gap={3}>
-                <Box as="img" src={brandFooter} h="36px" alt="Jurnal ERP" loading="lazy" decoding="async" />
-                <Text fontSize="xs" color={C.soft}>© 2026 Inotal Finance Indonesia. Hak cipta dilindungi undang-undang.</Text>
+                <Box as="img" src={brandLogoWhite} h="36px" alt="Jurnal ERP" loading="lazy" decoding="async" />
+                <Text fontSize="xs" color={C.soft}>© 2026 Inotal Finance. Seluruh hak cipta dilindungi.</Text>
               </HStack>
-              <HStack gap={6}>
-                <Text as="button" fontSize="xs" color={C.soft} _hover={{ color: "white" }} onClick={() => navigate("/terms")}>Syarat Penggunaan</Text>
-                <Text as="button" fontSize="xs" color={C.soft} _hover={{ color: "white" }} onClick={() => navigate("/privacy")}>Kebijakan Privasi</Text>
+              <HStack gap={6} flexWrap="wrap">
+                {legalLinks.map((item) => (
+                  <Text key={item.label} as="button" type="button" onClick={() => navigate(item.url)} fontSize="xs" color={C.soft} bg="transparent" border="0" cursor="pointer" _hover={{ color: "white" }}>{item.label}</Text>
+                ))}
               </HStack>
             </Stack>
           </VStack>
