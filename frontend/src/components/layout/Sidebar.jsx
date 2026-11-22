@@ -7,7 +7,7 @@ import {
   Desktop, Tag, ShoppingCart, Bank, SidebarSimple, X, Factory, Truck
 } from "@phosphor-icons/react";
 import brandLogo from "@/assets/brand.png";
-import brandLogoLight from "@/assets/Ino-Finance.png";
+import brandLogoLight from "@/assets/Ino-Finance.webp";
 import brandLogoDark from "@/assets/Ino-Finance-SidebarDarkMode.png";
 
 const allNavItems = [
