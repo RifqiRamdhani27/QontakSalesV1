@@ -1,5 +1,6 @@
 const roleLabels = {
   Owner: "Pemilik",
+  Admin: "Admin",
   Ultimate: "Akses Penuh",
   Administrator: "Administrator",
   Accountant: "Akuntan",
