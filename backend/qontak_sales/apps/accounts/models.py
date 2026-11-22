@@ -126,6 +126,7 @@ class CustomUser(AbstractUser):
     type = models.CharField(max_length=10, choices=TYPE_CHOICES, default="member")
     access_time_limit = models.CharField(max_length=255, blank=True, default="")
     role_config = models.JSONField(default=dict, blank=True)
+    is_admin = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.get_full_name()} ({self.role})"
