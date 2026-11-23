@@ -494,21 +494,21 @@ function SectionCard({ section, dirty, onReset, disabled = false, preview = null
       id={`appearance-${section.id}`}
       role="tabpanel"
       aria-labelledby={`appearance-tab-${section.id}`}
-      className="rounded-xl border border-gray-200 bg-white"
+      className="company-card rounded-[13px] bg-white"
     >
-      <header className="flex flex-wrap items-start justify-between gap-3 border-b border-gray-100 px-5 py-4">
+      <header className="flex flex-wrap items-start justify-between gap-4 px-6 pt-6">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-base font-semibold text-gray-900">{section.label}</h2>
+            <h2 className="m-0 text-[19px] font-bold text-gray-900">{section.label}</h2>
             {dirty && <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700">Belum disimpan</span>}
           </div>
-          <p className="mt-0.5 text-xs text-slate-500">{section.hint}</p>
+          <p className="mt-1.5 text-[13px] text-slate-500">{section.hint}</p>
         </div>
         <button type="button" className={btnSecondary} onClick={onReset} disabled={disabled}>
           <ArrowCounterClockwise size={15} aria-hidden="true" />Kembalikan bawaan
         </button>
       </header>
-      <div className="space-y-5 p-5">
+      <div className="space-y-6 p-6 pt-5">
         {preview}
         <fieldset disabled={disabled} className="m-0 min-w-0 space-y-5 border-0 p-0 disabled:opacity-70">
           {children}
@@ -669,11 +669,11 @@ export default function AppearancePage() {
   }[message.type] || "";
 
   return (
-    <div className="min-w-0 p-5 md:p-7">
-      <div className="w-full space-y-5">
+    <div className="min-w-0 p-7 max-md:p-[18px]">
+      <div className="w-full space-y-6">
         <header className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="text-2xl font-semibold text-gray-900">Appearance</h1>
+            <h1 className="m-0 text-[28px] font-bold text-gray-900 max-md:text-2xl">Appearance</h1>
             {saved.publishedAt && (
               <p className="mt-1 text-xs text-slate-400">
                 Terakhir dipublikasikan: {new Date(saved.publishedAt).toLocaleString("id-ID")}
@@ -703,7 +703,7 @@ export default function AppearancePage() {
         )}
 
         {loading && (
-          <div role="status" aria-live="polite" className="rounded-xl border border-gray-200 bg-white p-5 text-sm text-slate-500">
+          <div role="status" aria-live="polite" className="company-card rounded-[13px] bg-white p-6 text-sm text-slate-500">
             Memuat konten dari server…
           </div>
         )}
@@ -726,7 +726,7 @@ export default function AppearancePage() {
           </div>
         )}
 
-        <div className="rounded-xl border border-gray-200 bg-white p-1.5">
+        <div className="company-card rounded-[13px] bg-white p-2">
           <div role="tablist" aria-label="Bagian tampilan" className="grid grid-cols-2 gap-1 sm:grid-cols-3 lg:grid-cols-4">
             {APPEARANCE_SECTIONS.map((section) => {
               const Icon = SECTION_ICONS[section.id];
@@ -855,7 +855,7 @@ export default function AppearancePage() {
               )}
               <div className="space-y-4">
                 {draft.faqs.map((item, index) => (
-                  <div key={item.id} className="rounded-lg border border-gray-200 p-4">
+                  <div key={item.id} className="company-card rounded-[13px] bg-white p-6">
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <div className="flex items-center gap-2">
                         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand">{index + 1}</span>
@@ -938,7 +938,7 @@ export default function AppearancePage() {
               </p>
               <div className="space-y-5">
                 {draft.gallery.map((item, index) => (
-                  <div key={index} className="min-w-0 rounded-lg border border-gray-200 p-4">
+                  <div key={index} className="company-card min-w-0 rounded-[13px] bg-white p-6">
                     <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Gambar {index + 1}</p>
                     <div className="space-y-4">
                       <ContentField
@@ -1081,7 +1081,7 @@ export default function AppearancePage() {
           )}
         </SectionCard>
 
-        <div className="sticky bottom-0 z-10 rounded-xl border border-gray-200 bg-white/95 p-4 shadow-sm backdrop-blur">
+        <div className="company-card sticky bottom-0 z-10 rounded-[13px] bg-white p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="flex items-center gap-2 text-sm text-slate-600">
               <span className={`h-2 w-2 rounded-full ${dirty ? "bg-amber-500" : "bg-green-500"}`} aria-hidden="true" />
