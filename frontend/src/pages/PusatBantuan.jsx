@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "@/pages/Navbar";
-import ctaBg from "@/assets/cta.jpg";
+import ctaBg from "@/assets/cta.webp";
 
 const TABS = [
   { id: "artikel", label: "Artikel" },
