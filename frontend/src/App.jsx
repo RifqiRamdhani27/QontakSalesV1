@@ -11,6 +11,7 @@ const LoginPage = lazy(() => import("./pages/LoginPage"));
 const RegisterPage = lazy(() => import("./pages/RegisterPage"));
 const AcceptInvitationPage = lazy(() => import("./pages/Main-Settings/AcceptInvitationPage"));
 const BiayaPage = lazy(() => import("./pages/Main-Biaya/BiayaPage"));
+const CreateBiayaPage = lazy(() => import("./pages/Main-Biaya/CreateBiayaPage"));
 const ProductsMain = lazy(() => import("./pages/Main-Product/ProductsMain"));
 const ProductionMain = lazy(() => import("./pages/Main-Productions/ProductionsMainPage"));
 const Fulfillment = lazy(() => import("./pages/Main-Fulfillment/Fulfillment"));
@@ -42,6 +43,12 @@ const PenyelesaianPesananPenjualan = lazy(() => import("./pages/Main-Laporan/Pen
 const ProfitabilitasProduk = lazy(() => import("./pages/Main-Laporan/ProfitabilitasProduk"));
 const UsiaPiutang = lazy(() => import("./pages/Main-Laporan/UsiaPiutang"));
 const DaftarLainnya = lazy(() => import("./pages/Main-DaftarLainnya/DaftarLainnya"));
+const KategoriTagPage = lazy(() => import("./pages/Main-DaftarLainnya/KategoriTagPage"));
+const KategoriTagCustomDetailPage = lazy(() => import("./pages/Main-DaftarLainnya/KategoriTagCustomDetailPage"));
+const KategoriTagArchivedPage = lazy(() => import("./pages/Main-DaftarLainnya/KategoriTagArchivedPage"));
+const JadwalBerulangPage = lazy(() => import("./pages/Main-DaftarLainnya/JadwalBerulangPage"));
+const DaftarTransaksiPage = lazy(() => import("./pages/Main-DaftarLainnya/DaftarTransaksiPage"));
+const KategoriProdukPage = lazy(() => import("./pages/Main-DaftarLainnya/KategoriProdukPage"));
 const UnitsPage = lazy(() => import("./pages/Main-DaftarLainnya/UnitsPage"));
 const AuditsPage = lazy(() => import("./pages/Main-DaftarLainnya/AuditsPage"));
 const InventoryRecalculationPage = lazy(() => import("./pages/Main-DaftarLainnya/InventoryRecalculationPage"));
@@ -502,7 +509,15 @@ function App() {
             /* Beranda */
             <Route path="/kas-bank" element={<KasBankPage />} />
             <Route path="/biaya" element={<BiayaPage />} />
+            <Route path="/biaya/create" element={<CreateBiayaPage />} />
             <Route path="/daftar-lainnya" element={<DaftarLainnya />} />
+            <Route path="/daftar-lainnya/create" element={<KategoriTagPage />} />
+            <Route path="/kategori-tag/custom/:id" element={<KategoriTagCustomDetailPage />} />
+            <Route path="/kategori-tag/archived" element={<KategoriTagArchivedPage title="Arsip" />} />
+            <Route path="/kategori-tag/ungrouped" element={<KategoriTagArchivedPage title="Belum di-assign" showCreateButton />} />
+            <Route path="/daftar-lainnya/jadwal-berulang" element={<JadwalBerulangPage />} />
+            <Route path="/daftar-lainnya/daftar-transaksi" element={<DaftarTransaksiPage />} />
+            <Route path="/daftar-lainnya/kategori-produk" element={<KategoriProdukPage />} />
             <Route path="/units" element={<UnitsPage />} />
             <Route path="/audits" element={<AuditsPage />} />
             <Route path="/inventory-recalculation" element={<InventoryRecalculationPage />} />
