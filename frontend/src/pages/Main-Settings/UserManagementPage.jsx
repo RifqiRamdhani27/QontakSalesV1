@@ -66,6 +66,9 @@ const DAY_OPTIONS = [
   { key: "Sunday", label: "Minggu" },
 ];
 
+/* Prioritas 5: colGrid dipindah ke atas file */
+const colGrid = "grid grid-cols-[1fr_88px_100px_84px_84px] items-center";
+
 function accessLimitLabel(value) {
   return value.replace(/\b(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b/g, (day) => DAY_OPTIONS.find((option) => option.key === day).label);
 }
@@ -75,7 +78,7 @@ const hasAuthority = (a) => a.see || a.create || a.edit || a.can_delete;
 const grantedAuthorities = (role) => (role.authorities || []).filter(hasAuthority);
 
 const tabClass = (active) =>
-  "cursor-pointer border-0 border-b bg-transparent p-2 " +
+  "cursor-pointer rounded-t-lg border-0 border-b bg-transparent p-2 " +
   (active
     ? "border-brand text-brand hover:bg-gray-50"
     : "border-transparent text-gray-400 hover:border-gray-500 hover:bg-gray-50 hover:text-black");
@@ -106,7 +109,6 @@ function parseAccessLimit(value) {
   return { ...base, enabled: true, dayType: "Custom", days, hours };
 }
 
-
 function SideDrawer({ title, onClose, footer, children }) {
   return (
     <div className="fixed inset-0 z-[1100] flex justify-end bg-slate-900/55">
@@ -124,12 +126,28 @@ function SideDrawer({ title, onClose, footer, children }) {
   );
 }
 
+/* Prioritas 3: komponen EmptyState terpadu */
+function EmptyState({ title, description, className = "" }) {
+  return (
+    <div className={`flex flex-col items-center justify-center py-16 text-center ${className}`}>
+      <img src={emptyRoleImg} alt="" className="h-[160px] w-[160px] object-contain" />
+      <p className="mt-3 text-sm font-semibold text-slate-800">{title}</p>
+      {description && <p className="mt-1 max-w-xl text-sm text-slate-500">{description}</p>}
+    </div>
+  );
+}
+
 function ActionMenu({ items }) {
   const dropdown = useDropdown();
 
   return (
     <>
-      <button type="button" ref={dropdown.triggerRef} className={btnSecondary} onClick={dropdown.toggle}>
+      <button
+        type="button"
+        ref={dropdown.triggerRef}
+        className={`${btnSecondary} w-[170px] justify-center whitespace-nowrap`}
+        onClick={dropdown.toggle}
+      >
         Tindakan <CaretDown size={12} />
       </button>
       {dropdown.isOpen && (
@@ -163,6 +181,7 @@ function ActionMenu({ items }) {
     </>
   );
 }
+
 function ConfirmDeleteModal({ title, message, loading, onClose, onConfirm }) {
   return (
     <div className={`${modalOverlay} z-[1200]`}>
@@ -186,7 +205,6 @@ function ConfirmDeleteModal({ title, message, loading, onClose, onConfirm }) {
     </div>
   );
 }
-
 
 function RoleDetailsDrawer({ role, onClose }) {
   const groups = new Map();
@@ -276,7 +294,6 @@ function RoleDetailsDrawer({ role, onClose }) {
     </SideDrawer>
   );
 }
-
 
 function CustomRoleDrawer({ role, onClose, onSaved }) {
   const isEdit = !!role;
@@ -408,8 +425,6 @@ function CustomRoleDrawer({ role, onClose, onSaved }) {
     }
   };
 
-  const colGrid = "grid grid-cols-[1fr_88px_100px_84px_84px] items-center";
-
   return (
     <SideDrawer
       title={isEdit ? "Ubah peran kustom" : "Tambah peran kustom"}
@@ -479,7 +494,7 @@ function CustomRoleDrawer({ role, onClose, onSaved }) {
                 >
                   <input
                     type="checkbox"
-                    className="h-4 w-4 accent-brand"
+                    className="h-4 w-4 rounded accent-brand"
                     checked={isColumnAllChecked(column.key)}
                     disabled={activeRowsWithColumn(column.key).length === 0}
                     onChange={(e) => setColumn(column.key, e.target.checked)}
@@ -508,7 +523,7 @@ function CustomRoleDrawer({ role, onClose, onSaved }) {
                   >
                     <input
                       type="checkbox"
-                      className="h-4 w-4 shrink-0 cursor-pointer accent-brand"
+                      className="h-4 w-4 shrink-0 rounded cursor-pointer accent-brand"
                       checked={count > 0}
                       onClick={(e) => e.stopPropagation()}
                       onChange={() => setFeature(feature, count === 0)}
@@ -533,9 +548,8 @@ function CustomRoleDrawer({ role, onClose, onSaved }) {
                 return (
                   <div
                     key={row.key}
-                    className={`${colGrid} border-b border-slate-200/70 px-4 py-2.5 text-[13px] ${
-                      disabled ? "bg-slate-100/70 text-slate-400" : "text-slate-700"
-                    }`}
+                    className={`${colGrid} border-b border-slate-200/70 px-4 py-2.5 text-[13px] ${disabled ? "bg-slate-100/70 text-slate-400" : "text-slate-700"
+                      }`}
                   >
                     <label
                       className={
@@ -545,7 +559,7 @@ function CustomRoleDrawer({ role, onClose, onSaved }) {
                     >
                       <input
                         type="checkbox"
-                        className="h-4 w-4 accent-brand disabled:cursor-not-allowed disabled:opacity-40"
+                        className="h-4 w-4 rounded accent-brand disabled:cursor-not-allowed disabled:opacity-40"
                         disabled={disabled}
                         checked={isRowChecked(active, row)}
                         onChange={(e) => setCells(active, [row], allowedColumns, e.target.checked)}
@@ -566,7 +580,7 @@ function CustomRoleDrawer({ role, onClose, onSaved }) {
                           <span className="flex items-center gap-1">
                             <input
                               type="checkbox"
-                              className="h-4 w-4 accent-brand disabled:cursor-not-allowed disabled:opacity-30"
+                              className="h-4 w-4 rounded accent-brand disabled:cursor-not-allowed disabled:opacity-30"
                               disabled={disabled || !allowed}
                               checked={allowed && isCellChecked(active, row, column.key)}
                               onChange={(e) =>
@@ -598,7 +612,6 @@ function CustomRoleDrawer({ role, onClose, onSaved }) {
     </SideDrawer>
   );
 }
-
 
 function TransferOwnershipModal({ members, onClose, onTransfer }) {
   const [newOwner, setNewOwner] = useState("");
@@ -678,7 +691,6 @@ function TransferOwnershipModal({ members, onClose, onTransfer }) {
   );
 }
 
-
 function HourSelect({ name, value, onChange, className }) {
   return (
     <select name={name} value={value} onChange={onChange} className={className || selectBase}>
@@ -722,7 +734,7 @@ function InviteUserModal({ user, onClose, onAddCustomRole, onViewRole, onSubmit 
     api
       .get("/settings/roles/")
       .then((response) => setCustomRoles(response.data))
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const ultimateSelected = !!checkedRoles.ultimate;
@@ -873,7 +885,7 @@ function InviteUserModal({ user, onClose, onAddCustomRole, onViewRole, onSubmit 
             <input
               type="checkbox"
               name="applyAccessTimeLimits"
-              className="h-4 w-4 accent-brand"
+              className="h-4 w-4 rounded accent-brand"
               checked={accessTimeLimits}
               disabled={ultimateWithListManager}
               onChange={(e) => setAccessTimeLimits(e.target.checked)}
@@ -946,7 +958,7 @@ function InviteUserModal({ user, onClose, onAddCustomRole, onViewRole, onSubmit 
                         <input
                           type="checkbox"
                           name={`custom-day-${day.key}`}
-                          className="h-4 w-4 accent-brand"
+                          className="h-4 w-4 rounded accent-brand"
                           checked={!!customDays[day.key]}
                           onChange={(e) =>
                             setCustomDays((prev) => ({ ...prev, [day.key]: e.target.checked }))
@@ -1031,7 +1043,7 @@ function InviteUserModal({ user, onClose, onAddCustomRole, onViewRole, onSubmit 
                           <input
                             type="checkbox"
                             name={`custom-role-${role.id}`}
-                            className="h-4 w-4 accent-brand"
+                            className="h-4 w-4 rounded accent-brand"
                             checked={checkedCustomRoles.includes(role.id)}
                             disabled={ultimateSelected}
                             onChange={() => toggleIn(setCheckedCustomRoles, role.id)}
@@ -1063,13 +1075,10 @@ function InviteUserModal({ user, onClose, onAddCustomRole, onViewRole, onSubmit 
                   );
                 })}
                 {customRoles.length === 0 && (
-                  <div className="flex flex-col items-center gap-1 px-4 py-10 text-center">
-                    <div className="flex flex-col items-center justify-center py-16 text-center">
-                      <img src={emptyRoleImg} alt="" className="h-[140px] w-[140px] object-contain" />
-                      <p className="mt-3 text-sm font-semibold text-slate-800">Daftar peran akan tampil di sini</p>
-                      <p className="mt-1 max-w-xl text-sm text-slate-500">Tambahkan peran kustom melalui tombol Tambah peran kustom.</p>
-                    </div>
-                  </div>
+                  <EmptyState
+                    title="Daftar peran akan tampil di sini"
+                    description="Tambahkan peran kustom melalui tombol Tambah peran kustom."
+                  />
                 )}
                 <div className="flex justify-center py-4">
                   <button type="button" className={btnSecondary} onClick={onAddCustomRole} disabled={!canAccessSettingsFeature("User management: Custom role", "create")}>
@@ -1097,7 +1106,7 @@ function InviteUserModal({ user, onClose, onAddCustomRole, onViewRole, onSubmit 
                           <input
                             type="checkbox"
                             name={`role-${role.key}`}
-                            className="h-4 w-4 accent-brand"
+                            className="h-4 w-4 rounded accent-brand"
                             checked={!!checkedRoles[role.key]}
                             onChange={(e) =>
                               setCheckedRoles((prev) => ({ ...prev, [role.key]: e.target.checked }))
@@ -1125,7 +1134,7 @@ function InviteUserModal({ user, onClose, onAddCustomRole, onViewRole, onSubmit 
                                   <input
                                     type="checkbox"
                                     name={`${role.key}-authority-${option}`}
-                                    className="h-4 w-4 accent-brand"
+                                    className="h-4 w-4 rounded accent-brand"
                                     checked={!!authorityCells[`${role.key}.${option}`]}
                                     onChange={(e) =>
                                       setAuthorityCells((prev) => ({
@@ -1146,7 +1155,7 @@ function InviteUserModal({ user, onClose, onAddCustomRole, onViewRole, onSubmit 
                                 <input
                                   type="checkbox"
                                   name={`${role.key}-restriction`}
-                                  className="mt-0.5 h-4 w-4 shrink-0 accent-brand"
+                                  className="mt-0.5 h-4 w-4 shrink-0 rounded accent-brand"
                                   checked={!!restrictionCells[role.key]}
                                   onChange={(e) =>
                                     setRestrictionCells((prev) => ({ ...prev, [role.key]: e.target.checked }))
@@ -1167,7 +1176,7 @@ function InviteUserModal({ user, onClose, onAddCustomRole, onViewRole, onSubmit 
                   <input
                     type="checkbox"
                     name="listManager"
-                    className="h-4 w-4 accent-brand"
+                    className="h-4 w-4 rounded accent-brand"
                     checked={listManager}
                     onChange={(e) => setListManager(e.target.checked)}
                   />
@@ -1245,12 +1254,12 @@ function UserTable({ users, roles, onTransfer, onEdit, onDelete, onResend, onTog
       <table className={`${tableBase} min-w-[900px]`}>
         <thead>
           <tr>
-            <th className={th}>Nama pengguna</th>
-            <th className={th}>Peran</th>
-            <th className={th}>Batas waktu akses</th>
-            <th className={th}>Status</th>
-            <th className={th}>Jenis</th>
-            <th className={th}>Tindakan</th>
+            <th className={`${th} text-center`}>Nama pengguna</th>
+            <th className={`${th} text-center`}>Peran</th>
+            <th className={`${th} text-center`}>Batas waktu akses</th>
+            <th className={`${th} text-center`}>Status</th>
+            <th className={`${th} text-center`}>Jenis</th>
+            <th className={`${th} text-center`}>Tindakan</th>
           </tr>
         </thead>
         <tbody>
@@ -1268,40 +1277,49 @@ function UserTable({ users, roles, onTransfer, onEdit, onDelete, onResend, onTog
             }
             return (
               <tr key={user.id} className={trHover}>
-                <td className={`${td} font-bold text-slate-900`}>{user.username}</td>
-                <td className={td}>{roleLabel(user)}</td>
-                <td className={td}>{user.accessLimit ? accessLimitLabel(user.accessLimit) : "-"}</td>
-                <td className={td}>
+                <td className={`${td} text-center font-bold text-slate-900`}>{user.username}</td>
+                <td className={`${td} text-center`}>{roleLabel(user)}</td>
+                <td className={`${td} text-center`}>{user.accessLimit ? accessLimitLabel(user.accessLimit) : "-"}</td>
+                <td className={`${td} text-center`}>
                   <span
-                    className={`inline-flex rounded-full px-[9px] py-[5px] text-xs font-bold ${statusBadgeClass[user.status]}`}
+                    className={`inline-flex rounded-full px-[9px] py-[5px] text-xs font-bold ${user.status === "active"
+                        ? "bg-green-50 text-green-700 dark:bg-[rgba(34,197,94,0.15)] dark:text-[#86efac]"
+                        : user.status === "invited"
+                          ? "bg-blue-50 text-blue-700 dark:bg-[rgba(99,102,241,0.15)] dark:text-[#a5b4fc]"
+                          : "bg-slate-100 text-slate-600 dark:bg-[#262626] dark:text-[#cbd5e1]"
+                      }`}
                   >
                     {permissionLabel(statusLabels[user.status])}
                   </span>
                 </td>
-                <td className={td}>{permissionLabel(typeLabels[user.type])}</td>
-                <td className={td}>
-                  {user.isOwner ? (
-                    onTransfer ? (
-                      <button type="button" className={btnSecondary} onClick={() => onTransfer(user)}>
-                        Alihkan kepemilikan
-                      </button>
-                    ) : "-"
-                  ) : (
-                    menuItems.length > 0 ? <ActionMenu items={menuItems} /> : "-"
-                  )}
+                <td className={`${td} text-center`}>{permissionLabel(typeLabels[user.type])}</td>
+                <td className={`${td} text-center`}>
+                  <div className="flex justify-center">
+                    {user.isOwner ? (
+                      onTransfer ? (
+                        <button
+                          type="button"
+                          className={`${btnSecondary} w-[170px] justify-center whitespace-nowrap`}
+                          onClick={() => onTransfer(user)}
+                        >
+                          Alihkan kepemilikan
+                        </button>
+                      ) : "-"
+                    ) : (
+                      menuItems.length > 0 ? <ActionMenu items={menuItems} /> : "-"
+                    )}
+                  </div>
                 </td>
               </tr>
             );
           })}
           {users.length === 0 && (
             <tr>
-              <td colSpan={6} className={`${td} text-center text-slate-400`}>
-                <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <img src={emptyRoleImg} alt="" className="h-[140px] w-[140px] object-contain" />
-                  <p className="mt-3 text-sm font-semibold text-slate-800">Belum ada pengguna</p>
-                  <p className="mt-1 max-w-xl text-sm text-slate-500">Pengguna yang ditetapkan pada peran ini akan tampil di sini.</p>
-                </div>
-
+              <td colSpan={6} className={td}>
+                <EmptyState
+                  title="Belum ada pengguna"
+                  description="Pengguna yang ditetapkan pada peran ini akan tampil di sini."
+                />
               </td>
             </tr>
           )}
@@ -1313,7 +1331,7 @@ function UserTable({ users, roles, onTransfer, onEdit, onDelete, onResend, onTog
 
 function UserFilter({ typeFilter, statusFilter, search, onTypeChange, onStatusChange, onSearchChange }) {
   return (
-    <div className="flex flex-wrap items-end gap-5 max-md:flex-col max-md:items-stretch">
+    <div className="flex flex-wrap items-center gap-5 max-md:flex-col max-md:items-stretch">
       <div className="flex items-center gap-3">
         <label className={`${formLabel} m-0`}>Tipe</label>
         <select name="type" value={typeFilter} onChange={onTypeChange} className={`${selectBase} !w-auto`}>
@@ -1323,7 +1341,7 @@ function UserFilter({ typeFilter, statusFilter, search, onTypeChange, onStatusCh
         </select>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         <label className={`${formLabel} m-0`}>Status</label>
         <select name="status" value={statusFilter} onChange={onStatusChange} className={`${selectBase} !w-auto`}>
           <option value="all">Semua status</option>
@@ -1333,19 +1351,21 @@ function UserFilter({ typeFilter, statusFilter, search, onTypeChange, onStatusCh
         </select>
       </div>
 
-      <div className="flex w-[280px] items-center gap-2 self-end rounded-lg border border-slate-300 px-3 py-[9px] max-md:w-auto">
-        <MagnifyingGlass size={19} className="shrink-0 text-slate-500" />
+      <div className="relative w-[280px] self-end max-md:w-auto">
+        <MagnifyingGlass
+          size={18}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 z-10 pointer-events-none"
+        />
         <input
           value={search}
           onChange={onSearchChange}
           placeholder="Cari pengguna..."
-          className="w-full border-0 outline-none"
+          className="input w-full !pl-[38px] !max-w-full"
         />
       </div>
     </div>
   );
 }
-
 
 export default function UserManagementPage() {
   const canViewUsers = canAccessSettingsFeature("User management: User list", "view");
@@ -1423,7 +1443,6 @@ export default function UserManagementPage() {
   useEffect(() => {
     setRolePage(1);
   }, [roleSearch]);
-
 
   const handleSubmitUser = async (payload) => {
     const editingUser = inviteModal?.user;
@@ -1518,7 +1537,6 @@ export default function UserManagementPage() {
     }
   };
 
-
   const filteredUsers = users.filter((user) => {
     const matchesType = typeFilter === "all" || user.type === typeFilter;
     const matchesStatus = statusFilter === "all" || user.status === statusFilter;
@@ -1536,7 +1554,6 @@ export default function UserManagementPage() {
 
   const transferCandidates = users.filter((u) => !u.isOwner && u.status === "active");
 
-
   const filteredRoles = roles.filter((role) => {
     const keyword = roleSearch.toLowerCase();
     return (
@@ -1552,19 +1569,23 @@ export default function UserManagementPage() {
 
   return (
     <div className="p-7 max-md:p-[18px]">
-      <div className="mb-6 flex items-start justify-between">
+      <div className="mb-6 flex items-start justify-between gap-3 max-md:flex-col max-md:items-stretch">
         <div>
           <h2 className="m-0 text-[28px] font-bold text-gray-900">Manajemen Pengguna</h2>
           <p className="m-0 mt-1.5 text-slate-500">Kelola informasi pengguna</p>
         </div>
 
         <div className="flex gap-3">
-          {canCreateRoles && <button className={btnSecondary} onClick={() => setRoleDrawer({ role: null })}>
-            Tambah peran kustom
-          </button>}
-          {canCreateUsers && <button className={btnPrimary} onClick={() => setInviteModal({ user: null })}>
-            Undang pengguna
-          </button>}
+          {canCreateRoles && (
+            <button className={btnSecondary} onClick={() => setRoleDrawer({ role: null })}>
+              Tambah peran kustom
+            </button>
+          )}
+          {canCreateUsers && (
+            <button className={btnPrimary} onClick={() => setInviteModal({ user: null })}>
+              Undang pengguna
+            </button>
+          )}
         </div>
       </div>
 
@@ -1591,16 +1612,20 @@ export default function UserManagementPage() {
       )}
 
       <div className="mb-6 flex gap-3">
-        {canViewUsers && <button className={tabClass(activeTab === "users")} onClick={() => setActiveTab("users")}>
-          Daftar pengguna
-        </button>}
-        {canViewRoles && <button className={tabClass(activeTab === "roles")} onClick={() => setActiveTab("roles")}>
-          Peran kustom
-        </button>}
+        {canViewUsers && (
+          <button className={tabClass(activeTab === "users")} onClick={() => setActiveTab("users")}>
+            Daftar pengguna
+          </button>
+        )}
+        {canViewRoles && (
+          <button className={tabClass(activeTab === "roles")} onClick={() => setActiveTab("roles")}>
+            Peran kustom
+          </button>
+        )}
       </div>
 
       {activeTab === "users" ? (
-        <div className={`${tableCard} p-6`}>
+        <div className={`${tableCard} company-card p-6`}>
           <div className="mb-8">
             <UserFilter
               typeFilter={typeFilter}
@@ -1636,61 +1661,66 @@ export default function UserManagementPage() {
         </div>
       ) : (
         <div className="mb-6">
-          <div className="mb-5 flex w-[280px] items-center gap-2 rounded-lg border border-slate-300 px-3 py-[9px] max-md:w-auto">
-            <MagnifyingGlass size={19} className="shrink-0 text-slate-500" />
+          <div className="relative mb-5 w-[280px] max-md:w-auto">
+            <MagnifyingGlass
+              size={18}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 z-10 pointer-events-none"
+            />
             <input
               value={roleSearch}
               onChange={(e) => setRoleSearch(e.target.value)}
               placeholder="Cari peran..."
-              className="w-full border-0 outline-none"
+              className="input w-full !pl-[38px] !max-w-full"
             />
           </div>
 
           {roles.length > 0 ? (
-            <div className={`${tableCard} p-6`}>
+            <div className={`${tableCard} company-card p-6`}>
               <div className={tableWrapper}>
                 <table className={tableBase}>
                   <thead>
                     <tr>
-                      <th className={`${th} w-[280px]`}>Nama peran</th>
-                      <th className={th}>Deskripsi</th>
-                      <th className={`${th} w-[140px]`}>Wewenang</th>
-                      <th className={`${th} w-[120px]`}>Tindakan</th>
+                      <th className={`${th} w-[280px] text-center`}>Nama peran</th>
+                      <th className={`${th} text-center`}>Deskripsi</th>
+                      <th className={`${th} w-[140px] text-center`}>Wewenang</th>
+                      <th className={`${th} w-[120px] text-center`}>Tindakan</th>
                     </tr>
                   </thead>
                   <tbody>
                     {pagedRoles.map((role) => (
                       <tr key={role.id} className={trHover}>
-                        <td className={td}>
+                        <td className={`${td} text-center`}>
                           <button
                             type="button"
-                            className="cursor-pointer border-0 bg-transparent p-0 text-left font-medium text-brand hover:underline"
+                            className="cursor-pointer border-0 bg-transparent p-0 font-medium text-brand hover:underline"
                             onClick={() => setViewRole(role)}
                           >
                             {role.name}
                           </button>
                         </td>
-                        <td className={td}>{role.description || "-"}</td>
-                        <td className={td}>
+                        <td className={`${td} text-center`}>{role.description || "-"}</td>
+                        <td className={`${td} text-center`}>
                           {grantedAuthorities(role).length > 0
                             ? grantedAuthorities(role).length + " wewenang"
                             : "-"}
                         </td>
-                        <td className={td}>
-                          {role.is_default || (!canEditRoles && !canDeleteRoles) ? (
-                            "-"
-                          ) : (
-                            <ActionMenu
-                              items={[
-                                canEditRoles && { label: "Ubah", onClick: () => setRoleDrawer({ role }) },
-                                canDeleteRoles && {
-                                  label: "Hapus",
-                                  danger: true,
-                                  onClick: () => setDeleteTarget({ type: "role", item: role }),
-                                },
-                              ].filter(Boolean)}
-                            />
-                          )}
+                        <td className={`${td} text-center`}>
+                          <div className="flex justify-center">
+                            {role.is_default || (!canEditRoles && !canDeleteRoles) ? (
+                              "-"
+                            ) : (
+                              <ActionMenu
+                                items={[
+                                  canEditRoles && { label: "Ubah", onClick: () => setRoleDrawer({ role }) },
+                                  canDeleteRoles && {
+                                    label: "Hapus",
+                                    danger: true,
+                                    onClick: () => setDeleteTarget({ type: "role", item: role }),
+                                  },
+                                ].filter(Boolean)}
+                              />
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -1718,11 +1748,10 @@ export default function UserManagementPage() {
               />
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <img src={emptyRoleImg} alt="" className="h-[180px] w-[180px] object-contain" />
-                  <p className="mt-3 text-sm font-semibold text-slate-800">Daftar peran akan tampil di sini</p>
-                  <p className="mt-1 max-w-xl text-sm text-slate-500">Tambahkan peran kustom melalui tombol Tambah peran kustom.</p>
-            </div>
+            <EmptyState
+              title="Daftar peran akan tampil di sini"
+              description="Tambahkan peran kustom melalui tombol Tambah peran kustom."
+            />
           )}
         </div>
       )}

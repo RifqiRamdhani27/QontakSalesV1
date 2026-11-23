@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
 import AuthGuard from "./components/layout/AuthGuard";
+import PublicOnlyRoute from "./components/layout/PublicOnlyRoute";
 import ErrorBoundary from "./components/ui/ErrorBoundary";
 import PageLoader from "./components/ui/PageLoader";
 
@@ -14,14 +15,7 @@ const ProductsMain = lazy(() => import("./pages/Main-Product/ProductsMain"));
 const ProductionMain = lazy(() => import("./pages/Main-Productions/ProductionsMainPage"));
 const Fulfillment = lazy(() => import("./pages/Main-Fulfillment/Fulfillment"));
 const DashboardPage = lazy(() => import("./pages/Main-Dashboard/DashboardPage"));
-const LeadsPage = lazy(() => import("./pages/LeadsPage"));
-const PipelinePage = lazy(() => import("./pages/PipelinePage"));
-const CalendarPage = lazy(() => import("./pages/CalendarPage"));
-const LeadDetailPage = lazy(() => import("./pages/LeadDetailPage"));
 const SettingsPage = lazy(() => import("./pages/Main-Settings/SettingsPage"));
-const BroadcastPage = lazy(() => import("./pages/BroadcastPage"));
-const BroadcastHistoryPage = lazy(() => import("./pages/BroadcastHistoryPage"));
-const ArchivedLeadsPage = lazy(() => import("./pages/ArchivedLeadsPage"));
 const DaftarAkunPage = lazy(() => import("./pages/Main-DaftarAkun/DaftarAkunPage"));
 const TutupBukuPage = lazy(() => import("./pages/Main-DaftarAkun/TutupBukuPage"));
 const JurnalUmumPage = lazy(() => import("./pages/Main-DaftarAkun/JurnalUmumPage"));
@@ -88,8 +82,8 @@ const MainLayout = lazy(() => import("./components/layout/MainLayout"));
 const PusatBantuan = lazy(() => import("./pages/PusatBantuan"));
 const Pajak = lazy(() => import("./pages/Main-DaftarLainnya/Pajak"));
 const CaraPembayaran = lazy(() => import("./pages/Main-DaftarLainnya/CaraPembayaran"));
-const BuatPajakBaru = lazy(() => import("./pages/BuatPajakBaru"));
-const EditPajak = lazy(() => import("./pages/EditPajak"));
+const BuatPajakBaru = lazy(() => import("./pages/Main-DaftarLainnya/BuatPajakBaru"));
+const EditPajak = lazy(() => import("./pages/Main-DaftarLainnya/EditPajak"));
 const SyaratPembayaran = lazy(() => import("./pages/Main-DaftarLainnya/SyaratPembayaran"));
 /* Data Migrasi */
 const DataMigrasi = lazy(() => import("./pages/Main-DaftarLainnya/DataMigrasi"));
@@ -264,9 +258,11 @@ function App() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+        <Route element={<PublicOnlyRoute />}>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+        </Route>
         <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/terms" element={<TermsPage />} />
@@ -528,13 +524,6 @@ function App() {
             <Route path="/transaksi/biaya" element={<Transaksi3 />} />
             <Route path="/atur-saldo-coa" element={<AturSaldoCoa />} />
             <Route path="/beranda" element={<Beranda  />} />
-            <Route path="/leads" element={<LeadsPage />} />
-            <Route path="/leads/archived" element={<ArchivedLeadsPage />} />
-            <Route path="/pipeline" element={<PipelinePage />} />
-            <Route path="/calendar" element={<CalendarPage />} />
-            <Route path="/leads/:id" element={<LeadDetailPage />} />
-            <Route path="/broadcasts" element={<BroadcastPage />} />
-            <Route path="/broadcasts/history" element={<BroadcastHistoryPage />} />
             <Route path="/settings/*" element={<ErrorBoundary><SettingsPage /></ErrorBoundary>} />
             <Route path="/daftar-akun" element={<DaftarAkunPage />} />
             <Route path="/tutup-buku" element={<TutupBukuPage />} />

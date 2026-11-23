@@ -53,7 +53,7 @@ const THEME = {
     border: "#333333",
     shadow: "0 4px 14px rgba(229, 184, 92, 0.2)",
     hoverBg: "rgba(236, 230, 220, 0.15)",
-    hoverColor: "rgba(212, 142, 36, 0.92)",
+    hoverColor: "#F3F4F6",
     activeBg: "rgba(180, 118, 25, 0.92)",
     activeColor: "#ffffff",
     activeHoverBg: "rgba(212, 142, 36, 0.92)",

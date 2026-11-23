@@ -42,13 +42,13 @@ export default function KasBankPage() {
       <div className="px-5 pb-8 pt-4">
         <div className="flex items-center justify-between">
           <h1 className="text-[21px] font-semibold text-slate-900">
-            Kas & bank
+            Kas & Bank
           </h1>
 
           <div className="flex items-center gap-2">
             <button
               type="button"
-              className="flex h-8 items-center gap-2 rounded-md border border-slate-300 bg-white px-3 text-xs font-medium text-blue-600 hover:bg-slate-50"
+              className="flex h-8 items-center gap-2 rounded-md border btn-atas bg-white px-3 text-xs font-medium text-blue-600 hover:bg-slate-50"
             >
               <Star size={16} />
               Beri masukan
@@ -56,7 +56,7 @@ export default function KasBankPage() {
 
             <button
               type="button"
-              className="h-8 rounded-md border border-slate-300 bg-white px-3 text-xs font-medium text-blue-600 hover:bg-slate-50"
+              className="h-8 rounded-md border btn-atas bg-white px-3 text-xs font-medium text-blue-600 hover:bg-slate-50"
             >
               Peraturan rekonsiliasi
             </button>
@@ -149,10 +149,10 @@ export default function KasBankPage() {
             </div>
           </div>
 
-          <div className="stat-card transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lgoverflow-hidden hover:shadow-lg rounded-md border border-blue-500 bg-white">
+          <div className="stat-card transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg overflow-hidden hover:shadow-lg rounded-md border border-blue-500 bg-white">
             <div className="flex h-8 items-center justify-between bg-[#dfe5ff] px-3">
               <span className="text-xs font-semibold text-slate-800">
-                Saldo kas & bank
+                Saldo kas & Bank
               </span>
 
               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-700 text-[11px] font-bold text-white">
@@ -212,7 +212,7 @@ export default function KasBankPage() {
         <div className="mt-5 overflow-hidden rounded-xl border border-slate-300 bg-white">
           <table className="w-full border-collapse">
             <thead>
-              <tr className="border-b border-slate-300 bg-[#f5f7fa]">
+              <tr className="border-b border-slate-300 thead ">
                 <th className="w-[100px] px-8 py-3 text-left text-[11px] font-semibold text-slate-700">
                   Kode akun
                 </th>
@@ -241,7 +241,7 @@ export default function KasBankPage() {
                   colSpan="6"
                   className="px-8 py-3 text-[11px] font-semibold text-slate-800"
                 >
-                  Kas & bank
+                  Kas & Bank
                 </td>
               </tr>
 
@@ -261,7 +261,7 @@ export default function KasBankPage() {
                   <td className="px-5 py-3.5 text-center">
                     <button
                       type="button"
-                      className="whitespace-nowrap rounded-md border border-slate-300 bg-white px-4 py-2 text-[11px] font-medium text-blue-600 hover:bg-blue-50"
+                      className="whitespace-nowrap rounded-md border btn-bank bg-white px-4 py-2 text-[11px] font-medium text-blue-600 hover:bg-blue-50"
                     >
                       Hubungkan ke bank
                     </button>
@@ -285,7 +285,7 @@ export default function KasBankPage() {
                               openImport === account.code ? null : account.code,
                             )
                           }
-                          className="h-8 w-[190px] whitespace-nowrap rounded-l-md border border-slate-300 bg-white px-3 text-[11px] font-medium text-blue-600 hover:bg-slate-50"
+                          className="h-8 w-[190px] whitespace-nowrap rounded-l-md border btn-bank bg-white px-3 text-[11px] font-medium text-blue-600 hover:bg-slate-50"
                         >
                           Impor rekening koran
                         </button>
@@ -297,7 +297,7 @@ export default function KasBankPage() {
                               openImport === account.code ? null : account.code,
                             )
                           }
-                          className="flex h-8 w-9 items-center justify-center rounded-r-md border-b border-r border-t border-slate-300 bg-white text-blue-600 hover:bg-slate-50"
+                          className="flex h-8 w-9 items-center justify-center rounded-r-md border-b border-r border-t btn-bank bg-white text-blue-600 hover:bg-slate-50"
                         >
                           <CaretDown size={13} weight="bold" />
                         </button>
@@ -343,7 +343,26 @@ export default function KasBankPage() {
         .kb-dark .bg-white { background-color: #121212 !important; }
         .kb-dark .border-slate-400,
         .kb-dark .border-slate-300,
-        .kb-dark .border-slate-200 { border-color: #634f27 !important; }
+        .kb-dark .border-slate-200 { 
+          border-color: #e08c33c1 !important; 
+          box-shadow: 0 4px 14px rgba(229, 184, 92, 0.35) !important;
+        }
+        .border-slate-300 { 
+          box-shadow: 0 4px 14px rgba(54, 54, 54, 0.35) !important;
+        }
+        .kb-dark .btn-atas { 
+          border-color: #e08c33c1 !important; 
+          box-shadow: 0 4px 14px rgba(229, 184, 92, 0.25) !important;
+        }
+        .btn-atas { 
+          box-shadow: 0 4px 14px rgba(54, 54, 54, 0.15) !important;
+        }
+        .btn-bank { 
+          border-color: #dfdfdfc1 !important; 
+        }
+        .kb-dark .btn-bank { 
+          border-color: #e08c33c1 !important; 
+        }
 
         /* Teks */
         .kb-dark .text-slate-900,
@@ -352,19 +371,32 @@ export default function KasBankPage() {
         .kb-dark .text-slate-500 { color: #94a3b8 !important; }
 
         /* Aksen biru -> emas */
-        .kb-dark .text-blue-600 { color: #E5B85C !important; }
+        .kb-dark .text-blue-600 { color: #ebebebff !important; }
 
         /* Tombol utama -> emas */
-        .kb-dark [class~="bg-[#5266d9]"] { background-color: #E5B85C !important; color: #121212 !important; }
-        .kb-dark [class~="hover:bg-[#4659c7]"]:hover { background-color: #f0c978 !important; }
+        .kb-dark [class~="bg-[#5266d9]"] { 
+          background: #e08d33 !important; 
+          box-shadow: 0 4px 8px rgba(254, 92, 23, 0.49) !important;
+        }
+        .kb-dark [class~="hover:bg-[#4659c7]"]:hover { background: #e08c33df !important; }
 
         /* Hover */
         .kb-dark .hover\\:bg-slate-50:hover,
         .kb-dark .hover\\:bg-slate-100:hover,
         .kb-dark .hover\\:bg-blue-50:hover { background-color: #2d2d2d !important; }
         /* Shadow hover kartu ringkasan */
+        .stat-card {
+          box-shadow: 0 8px 24px rgba(225, 225, 225, 0.93) !important;
+        }
+        .stat-card:hover {
+          box-shadow: 0 8px 24px rgba(109, 109, 109, 0.46) !important;
+        }
         .kb-dark .stat-card:hover {
-          box-shadow: 0 6px 18px rgba(229, 184, 92, 0.45) !important;
+          box-shadow: 0 6px 18px rgba(192, 103, 15, 0.75) !important;
+        }
+        .kb-dark .stat-card {
+          background-color: #1a1a1a !important;
+          box-shadow: 0 4px 14px rgba(229, 184, 92, 0.25) !important;
         }
 
         /* Header kartu ringkasan */
@@ -373,7 +405,10 @@ export default function KasBankPage() {
         .kb-dark [class~="bg-[#dfe5ff]"] { background-color: rgba(96,165,250,0.22) !important; }
 
         /* Header tabel */
-        .kb-dark [class~="bg-[#f5f7fa]"] { background-color: #d38e0d69 !important; }
+        .kb-dark .thead { background-color: #e08c33c1 !important; }
+        .thead { 
+          background-color: #bbf8ffff !important; 
+        }
 
         /* Toggle arsip */
         .kb-dark .bg-blue-600 { background-color: #E5B85C !important; }

@@ -501,8 +501,8 @@ export default function ProfilProduk() {
       .dash-dark [class~="text-[#4B61DD]"] { color: #E5B85C; }
       .dash-dark [class*="border-[#2f54eb]"],
       .dash-dark [class*="border-[#4B61DD]"] { border-color: #E5B85C; }
-      .dash-dark [class~="bg-[#2f54eb]"] { background-color: #E5B85C; color: #121212; }
-      .dash-dark [class*="hover:bg-[#2546cf]"]:hover { background-color: #f0c978; }
+      .dash-dark [class~="bg-[#2f54eb]"] { background-color: #e08d33; color: #f4f4f4ff; }
+      .dash-dark [class*="hover:bg-[#2546cf]"]:hover { background-color: #e08c33df; }
       .dash-dark [class*="ring-[#4B61DD]"] { --tw-ring-color: rgba(229,184,92,0.25); }
     `}</style>
     </>

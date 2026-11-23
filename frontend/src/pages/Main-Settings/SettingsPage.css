@@ -47,12 +47,179 @@
   border-color: var(--chakra-colors-primary, #2563eb);
 }
 
-:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) .peer:checked ~ .peer-checked\:bg-brand {
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) .peer:checked~.peer-checked\:bg-brand {
   background-color: var(--chakra-colors-primary, #2563eb);
+}
+
+/* ── Card neumorphism — mode terang ── */
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) .company-card {
+  box-shadow: 6px 6px 12px #c5c5c5cc, -6px -6px 12px #f5f5f5;
+}
+
+/* ── Tombol Edit .Btn — mode terang ── */
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) .Btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 70px;
+  height: 30px;
+  border: none;
+  padding: 0px 10px;
+  background-color: rgb(46, 46, 46);
+  color: white;
+  font-weight: 300;
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 10px;
+  box-shadow: 4.3px 5px 0px rgb(208, 207, 207);
+  transition-duration: .3s;
+}
+
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) .Btn .svg {
+  width: 10px;
+  position: absolute;
+  right: 0;
+  margin: 0 12px 0 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  fill: white;
+  transition-duration: .3s;
+}
+
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) .Btn:hover {
+  color: transparent;
+}
+
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) .Btn:hover svg {
+  right: 43%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  transition-duration: .3s;
+}
+
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) .Btn:active {
+  transform: translate(3px, 3px);
+  transition-duration: .3s;
+  box-shadow: 2px 2px 0px rgb(254, 254, 254);
 }
 
 :is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) button.text-gray-400:not(:disabled) {
   color: #475569;
+}
+
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) .BtnDanger {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 80px;
+  height: 30px;
+  border: none;
+  padding: 0px 10px;
+  background-color: #dc2626;
+  color: white;
+  font-weight: 300;
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 10px;
+  box-shadow: 3.5px 4px 0px rgb(189, 188, 188);
+  transition-duration: .3s;
+}
+
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) .BtnDanger .svg {
+  width: 10px;
+  position: absolute;
+  right: 0;
+  margin: 0 15px 0 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  fill: white;
+  transition-duration: .3s;
+}
+
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) .BtnDanger:hover {
+  color: transparent;
+}
+
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) .BtnDanger:hover svg {
+  right: 43%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  transition-duration: .3s;
+}
+
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) .BtnDanger:active {
+  transform: translate(3px, 3px);
+  transition-duration: .3s;
+  box-shadow: 2px 2px 0px rgb(254, 254, 254);
+}
+
+/* Btn Tambah Agen */
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) .ang-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 10px;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.35);
+  transition: all 0.2s ease-in-out;
+}
+
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) .ang-btn:hover {
+  background: #1d4ed8;
+}
+
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) .ang-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Search Input Custom Style */
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) .input {
+  background-color: #ffffff;
+  max-width: 190px;
+  height: 43px;
+  padding: 10px 10px 10px 39px;
+  border: 1px solid rgb(203, 203, 203);
+  border-radius: 10px;
+  transition: .1s;
+  transition-property: box-shadow, outline-color, border-color;
+}
+
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) .input:focus {
+  color: #0f172a;
+  background-color: #f8f8f8;
+  outline: none;
+  border-color: rgb(0, 255, 255);
+  box-shadow: -3px -3px 15px rgba(0, 255, 255, 0.4);
+}
+
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) span[class*="bg-green"] {
+  background-color: #dcfce7 !important;
+  color: #15803d !important;
+}
+
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) span[class*="bg-blue"],
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) span[class*="bg-indigo"] {
+  background-color: #dbeafe !important;
+  color: #1d4ed8 !important;
+}
+
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) span[class*="bg-gray"],
+:is([data-qontak-settings], [data-qontak-profile], [data-qontak-invitation]) span[class*="bg-slate"] {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
 }
 
 @media screen {
@@ -70,6 +237,142 @@
 
   :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) .bg-white {
     background-color: #121212 !important;
+  }
+
+  /* ── Card neumorphism — mode gelap ── */
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) .company-card {
+    box-shadow: 6px 6px 12px #000000, -2px -2px 4px #784205 !important;
+  }
+
+  /* Status Badge - Dark Mode */
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) span[class*="bg-green"] {
+    background-color: rgba(34, 197, 94, 0.15) !important;
+    color: #86efac !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) span[class*="bg-blue"],
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) span[class*="bg-indigo"] {
+    background-color: rgba(99, 102, 241, 0.15) !important;
+    color: #a5b4fc !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) span[class*="bg-gray"],
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) span[class*="bg-slate"] {
+    background-color: #262626 !important;
+    color: #cbd5e1 !important;
+  }
+
+  /* ── Tombol Edit .Btn — mode gelap ── */
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) .Btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 70px;
+    height: 30px;
+    border: none;
+    padding: 0px 10px;
+    background-color: rgb(250, 250, 250);
+    color: rgb(53, 53, 53);
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 10px;
+    box-shadow: 4.3px 5px 0px rgb(183, 64, 5);
+    transition-duration: .2s;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) .Btn .svg {
+    width: 10px;
+    position: absolute;
+    right: 0;
+    margin: 0 12px 0 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    fill: rgb(134, 1, 1);
+    transition-duration: .2s;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) .Btn:hover {
+    color: transparent;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) .Btn:hover svg {
+    right: 43%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    transition-duration: .2s;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) .Btn:active {
+    transform: translate(3px, 3px);
+    transition-duration: .2s;
+    box-shadow: 2px 2px 0px rgb(254, 254, 254);
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) .BtnDanger {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 80px;
+    height: 30px;
+    border: none;
+    padding: 0px 10px;
+    background-color: rgb(250, 250, 250);
+    color: rgb(24, 24, 24);
+    font-weight: 300;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 10px;
+    box-shadow: 3.5px 4px 0px rgb(179, 73, 3);
+    transition-duration: .2s;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) .BtnDanger .svg {
+    width: 10px;
+    position: absolute;
+    right: 0;
+    margin: 0 15px 0 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    fill: rgb(156, 34, 34);
+    transition-duration: .2s;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) .BtnDanger:hover {
+    color: transparent;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) .BtnDanger:hover svg {
+    right: 43%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    transition-duration: .2s;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) .BtnDanger:active {
+    transform: translate(3px, 3px);
+    transition-duration: .2s;
+    box-shadow: 2px 2px 0px rgb(254, 254, 254);
+  }
+
+  /* Btn Tambah Agen isDark */
+  /* Tombol Tambah Agen — mode gelap (emas) */
+  .settings-dark .ang-btn,
+  body:has(.settings-dark) [data-qontak-settings] .ang-btn {
+    background: #e08d33 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 8px rgba(254, 92, 23, 0.49) !important;
+    transition: all 0.2s ease-in-out;
+  }
+
+  .settings-dark .ang-btn:hover,
+  body:has(.settings-dark) [data-qontak-settings] .ang-btn:hover {
+    background: #e08c33df !important;
   }
 
   :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.bg-gray-50, .bg-slate-50, .bg-slate-50\/60, .bg-slate-900) {
@@ -153,7 +456,7 @@
     accent-color: #e5b85c !important;
   }
 
-  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) .peer:checked ~ .peer-checked\:bg-brand {
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) .peer:checked~.peer-checked\:bg-brand {
     background-color: #e5b85c !important;
   }
 

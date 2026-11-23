@@ -6,7 +6,7 @@ import {
   Check, Lock, CloudArrowUp, Users, Quotes, Bank, TreeStructure, Lightning, CertificateIcon,
   WhatsappLogo, InstagramLogo,
 } from "@phosphor-icons/react";
-import AnimatedContent from "./AnimatedContent";
+import AnimatedContent from "./Effect/AnimatedContent";
 import imgStartup from "@/assets/imgStartup.webp";
 import imgCorporate from "@/assets/imgCorporate.webp";
 import imgAkuntan from "@/assets/imgAkuntan.webp";
@@ -20,9 +20,9 @@ import {
 } from "@/services/appearanceSettings";
 import brandLogoWhite from "@/assets/Ino-Finance-Footer.webp";
 import brandLogoBlack from "@/assets/Ino-Finance.webp";
-import AccordionGallery from "./AccordionGallery";
-import MagicRings from "./MagicRings";
-import PixelCard from "./PixelCard";
+import AccordionGallery from "./Effect/AccordionGallery";
+import MagicRings from "./Effect/MagicRings";
+import PixelCard from "./Effect/PixelCard";
 
 const C = {
   ink: "#484848ff", navy: "#090D16", navy2: "#0B1120", line: "#E2E8F0", mute: "#475569", soft: "#94A3B8",
@@ -712,25 +712,26 @@ export default function LandingPage() {
             <Reveal>
               <VStack gap={2}><Eyebrow>Dirancang untuk Setiap Kebutuhan Finansial</Eyebrow><Title size="3xl">Solusi yang Tumbuh Bersama Skala Bisnis Kamu.</Title></VStack>
             </Reveal>
-            <SimpleGrid columns={{ base: 1, md: 3 }} gap={8} w="full">
+            <SimpleGrid columns={{ base: 1, md: 3 }} gap={10} w="full">
               {solutions.map((s, i) => (
                 <Reveal key={s.title} delay={i * 0.22} style={{ height: "100%" }}>
                   <VStack
-                    h="full" align="stretch" gap={0} bg="white" borderRadius="3xl"
-                    border="2px solid" borderColor={C.line} overflow="hidden"
+                    h="full" align="stretch" gap={0}
+                    bg="#e9e9e9ff"
+                    borderRadius="30px"
+                    boxShadow="20px 20px 60px #bebebe, -20px -20px 60px #ffffff"
                     transition={CARD_TRANSITION}
                     _hover={{
                       transform: "translateY(-8px)",
-                      borderColor: C.sky300,
-                      boxShadow: "0 20px 40px -10px rgba(14, 165, 233, 0.25)"
+                      boxShadow: "12px 12px 40px #bebebe, -12px -12px 40px #ffffff",
                     }}
                   >
-                    <Box h="256px" position="relative" overflow="hidden">
+                    <Box h="256px" position="relative" overflow="hidden" borderTopRadius="30px">
                       <Box
                         as="img" src={s.image} alt={s.title} loading="lazy" decoding="async"
                         w="full" h="full" objectFit="cover"
                       />
-                      <Box position="absolute" inset={0} bg="linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 50%)" />
+                      <Box position="absolute" inset={0} bg="linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 50%)" borderTopRadius="30px" />
                       <Box position="absolute" top={4} left={4}>
                         <Pill color={s.dark ? "#13dcebff" : C.sky300} border={s.dark ? "rgba(52,211,153,.2)" : undefined}>
                           {s.tag}

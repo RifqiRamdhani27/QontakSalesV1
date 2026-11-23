@@ -1,8 +1,8 @@
 import { useRef, useState } from "react";
 import {
   CaretDown,
-  Check,
   Clock,
+  MagnifyingGlass,
   Plus,
   PencilSimple,
   Trash,
@@ -15,13 +15,12 @@ import MultiSelect from "@/components/ui/MultiSelect";
 import {
   tableWrapper,
   tableBase,
-  tableCard,
   th,
   td,
   trHover,
   selectBase,
   formLabel,
-  btnPrimary,
+  btn,
   modalOverlay,
   modalPanel,
   modalHeader,
@@ -30,6 +29,7 @@ import {
   modalFooter,
   formGroup,
   inputBase,
+  textareaBase,
   btnModalCancel,
   btnModalSubmit,
   btnModalDelete,
@@ -47,6 +47,20 @@ const MAX_APPROVAL_STEPS = 4;
 const RULE_NAME_MAX = 60;
 const DESCRIPTION_MAX = 200;
 
+const linkButton =
+  "cursor-pointer border-0 bg-transparent p-0 text-left text-[13px] font-semibold text-brand hover:underline";
+const dangerLink =
+  "inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 text-[13px] font-semibold text-red-600 hover:underline";
+const dashedButton =
+  "inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-dashed border-gray-300 bg-white px-3 py-2 text-[13px] font-semibold text-gray-700 transition-colors hover:bg-slate-50";
+const menuItem =
+  "flex w-full cursor-pointer items-center gap-2 border-0 bg-transparent px-4 py-2 text-left text-[13px] text-gray-700 hover:bg-slate-50";
+const menuItemDanger =
+  "flex w-full cursor-pointer items-center gap-2 border-0 bg-transparent px-4 py-2 text-left text-[13px] text-red-600 hover:bg-red-50";
+const labelTd =
+  "w-[180px] border-b border-slate-100 bg-slate-50 px-[18px] py-3 text-sm font-semibold text-gray-700";
+const pill =
+  "rounded-full border border-gray-200 bg-slate-50 px-2.5 py-0.5 text-[12px] text-gray-700";
 
 const formatAmount = (value) =>
   new Intl.NumberFormat("id-ID", {
@@ -90,6 +104,108 @@ function productScopeSomeLabel(type) {
   return "Gudang tertentu";
 }
 
+
+/* ---------- Shared building blocks ---------- */
+
+function ModalShell({
+  title,
+  onClose,
+  maxWidth = "max-w-[560px]",
+  headerActions,
+  footer,
+  footerClassName = "",
+  children,
+}) {
+  return (
+    <div className={modalOverlay}>
+      <div className={`${modalPanel} flex ${maxWidth} flex-col`}>
+        <div className={`${modalHeader} shrink-0`}>
+          <h3 className={`${modalTitle} font-bold`}>{title}</h3>
+          <div className="flex items-center gap-2">
+            {headerActions}
+            <button
+              type="button"
+              className={modalCloseButton}
+              onClick={onClose}
+              aria-label="Tutup"
+            >
+              <X size={20} />
+            </button>
+          </div>
+        </div>
+        <div className="flex-1 overflow-y-auto px-[22px] py-5">{children}</div>
+        {footer && (
+          <div className={`${modalFooter} shrink-0 ${footerClassName}`}>{footer}</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SubHeading({ title, subtitle }) {
+  return (
+    <div className="mb-3">
+      <h3 className="m-0 text-[15px] font-bold text-gray-900">{title}</h3>
+      {subtitle && <p className="m-0 mt-1 text-[13px] text-slate-500">{subtitle}</p>}
+    </div>
+  );
+}
+
+function RadioOption({ name, value, label, checked, onChange }) {
+  return (
+    <label className="flex cursor-pointer select-none items-center gap-2.5 text-sm text-gray-700">
+      <input
+        type="radio"
+        name={name}
+        value={value}
+        className="h-4 w-4 cursor-pointer accent-brand"
+        checked={checked}
+        onChange={onChange}
+      />
+      {label}
+    </label>
+  );
+}
+
+function CheckRow({ name, label, description, checked, onChange }) {
+  return (
+    <label className="flex cursor-pointer select-none items-start gap-2.5">
+      <input
+        type="checkbox"
+        name={name}
+        className="mt-0.5 h-4 w-4 cursor-pointer rounded accent-brand"
+        checked={checked}
+        onChange={onChange}
+      />
+      <span>
+        <span className="block text-sm text-gray-700">{label}</span>
+        {description && (
+          <span className="mt-0.5 block text-[13px] text-slate-500">{description}</span>
+        )}
+      </span>
+    </label>
+  );
+}
+
+function InfoTable({ rows }) {
+  return (
+    <div className="mb-5 overflow-hidden rounded-lg border border-gray-200">
+      <div className={tableWrapper}>
+        <table className={tableBase}>
+          <tbody>
+            {rows.map(([label, content]) => (
+              <tr key={label}>
+                <td className={labelTd}>{label}</td>
+                <td className={td}>{content}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 function TransactionTypeSelect({
   group,
   type,
@@ -125,6 +241,9 @@ function TransactionTypeSelect({
     </div>
   );
 }
+
+
+/* ---------- Rule form ---------- */
 
 function ApprovalRuleForm({ initialRule, users, customers, onSubmit, onClose }) {
   const [ruleName, setRuleName] = useState(initialRule?.ruleName || "");
@@ -263,9 +382,9 @@ function ApprovalRuleForm({ initialRule, users, customers, onSubmit, onClose }) 
     setCriteria((current) => current.filter((item) => item !== value));
 
   return (
-    <form className={modalPanel} onSubmit={submit}>
-      <div className={modalHeader}>
-        <h3 className={modalTitle}>
+    <form className={`${modalPanel} flex max-w-[720px] flex-col`} onSubmit={submit}>
+      <div className={`${modalHeader} shrink-0`}>
+        <h3 className={`${modalTitle} font-bold`}>
           {initialRule ? "Ubah aturan approval" : "Buat aturan approval"}
         </h3>
         <button
@@ -278,7 +397,7 @@ function ApprovalRuleForm({ initialRule, users, customers, onSubmit, onClose }) 
         </button>
       </div>
 
-      <div className="max-h-[calc(90vh-140px)] overflow-y-auto px-[22px] py-5">
+      <div className="flex-1 overflow-y-auto px-[22px] py-5">
         <div className="mb-5 rounded-lg border border-blue-100 bg-blue-50 p-3.5">
           <p className="m-0 mb-1.5 text-[13px] font-semibold text-blue-900">
             Kriteria persetujuan baru telah diaktifkan. Perlu informasi lebih lanjut?
@@ -286,14 +405,14 @@ function ApprovalRuleForm({ initialRule, users, customers, onSubmit, onClose }) 
           <div className="flex flex-wrap gap-x-4 gap-y-1">
             <button
               type="button"
-              className="cursor-pointer border-0 bg-transparent p-0 text-[12px] font-medium text-brand hover:underline"
+              className={linkButton}
               onClick={() => addCriteria("maxReceivable")}
             >
               Pelajari batas maksimal piutang
             </button>
             <button
               type="button"
-              className="cursor-pointer border-0 bg-transparent p-0 text-[12px] font-medium text-brand hover:underline"
+              className={linkButton}
               onClick={() => addCriteria("overdue")}
             >
               Pelajari keterlambatan pembayaran
@@ -302,9 +421,7 @@ function ApprovalRuleForm({ initialRule, users, customers, onSubmit, onClose }) 
         </div>
 
         <div className="mb-5">
-          <h4 className="m-0 mb-3 text-[15px] font-bold text-gray-900">
-            Informasi aturan
-          </h4>
+          <SubHeading title="Informasi aturan" />
           <div className={formGroup}>
             <label className={formLabel} htmlFor="approval_rule_name">
               Nama aturan <span className="text-red-600">*</span>
@@ -330,7 +447,7 @@ function ApprovalRuleForm({ initialRule, users, customers, onSubmit, onClose }) 
               id="approval_description"
               name="description"
               maxLength={DESCRIPTION_MAX}
-              className={`${inputBase} resize-y`}
+              className={`${textareaBase} resize-y`}
               value={description}
               onChange={(event) => setDescription(event.target.value)}
             />
@@ -361,58 +478,43 @@ function ApprovalRuleForm({ initialRule, users, customers, onSubmit, onClose }) 
                 <span className="text-red-600">*</span>
               </span>
               <div className="flex flex-col gap-2.5">
-                <label className="flex cursor-pointer select-none items-center gap-2.5 text-sm text-gray-900">
-                  <input
-                    type="radio"
-                    name="productScope"
-                    value="all"
-                    className="accent-brand"
-                    checked={productScope === "all"}
-                    onChange={(event) => setProductScope(event.target.value)}
-                  />
-                  {productScopeAllLabel(transactionType)}
-                </label>
-                <label className="flex cursor-pointer select-none items-center gap-2.5 text-sm text-gray-900">
-                  <input
-                    type="radio"
-                    name="productScope"
-                    value="some"
-                    className="accent-brand"
-                    checked={productScope === "some"}
-                    onChange={(event) => setProductScope(event.target.value)}
-                  />
-                  {productScopeSomeLabel(transactionType)}
-                </label>
+                <RadioOption
+                  name="productScope"
+                  value="all"
+                  label={productScopeAllLabel(transactionType)}
+                  checked={productScope === "all"}
+                  onChange={(event) => setProductScope(event.target.value)}
+                />
+                <RadioOption
+                  name="productScope"
+                  value="some"
+                  label={productScopeSomeLabel(transactionType)}
+                  checked={productScope === "some"}
+                  onChange={(event) => setProductScope(event.target.value)}
+                />
               </div>
             </div>
           )}
+
           <div className="mb-4">
             <span className={formLabel}>
               Transaksi dibuat oleh <span className="text-red-600">*</span>
             </span>
             <div className="flex flex-col gap-2.5">
-              <label className="flex cursor-pointer select-none items-center gap-2.5 text-sm text-gray-900">
-                <input
-                  type="radio"
-                  name="createdBy"
-                  value="all"
-                  className="accent-brand"
-                  checked={createdBy === "all"}
-                  onChange={(event) => setCreatedBy(event.target.value)}
-                />
-                Semua pengguna
-              </label>
-              <label className="flex cursor-pointer select-none items-center gap-2.5 text-sm text-gray-900">
-                <input
-                  type="radio"
-                  name="createdBy"
-                  value="some"
-                  className="accent-brand"
-                  checked={createdBy === "some"}
-                  onChange={(event) => setCreatedBy(event.target.value)}
-                />
-                Pengguna tertentu
-              </label>
+              <RadioOption
+                name="createdBy"
+                value="all"
+                label="Semua pengguna"
+                checked={createdBy === "all"}
+                onChange={(event) => setCreatedBy(event.target.value)}
+              />
+              <RadioOption
+                name="createdBy"
+                value="some"
+                label="Pengguna tertentu"
+                checked={createdBy === "some"}
+                onChange={(event) => setCreatedBy(event.target.value)}
+              />
             </div>
             {createdBy === "some" && (
               <div className="mt-3">
@@ -429,34 +531,27 @@ function ApprovalRuleForm({ initialRule, users, customers, onSubmit, onClose }) 
               </div>
             )}
           </div>
+
           {transactionGroup === "Sales" && (
             <div>
               <span className={formLabel}>
                 Transaksi dibuat untuk <span className="text-red-600">*</span>
               </span>
               <div className="flex flex-col gap-2.5">
-                <label className="flex cursor-pointer select-none items-center gap-2.5 text-sm text-gray-900">
-                  <input
-                    type="radio"
-                    name="createdFor"
-                    value="all"
-                    className="accent-brand"
-                    checked={createdFor === "all"}
-                    onChange={(event) => setCreatedFor(event.target.value)}
-                  />
-                  Semua pelanggan
-                </label>
-                <label className="flex cursor-pointer select-none items-center gap-2.5 text-sm text-gray-900">
-                  <input
-                    type="radio"
-                    name="createdFor"
-                    value="some"
-                    className="accent-brand"
-                    checked={createdFor === "some"}
-                    onChange={(event) => setCreatedFor(event.target.value)}
-                  />
-                  Pelanggan tertentu
-                </label>
+                <RadioOption
+                  name="createdFor"
+                  value="all"
+                  label="Semua pelanggan"
+                  checked={createdFor === "all"}
+                  onChange={(event) => setCreatedFor(event.target.value)}
+                />
+                <RadioOption
+                  name="createdFor"
+                  value="some"
+                  label="Pelanggan tertentu"
+                  checked={createdFor === "some"}
+                  onChange={(event) => setCreatedFor(event.target.value)}
+                />
               </div>
               {createdFor === "some" && (
                 <div className="mt-3">
@@ -478,12 +573,10 @@ function ApprovalRuleForm({ initialRule, users, customers, onSubmit, onClose }) 
 
         {transactionGroup !== "Products" && (
           <div className="mb-5 border-t border-gray-200 pt-5">
-            <h4 className="m-0 mb-1 text-[15px] font-bold text-gray-900">
-              Kriteria persetujuan
-            </h4>
-            <p className="m-0 mb-4 text-[13px] text-slate-500">
-              Tentukan kondisi transaksi yang memerlukan persetujuan.
-            </p>
+            <SubHeading
+              title="Kriteria persetujuan"
+              subtitle="Tentukan kondisi transaksi yang memerlukan persetujuan."
+            />
 
             {criteria.map((value, index) => {
               const option = approvalCriteriaOptions.find(
@@ -497,14 +590,14 @@ function ApprovalRuleForm({ initialRule, users, customers, onSubmit, onClose }) 
                       atau
                     </p>
                   )}
-                  <div className="rounded-lg border border-gray-200 bg-slate-50/60 p-4">
+                  <div className="rounded-lg border border-gray-200 bg-slate-50 p-4">
                     <div className="mb-2 flex items-center justify-between">
                       <span className="text-[13px] font-bold text-gray-900">
                         {option.label}
                       </span>
                       <button
                         type="button"
-                        className="inline-flex cursor-pointer items-center gap-1 text-[12px] font-semibold text-red-600 hover:text-red-700"
+                        className={dangerLink}
                         onClick={() => removeCriteria(value)}
                       >
                         <Trash size={13} /> Hapus
@@ -517,54 +610,52 @@ function ApprovalRuleForm({ initialRule, users, customers, onSubmit, onClose }) 
                             Lebih dari
                           </span>
                           <span className="text-red-600">*</span>
-                          <span className="text-[13px] font-medium text-gray-900">
+                          <span className="text-[13px] font-semibold text-gray-900">
                             Rp
                           </span>
-                          <input
-                            type="text"
-                            className={inputBase}
-                            value={amountValue}
-                            onChange={(event) =>
-                              setAmountValue(parseAmount(event.target.value))
-                            }
-                          />
-                        </div>
-                        <p className="m-0 text-[12px] text-slate-500">
-                          Tips: Masukkan nilai terkecil jika Anda ingin membuat lebih dari satu aturan untuk jenis transaksi yang sama.
-                        </p>
-                        <p className="m-0 cursor-pointer text-[12px] font-medium text-brand hover:underline">
-                          Lihat contoh
-                        </p>
-                      </div>
-                    ) : (
-                      <p className="m-0 text-[13px] text-slate-600">
-                        {option.description}
-                        {value === "overdue" && (
-                          <>
-                            {" "}
-                            <span className="whitespace-nowrap">
-                              Lebih dari <span className="text-red-600">*</span>
-                            </span>
+                          <div className="w-[180px]">
                             <input
                               type="text"
                               className={inputBase}
-                              value={overdueDays}
+                              value={amountValue}
                               onChange={(event) =>
-                                setOverdueDays(parseAmount(event.target.value))
+                                setAmountValue(parseAmount(event.target.value))
                               }
                             />
-                            hari
+                          </div>
+                        </div>
+                        <p className="m-0 text-[13px] text-slate-500">
+                          Tips: Masukkan nilai terkecil jika Anda ingin membuat lebih dari satu aturan untuk jenis transaksi yang sama.
+                        </p>
+                        <p className={`m-0 ${linkButton}`}>Lihat contoh</p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap items-center gap-2 text-[13px] text-slate-600">
+                        <span>{option.description}</span>
+                        {value === "overdue" && (
+                          <>
+                            <span className="whitespace-nowrap">
+                              Lebih dari <span className="text-red-600">*</span>
+                            </span>
+                            <div className="w-[80px]">
+                              <input
+                                type="text"
+                                className={inputBase}
+                                value={overdueDays}
+                                onChange={(event) =>
+                                  setOverdueDays(parseAmount(event.target.value))
+                                }
+                              />
+                            </div>
+                            <span>hari</span>
                           </>
                         )}
                         {value === "maxReceivable" && (
-                          <button
-                            type="button"
-                            className="ml-1.5 cursor-pointer border-0 bg-transparent p-0 font-medium text-brand hover:underline"
-                          >
+                          <button type="button" className={linkButton}>
                             Lihat cara memasukkan piutang
                           </button>
                         )}
-                      </p>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -574,7 +665,7 @@ function ApprovalRuleForm({ initialRule, users, customers, onSubmit, onClose }) 
             <div className="relative mt-4" ref={criteriaRef}>
               <button
                 type="button"
-                className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-dashed border-gray-300 bg-white px-3 py-2 text-[13px] font-semibold text-gray-700 transition-colors hover:bg-slate-50"
+                className={dashedButton}
                 ref={criteriaButtonRef}
                 onClick={() => setShowCriteriaPopover((current) => !current)}
               >
@@ -596,11 +687,11 @@ function ApprovalRuleForm({ initialRule, users, customers, onSubmit, onClose }) 
                       <button
                         key={option.value}
                         type="button"
-                        className="block w-full cursor-pointer px-4 py-2.5 text-left text-[13px] text-gray-700 hover:bg-slate-50"
+                        className="block w-full cursor-pointer border-0 bg-transparent px-4 py-2.5 text-left text-[13px] text-gray-700 hover:bg-slate-50"
                         onClick={() => addCriteria(option.value)}
                       >
                         {option.label}
-                        <span className="mt-0.5 block text-[11px] text-slate-400">
+                        <span className="mt-0.5 block text-[12px] text-slate-400">
                           {option.note}
                         </span>
                       </button>
@@ -608,7 +699,7 @@ function ApprovalRuleForm({ initialRule, users, customers, onSubmit, onClose }) 
                   {approvalCriteriaOptions.every((option) =>
                     criteria.includes(option.value)
                   ) && (
-                    <p className="m-0 px-4 py-2.5 text-[12px] text-slate-400">
+                    <p className="m-0 px-4 py-2.5 text-[13px] text-slate-400">
                       Semua kriteria telah ditambahkan.
                     </p>
                   )}
@@ -619,20 +710,18 @@ function ApprovalRuleForm({ initialRule, users, customers, onSubmit, onClose }) 
         )}
 
         <div className="mb-5 border-t border-gray-200 pt-5">
-          <h4 className="m-0 mb-1 text-[15px] font-bold text-gray-900">
-            Tahapan persetujuan
-          </h4>
-          <p className="m-0 mb-1 text-[13px] text-slate-500">
-            Tentukan penyetuju dan cara persetujuan diberikan.
-          </p>
-          <p className="m-0 mb-4 text-[12px] text-slate-500">
+          <SubHeading
+            title="Tahapan persetujuan"
+            subtitle="Tentukan penyetuju dan cara persetujuan diberikan."
+          />
+          <p className="m-0 mb-4 text-[13px] text-slate-500">
             Pengguna dengan peran pemilik dapat langsung menyetujui transaksi tanpa melalui tahapan persetujuan.
           </p>
 
           {steps.map((step, index) => (
             <div
               key={index}
-              className="mb-4 rounded-lg border border-gray-200 bg-slate-50/60 p-4"
+              className="mb-4 rounded-lg border border-gray-200 bg-slate-50 p-4"
             >
               <div className="mb-3 flex items-center justify-between">
                 <span className="text-[13px] font-bold text-gray-900">
@@ -641,7 +730,7 @@ function ApprovalRuleForm({ initialRule, users, customers, onSubmit, onClose }) 
                 {steps.length > 1 && (
                   <button
                     type="button"
-                    className="inline-flex cursor-pointer items-center gap-1 text-[12px] font-semibold text-red-600 hover:text-red-700"
+                    className={dangerLink}
                     onClick={() => removeStep(index)}
                   >
                     <Trash size={13} /> Hapus
@@ -674,15 +763,12 @@ function ApprovalRuleForm({ initialRule, users, customers, onSubmit, onClose }) 
                 </span>
                 <div className="flex flex-col gap-2">
                   {step.approvers.length === 0 && (
-                    <span className="text-[12px] text-slate-400">
+                    <span className="text-[13px] text-slate-400">
                       Belum ada penyetuju dipilih
                     </span>
                   )}
                   {step.approvers.map((user, position) => (
-                    <div
-                      key={position}
-                      className="flex items-center gap-2"
-                    >
+                    <div key={position} className="flex items-center gap-2">
                       <div className="flex-1">
                         <PopoverSelect
                           floating
@@ -699,17 +785,17 @@ function ApprovalRuleForm({ initialRule, users, customers, onSubmit, onClose }) 
                       </div>
                       <button
                         type="button"
-                        className="cursor-pointer rounded-sm p-1 text-gray-400 hover:bg-slate-100 hover:text-gray-700"
+                        className="cursor-pointer rounded-md border-0 bg-transparent p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-red-600"
                         onClick={() => removeStepApprover(index, position)}
                         aria-label={`Hapus penyetuju ${position + 1}`}
                       >
-                        <X size={13} weight="bold" />
+                        <X size={14} weight="bold" />
                       </button>
                     </div>
                   ))}
                   <button
                     type="button"
-                    className="inline-flex w-fit cursor-pointer items-center gap-1.5 rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-[12px] font-semibold text-gray-700 transition-colors hover:bg-slate-50"
+                    className={`${linkButton} inline-flex w-fit items-center gap-1`}
                     onClick={() => addApproverToStep(index)}
                   >
                     <Plus size={13} /> Tambah penyetuju
@@ -720,39 +806,25 @@ function ApprovalRuleForm({ initialRule, users, customers, onSubmit, onClose }) 
           ))}
 
           {steps.length < MAX_APPROVAL_STEPS && (
-            <button
-              type="button"
-              className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-dashed border-gray-300 bg-white px-3 py-2 text-[13px] font-semibold text-gray-700 transition-colors hover:bg-slate-50"
-              onClick={addStep}
-            >
+            <button type="button" className={dashedButton} onClick={addStep}>
               <Plus size={14} /> Tambah tahap persetujuan
             </button>
           )}
         </div>
 
         <div className="border-t border-gray-200 pt-5">
-          <h4 className="m-0 mb-3 text-[15px] font-bold text-gray-900">
-            Penerapan aturan
-          </h4>
-          <label className="flex cursor-pointer select-none items-start gap-2.5 text-sm text-gray-900">
-            <input
-              type="checkbox"
-              name="applyToDraft"
-              className="mt-0.5 accent-brand"
-              checked={applyToDraft}
-              onChange={(event) => setApplyToDraft(event.target.checked)}
-            />
-            <span>
-              Terapkan aturan ini pada draf transaksi yang menunggu persetujuan
-              <span className="mt-1 block text-[12px] text-slate-500">
-                Jika kriteria aturan baru ini (jenis transaksi, pembuat, dan pelanggan) sama dengan aturan yang sedang berlaku, aturan baru akan menggantikannya secara otomatis saat diaktifkan.
-              </span>
-            </span>
-          </label>
+          <SubHeading title="Penerapan aturan" />
+          <CheckRow
+            name="applyToDraft"
+            label="Terapkan aturan ini pada draf transaksi yang menunggu persetujuan"
+            description="Jika kriteria aturan baru ini (jenis transaksi, pembuat, dan pelanggan) sama dengan aturan yang sedang berlaku, aturan baru akan menggantikannya secara otomatis saat diaktifkan."
+            checked={applyToDraft}
+            onChange={(event) => setApplyToDraft(event.target.checked)}
+          />
         </div>
       </div>
 
-      <div className={modalFooter}>
+      <div className={`${modalFooter} shrink-0`}>
         <button type="button" className={btnModalCancel} onClick={onClose}>
           Batal
         </button>
@@ -760,43 +832,34 @@ function ApprovalRuleForm({ initialRule, users, customers, onSubmit, onClose }) 
           Simpan
         </button>
       </div>
-
     </form>
   );
 }
 
+
+/* ---------- Other modals ---------- */
+
 function DeleteApprovalModal({ onConfirm, onClose }) {
   return (
-    <div className={modalOverlay}>
-      <div className="w-full max-w-[420px] overflow-hidden rounded-xl bg-white shadow-[0_20px_50px_rgba(0,0,0,0.2)]">
-        <div className="flex items-center justify-between border-b border-slate-100 px-[22px] py-4">
-          <h3 className="m-0 text-base font-semibold text-gray-900">
-            Hapus aturan ini?
-          </h3>
-          <button
-            type="button"
-            className={modalCloseButton}
-            onClick={onClose}
-            aria-label="Tutup"
-          >
-            <X size={20} />
-          </button>
-        </div>
-        <div className="px-[22px] py-5">
-          <p className="m-0 text-sm leading-relaxed text-slate-600">
-            Aturan approval yang dihapus tidak dapat dipulihkan.
-          </p>
-        </div>
-        <div className={modalFooter}>
+    <ModalShell
+      title="Hapus aturan ini?"
+      maxWidth="max-w-[420px]"
+      onClose={onClose}
+      footer={
+        <>
           <button type="button" className={btnModalCancel} onClick={onClose}>
             Batal
           </button>
           <button type="button" className={btnModalDelete} onClick={onConfirm}>
             Hapus
           </button>
-        </div>
-      </div>
-    </div>
+        </>
+      }
+    >
+      <p className="m-0 text-sm leading-relaxed text-slate-500">
+        Aturan approval yang dihapus tidak dapat dipulihkan.
+      </p>
+    </ModalShell>
   );
 }
 
@@ -812,60 +875,45 @@ function ChangelogModal({ rule, onClose }) {
   );
 
   return (
-    <div className={modalOverlay}>
-      <div className="w-full max-w-[640px] overflow-hidden rounded-xl bg-white shadow-[0_20px_50px_rgba(0,0,0,0.2)]">
-        <div className={modalHeader}>
-          <h3 className={modalTitle}>Riwayat perubahan</h3>
-          <button
-            type="button"
-            className={modalCloseButton}
-            onClick={onClose}
-            aria-label="Tutup"
-          >
-            <X size={20} />
-          </button>
-        </div>
-        <div className="px-[22px] py-5">
-          <div className="overflow-hidden rounded-lg border border-gray-200">
-            <div className={tableWrapper}>
-              <table className={tableBase}>
-                <thead>
-                  <tr>
-                    <th className={th}>Waktu perubahan</th>
-                    <th className={th}>Pengguna</th>
-                    <th className={th}>Tindakan</th>
-                    <th className={th}>Deskripsi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pageLogs.map((log, index) => (
-                    <tr key={index} className={trHover}>
-                      <td className={td}>{log.changeTime}</td>
-                      <td className={td}>{log.user}</td>
-                      <td className={td}>{ruleLabel(log.action)}</td>
-                      <td className={td}>{log.description}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <div className="mt-4">
-            <Pagination
-              currentPage={safePage}
-              totalPages={totalPages}
-              totalItems={logs.length}
-              pageSize={pageSize}
-              onPageChange={setCurrentPage}
-              onPageSizeChange={(size) => {
-                setPageSize(size);
-                setCurrentPage(1);
-              }}
-            />
-          </div>
+    <ModalShell title="Riwayat perubahan" maxWidth="max-w-[640px]" onClose={onClose}>
+      <div className="overflow-hidden rounded-lg border border-gray-200">
+        <div className={tableWrapper}>
+          <table className={tableBase}>
+            <thead>
+              <tr>
+                <th className={th}>Waktu perubahan</th>
+                <th className={th}>Pengguna</th>
+                <th className={th}>Tindakan</th>
+                <th className={th}>Deskripsi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pageLogs.map((log, index) => (
+                <tr key={index} className={trHover}>
+                  <td className={td}>{log.changeTime}</td>
+                  <td className={td}>{log.user}</td>
+                  <td className={td}>{ruleLabel(log.action)}</td>
+                  <td className={td}>{log.description}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
-    </div>
+      <div className="mt-4">
+        <Pagination
+          currentPage={safePage}
+          totalPages={totalPages}
+          totalItems={logs.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={(size) => {
+            setPageSize(size);
+            setCurrentPage(1);
+          }}
+        />
+      </div>
+    </ModalShell>
   );
 }
 
@@ -906,237 +954,168 @@ function RuleDetailModal({ rule, users, onEdit, onDelete, onClose }) {
       }),
   ];
 
-  return (
-    <div className={modalOverlay}>
-      <div className="w-full max-w-[640px] overflow-hidden rounded-xl bg-white shadow-[0_20px_50px_rgba(0,0,0,0.2)]">
-        <div className={modalHeader}>
-          <h3 className={modalTitle}>{rule.ruleName}</h3>
-          <div className="flex items-center gap-2">
-            <div className="relative" ref={ref}>
-              <button
-                type="button"
-                className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-slate-50"
-                ref={actionTriggerRef}
-                onClick={() => setOpen((current) => !current)}
-              >
-                Tindakan <CaretDown size={12} />
-              </button>
-              {open && (
-                <DropdownPanel
-                  rect={actionTriggerRef.current?.getBoundingClientRect()}
-                  triggerRef={actionTriggerRef}
-                  contentRef={menuRef}
-                  onClose={() => setOpen(false)}
-                  width={160}
-                  align="right"
-                  variant="settings"
-                  className="rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
-                >
-                  <button
-                    type="button"
-                    className="flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-left text-[13px] text-gray-700 hover:bg-slate-50"
-                    onClick={() => {
-                      setOpen(false);
-                      onEdit(rule);
-                    }}
-                  >
-                    <PencilSimple size={14} /> Ubah
-                  </button>
-                  <button
-                    type="button"
-                    className="flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-left text-[13px] text-red-600 hover:bg-red-50"
-                    onClick={() => {
-                      setOpen(false);
-                      onDelete(rule);
-                    }}
-                  >
-                    <Trash size={14} /> Hapus
-                  </button>
-                </DropdownPanel>
-              )}
-            </div>
-            <button
-              type="button"
-              className={modalCloseButton}
-              onClick={onClose}
-              aria-label="Tutup"
-            >
-              <X size={20} />
-            </button>
-          </div>
-        </div>
-
-        <div className="max-h-[60vh] overflow-y-auto px-[22px] py-5">
-          <h4 className="m-0 mb-3 text-[15px] font-bold text-gray-900">
-            Informasi aturan
-          </h4>
-          <div className="mb-5 overflow-hidden rounded-lg border border-gray-200">
-            <div className={tableWrapper}>
-              <table className={tableBase}>
-                <tbody>
-                  <tr>
-                    <td className="w-[180px] bg-slate-50/60 font-medium text-gray-700">
-                      Nama aturan
-                    </td>
-                    <td className={td}>{rule.ruleName}</td>
-                  </tr>
-                  <tr>
-                    <td className="bg-slate-50/60 font-medium text-gray-700">
-                      Deskripsi
-                    </td>
-                    <td className={td}>{rule.description}</td>
-                  </tr>
-                  <tr>
-                    <td className="bg-slate-50/60 font-medium text-gray-700">
-                      Jenis transaksi
-                    </td>
-                    <td className={td}>{titleCase(ruleLabel(rule.transactionType))}</td>
-                  </tr>
-                  <tr>
-                    <td className="bg-slate-50/60 font-medium text-gray-700">
-                      Transaksi dibuat oleh
-                    </td>
-                    <td className={td}>
-                      <div className="flex flex-wrap items-center gap-2">
-                        {rule.createdBy === "all" ? (
-                          <span>Semua pengguna.</span>
-                        ) : (
-                          (rule.createdByUsers || []).map((user) => (
-                            <span
-                              key={user}
-                              className="rounded-full border border-gray-200 bg-slate-50 px-2.5 py-0.5 text-[12px] text-gray-700"
-                            >
-                              {displayName(user)}
-                            </span>
-                          ))
-                        )}
-                        <div className="relative" ref={allUsersRef}>
-                          <button
-                            type="button"
-                            className="cursor-pointer border-0 bg-transparent p-0 text-[13px] font-medium text-brand hover:underline"
-                            ref={allUsersButtonRef}
-                            onClick={() => setShowAllUsers((current) => !current)}
-                          >
-                            Lihat semua
-                          </button>
-                          {showAllUsers && (
-                            <DropdownPanel
-                              rect={allUsersButtonRef.current?.getBoundingClientRect()}
-                              triggerRef={allUsersButtonRef}
-                              contentRef={allUsersMenuRef}
-                              onClose={() => setShowAllUsers(false)}
-                              width={220}
-                              variant="settings"
-                              className="rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
-                            >
-                              {users.map((user) => (
-                                <p
-                                  key={user.id}
-                                  className="m-0 cursor-pointer px-4 py-2 text-[13px] text-gray-700 hover:bg-slate-50"
-                                >
-                                  {displayName(user.username)}
-                                </p>
-                              ))}
-                            </DropdownPanel>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="bg-slate-50/60 font-medium text-gray-700">
-                      Transaksi dibuat untuk
-                    </td>
-                    <td className={td}>
-                      {rule.createdFor === "all" ? (
-                        "Semua pelanggan."
-                      ) : (
-                        <div className="flex flex-wrap items-center gap-2">
-                          {(rule.createdForCustomers || []).map((customer) => (
-                            <span
-                              key={customer}
-                              className="rounded-full border border-gray-200 bg-slate-50 px-2.5 py-0.5 text-[12px] text-gray-700"
-                            >
-                              {customer}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <h4 className="m-0 mb-3 text-[15px] font-bold text-gray-900">
-            Kriteria persetujuan
-          </h4>
-          <p className="m-0 mb-3 text-[13px] text-slate-500">
-            Kondisi transaksi yang memerlukan persetujuan.
-          </p>
-          {criteriaRows.length > 0 && (
-            <>
-              <p className="m-0 mb-2 text-[13px] font-medium text-slate-600">
-                Rincian
-              </p>
-              <div className="mb-5 overflow-hidden rounded-lg border border-gray-200">
-                <div className={tableWrapper}>
-                  <table className={tableBase}>
-                    <tbody>
-                      {criteriaRows.map((row, index) => (
-                        <tr key={index}>
-                          <td className="w-[180px] bg-slate-50/60 font-medium text-gray-700">
-                            {row.label}
-                          </td>
-                          <td className={td}>{row.value}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </>
-          )}
-
-          <h4 className="m-0 mb-3 text-[15px] font-bold text-gray-900">
-            Tahapan persetujuan
-          </h4>
-          <p className="m-0 mb-3 text-[13px] text-slate-500">
-            Kondisi transaksi yang memerlukan persetujuan.
-          </p>
-          <p className="m-0 mb-3 text-[12px] text-slate-500">
-            Pengguna dengan peran Pemilik dapat langsung menyetujui transaksi tanpa melalui tahapan persetujuan.
-          </p>
-          <div className="space-y-3">
-            {(rule.levels || []).map((step, index) => (
-              <div
-                key={index}
-                className="rounded-lg border border-gray-200 bg-slate-50/60 p-4"
-              >
-                <span className="mb-2 block text-[13px] font-bold text-gray-900">
-                  Tahap {index + 1}
-                </span>
-                <p className="m-0 text-[13px] text-slate-600">
-                  {step.approvers.map(displayName).join(", ")}
-                </p>
-                <p className="m-0 mt-1 text-[12px] text-slate-500">
-                  {step.approverType === "All must approve"
-                    ? "Semua penyetuju yang disebutkan harus menyetujui."
-                    : "Salah satu penyetuju yang disebutkan harus menyetujui."}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="border-t border-gray-200 px-[22px] py-3.5">
-          <p className="m-0 text-[12px] text-slate-500">
-            Terakhir diubah oleh {rule.lastEditedBy} pada {rule.lastEdited} (GMT+7)
-          </p>
-        </div>
-      </div>
+  const headerActions = (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        className={`${btn} inline-flex items-center gap-1`}
+        ref={actionTriggerRef}
+        onClick={() => setOpen((current) => !current)}
+      >
+        Tindakan <CaretDown size={12} />
+      </button>
+      {open && (
+        <DropdownPanel
+          rect={actionTriggerRef.current?.getBoundingClientRect()}
+          triggerRef={actionTriggerRef}
+          contentRef={menuRef}
+          onClose={() => setOpen(false)}
+          width={160}
+          align="right"
+          variant="settings"
+          className="rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
+        >
+          <button
+            type="button"
+            className={menuItem}
+            onClick={() => {
+              setOpen(false);
+              onEdit(rule);
+            }}
+          >
+            <PencilSimple size={14} /> Ubah
+          </button>
+          <button
+            type="button"
+            className={menuItemDanger}
+            onClick={() => {
+              setOpen(false);
+              onDelete(rule);
+            }}
+          >
+            <Trash size={14} /> Hapus
+          </button>
+        </DropdownPanel>
+      )}
     </div>
+  );
+
+  return (
+    <ModalShell
+      title={rule.ruleName}
+      maxWidth="max-w-[640px]"
+      headerActions={headerActions}
+      onClose={onClose}
+      footerClassName="!justify-start"
+      footer={
+        <p className="m-0 text-[13px] text-slate-500">
+          Terakhir diubah oleh {rule.lastEditedBy} pada {rule.lastEdited} (GMT+7)
+        </p>
+      }
+    >
+      <SubHeading title="Informasi aturan" />
+      <InfoTable
+        rows={[
+          ["Nama aturan", rule.ruleName],
+          ["Deskripsi", rule.description],
+          ["Jenis transaksi", titleCase(ruleLabel(rule.transactionType))],
+          [
+            "Transaksi dibuat oleh",
+            <div key="by" className="flex flex-wrap items-center gap-2">
+              {rule.createdBy === "all" ? (
+                <span>Semua pengguna.</span>
+              ) : (
+                (rule.createdByUsers || []).map((user) => (
+                  <span key={user} className={pill}>
+                    {displayName(user)}
+                  </span>
+                ))
+              )}
+              <div className="relative" ref={allUsersRef}>
+                <button
+                  type="button"
+                  className={linkButton}
+                  ref={allUsersButtonRef}
+                  onClick={() => setShowAllUsers((current) => !current)}
+                >
+                  Lihat semua
+                </button>
+                {showAllUsers && (
+                  <DropdownPanel
+                    rect={allUsersButtonRef.current?.getBoundingClientRect()}
+                    triggerRef={allUsersButtonRef}
+                    contentRef={allUsersMenuRef}
+                    onClose={() => setShowAllUsers(false)}
+                    width={220}
+                    variant="settings"
+                    className="rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
+                  >
+                    {users.map((user) => (
+                      <p
+                        key={user.id}
+                        className="m-0 px-4 py-2 text-[13px] text-gray-700 hover:bg-slate-50"
+                      >
+                        {displayName(user.username)}
+                      </p>
+                    ))}
+                  </DropdownPanel>
+                )}
+              </div>
+            </div>,
+          ],
+          [
+            "Transaksi dibuat untuk",
+            rule.createdFor === "all" ? (
+              "Semua pelanggan."
+            ) : (
+              <div key="for" className="flex flex-wrap items-center gap-2">
+                {(rule.createdForCustomers || []).map((customer) => (
+                  <span key={customer} className={pill}>
+                    {customer}
+                  </span>
+                ))}
+              </div>
+            ),
+          ],
+        ]}
+      />
+
+      <SubHeading
+        title="Kriteria persetujuan"
+        subtitle="Kondisi transaksi yang memerlukan persetujuan."
+      />
+      {criteriaRows.length > 0 && (
+        <InfoTable rows={criteriaRows.map((row) => [row.label, row.value])} />
+      )}
+
+      <SubHeading
+        title="Tahapan persetujuan"
+        subtitle="Kondisi transaksi yang memerlukan persetujuan."
+      />
+      <p className="m-0 mb-3 text-[13px] text-slate-500">
+        Pengguna dengan peran Pemilik dapat langsung menyetujui transaksi tanpa melalui tahapan persetujuan.
+      </p>
+      <div className="space-y-3">
+        {(rule.levels || []).map((step, index) => (
+          <div
+            key={index}
+            className="rounded-lg border border-gray-200 bg-slate-50 p-4"
+          >
+            <span className="mb-2 block text-[13px] font-bold text-gray-900">
+              Tahap {index + 1}
+            </span>
+            <p className="m-0 text-sm text-gray-700">
+              {step.approvers.map(displayName).join(", ")}
+            </p>
+            <p className="m-0 mt-1 text-[13px] text-slate-500">
+              {step.approverType === "All must approve"
+                ? "Semua penyetuju yang disebutkan harus menyetujui."
+                : "Salah satu penyetuju yang disebutkan harus menyetujui."}
+            </p>
+          </div>
+        ))}
+      </div>
+    </ModalShell>
   );
 }
 
@@ -1155,7 +1134,7 @@ function ActionsMenu({
     <div className="relative inline-block">
       <button
         type="button"
-        className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-slate-50"
+        className={`${btn} inline-flex items-center gap-1`}
         ref={triggerRef}
         onClick={() => setOpenActionId(isOpen ? null : rule.id)}
       >
@@ -1166,14 +1145,14 @@ function ActionsMenu({
           rect={triggerRef.current?.getBoundingClientRect()}
           triggerRef={triggerRef}
           onClose={() => setOpenActionId(null)}
-          width={176}
+          width={200}
           align="right"
           variant="settings"
           className="rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
         >
           <button
             type="button"
-            className="flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-left text-[13px] text-gray-700 hover:bg-slate-50"
+            className={menuItem}
             onClick={() => {
               setOpenActionId(null);
               onEdit(rule);
@@ -1183,7 +1162,7 @@ function ActionsMenu({
           </button>
           <button
             type="button"
-            className="flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-left text-[13px] text-red-600 hover:bg-red-50"
+            className={menuItemDanger}
             onClick={() => {
               setOpenActionId(null);
               onDelete(rule);
@@ -1193,7 +1172,7 @@ function ActionsMenu({
           </button>
           <button
             type="button"
-            className="flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-left text-[13px] text-gray-700 hover:bg-slate-50"
+            className={menuItem}
             onClick={() => {
               setOpenActionId(null);
               onChangelog(rule);
@@ -1206,6 +1185,9 @@ function ActionsMenu({
     </div>
   );
 }
+
+
+/* ---------- Page ---------- */
 
 export default function ApprovalRulesPage() {
   const { rules, options, loading, error, create, update, remove } =
@@ -1283,13 +1265,16 @@ export default function ApprovalRulesPage() {
 
   return (
     <div className="p-7 max-md:p-[18px]">
-      <div className="mb-6 flex items-center justify-between gap-4">
-        <h2 className="m-0 text-[28px] font-bold text-gray-900">
-          Aturan approval
-        </h2>
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h2 className="m-0 text-[28px] font-bold text-gray-900">Aturan approval</h2>
+          <p className="m-0 mt-1.5 text-sm text-slate-500">
+            Atur aturan persetujuan untuk transaksi Anda.
+          </p>
+        </div>
         <button
           type="button"
-          className={btnPrimary}
+          className={btnModalSubmit}
           onClick={() => {
             setEditingRule(null);
             setShowForm(true);
@@ -1305,50 +1290,52 @@ export default function ApprovalRulesPage() {
         </p>
       )}
 
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="w-full max-w-[240px]">
-          <PopoverSelect
-            floating
-            value={filterType}
-            getOptionLabel={ruleLabel}
-            emptyText="Tidak ada pilihan"
-            placeholder="Jenis transaksi"
-            groups={approvalTransactionTypes}
-            onSelect={(value) => {
-              setFilterType(value === "All transaction types" ? "" : value);
-              setCurrentPage(1);
-            }}
-            includeAll
-          />
+      <div className="company-card mb-6 mt-4 rounded-[10px] bg-white p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="w-full max-w-[240px]">
+            <PopoverSelect
+              floating
+              value={filterType}
+              getOptionLabel={ruleLabel}
+              emptyText="Tidak ada pilihan"
+              placeholder="Jenis transaksi"
+              groups={approvalTransactionTypes}
+              onSelect={(value) => {
+                setFilterType(value === "All transaction types" ? "" : value);
+                setCurrentPage(1);
+              }}
+              includeAll
+            />
+          </div>
+          <div className="relative w-full max-w-[280px]">
+            <MagnifyingGlass
+              size={18}
+              className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-slate-500"
+            />
+            <input
+              type="text"
+              placeholder="Cari nama aturan"
+              className="input w-full !max-w-full !pl-[38px]"
+              value={searchName}
+              onChange={(event) => {
+                setSearchName(event.target.value);
+                setCurrentPage(1);
+              }}
+            />
+          </div>
         </div>
-        <div className="w-full max-w-[240px]">
-          <input
-            type="text"
-            placeholder="Cari nama aturan"
-            className={inputBase}
-            value={searchName}
-            onChange={(event) => {
-              setSearchName(event.target.value);
-              setCurrentPage(1);
-            }}
-          />
-        </div>
-      </div>
 
-      {filtered.length === 0 ? (
-        <div className={tableCard}>
+        {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-2 px-6 py-16 text-center">
-            <p className="m-0 text-[15px] font-semibold text-gray-900">
+            <p className="m-0 text-[15px] font-bold text-gray-900">
               Belum ada aturan approval
             </p>
             <p className="m-0 text-sm text-slate-500">
               Aturan approval akan tampil di sini.
             </p>
           </div>
-        </div>
-      ) : (
-        <div className={tableCard}>
-          <div className={tableWrapper}>
+        ) : (
+          <div className={`${tableWrapper} mt-5`}>
             <table className={tableBase}>
               <thead>
                 <tr>
@@ -1358,24 +1345,18 @@ export default function ApprovalRulesPage() {
                   <th className={th}>Melebihi batas maksimal piutang</th>
                   <th className={th}>Terlambat dibayar</th>
                   <th className={th}>Terakhir diubah</th>
-                  <th className="bg-slate-50 px-[18px] py-3.5 text-right">
-                    Tindakan
-                  </th>
+                  <th className={`${th} text-right`}>Tindakan</th>
                 </tr>
               </thead>
               <tbody>
                 {pageItems.map((rule) => (
                   <tr key={rule.id} className={trHover}>
                     <td className={td}>
-                      <button
-                        type="button"
-                        className="cursor-pointer border-0 bg-transparent p-0 text-left font-medium text-brand hover:underline"
-                        onClick={() => setDetailRule(rule)}
-                      >
+                      <button type="button" className={linkButton} onClick={() => setDetailRule(rule)}>
                         {rule.ruleName}
                       </button>
                       {rule.description && (
-                        <span className="mt-0.5 block text-[12px] text-slate-500">
+                        <span className="mt-0.5 block text-[13px] text-slate-500">
                           {rule.description}
                         </span>
                       )}
@@ -1400,12 +1381,12 @@ export default function ApprovalRulesPage() {
                     <td className={td}>
                       {rule.lastEdited}
                       {rule.lastEditedBy && (
-                        <span className="block text-[12px] text-slate-500">
+                        <span className="block text-[13px] text-slate-500">
                           Oleh {rule.lastEditedBy}
                         </span>
                       )}
                     </td>
-                    <td className="border-b border-slate-100 px-[18px] py-[15px] text-right">
+                    <td className={`${td} text-right`}>
                       <ActionsMenu
                         rule={rule}
                         openActionId={openActionId}
@@ -1427,21 +1408,21 @@ export default function ApprovalRulesPage() {
               </tbody>
             </table>
           </div>
-        </div>
-      )}
+        )}
 
-      <div className="mt-4">
-        <Pagination
-          currentPage={safePage}
-          totalPages={totalPages}
-          totalItems={filtered.length}
-          pageSize={pageSize}
-          onPageChange={setCurrentPage}
-          onPageSizeChange={(size) => {
-            setPageSize(size);
-            setCurrentPage(1);
-          }}
-        />
+        <div className="mt-5">
+          <Pagination
+            currentPage={safePage}
+            totalPages={totalPages}
+            totalItems={filtered.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setCurrentPage(1);
+            }}
+          />
+        </div>
       </div>
 
       {detailRule && (

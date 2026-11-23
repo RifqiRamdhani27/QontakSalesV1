@@ -366,7 +366,7 @@ export default function BuatKontak({ groups, defaultType = null, onClose, onSave
 
   return (
     <div
-      className={`${isDark ? "dash-dark" : ""} -m-7 w-[calc(100%+3.5rem)] bg-white max-md:-m-[18px] max-md:w-[calc(100%+2.25rem)]`}
+      className={`${isDark ? "dash-dark" : ""} -m-6 w-[calc(100%+3rem)] bg-white max-md:-m-[18px] max-md:w-[calc(100%+2.25rem)]`}
       style={isDark ? { backgroundColor: "#121212", minHeight: "100vh" } : undefined}
     >
       <div
@@ -540,7 +540,7 @@ export default function BuatKontak({ groups, defaultType = null, onClose, onSave
   }
   .dash-dark .bg-slate-50,
   .dash-dark .bg-slate-100 { background-color: #262626; }
-  .dash-dark [class*="bg-[#EDFFFD]"] { background-color: #d38e0d69; }
+  .dash-dark [class*="bg-[#EDFFFD]"] { background-color: #e08608ab; }
   .dash-dark .bg-indigo-50,
   .dash-dark .bg-indigo-100 { background-color: rgba(229,184,92,0.15); }
 
@@ -563,11 +563,13 @@ export default function BuatKontak({ groups, defaultType = null, onClose, onSave
   /* Aksen biru -> emas */
   .dash-dark .text-brand { color: #fefefeff; }
   .dash-dark .btn-primary-dark {
-    background-color: #d39212ff !important;
-    color: #121212 !important;
+    background: #e08d33 !important; 
+    color: #ffffffff !important; 
+    box-shadow: 0 4px 8px rgba(254, 92, 23, 0.49) !important;
+    transition: all 0.2s ease-in-out;
   }
     .dash-dark .btn-primary-dark:hover {
-  background-color: #eaac32ff !important;
+        background: #e08c33df !important; 
   }
   .dash-dark .btn-primary-dark svg { fill: #121212; }
   .dash-dark .btn-primary-dark + .btn-primary-dark {

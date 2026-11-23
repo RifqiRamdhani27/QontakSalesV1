@@ -108,7 +108,7 @@ function AccountSelect({ row, value, disabled, onChange }) {
           dropdown.toggle();
           setQuery("");
         }}
-        className="flex h-[38px] w-full items-center justify-between gap-2 rounded-lg border border-gray-200 bg-white px-3 text-left transition-colors hover:border-gray-300 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
+        className="flex h-[42px] w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-gray-300 bg-white px-3 text-left transition-colors hover:border-gray-400 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500 disabled:hover:border-gray-300"
       >
         <span className="truncate text-sm text-gray-900">{display}</span>
         <CaretDown size={15} className="flex-shrink-0 text-slate-500" />
@@ -122,46 +122,44 @@ function AccountSelect({ row, value, disabled, onChange }) {
           variant="settings"
           className="rounded-lg border border-gray-200 bg-white shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
         >
-            <div className="border-b border-gray-100 p-2">
-              <div className="flex items-center gap-2 rounded-md bg-slate-50 px-2.5 py-1.5">
-                <MagnifyingGlass size={14} className="text-slate-400" />
-                <input
-                  type="text"
-                  value={query}
-                  autoFocus
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder={`${filtered.length} hasil tersedia`}
-                  className="m-0 w-full border-0 bg-transparent p-0 text-sm text-gray-900 outline-none placeholder:text-slate-400"
-                />
-              </div>
+          <div className="border-b border-gray-100 p-2">
+            <div className="flex items-center gap-2 rounded-md bg-slate-50 px-2.5 py-1.5">
+              <MagnifyingGlass size={14} className="text-slate-400" />
+              <input
+                type="text"
+                value={query}
+                autoFocus
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={`${filtered.length} hasil tersedia`}
+                className="m-0 w-full border-0 bg-transparent p-0 text-sm text-gray-900 outline-none placeholder:text-slate-400"
+              />
             </div>
+          </div>
 
-            <div className="max-h-[220px] overflow-y-auto p-1.5">
-              {filtered.length === 0 ? (
-                <p className="m-0 px-3 py-4 text-center text-sm text-slate-500">
-                  Akun tidak ditemukan
-                </p>
-              ) : (
-                filtered.map((o) => (
-                  <button
-                    key={o.id}
-                    type="button"
-                    onClick={() => {
-                      onChange(row.id, o.id);
-                      dropdown.close();
-                    }}
-                    className={`flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-slate-50 ${
-                      o.id === value
-                        ? "font-medium text-blue-600"
-                        : "text-gray-700"
-                    }`}
-                  >
-                    {o.id === value && <Check size={14} weight="bold" />}
-                    <span className="truncate">{accountText(o.text)}</span>
-                  </button>
-                ))
-              )}
-            </div>
+          <div className="max-h-[220px] overflow-y-auto p-1.5">
+            {filtered.length === 0 ? (
+              <p className="m-0 px-3 py-4 text-center text-sm text-slate-500">
+                Akun tidak ditemukan
+              </p>
+            ) : (
+              filtered.map((o) => (
+                <button
+                  key={o.id}
+                  type="button"
+                  onClick={() => {
+                    onChange(row.id, o.id);
+                    dropdown.close();
+                  }}
+                  className={`flex w-full cursor-pointer items-center gap-2 rounded-md border-0 bg-transparent px-3 py-2 text-left text-sm transition-colors hover:bg-slate-50 ${
+                    o.id === value ? "font-medium text-brand" : "text-gray-700"
+                  }`}
+                >
+                  {o.id === value && <Check size={14} weight="bold" />}
+                  <span className="truncate">{accountText(o.text)}</span>
+                </button>
+              ))
+            )}
+          </div>
         </DropdownPanel>
       )}
     </div>
@@ -175,11 +173,11 @@ function GroupAccordion({ group, values, onChange }) {
     <div className="border-b border-slate-100 last:border-b-0">
       <button
         type="button"
-        className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-slate-50"
+        className="flex w-full cursor-pointer items-center gap-3 border-0 bg-transparent px-6 py-4 text-left transition-colors hover:bg-slate-50"
         onClick={() => setOpen(!open)}
         aria-expanded={open}
       >
-        <span className="text-[15px] font-semibold text-gray-900">
+        <span className="text-[15px] font-bold text-gray-900">
           {accountLabel(group.label)}
         </span>
 
@@ -189,18 +187,16 @@ function GroupAccordion({ group, values, onChange }) {
       </button>
 
       {open && (
-        <div className="grid grid-cols-1 gap-x-8 gap-y-5 px-5 pb-7 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-x-8 gap-y-5 px-6 pb-7 pt-1 md:grid-cols-2">
           {group.rows.map((row) => (
             <div key={row.id}>
               <label className={formLabel}>
                 {accountLabel(row.label)}
-                {row.locked ? null : (
-                  <span className={formRequiredMark}>*</span>
-                )}
+                {row.locked ? null : <span className={formRequiredMark}>*</span>}
               </label>
 
               {row.tooltip && (
-                <p className="m-0 mb-1.5 text-xs text-slate-400">
+                <p className="m-0 mb-1.5 text-[13px] text-slate-500">
                   {accountLabel(row.tooltip)}
                 </p>
               )}
@@ -213,7 +209,7 @@ function GroupAccordion({ group, values, onChange }) {
               />
 
               {row.locked && row.note && (
-                <p className="m-0 mt-1.5 text-xs text-slate-500">
+                <p className="m-0 mt-1.5 text-[13px] text-slate-500">
                   {accountLabel(row.note)}
                 </p>
               )}
@@ -291,25 +287,21 @@ export default function AccountMappingPage() {
   };
 
   return (
-    <div className="mx-auto max-w-[1400px] p-6 max-md:p-4">
-      <div className="mb-5">
-        <h1 className="m-0 text-[28px] font-bold text-gray-900">
-          Pemetaan Akun
-        </h1>
-        <p className="m-0 mt-1.5 text-sm text-slate-500">
-          Pilih akun bawaan untuk setiap label agar sistem dapat membuat entri jurnal secara otomatis dari transaksi.
-        </p>
-        {loadError && (
-          <p className="m-0 mt-2 text-sm text-red-600">{loadError}</p>
-        )}
+    <div className="p-7 max-md:p-[18px]">
+      <div className="mb-6 flex items-start">
+        <div>
+          <h2 className="m-0 text-[28px] font-bold text-gray-900">Pemetaan Akun</h2>
+          <p className="m-0 mt-1.5 text-sm text-slate-500">
+            Pilih akun bawaan untuk setiap label agar sistem dapat membuat entri jurnal secara otomatis dari transaksi.
+          </p>
+          {loadError && <p className="m-0 mt-2 text-sm text-red-600">{loadError}</p>}
+        </div>
       </div>
 
-      <div className="overflow-hidden rounded-[10px] border border-gray-200 bg-white">
-        <div className="border-b border-gray-200 p-5">
-          <h2 className="m-0 text-lg text-gray-900">Daftar Pemetaan</h2>
-          <p className="m-0 mt-[5px] text-[13px] italic text-slate-500">
-            Semua bidang wajib diisi
-          </p>
+      <div className="company-card mb-6 mt-4 overflow-hidden rounded-[10px] bg-white">
+        <div className="border-b border-slate-100 p-6">
+          <h2 className="m-0 text-[19px] font-bold text-gray-900">Daftar Pemetaan</h2>
+          <p className="m-0 mt-1 text-sm text-slate-500">Semua bidang wajib diisi.</p>
         </div>
 
         <form onSubmit={handleSave}>
@@ -322,13 +314,15 @@ export default function AccountMappingPage() {
             />
           ))}
 
-          <div className="flex flex-col gap-4 p-5 max-md:items-stretch md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-4 border-t border-gray-200 p-6 md:flex-row md:items-center md:justify-between">
             <div className="max-w-[420px]">
               <p className="m-0 text-[13px] text-slate-500">
-                Pengaturan ulang akun akan berlaku setelah Anda menyimpan pemetaan akun ini
+                Pengaturan ulang akun akan berlaku setelah Anda menyimpan pemetaan akun ini.
               </p>
               {saveError && (
-                <p className="m-0 mt-1.5 text-[13px] text-red-600">{saveError}</p>
+                <p className="m-0 mt-1.5 whitespace-pre-line text-[13px] text-red-600">
+                  {saveError}
+                </p>
               )}
             </div>
 

@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { Navigate } from "react-router-dom";
 import { Spinner } from "@chakra-ui/react";
 import mekariPayImg from "../../assets/mekariPAY.png"
 import {
@@ -21,6 +22,8 @@ import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
+  BarController,
+  LineController,
   BarElement,
   PointElement,
   LineElement,
@@ -34,6 +37,8 @@ import LoadingPopup from "@/components/ui/LoadingPopup";
 ChartJS.register(
   CategoryScale,
   LinearScale,
+  BarController,
+  LineController,
   BarElement,
   PointElement,
   LineElement,
@@ -54,6 +59,183 @@ const DEFAULT_WIDGET_ORDER = [
   "mekari_pay",
   "kas",
 ];
+
+const getChartPalette = (isDark) =>
+  isDark
+    ? {
+      income: "#ff9d00ff",
+      expense: "#ffffffff",
+      net: "#F8F4E3",
+      tick: "#94a3b8",
+      grid: "#2d2d2d",
+      card: "#1e1e1e",
+      tooltipBg: "#1e1e1e",
+      tooltipBorder: "#634f27",
+      tooltipTitle: "#E5B85C",
+      tooltipBody: "#f1f5f9",
+    }
+    : {
+      income: "#003082",
+      expense: "#ffc917",
+      net: "#4a494bff",
+      tick: "#64748b",
+      grid: "#f1f5f9",
+      card: "#ffffff",
+      tooltipBg: "rgba(15,23,42,0.92)",
+      tooltipBorder: "transparent",
+      tooltipTitle: "#ffffff",
+      tooltipBody: "#ffffff",
+    };
+
+const withAlpha = (hex, alpha) =>
+  hex.slice(0, 7) + Math.round(alpha * 255).toString(16).padStart(2, "0");
+
+const barGradient = (color) => (ctx) => {
+  const { chart } = ctx;
+  const { ctx: c, chartArea } = chart;
+  if (!chartArea) return color;
+  const g = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+  g.addColorStop(0, color);
+  g.addColorStop(1, withAlpha(color, 0.55));
+  return g;
+};
+
+const barAnimation = {
+  duration: 800,
+  easing: "easeOutQuart",
+  delay: (ctx) =>
+    ctx.type === "data" && ctx.mode === "default"
+      ? ctx.dataIndex * 70 + ctx.datasetIndex * 110
+      : 0,
+};
+
+const lineRevealPlugin = {
+  id: "lineReveal",
+  beforeInit(chart) {
+    chart.$lineProgress = 0;
+  },
+  beforeDatasetDraw(chart, args) {
+    if (args.meta.type !== "line") return;
+    const p = chart.$lineProgress;
+    if (p === undefined || p >= 1) return;
+    const { ctx, chartArea } = chart;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(
+      chartArea.left - 12,
+      chartArea.top - 12,
+      (chartArea.width + 24) * p,
+      chartArea.height + 24
+    );
+    ctx.clip();
+    args.meta.$clipped = true;
+  },
+  afterDatasetDraw(chart, args) {
+    if (args.meta.type !== "line" || !args.meta.$clipped) return;
+    chart.ctx.restore();
+    args.meta.$clipped = false;
+  },
+};
+
+const buildChartData = (labels, names, values, palette) => ({
+  labels,
+  datasets: [
+    {
+      type: "bar",
+      label: names.income,
+      data: values.income,
+      backgroundColor: barGradient(palette.income),
+      borderRadius: { topLeft: 6, topRight: 6 },
+      borderSkipped: false,
+      maxBarThickness: 35,
+      animation: barAnimation,
+    },
+    {
+      type: "bar",
+      label: names.expense,
+      data: values.expense,
+      backgroundColor: barGradient(palette.expense),
+      borderRadius: { topLeft: 6, topRight: 6 },
+      borderSkipped: false,
+      maxBarThickness: 35,
+      animation: barAnimation,
+    },
+    {
+      type: "line",
+      label: names.net,
+      data: values.net,
+      borderColor: palette.net,
+      backgroundColor: palette.net,
+      pointBackgroundColor: palette.net,
+      pointBorderColor: palette.card,
+      pointBorderWidth: 2,
+      pointRadius: 4,
+      pointHoverRadius: 6,
+      borderWidth: 2.5,
+      cubicInterpolationMode: "monotone",
+      animation: false,
+    },
+  ],
+});
+
+function AnimatedBarChart({ data, options }) {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const DELAY = 250;
+    const DURATION = 1400;
+    const ease = (t) => -(Math.cos(Math.PI * t) - 1) / 2;
+    let raf;
+    let start;
+
+    const tick = (now) => {
+      const chart = ref.current;
+      if (!chart) return;
+      if (start === undefined) start = now;
+      const t = Math.min(Math.max((now - start - DELAY) / DURATION, 0), 1);
+      chart.$lineProgress = ease(t);
+      chart.draw();
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+
+    const id = requestAnimationFrame(() => {
+      const chart = ref.current;
+      if (chart) {
+        chart.$lineProgress = 0;
+        chart.reset();
+        chart.update();
+        raf = requestAnimationFrame(tick);
+      }
+    });
+
+    return () => {
+      cancelAnimationFrame(id);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  return <Bar ref={ref} data={data} options={options} plugins={[lineRevealPlugin]} />;
+}
+
+function ChartLegend({ items }) {
+  return (
+    <div className="flex flex-wrap items-center gap-6 mt-4 text-xs font-normal text-slate-700">
+      {items.map((it, i) => (
+        <div
+          key={it.label}
+          className="flex items-center gap-2 animate-chart-in"
+          style={{ animationDelay: `${700 + i * 120}ms` }}
+        >
+          <span
+            className="w-2.5 h-2.5 rounded-[2px] inline-block"
+            style={{ backgroundColor: it.color }}
+          />
+          <span>{it.label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 function PeriodDropdown({ value: externalValue, onChange: externalOnChange }) {
   const [internalValue, setInternalValue] = useState("bulan_ini");
@@ -119,7 +301,6 @@ export default function DashboardPage() {
   const [profitLossMode, setProfitLossMode] = useState("chart");
   const [lastUpdated, setLastUpdated] = useState("");
 
-  // Edit Mode & Widget Reordering State
   const [isEditMode, setIsEditMode] = useState(false);
   const [widgetsOrder, setWidgetsOrder] = useState(() => {
     try {
@@ -133,7 +314,6 @@ export default function DashboardPage() {
   const [activeWidgetId, setActiveWidgetId] = useState("arus_kas");
   const [draggedWidgetId, setDraggedWidgetId] = useState(null);
 
-  // Filter Drawer State
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [filterWidgetTitle, setFilterWidgetTitle] = useState("penjualan terhutang");
   const [selectedPeriod, setSelectedPeriod] = useState("bulan_ini");
@@ -177,6 +357,11 @@ export default function DashboardPage() {
   const handleCancelEdit = () => {
     setWidgetsOrder(savedWidgetsOrder);
     setIsEditMode(false);
+  };
+
+  const handleChangeTab = (tab) => {
+    if (isEditMode) handleCancelEdit();
+    setActiveTab(tab);
   };
 
   const moveWidget = (id, direction) => {
@@ -273,20 +458,24 @@ export default function DashboardPage() {
   };
 
   const [themeMode, setThemeMode] = useState(
-  () => localStorage.getItem("app_theme") || "light"
-);
+    () => localStorage.getItem("app_theme") || "light"
+  );
 
-useEffect(() => {
-  const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
-  window.addEventListener("themeChanged", sync);
-  window.addEventListener("storage", sync);
-  return () => {
-    window.removeEventListener("themeChanged", sync);
-    window.removeEventListener("storage", sync);
-  };
-}, []);
+  useEffect(() => {
+    const sync = () => setThemeMode(localStorage.getItem("app_theme") || "light");
+    window.addEventListener("themeChanged", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("themeChanged", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, []);
 
-const isDark = themeMode === "dark";
+  const isDark = themeMode === "dark";
+
+  if (!localStorage.getItem("access_token")) {
+    return <Navigate to="/login" replace />;
+  }
 
   if (loading) {
     return (
@@ -301,59 +490,63 @@ const isDark = themeMode === "dark";
     return `Rp${Number(val).toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
-  // Prepare Chart Data
   const defaultMonths = [
     "Oct 25", "Nov 25", "Dec 25", "Jan 26", "Feb 26", "Mar 26",
     "Apr 26", "May 26", "Jun 26", "Jul 26", "Aug 26", "Sep 26"
   ];
 
-  const labels = (stats?.monthly_revenue && stats.monthly_revenue.length > 0)
-    ? stats.monthly_revenue.map((m) => m.month)
-    : defaultMonths;
+  const DUMMY_REVENUE = [
+    12000000, 18000000, 15000000, 22000000, 19000000, 25000000,
+    21000000, 28000000, 24000000, 31000000, 27000000, 35000000,
+  ];
 
-  const revenueData = (stats?.monthly_revenue && stats.monthly_revenue.length > 0)
-    ? stats.monthly_revenue.map((m) => m.revenue)
-    : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  const realRevenue = (stats?.monthly_revenue && stats.monthly_revenue.length > 0)
+    ? stats.monthly_revenue.map((m) => Number(m.revenue) || 0)
+    : [];
+
+  const useDummy = !realRevenue.some((v) => v > 0);
+  const revenueData = useDummy ? DUMMY_REVENUE : realRevenue;
+
+  const labels = useDummy
+    ? defaultMonths
+    : stats.monthly_revenue.map((m) => m.month);
   const cashOutData = revenueData.map((val) => val * 0.4);
   const netCashData = revenueData.map((val, idx) => val - cashOutData[idx]);
 
   const hasCashflowData = revenueData.some((v) => v > 0);
   const hasProfitLossData = revenueData.some((v) => v > 0);
 
-  const cashflowChartData = {
+  const palette = getChartPalette(isDark);
+  const chartValues = { income: revenueData, expense: cashOutData, net: netCashData };
+
+  const cashflowChartData = buildChartData(
     labels,
-    datasets: [
-      {
-        label: "Total kas masuk",
-        data: revenueData,
-        backgroundColor: "#2563eb",
-        borderRadius: 4,
-      },
-      {
-        label: "Total kas keluar",
-        data: cashOutData,
-        backgroundColor: "#14b8a6",
-        borderRadius: 4,
-      },
-      {
-        label: "Perpindahan kas bersih",
-        data: netCashData,
-        borderColor: "#9333ea",
-        backgroundColor: "#9333ea",
-        type: "line",
-        tension: 0.3,
-        borderWidth: 2,
-        pointRadius: 3,
-      },
-    ],
-  };
+    { income: "Total kas masuk", expense: "Total kas keluar", net: "Perpindahan kas bersih" },
+    chartValues,
+    palette
+  );
+
+  const profitLossChartData = buildChartData(
+    labels,
+    { income: "Pendapatan", expense: "Beban", net: "Laba bersih" },
+    chartValues,
+    palette
+  );
 
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    interaction: { mode: "index", intersect: false },
+    animation: { duration: 900, easing: "easeOutQuart" },
     plugins: {
       legend: { display: false },
       tooltip: {
+        backgroundColor: palette.tooltipBg,
+        borderColor: palette.tooltipBorder,
+        borderWidth: isDark ? 1 : 0,
+        titleColor: palette.tooltipTitle,
+        bodyColor: palette.tooltipBody,
+        padding: 10,
         callbacks: {
           label: (context) => `${context.dataset.label}: ${formatRp(context.raw)}`,
         },
@@ -362,49 +555,22 @@ const isDark = themeMode === "dark";
     scales: {
       x: {
         grid: { display: false },
-        ticks: { font: { size: 11 }, color: isDark ? "#94a3b8" : "#64748b" },
+        border: { color: palette.grid },
+        ticks: { font: { size: 11 }, color: palette.tick },
       },
       y: {
         beginAtZero: true,
-        grid: { color: isDark ? "#2d2d2d" : "#f1f5f9" },
+        grid: { color: palette.grid },
+        border: { display: false },
         ticks: {
           font: { size: 11 },
-          color: isDark ? "#94a3b8" : "#64748b",
+          color: palette.tick,
           callback: (v) => (v >= 1000000 ? `Rp ${(v / 1000000).toFixed(0)}M` : `Rp ${v}`),
         },
       },
     },
   };
 
-  const profitLossChartData = {
-    labels,
-    datasets: [
-      {
-        label: "Pendapatan",
-        data: revenueData,
-        backgroundColor: "#2563eb",
-        borderRadius: 4,
-      },
-      {
-        label: "Beban",
-        data: cashOutData,
-        backgroundColor: "#14b8a6",
-        borderRadius: 4,
-      },
-      {
-        label: "Laba bersih",
-        data: netCashData,
-        borderColor: "#9333ea",
-        backgroundColor: "#9333ea",
-        type: "line",
-        tension: 0.3,
-        borderWidth: 2,
-        pointRadius: 3,
-      },
-    ],
-  };
-
-  // Render individual widget component
   const renderWidgetComponent = (widgetId) => {
     switch (widgetId) {
       case "arus_kas":
@@ -424,8 +590,8 @@ const isDark = themeMode === "dark";
                   <button
                     onClick={() => setCashflowMode("chart")}
                     className={`px-3 py-1 font-medium rounded cursor-pointer ${cashflowMode === "chart"
-                        ? "bg-blue-50 text-blue-700 shadow-xs"
-                        : "text-slate-600 hover:text-slate-900"
+                      ? "bg-blue-50 text-blue-700 shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
                       }`}
                     type="button"
                   >
@@ -434,8 +600,8 @@ const isDark = themeMode === "dark";
                   <button
                     onClick={() => setCashflowMode("table")}
                     className={`px-3 py-1 font-medium rounded cursor-pointer ${cashflowMode === "table"
-                        ? "bg-blue-50 text-blue-700 shadow-xs"
-                        : "text-slate-600 hover:text-slate-900"
+                      ? "bg-blue-50 text-blue-700 shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
                       }`}
                     type="button"
                   >
@@ -454,8 +620,8 @@ const isDark = themeMode === "dark";
 
             {cashflowMode === "chart" ? (
               hasCashflowData ? (
-                <div className="w-full h-64 relative pt-4 pb-2">
-                  <Bar data={cashflowChartData} options={chartOptions} />
+                <div key={isDark ? "dark" : "light"} className="w-full h-64 relative pt-4 pb-2 animate-chart-in">
+                  <AnimatedBarChart data={cashflowChartData} options={chartOptions} />
                 </div>
               ) : (
                 <div className="w-full my-2">
@@ -499,7 +665,7 @@ const isDark = themeMode === "dark";
                         </td>
                         <td className={`py-2 text-right font-semibold ${isDark ? "text-[#E5B85C]" : "text-purple-600"}`}>
                           {formatRp(netCashData[idx])}
-                        </td>                      
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -507,21 +673,13 @@ const isDark = themeMode === "dark";
               </div>
             )}
 
-            {/* Legend */}
-            <div className="flex flex-wrap items-center gap-6 mt-4 text-xs font-normal text-slate-700">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 bg-blue-600 rounded-[2px] inline-block"></span>
-                <span>Total kas masuk</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 bg-teal-500 rounded-[2px] inline-block"></span>
-                <span>Total kas keluar</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 bg-purple-600 rounded-[2px] inline-block"></span>
-                <span>Perpindahan kas bersih</span>
-              </div>
-            </div>
+            <ChartLegend
+              items={[
+                { label: "Total kas masuk", color: palette.income },
+                { label: "Total kas keluar", color: palette.expense },
+                { label: "Perpindahan kas bersih", color: palette.net },
+              ]}
+            />
           </section>
         );
 
@@ -550,7 +708,6 @@ const isDark = themeMode === "dark";
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-3.5">
-              {/* Belum dibayar */}
               <div className="border border-amber-300 rounded transition-transform transform-gpu duration-300 ease-in-out hover:scale-[1.01] hover:shadow-lg overflow-hidden">
                 <div className="bg-amber-50 px-3 py-1.5 flex items-center justify-between border-b border-amber-100">
                   <span className="text-xs font-semibold text-slate-700">Belum dibayar</span>
@@ -566,7 +723,6 @@ const isDark = themeMode === "dark";
                   </a>
                 </div>
               </div>
-              {/* Telat dibayar */}
               <div className="border border-red-300 rounded transition-transform transform-gpu duration-300 ease-in-out hover:scale-[1.01] hover:shadow-lg overflow-hidden">
                 <div className="bg-red-50 px-3 py-1.5 flex items-center justify-between border-b border-red-100 ">
                   <span className="text-xs font-semibold text-slate-700">Telat dibayar</span>
@@ -584,7 +740,6 @@ const isDark = themeMode === "dark";
               </div>
             </div>
 
-            {/* Lunas Full Width Subcard */}
             <div className="border border-emerald-300 rounded transition-transform transform-gpu duration-300 ease-in-out hover:scale-[1.01] hover:shadow-lg overflow-hidden">
               <div className="bg-emerald-50 px-3 py-1.5 flex items-center justify-between border-b border-emerald-100">
                 <span className="text-xs font-semibold text-slate-700">Lunas</span>
@@ -628,7 +783,6 @@ const isDark = themeMode === "dark";
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-              {/* Belum dibayar */}
               <div className="border border-amber-300 rounded transition-transform transform-gpu duration-300 ease-in-out hover:scale-[1.01] hover:shadow-lg overflow-hidden">
                 <div className="bg-amber-50 px-3 py-1.5 flex items-center justify-between border-b border-amber-100">
                   <span className="text-xs font-semibold text-slate-700">Belum dibayar</span>
@@ -642,7 +796,6 @@ const isDark = themeMode === "dark";
                   </a>
                 </div>
               </div>
-              {/* Telat dibayar */}
               <div className="border border-red-300 rounded transition-transform transform-gpu duration-300 ease-in-out hover:scale-[1.01] hover:shadow-lg overflow-hidden">
                 <div className="bg-red-50 px-3 py-1.5 flex items-center justify-between border-b border-red-100">
                   <span className="text-xs font-semibold text-slate-700">Telat dibayar</span>
@@ -658,7 +811,6 @@ const isDark = themeMode === "dark";
               </div>
             </div>
 
-            {/* Lunas Full Width Subcard */}
             <div className="border border-emerald-300 rounded transition-transform transform-gpu duration-300 ease-in-out hover:scale-[1.01] hover:shadow-lg overflow-hidden">
               <div className="bg-emerald-50 px-3 py-1.5 flex items-center justify-between border-b border-emerald-100">
                 <span className="text-xs font-semibold text-slate-700">Lunas</span>
@@ -692,8 +844,8 @@ const isDark = themeMode === "dark";
                   <button
                     onClick={() => setProfitLossMode("chart")}
                     className={`px-3 py-1 font-medium rounded cursor-pointer ${profitLossMode === "chart"
-                        ? "bg-blue-50 text-blue-700 shadow-xs"
-                        : "text-slate-600 hover:text-slate-900"
+                      ? "bg-blue-50 text-blue-700 shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
                       }`}
                     type="button"
                   >
@@ -702,8 +854,8 @@ const isDark = themeMode === "dark";
                   <button
                     onClick={() => setProfitLossMode("table")}
                     className={`px-3 py-1 font-medium rounded cursor-pointer ${profitLossMode === "table"
-                        ? "bg-blue-50 text-blue-700 shadow-xs"
-                        : "text-slate-600 hover:text-slate-900"
+                      ? "bg-blue-50 text-blue-700 shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
                       }`}
                     type="button"
                   >
@@ -722,8 +874,8 @@ const isDark = themeMode === "dark";
 
             {profitLossMode === "chart" ? (
               hasProfitLossData ? (
-                <div className="w-full h-64 relative pt-4 pb-2">
-                  <Bar data={profitLossChartData} options={chartOptions} />
+                <div key={isDark ? "dark" : "light"} className="w-full h-64 relative pt-4 pb-2 animate-chart-in">
+                  <AnimatedBarChart data={profitLossChartData} options={chartOptions} />
                 </div>
               ) : (
                 <div className="w-full my-2">
@@ -759,9 +911,15 @@ const isDark = themeMode === "dark";
                     {labels.map((m, idx) => (
                       <tr key={m}>
                         <td className="py-2 text-slate-700">{m}</td>
-                        <td className="py-2 text-right font-medium text-blue-600">{formatRp(revenueData[idx])}</td>
-                        <td className="py-2 text-right text-teal-600">{formatRp(cashOutData[idx])}</td>
-                        <td className="py-2 text-right font-semibold text-purple-600">{formatRp(netCashData[idx])}</td>
+                        <td className={`py-2 text-right font-medium ${isDark ? "text-[#4ade80]" : "text-blue-600"}`}>
+                          {formatRp(revenueData[idx])}
+                        </td>
+                        <td className={`py-2 text-right ${isDark ? "text-[#f87171]" : "text-teal-600"}`}>
+                          {formatRp(cashOutData[idx])}
+                        </td>
+                        <td className={`py-2 text-right font-semibold ${isDark ? "text-[#E5B85C]" : "text-purple-600"}`}>
+                          {formatRp(netCashData[idx])}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -769,21 +927,13 @@ const isDark = themeMode === "dark";
               </div>
             )}
 
-            {/* Legend */}
-            <div className="flex flex-wrap items-center gap-6 mt-4 text-xs font-normal text-slate-700">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 bg-blue-600 rounded-[2px] inline-block"></span>
-                <span>Pendapatan</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 bg-teal-500 rounded-[2px] inline-block"></span>
-                <span>Beban</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 bg-purple-600 rounded-[2px] inline-block"></span>
-                <span>Laba bersih</span>
-              </div>
-            </div>
+            <ChartLegend
+              items={[
+                { label: "Pendapatan", color: palette.income },
+                { label: "Beban", color: palette.expense },
+                { label: "Laba bersih", color: palette.net },
+              ]}
+            />
           </section>
         );
 
@@ -980,19 +1130,16 @@ const isDark = themeMode === "dark";
   };
 
   return (
-      <div
-          className={`${isDark ? "dash-dark" : ""} bg-[#f8fafc] text-slate-800 antialiased min-h-screen -m-4 md:-m-6 pb-20`}
-          style={isDark ? { backgroundColor: "#121212", color: "#e2e8f0" } : undefined}
-        >
-          {/* BEGIN: MainHeader */}
+    <div
+      className={`${isDark ? "dash-dark" : ""} bg-[#f8fafc] text-slate-800 antialiased min-h-screen -m-4 md:-m-6 pb-20`}
+      style={isDark ? { backgroundColor: "#121212", color: "#e2e8f0" } : undefined}
+    >
       <header className="bg-white border-b border-slate-200 px-6 pt-5 pb-0">
         <div className="max-w-[1760px] mx-auto">
-          {/* Title & Action Bar */}
           <div className="flex flex-wrap items-center justify-between gap-4 pb-4">
             <div>
               <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">Dashboard</h1>
             </div>
-            {/* Metadata & Actions */}
             <div className="flex flex-wrap items-center space-x-3 text-xs md:text-sm text-slate-600">
               {isEditMode ? (
                 <button
@@ -1015,38 +1162,39 @@ const isDark = themeMode === "dark";
                     <ArrowClockwise className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} />
                     <span>Perbarui</span>
                   </button>
-                  <button
-                    onClick={handleToggleEditMode}
-                    className={`p-1.5 rounded-md transition-colors cursor-pointer ${isEditMode
+                  {activeTab === "performa" && (
+                    <button
+                      onClick={handleToggleEditMode}
+                      className={`p-1.5 rounded-md transition-colors cursor-pointer ${isEditMode
                         ? "bg-blue-600 text-white"
                         : "text-slate-500 hover:text-slate-800 hover:bg-slate-100"
-                      }`}
-                    title="Ubah urutan widget"
-                    type="button"
-                  >
-                    <PencilSimple className="w-4 h-4" />
-                  </button>
+                        }`}
+                      title="Ubah urutan widget"
+                      type="button"
+                    >
+                      <PencilSimple className="w-4 h-4" />
+                    </button>
+                  )}
                 </>
               )}
             </div>
           </div>
 
-          {/* Navigation Tabs */}
           <nav aria-label="Tabs" className="flex space-x-6 border-b border-transparent -mb-[1px]">
             <button
-              onClick={() => setActiveTab("performa")}
+              onClick={() => handleChangeTab("performa")}
               className={`border-b-2 pb-2.5 text-sm font-semibold flex items-center cursor-pointer ${activeTab === "performa"
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-slate-500 hover:text-slate-700"
+                ? "border-blue-600 text-blue-600"
+                : "border-transparent text-slate-500 hover:text-slate-700"
                 }`}
             >
               Performa bisnis
             </button>
             <button
-              onClick={() => setActiveTab("insight")}
+              onClick={() => handleChangeTab("insight")}
               className={`border-b-2 pb-2.5 text-sm font-medium flex items-center gap-1.5 cursor-pointer ${activeTab === "insight"
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-slate-500 hover:text-slate-700"
+                ? "border-blue-600 text-blue-600"
+                : "border-transparent text-slate-500 hover:text-slate-700"
                 }`}
             >
               <span>Insight Business</span>
@@ -1058,93 +1206,98 @@ const isDark = themeMode === "dark";
         </div>
       </header>
 
-      {/* BEGIN: MainContentContainer */}
-      <main className="max-w-[1760px] mx-auto p-4 md:p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {widgetsOrder.map((widgetId) => {
-            const isFullWidth = isFullWidthWidget(widgetId);
-            const isActive = isEditMode && activeWidgetId === widgetId;
+      {activeTab === "performa" ? (
+        <main className="max-w-[1760px] mx-auto p-4 md:p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {widgetsOrder.map((widgetId) => {
+              const isFullWidth = isFullWidthWidget(widgetId);
+              const isActive = isEditMode && activeWidgetId === widgetId;
 
-            return (
-              <div
-                key={widgetId}
-                draggable={isEditMode}
-                onDragStart={(e) => isEditMode && handleDragStart(e, widgetId)}
-                onDragOver={(e) => isEditMode && handleDragOver(e)}
-                onDrop={(e) => isEditMode && handleDrop(e, widgetId)}
-                onClick={() => isEditMode && setActiveWidgetId(widgetId)}
-                className={`relative transition-all duration-200 ${isFullWidth ? "col-span-1 lg:col-span-2" : "col-span-1"
-                  } ${isEditMode
-                    ? `rounded-lg ${isActive
-                      ? "ring-2 ring-blue-600 border-2 border-blue-600 shadow-md"
-                      : "border border-dashed border-slate-300 hover:border-blue-400"
-                    }`
-                    : ""
-                  }`}
-              >
-                {/* D-Pad Overlay for Active Widget in Edit Mode */}
-                {isActive && (
-                  <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] flex flex-col items-center justify-center z-20 rounded-lg">
-                    <span className="text-xs font-semibold text-slate-800 mb-2">Pindahkan widget</span>
-                    <div className="flex flex-col items-center gap-1">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          moveWidget(widgetId, "up");
-                        }}
-                        className="p-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded shadow-xs cursor-pointer"
-                        title="Pindah ke atas"
-                        type="button"
-                      >
-                        <CaretUp className="w-4 h-4" />
-                      </button>
-                      <div className="flex items-center gap-3">
+              return (
+                <div
+                  key={widgetId}
+                  draggable={isEditMode}
+                  onDragStart={(e) => isEditMode && handleDragStart(e, widgetId)}
+                  onDragOver={(e) => isEditMode && handleDragOver(e)}
+                  onDrop={(e) => isEditMode && handleDrop(e, widgetId)}
+                  onClick={() => isEditMode && setActiveWidgetId(widgetId)}
+                  className={`relative transition-all duration-200 ${isFullWidth ? "col-span-1 lg:col-span-2" : "col-span-1"
+                    } ${isEditMode
+                      ? `rounded-lg ${isActive
+                        ? "ring-2 ring-blue-600 border-2 border-blue-600 shadow-md"
+                        : "border border-dashed border-slate-300 hover:border-blue-400"
+                      }`
+                      : ""
+                    }`}
+                >
+                  {isActive && (
+                    <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] flex flex-col items-center justify-center z-20 rounded-lg">
+                      <span className="text-xs font-semibold text-slate-800 mb-2">Pindahkan widget</span>
+                      <div className="flex flex-col items-center gap-1">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            moveWidget(widgetId, "left");
+                            moveWidget(widgetId, "up");
                           }}
                           className="p-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded shadow-xs cursor-pointer"
-                          title="Pindah ke kiri"
+                          title="Pindah ke atas"
                           type="button"
                         >
-                          <CaretLeft className="w-4 h-4" />
+                          <CaretUp className="w-4 h-4" />
                         </button>
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              moveWidget(widgetId, "left");
+                            }}
+                            className="p-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded shadow-xs cursor-pointer"
+                            title="Pindah ke kiri"
+                            type="button"
+                          >
+                            <CaretLeft className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              moveWidget(widgetId, "right");
+                            }}
+                            className="p-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded shadow-xs cursor-pointer"
+                            title="Pindah ke kanan"
+                            type="button"
+                          >
+                            <CaretRight className="w-4 h-4" />
+                          </button>
+                        </div>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            moveWidget(widgetId, "right");
+                            moveWidget(widgetId, "down");
                           }}
                           className="p-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded shadow-xs cursor-pointer"
-                          title="Pindah ke kanan"
+                          title="Pindah ke bawah"
                           type="button"
                         >
-                          <CaretRight className="w-4 h-4" />
+                          <CaretDown className="w-4 h-4" />
                         </button>
                       </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          moveWidget(widgetId, "down");
-                        }}
-                        className="p-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded shadow-xs cursor-pointer"
-                        title="Pindah ke bawah"
-                        type="button"
-                      >
-                        <CaretDown className="w-4 h-4" />
-                      </button>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {renderWidgetComponent(widgetId)}
-              </div>
-            );
-          })}
-        </div>
-      </main>
+                  {renderWidgetComponent(widgetId)}
+                </div>
+              );
+            })}
+          </div>
+        </main>
+      ) : (
+        <main className="max-w-[1760px] mx-auto p-4 md:p-6">
+          <div className="flex items-center justify-center min-h-[60vh] animate-chart-in">
+            <EmptyDataState text="Maaf, halaman ini belum tersedia" />
+          </div>
+        </main>
+      )}
 
-      {/* BEGIN: Bottom Action Bar in Edit Mode */}
       {isEditMode && (
         <div className="fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 py-3 px-8 flex items-center justify-between z-40 shadow-lg animate-fade-in">
           <div></div>
@@ -1169,19 +1322,15 @@ const isDark = themeMode === "dark";
 
       <LoadingPopup open={exporting} message="Generating Excel report..." />
 
-      {/* BEGIN: Right Filter Drawer */}
       {filterDrawerOpen && (
         <div className="fixed inset-0 z-50 overflow-hidden">
-          {/* Dark backdrop overlay */}
           <div
             onClick={closeFilter}
             className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity duration-300 animate-fade-in cursor-pointer"
           />
 
-          {/* Drawer panel */}
           <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
             <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col justify-between transform transition-transform duration-300 ease-out animate-slide-in-right">
-              {/* Drawer Header */}
               <div className="px-6 py-5 border-b border-slate-200 flex items-center justify-between">
                 <h2 className="text-base font-semibold text-slate-800">
                   Filter widget {filterWidgetTitle}
@@ -1195,9 +1344,7 @@ const isDark = themeMode === "dark";
                 </button>
               </div>
 
-              {/* Drawer Body */}
               <div className="p-6 space-y-6 flex-1 overflow-y-auto">
-                {/* Periode Field */}
                 <div className="space-y-2">
                   <label className="block text-xs font-semibold text-slate-700">
                     Periode
@@ -1217,7 +1364,6 @@ const isDark = themeMode === "dark";
                   </div>
                 </div>
 
-                {/* Tag Field */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-1">
                     <label className="block text-xs font-semibold text-slate-700">
@@ -1234,7 +1380,6 @@ const isDark = themeMode === "dark";
                     placeholder="Pilih tag"
                     className="w-full text-xs border border-slate-300 rounded-md py-2 px-3 text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 placeholder-slate-400 transition-colors"
                   />
-                  {/* Radio Options */}
                   <div className="flex items-center gap-6 pt-1 text-xs text-slate-700">
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
@@ -1262,7 +1407,6 @@ const isDark = themeMode === "dark";
                 </div>
               </div>
 
-              {/* Drawer Footer */}
               <div className="px-6 py-4 border-t border-slate-200 flex items-center justify-between bg-white">
                 <button
                   onClick={handleResetFilter}
@@ -1310,8 +1454,14 @@ const isDark = themeMode === "dark";
         .animate-fade-in {
           animation: fadeIn 0.25s ease-out forwards;
         }
+        @keyframes chartIn {
+          from { opacity: 0; transform: translateY(14px) scale(0.985); }
+          to   { opacity: 1; transform: none; }
+        }
+        .animate-chart-in {
+          animation: chartIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
         .dash-dark select, .dash-dark input { color-scheme: dark; }
-        /* Permukaan */
         .dash-dark .bg-white { background-color: #1e1e1e; }
         .dash-dark [class*="bg-white/70"] { background-color: rgba(30,30,30,0.75); }
         .dash-dark .bg-slate-50 { background-color: #262626; }
@@ -1319,21 +1469,18 @@ const isDark = themeMode === "dark";
         .dash-dark .bg-amber-50 { background-color: rgba(245,158,11,0.15); }
         .dash-dark .bg-red-50 { background-color: rgba(239,68,68,0.15); }
         .dash-dark .bg-emerald-50 { background-color: rgba(16,185,129,0.15); }
-        /* Border & divider */
         .dash-dark .border-slate-100,
         .dash-dark .border-slate-200,
-        .dash-dark .border-slate-300 { border-color: #634f27; }
+        .dash-dark .border-slate-300 { 
+          border-color: #634f27; box-shadow: 0 8px 14px rgba(211, 98, 0, 0.10) !important;  
+        }
         .dash-dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: #3a3326; }
-
-        /* Teks */
         .dash-dark .text-slate-900,
         .dash-dark .text-slate-800,
         .dash-dark .text-slate-700 { color: #f1f5f9; }
         .dash-dark .text-slate-600,
         .dash-dark .text-slate-500 { color: #cbd5e1; }
         .dash-dark .text-slate-400 { color: #94a3b8; }
-
-        /* Aksen biru UI -> emas (angka tabel tetap biru agar cocok dengan chart) */
         .dash-dark .text-blue-700,
         .dash-dark a.text-blue-600,
         .dash-dark button.text-blue-600,
@@ -1345,11 +1492,8 @@ const isDark = themeMode === "dark";
         .dash-dark button.bg-blue-600:hover { background-color: #f0c978; }
         .dash-dark .ring-blue-600 { --tw-ring-color: #E5B85C; }
         .dash-dark nav button.border-blue-600 { color: #E5B85C; }
-
         .dash-dark .empty-icon-stroke { stroke: #E5B85C; }
         .dash-dark .empty-icon-fill { fill: rgba(30, 26, 18, 0.18); }
-
-        /* Hover */
         .dash-dark [class*="hover:bg-slate-100"]:hover,
         .dash-dark [class*="hover:bg-slate-50"]:hover,
         .dash-dark [class*="hover:bg-blue-50"]:hover { background-color: #2d2d2d; }

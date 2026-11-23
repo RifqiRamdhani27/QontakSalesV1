@@ -74,9 +74,8 @@ function OptionSelect({ value, onChange, options, placeholder }) {
                   onChange(option.id);
                   setOpen(false);
                 }}
-                className={`block w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-slate-50 focus:outline-none ${
-                  option.id === value ? "font-semibold text-brand" : "text-slate-700"
-                }`}
+                className={`block w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-slate-50 focus:outline-none ${option.id === value ? "font-semibold text-brand" : "text-slate-700"
+                  }`}
               >
                 {option.name}
               </button>
@@ -108,9 +107,8 @@ function SearchSelect({ value, onChange, options, placeholder }) {
           setOpen(true);
           setQuery("");
         }}
-        className={`${inputBase} flex cursor-pointer items-center justify-between pr-9 focus:outline-none ${
-          value ? "text-slate-900" : "text-slate-400"
-        }`}
+        className={`${inputBase} flex cursor-pointer items-center justify-between pr-9 focus:outline-none ${value ? "text-slate-900" : "text-slate-400"
+          }`}
         tabIndex={0}
       >
         <span className="truncate">{selectedObj ? selectedObj.name : placeholder}</span>
@@ -144,9 +142,8 @@ function SearchSelect({ value, onChange, options, placeholder }) {
                     onChange(option.id);
                     setOpen(false);
                   }}
-                  className={`block w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-slate-50 focus:outline-none ${
-                    option.id === value ? "font-semibold text-brand" : "text-slate-700"
-                  }`}
+                  className={`block w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-slate-50 focus:outline-none ${option.id === value ? "font-semibold text-brand" : "text-slate-700"
+                    }`}
                 >
                   {option.name}
                 </button>
@@ -263,14 +260,13 @@ function ActionPageShell({ title, subtitle, children, footer, onBack, maxWidth =
 
         /* Tombol Simpan (emas) */
         .dash-dark .btn-save {
-          background-color: #E5B85C !important;
-          color: #121212 !important;
-          font-weight: 600;
-          box-shadow: 0 4px 10px rgba(229, 184, 92, 0.3) !important;
+          background: #e08d33 !important; 
+          color: #ffffffff !important; 
+          box-shadow: 0 4px 8px rgba(254, 92, 23, 0.49) !important;
+          transition: all 0.2s ease-in-out;
         }
         .dash-dark .btn-save:hover:not(:disabled) {
-          background-color: #f0c978 !important;
-          box-shadow: 0 8px 18px rgba(229, 184, 92, 0.45) !important;
+          background: #e08c33df !important; 
         }
         .dash-dark .btn-save:active:not(:disabled) {
           box-shadow: 0 2px 4px rgba(229, 184, 92, 0.3) !important;
@@ -352,11 +348,11 @@ export default function BuatProduk() {
   const [sellTax, setSellTax] = useState("");
   const [minimumStock, setMinimumStock] = useState("0");
   const [inventoryAccount, setInventoryAccount] = useState("1-10200 - Inventory");
-  
+
   // --- STATE GAMBAR ---
   const [productImage, setProductImage] = useState(null); // Untuk preview
   const [imageFile, setImageFile] = useState(null);       // Untuk file asli yang diupload
-  
+
   const fileInputRef = useRef(null);
   const [bundleComponents, setBundleComponents] = useState([
     { product: "", account: "" },
@@ -391,10 +387,10 @@ export default function BuatProduk() {
   function handleImageChange(event) {
     const file = event.target.files?.[0];
     if (!file) return;
-    
+
     // Simpan file asli untuk diunggah nanti
     setImageFile(file);
-    
+
     // Buat URL preview
     if (productImage) URL.revokeObjectURL(productImage);
     setProductImage(URL.createObjectURL(file));
@@ -417,7 +413,7 @@ export default function BuatProduk() {
 
     try {
       setIsSaving(true);
-      
+
       let finalImageUrl = null;
 
       // 1. Upload gambar ke Cloudinary jika user memilih gambar baru
@@ -440,23 +436,23 @@ export default function BuatProduk() {
         track_mode: trackMode,
         minimum_stock: parseFloat(minimumStock) || 0,
         inventory_account_id: getAccountId(inventoryAccount),
-        
-        is_purchased: buyChecked, 
+
+        is_purchased: buyChecked,
         buy_price: parseFloat(buyPrice) || 0,
         buy_account_id: getAccountId(buyAccount),
         buy_tax: buyTax,
-        
-        is_sold: sellChecked, 
+
+        is_sold: sellChecked,
         sell_price: parseFloat(sellPrice) || 0,
         sell_account_id: getAccountId(sellAccount),
         sell_tax: sellTax,
-        
+
         bundle_components: isBundle
           ? bundleComponents.map((c) => ({
-              component_product: c.product,
-              extra_cost_account_id: getAccountId(c.account),
-              quantity: 1,
-            }))
+            component_product: c.product,
+            extra_cost_account_id: getAccountId(c.account),
+            quantity: 1,
+          }))
           : [],
 
         // 3. Masukkan URL dari Cloudinary
@@ -465,7 +461,7 @@ export default function BuatProduk() {
 
       await api.post("/products/", payload);
       navigate("/main-product/products");
-      
+
     } catch (err) {
       console.error("Detail Error dari API:", err.response?.data);
       if (err.response && err.response.data) {
@@ -501,15 +497,15 @@ export default function BuatProduk() {
           >
             Batal
           </button>
-          
-          <button 
-            type="button" 
-            onClick={handleSave} 
+
+          <button
+            type="button"
+            onClick={handleSave}
             disabled={isSaving}
             className={`${btnModalSubmit} btn-save group relative flex items-center justify-center border-none text-white focus:outline-none transition-all duration-200 disabled:opacity-70`}
-            style={{ 
+            style={{
               backgroundColor: "rgba(23, 140, 204, 1)",
-              boxShadow: "0 4px 6px -1px rgba(23, 140, 204, 0.4), 0 2px 4px -1px rgba(23, 140, 204, 0.2)" 
+              boxShadow: "0 4px 6px -1px rgba(23, 140, 204, 0.4), 0 2px 4px -1px rgba(23, 140, 204, 0.2)"
             }}
             onMouseEnter={(e) => {
               if (!isSaving) {
@@ -536,15 +532,15 @@ export default function BuatProduk() {
           >
             {isSaving ? "Menyimpan..." : "Simpan"}
           </button>
-          
-          <button 
-            type="button" 
-            onClick={handleSave} 
+
+          <button
+            type="button"
+            onClick={handleSave}
             disabled={isSaving}
             className={`${btnModalSubmit} btn-save group relative flex items-center justify-center border-none text-white focus:outline-none transition-all duration-200 disabled:opacity-70`}
-            style={{ 
+            style={{
               backgroundColor: "rgba(23, 140, 204, 1)",
-              boxShadow: "0 4px 6px -1px rgba(23, 140, 204, 0.4), 0 2px 4px -1px rgba(23, 140, 204, 0.2)" 
+              boxShadow: "0 4px 6px -1px rgba(23, 140, 204, 0.4), 0 2px 4px -1px rgba(23, 140, 204, 0.2)"
             }}
             onMouseEnter={(e) => {
               if (!isSaving) {
@@ -625,20 +621,20 @@ export default function BuatProduk() {
         </div>
         <div>
           <label className={formLabel}>Kode produk / SKU</label>
-          <input 
-            type="text" 
-            value={code} 
-            onChange={(e) => setCode(e.target.value)} 
-            className={`${inputBase} focus:outline-none focus:ring-0`} 
+          <input
+            type="text"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            className={`${inputBase} focus:outline-none focus:ring-0`}
           />
         </div>
         <div>
           <label className={formLabel}>Barcode</label>
-          <input 
-            type="text" 
-            value={barcode} 
-            onChange={(e) => setBarcode(e.target.value)} 
-            className={`${inputBase} focus:outline-none focus:ring-0`} 
+          <input
+            type="text"
+            value={barcode}
+            onChange={(e) => setBarcode(e.target.value)}
+            className={`${inputBase} focus:outline-none focus:ring-0`}
           />
         </div>
         <div>
@@ -694,9 +690,8 @@ export default function BuatProduk() {
           {inventoryTrackingOptions.map((opt) => (
             <label
               key={opt.key}
-              className={`flex cursor-pointer items-start gap-2 rounded-lg border p-3 focus:outline-none ${
-                isBundle ? "border-gray-200 bg-slate-50/60" : "border-gray-200"
-              }`}
+              className={`flex cursor-pointer items-start gap-2 rounded-lg border p-3 focus:outline-none ${isBundle ? "border-gray-200 bg-slate-50/60" : "border-gray-200"
+                }`}
             >
               <input
                 type="radio"

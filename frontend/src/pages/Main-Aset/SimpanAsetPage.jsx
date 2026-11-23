@@ -716,7 +716,7 @@ export default function SimpanAsetPage() {
         /* Header */
         .simpan-dark .simpan-header { background-color: #1A1A1A !important; border-color: #634f27 !important; }
         .simpan-dark .simpan-header div { color: #94a3b8 !important; }
-        .simpan-dark .simpan-title { color: #E5B85C !important; }
+        .simpan-dark .simpan-title { color: #f9f9f9ff !important; }
         .simpan-dark .simpan-h2 { color: #f1f5f9 !important; }
 
         /* Label */

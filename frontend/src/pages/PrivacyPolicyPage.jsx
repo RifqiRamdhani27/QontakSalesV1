@@ -201,7 +201,6 @@ export default function PrivacyPage() {
             <HStack gap={6}>
               <Text as="button" fontSize="xs" color={C.soft} _hover={{ color: "white" }} onClick={() => navigate("/terms")}>Syarat Penggunaan</Text>
               <Text as="button" fontSize="xs" color="white" onClick={() => navigate("/privacy")}>Kebijakan Privasi</Text>
-              <Text as="button" fontSize="xs" color={C.soft} _hover={{ color: "white" }} onClick={() => navigate("/contact")}>Keamanan Data</Text>
             </HStack>
           </Stack>
         </Container>

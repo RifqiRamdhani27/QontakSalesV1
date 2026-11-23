@@ -428,7 +428,7 @@ export default function JurnalUmumPage() {
 
         /* Permukaan */
         .dash-dark .jn-banner { background-color: #1a1a1a !important; border-color: #634f27 !important; }
-        .dash-dark .jn-head { background-color: #d38e0d69 !important; border-color: #634f27 !important; color: #f1f5f9 !important; }
+        .dash-dark .jn-head { background-color: #e08c33c1 !important; border-color: #634f27 !important; color: #f1f5f9 !important; }
         .dash-dark .jn-body { background-color: #121212 !important; border-color: #634f27 !important; }
         .dash-dark .jn-body > div { border-color: #3a3326 !important; }
         .dash-dark .jn-card { background-color: #1e1e1e !important; border-color: #634f27 !important; }
@@ -450,8 +450,8 @@ export default function JurnalUmumPage() {
         .dash-dark ::placeholder { color: #94a3b8; }
 
         /* Tombol utama -> emas */
-        .dash-dark .jn-btn { background-color: #E5B85C !important; color: #121212 !important; box-shadow: 0 3px 0 #8a6d2f !important; }
-        .dash-dark .jn-btn:hover { background-color: #f0c978 !important; }
+        .dash-dark .jn-btn { background-color: #e08d33 !important; color: #ffffffff !important; box-shadow: 0 3px 0 #755613ff !important; }
+        .dash-dark .jn-btn:hover { background-color: #e08c33df !important; }
 
         /* Tombol hapus baris */
         .dash-dark .jn-body button { color: #E5B85C !important; }

@@ -3,6 +3,7 @@ import { PencilSimple, Plus, Trash, X, CaretDown, CaretLeft, CaretRight, Check, 
 import emptyFolderImg from "@/assets/empty-folder.png";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
+
 const darkTheme = {
   "colorScheme": "dark",
   "--list-background": "#121212",
@@ -54,7 +55,8 @@ const MK = {
   legacyPrimary: "var(--list-brand,#216a88)",
   legacyBorder: "var(--list-legacy-border, #cfd9db)"
 };
-const MK_FONT = "Roboto, \"Helvetica Neue\", Helvetica, Arial, sans-serif";
+const MK_FONT = "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+
 function useDropdown() {
   const triggerRef = useRef(null);
   const [rect, setRect] = useState(null);
@@ -82,6 +84,7 @@ function useDropdown() {
     toggle
   };
 }
+
 function DropdownPanel({
   rect,
   onClose,
@@ -260,6 +263,7 @@ function DropdownPanel({
       {children}
     </div>, document.body);
 }
+
 function MenuItem({
   children,
   onClick,
@@ -277,34 +281,41 @@ function MenuItem({
       <span className="truncate">{children}</span>
     </button>;
 }
+
 function PixelHeader({
   title,
   action,
-  breadcrumb = "Daftar lainnya",
+  breadcrumb = "Daftar Lainnya",
   breadcrumbClass,
   breadcrumbTo
 }) {
   const crumbClass = breadcrumbClass || "m-0 text-[14px] leading-[20px]";
-  return <div className="flex flex-col items-start justify-between gap-4 md:flex-row">
+  return <div className="mb-4 flex flex-col items-start justify-between gap-3 md:flex-row md:items-end">
       <div className="min-w-0 w-full md:w-auto">
-        {breadcrumbTo ? <Link to={breadcrumbTo} className={`${crumbClass} inline-block cursor-pointer no-underline hover:underline`} style={{
-        color: MK.link
-      }}>
+        {breadcrumbTo ? (
+          <Link to={breadcrumbTo} className={`${crumbClass} inline-block cursor-pointer no-underline hover:underline`} style={{ color: MK.link }}>
             {breadcrumb}
-          </Link> : <p className={crumbClass} style={{
-        color: breadcrumbClass ? undefined : MK.brand
-      }}>
+          </Link>
+        ) : (
+          <p className={crumbClass} style={{ color: breadcrumbClass ? undefined : MK.brand }}>
             {breadcrumb}
-          </p>}
-        <h1 className="m-0 mt-0.5 text-[24px] font-semibold leading-[32px]" style={{
-        color: MK.text
-      }}>
+          </p>
+        )}
+        <h2 style={{
+          fontSize: "23px",
+          fontWeight: 700,
+          color: MK.text,
+          margin: 0,
+          marginTop: "2px",
+          letterSpacing: "-0.01em"
+        }}>
           {title}
-        </h1>
+        </h2>
       </div>
-      {action ? <div className="shrink-0 pt-1">{action}</div> : null}
+      {action ? <div className="shrink-0">{action}</div> : null}
     </div>;
 }
+
 const btnPrimary = "inline-flex h-[38px] cursor-pointer items-center justify-center gap-1.5 rounded-md border-0 bg-[color:var(--list-brand,#4b61dd)] px-4 text-[14px] font-semibold text-[color:var(--list-brand-text,#fff)] transition-colors hover:bg-[color:var(--list-brand-hover,#3f52c9)] disabled:cursor-not-allowed disabled:bg-[color:var(--list-disabled-bg,#a9a9a9)]";
 const btnGhost = "inline-flex h-[38px] cursor-pointer items-center justify-center gap-1.5 rounded-md border-0 bg-transparent px-4 text-[14px] font-semibold text-[color:var(--list-muted,#626b79)] transition-colors hover:bg-[color:var(--list-hover,#f1f5f9)]";
 const iconBtn = "inline-flex h-[30px] w-[31px] cursor-pointer items-center justify-center rounded border-0 bg-transparent text-[color:var(--list-muted,#626b79)] transition-colors hover:bg-[color:var(--list-hover,#f1f5f9)] hover:text-[color:var(--list-text,#232933)]";
@@ -312,6 +323,7 @@ const inputBase = "h-[38px] w-full rounded-md border border-[color:var(--list-bo
 const thBase = "bg-[color:var(--list-subtle,#f8f9fb)] px-2 py-4 text-left text-[14px] font-semibold leading-5 align-middle";
 const tdBase = "bg-[color:var(--list-surface,#fff)] px-2 py-3.5 text-[14px] leading-5 align-middle";
 const tdAction = "bg-[color:var(--list-surface,#fff)] px-2 py-[9px] text-[14px] leading-5 align-middle";
+
 function SearchInput({
   value,
   onChange,
@@ -330,6 +342,7 @@ function SearchInput({
         </button> : null}
     </div>;
 }
+
 function TableFooter({
   pageSize,
   onPageSize,
@@ -406,6 +419,7 @@ function TableFooter({
       </div>
     </div>;
 }
+
 function Modal({
   title,
   onClose,
@@ -470,6 +484,7 @@ function Modal({
       </div>
     </div>, document.body);
 }
+
 function EmptyState({
   image,
   title,
@@ -490,6 +505,7 @@ function EmptyState({
       </p>
     </div>;
 }
+
 const unitRows = [];
 function can(module, action = "see") {
   if (localStorage.getItem("user_role") === "MANAGER") return true;
@@ -501,6 +517,7 @@ function can(module, action = "see") {
   }
 }
 const MAX_LENGTH = 100;
+
 function UnitFormModal({
   initialValue,
   existingNames,
@@ -567,6 +584,7 @@ function UnitFormModal({
       </form>
     </Modal>;
 }
+
 function DeleteUnitModal({
   count,
   onClose,
@@ -589,6 +607,7 @@ function DeleteUnitModal({
       </p>
     </Modal>;
 }
+
 export default function UnitsPage() {
   const [themeMode, setThemeMode] = useState(() => localStorage.getItem("app_theme") || "light");
   useEffect(() => {
@@ -645,120 +664,159 @@ export default function UnitsPage() {
   };
   const from = filtered.length === 0 ? 0 : (safePage - 1) * pageSize + 1;
   const to = Math.min(safePage * pageSize, filtered.length);
-  return <div className="-m-4 min-h-[calc(100%+2rem)] md:-m-6 md:min-h-[calc(100%+3rem)]" style={{
+
+  const thStyle = {
+    background: MK.legacyHead,
+    color: "#fff",
+    fontSize: "13.33px",
+    fontWeight: 400,
+    padding: "8px 13.33px",
+    textAlign: "left",
+    height: 40,
+    verticalAlign: "middle"
+  };
+
+  return <div className="-m-4 min-h-[calc(100%+2rem)] px-6 py-5 md:-m-6 md:min-h-[calc(100%+3rem)] md:px-10" style={{
     ...pageTheme,
-    background: "var(--list-subtle,#f1f5f9)",
+    background: isDark ? "#121212" : "#ffffff",
     fontFamily: MK_FONT
-  }} data-list-theme={pageTheme.colorScheme}>{isDark && <style>{"[data-list-theme=\"dark\"] h1,[data-list-theme=\"dark\"] h2{color:#fff!important}\n[data-list-theme=\"dark\"] table{background-color:#1a1a1a;color:#fff}\n[data-list-theme=\"dark\"] thead,[data-list-theme=\"dark\"] th{background-color:#2b2418!important;color:#fff!important;border-color:#634f27!important}\n[data-list-theme=\"dark\"] td{color:#fff!important;border-color:#634f27!important}\n[data-list-theme=\"dark\"] th :is(a,span,div,p,strong,small,button),[data-list-theme=\"dark\"] td :is(a,span,div,p,strong,small):not(button *){color:#fff!important}\n[data-list-theme=\"dark\"] tbody tr:hover{background-color:rgba(229,184,92,.12)!important}\n[data-list-theme=\"dark\"][data-list-dropdown] button:hover,[data-list-theme=\"dark\"] [role=\"option\"]:hover{background-color:rgba(229,184,92,.15)!important;color:#E5B85C!important}\n[data-list-theme=\"dark\"] input:not([type=\"checkbox\"]):not([type=\"radio\"]):not([type=\"file\"]),[data-list-theme=\"dark\"] select,[data-list-theme=\"dark\"] textarea{background-color:#1a1a1a;color:#f1f5f9;border-color:#634f27;caret-color:#E5B85C}\n[data-list-theme=\"dark\"] input::placeholder,[data-list-theme=\"dark\"] textarea::placeholder{color:#94a3b8}\n[data-list-theme=\"dark\"] input:focus,[data-list-theme=\"dark\"] select:focus,[data-list-theme=\"dark\"] textarea:focus{border-color:#E5B85C!important;box-shadow:0 0 0 3px rgba(229,184,92,.15)}\n[data-list-theme=\"dark\"] input[type=\"checkbox\"],[data-list-theme=\"dark\"] input[type=\"radio\"]{accent-color:#E5B85C}\n[data-list-theme=\"dark\"] button:disabled{background-color:#36312a!important;color:#94a3b8!important;border-color:#634f27}\n[data-list-theme=\"dark\"] ::selection{background-color:#E5B85C;color:#121212}"}</style>}
-      <div className="px-6 py-[18px]">
-        <PixelHeader title="Unit" breadcrumbTo="/daftar-lainnya" action={can("products", "create") ? <button type="button" className={btnPrimary} onClick={() => {
-        setEditingRow(null);
-        setShowForm(true);
-      }}>
-                <Plus size={16} weight="bold" />
-                Unit Baru
-              </button> : null} />
-      </div>
+  }} data-list-theme={pageTheme.colorScheme}>
+    <style>{`[data-list-theme] input[type="checkbox"]{outline:none!important;outline-offset:0!important;box-shadow:none!important;-webkit-tap-highlight-color:transparent}
+  [data-list-theme] input[type="checkbox"]:focus,[data-list-theme] input[type="checkbox"]:focus-visible,[data-list-theme] input[type="checkbox"]:active{outline:none!important;outline-offset:0!important;box-shadow:none!important}
+  [data-list-theme] *:focus{outline:none!important}
+  [data-list-theme] *:focus-visible{outline:none!important}`}</style>
+    {isDark && <style>{"[data-list-theme=\"dark\"] h1,[data-list-theme=\"dark\"] h2{color:#fff!important}\n[data-list-theme=\"dark\"] table{background-color:#1a1a1a;color:#fff}\n[data-list-theme=\"dark\"] thead,[data-list-theme=\"dark\"] th{background-color:#e08c33b8!important;color:#fff!important;border-color:#634f27!important}\n[data-list-theme=\"dark\"] td{color:#fff!important;border-color:#634f27!important}\n[data-list-theme=\"dark\"] th :is(a,span,div,p,strong,small,button),[data-list-theme=\"dark\"] td :is(a,span,div,p,strong,small):not(button *){color:#fff!important}\n[data-list-theme=\"dark\"] tbody tr:hover{background-color:transparent!important}\n[data-list-theme=\"dark\"][data-list-dropdown] button:hover,[data-list-theme=\"dark\"] [role=\"option\"]:hover{background-color:rgba(229,184,92,.15)!important;color:#E5B85C!important}\n[data-list-theme=\"dark\"] input:not([type=\"checkbox\"]):not([type=\"radio\"]):not([type=\"file\"]),[data-list-theme=\"dark\"] select,[data-list-theme=\"dark\"] textarea{background-color:#1a1a1a;color:#f1f5f9;border-color:#634f27;caret-color:#E5B85C}\n[data-list-theme=\"dark\"] input::placeholder,[data-list-theme=\"dark\"] textarea::placeholder{color:#94a3b8}\n[data-list-theme=\"dark\"] input:focus,[data-list-theme=\"dark\"] select:focus,[data-list-theme=\"dark\"] textarea:focus{border-color:#E5B85C!important;box-shadow:0 0 0 3px rgba(229,184,92,.15)}\n[data-list-theme=\"dark\"] input[type=\"checkbox\"],[data-list-theme=\"dark\"] input[type=\"radio\"]{accent-color:#E5B85C}\n[data-list-theme=\"dark\"] button:disabled{background-color:#36312a!important;color:#94a3b8!important;border-color:#634f27}\n[data-list-theme=\"dark\"] .ang-btn{background:#e08d33!important;color:#ffffff!important;box-shadow:0 4px 8px rgba(254,92,23,.49)!important;transition:all .2s ease-in-out}\n[data-list-theme=\"dark\"] .ang-btn:hover{background:#e08c33df!important}\n[data-list-theme=\"dark\"] ::selection{background-color:#E5B85C;color:#121212}"}</style>}
+    
+    <div className="mx-auto w-full max-w-[1688px]">
+      <PixelHeader 
+        title="Unit" 
+        breadcrumbTo="/daftar-lainnya" 
+        action={can("products", "create") ? 
+          <button type="button" className="ang-btn" style={{ display: "inline-flex", alignItems: "center", gap: 6, backgroundColor: MK.legacyPrimary, color: "var(--list-brand-text,#fff)", fontSize: "15px", fontWeight: 600, padding: "0 22px", height: 40, border: "none", borderRadius: 8, cursor: "pointer", boxShadow: isDark ? "none" : "0 4px 8px rgba(90,90,90,0.49)" }} onClick={() => {
+            setEditingRow(null);
+            setShowForm(true);
+          }}>
+            <Plus size={16} weight="bold" />
+            Unit Baru
+          </button> : null
+        } 
+      />
 
-      <div>
-        <section className="rounded-md bg-[color:var(--list-surface,#fff)] p-6" style={{
-        border: `1px solid ${MK.border}`
+      <div style={{
+        background: "var(--list-surface,#fff)",
+        padding: 20,
+        borderRadius: 12,
+        overflow: "hidden",
+        marginTop: 24,
+        boxShadow: isDark
+          ? "0 8px 30px rgba(201, 77, 0, 0.2), 0 0 0 1px rgba(229, 184, 92, 0.15)"
+          : "0 4px 12px rgba(0, 0, 0, 0.22)",
+        border: isDark ? "1px solid #634f27" : "1px solid transparent"
       }}>
-          <div className="mb-4 flex flex-wrap items-center justify-end gap-3">
-            {selectedIds.length > 0 ? <div className="mr-auto flex items-center gap-3 rounded-md border border-[color:var(--list-border,#d6dfff)] bg-[color:var(--list-selection,#f2f5ff)] px-3 py-1.5">
-                <span className="text-[13px] font-semibold" style={{
-              color: "var(--list-link,#4b61dd)"
-            }}>
-                  {selectedIds.length} unit dipilih
-                </span>
-                {can("products", "delete") && <button type="button" className="cursor-pointer border-0 bg-transparent text-[13px] font-semibold" style={{
-              color: "var(--list-danger-text,#d64545)"
-            }} onClick={() => setDeletingIds(selectedIds)}>
-                    Hapus
-                  </button>}
-                <button type="button" className="cursor-pointer border-0 bg-transparent text-[13px] font-semibold" style={{
-              color: MK.muted
-            }} onClick={() => setSelectedIds([])}>
-                  Batalkan
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            {selectedIds.length > 0 ? <>
+              <span style={{ fontSize: 13, color: MK.legacyText }}>
+                {selectedIds.length} unit dipilih
+              </span>
+              {can("products", "delete") && (
+                <button type="button" onClick={() => setDeletingIds(selectedIds)} className="border-0" style={{ height: 36, padding: "0 18px", background: "var(--list-danger-button,#e74c3c)", color: "#fff", border: "1px solid var(--list-border,#e74c3c)", borderRadius: 8, fontSize: 14, cursor: "pointer" }}>
+                  Hapus
                 </button>
-              </div> : null}
-
-            <SearchInput value={search} onChange={value => {
-            setSearch(value);
-            setPage(1);
-          }} placeholder="Cari unit" className="w-[240px]" />
+              )}
+              <button type="button" onClick={() => setSelectedIds([])} className="border-0" style={{ height: 36, padding: "0 18px", background: "transparent", color: MK.muted, border: "1px solid transparent", borderRadius: 8, fontSize: 14, cursor: "pointer" }}>
+                Batalkan
+              </button>
+            </> : null}
           </div>
 
-          <table className="w-full border-collapse">
-            <thead>
-              <tr>
-                <th className={`${thBase} w-6`} style={{
-                color: MK.text
-              }}>
-                  <div className="flex h-5 items-center">
-                    <input type="checkbox" checked={allSelected} onChange={toggleAll} aria-label="Pilih semua" className="h-4 w-4 cursor-pointer accent-[#4b61dd] placeholder:text-[color:var(--list-placeholder)]" />
-                  </div>
-                </th>
-                <th className={thBase} style={{
-                color: MK.text
-              }}>
-                  Unit
-                </th>
-                <th className={`${thBase} w-[104px]`} style={{
-                color: MK.text
-              }}>
-                  <span className="sr-only">Tindakan</span>
-                </th>
-              </tr>
-            </thead>
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <MagnifyingGlass size={13} className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2" style={{ color: "var(--list-muted,#999)" }} />
+              <input 
+                type="text" 
+                placeholder="Pencarian..." 
+                value={search} 
+                onChange={event => {
+                  setSearch(event.target.value);
+                  setPage(1);
+                }} 
+                style={{
+                  height: 36,
+                  width: 220,
+                  border: "1px solid var(--list-border,#cfd9db)",
+                  borderRadius: 8,
+                  padding: "0 12px 0 28px",
+                  fontSize: 14,
+                  outline: "none",
+                  color: "var(--list-text,#333)",
+                  background: "var(--list-surface,#fff)"
+                }} 
+              />
+            </div>
+          </div>
+        </div>
 
-            <tbody>
-              {pageItems.length === 0 ? <tr>
-                  <td colSpan={3} className="bg-[color:var(--list-surface,#fff)] p-0">
-                    <EmptyState image={keyword ? undefined : emptyFolderImg} title={keyword ? "Unit tidak ditemukan" : "Belum ada unit"} description={keyword ? "Coba kata kunci lain untuk mencari unit." : "Daftar satuan produk akan muncul di sini."} />
+        <table className="w-full" style={{ borderCollapse: "separate", borderSpacing: 0 }}>
+          <thead>
+            <tr>
+              <th style={{ ...thStyle, width: 40, borderTopLeftRadius: 8, borderBottomLeftRadius: 8 }}>
+                <div className="flex h-5 items-center">
+                  <input type="checkbox" checked={allSelected} onChange={toggleAll} aria-label="Pilih semua" className="h-4 w-4 cursor-pointer accent-[#4b61dd] placeholder:text-[color:var(--list-placeholder)]" />
+                </div>
+              </th>
+              <th style={{ ...thStyle, width: "100%" }}>Unit</th>
+              <th style={{ ...thStyle, width: 104, borderTopRightRadius: 8, borderBottomRightRadius: 8 }}>
+                <span className="sr-only">Tindakan</span>
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {pageItems.length === 0 ? <tr>
+                <td colSpan={3} className="bg-[color:var(--list-surface,#fff)] p-0">
+                  <EmptyState image={keyword ? undefined : emptyFolderImg} title={keyword ? "Unit tidak ditemukan" : "Belum ada unit"} description={keyword ? "Coba kata kunci lain untuk mencari unit." : "Daftar satuan produk akan muncul di sini."} />
+                </td>
+              </tr> : pageItems.map((row, index) => <tr key={row.id} style={{
+                background: index % 2 === 0 ? "var(--list-subtle,#f9f9f9)" : "var(--list-surface,#fff)"
+              }}>
+                  <td style={{ fontSize: "13.33px", color: MK.legacyText, padding: "5.33px 13.33px", height: 35, verticalAlign: "middle", borderBottom: isDark ? "1px solid #3a3326" : "1px solid #e2e8f0" }}>
+                    <div className="flex h-5 items-center">
+                      <input type="checkbox" checked={selectedIds.includes(row.id)} onChange={() => toggleRow(row.id)} aria-label={`Pilih ${row.nama}`} className="h-4 w-4 cursor-pointer accent-[#4b61dd] placeholder:text-[color:var(--list-placeholder)]" />
+                    </div>
                   </td>
-                </tr> : pageItems.map(row => <tr key={row.id} className="hover:bg-[color:var(--list-hover,#fafbff)]">
-                    <td className={tdBase} style={{
-                color: MK.text
-              }}>
-                      <div className="flex h-5 items-center">
-                        <input type="checkbox" checked={selectedIds.includes(row.id)} onChange={() => toggleRow(row.id)} aria-label={`Pilih ${row.nama}`} className="h-4 w-4 cursor-pointer accent-[#4b61dd] placeholder:text-[color:var(--list-placeholder)]" />
-                      </div>
-                    </td>
-                    <td className={tdBase} style={{
-                color: MK.text
-              }}>
-                      {row.nama}
-                    </td>
-                    <td className={tdAction}>
-                      <div className="flex items-center justify-end gap-1">
-                        {can("products", "edit") && <button type="button" className={iconBtn} onClick={() => {
-                    setEditingRow(row);
-                    setShowForm(true);
-                  }} aria-label={`Ubah ${row.nama}`} title="Ubah">
-                            <PencilSimple size={17} />
-                          </button>}
-                        {can("products", "delete") && <button type="button" className={iconBtn} onClick={() => setDeletingIds([row.id])} aria-label={`Hapus ${row.nama}`} title="Hapus">
-                            <Trash size={17} />
-                          </button>}
-                      </div>
-                    </td>
-                  </tr>)}
-            </tbody>
-          </table>
+                  <td style={{ fontSize: "13.33px", color: MK.legacyText, padding: "5.33px 13.33px", height: 35, verticalAlign: "middle", borderBottom: isDark ? "1px solid #3a3326" : "1px solid #e2e8f0" }}>
+                    {row.nama}
+                  </td>
+                  <td style={{ fontSize: "13.33px", color: MK.legacyText, padding: "5.33px 13.33px", height: 35, verticalAlign: "middle", borderBottom: isDark ? "1px solid #3a3326" : "1px solid #e2e8f0" }}>
+                    <div className="flex items-center justify-end gap-1">
+                      {can("products", "edit") && <button type="button" className={iconBtn} onClick={() => {
+                  setEditingRow(row);
+                  setShowForm(true);
+                }} aria-label={`Ubah ${row.nama}`} title="Ubah">
+                          <PencilSimple size={17} />
+                        </button>}
+                      {can("products", "delete") && <button type="button" className={iconBtn} onClick={() => setDeletingIds([row.id])} aria-label={`Hapus ${row.nama}`} title="Hapus">
+                          <Trash size={17} />
+                        </button>}
+                    </div>
+                  </td>
+                </tr>)}
+          </tbody>
+        </table>
 
-          <TableFooter pageSize={pageSize} onPageSize={value => {
-          setPageSize(value);
-          setPage(1);
-        }} from={from} to={to} total={filtered.length} page={safePage} totalPages={totalPages} onPage={setPage} />
-        </section>
+        <TableFooter pageSize={pageSize} onPageSize={value => {
+        setPageSize(value);
+        setPage(1);
+      }} from={from} to={to} total={filtered.length} page={safePage} totalPages={totalPages} onPage={setPage} />
       </div>
+    </div>
 
-      {showForm ? <UnitFormModal initialValue={editingRow?.nama} existingNames={existingNames} onClose={() => {
+    {showForm ? <UnitFormModal initialValue={editingRow?.nama} existingNames={existingNames} onClose={() => {
       setShowForm(false);
       setEditingRow(null);
     }} onSubmit={submitForm} /> : null}
 
-      {deletingIds ? <DeleteUnitModal count={deletingIds.length} onClose={() => setDeletingIds(null)} onConfirm={confirmDelete} /> : null}
-    </div>;
+    {deletingIds ? <DeleteUnitModal count={deletingIds.length} onClose={() => setDeletingIds(null)} onConfirm={confirmDelete} /> : null}
+  </div>;
 }

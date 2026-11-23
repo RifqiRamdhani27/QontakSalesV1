@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { CaretDown, Check, PencilSimple, Plus, Trash, X } from "@phosphor-icons/react";
+import { CaretDown, PencilSimple, Trash, X } from "@phosphor-icons/react";
 import Pagination from "@/components/ui/Pagination";
 import PopoverSelect from "@/components/ui/PopoverSelect";
 import MultiSelect from "@/components/ui/MultiSelect";
@@ -7,12 +7,11 @@ import { DropdownPanel } from "@/components/ui/PopoverSelect";
 import {
   tableWrapper,
   tableBase,
-  tableCard,
   th,
   td,
   trHover,
   formLabel,
-  btnPrimary,
+  btn,
   modalOverlay,
   modalPanel,
   modalHeader,
@@ -35,13 +34,62 @@ import { useTaggingRules } from "@/services/useSetting";
 
 const PAGE_SIZE = 5;
 
+const menuItem =
+  "flex w-full cursor-pointer items-center gap-2 border-0 bg-transparent px-4 py-2 text-left text-[13px] text-gray-700 hover:bg-slate-50";
+const menuItemDanger =
+  "flex w-full cursor-pointer items-center gap-2 border-0 bg-transparent px-4 py-2 text-left text-[13px] text-red-600 hover:bg-red-50";
+
 const taggingTypeLabel = (value) =>
   taggingTypeOptions.find((option) => option.value === value)?.label || "-";
+
+function ModalShell({
+  title,
+  onClose,
+  maxWidth = "max-w-[560px]",
+  footer,
+  children,
+}) {
+  return (
+    <div className={modalOverlay}>
+      <div className={`${modalPanel} flex ${maxWidth} flex-col`}>
+        <div className={`${modalHeader} shrink-0`}>
+          <h3 className={`${modalTitle} font-bold`}>{title}</h3>
+          <button
+            type="button"
+            className={modalCloseButton}
+            onClick={onClose}
+            aria-label="Tutup"
+          >
+            <X size={20} />
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto px-[22px] py-5">{children}</div>
+        <div className={`${modalFooter} shrink-0`}>{footer}</div>
+      </div>
+    </div>
+  );
+}
+
+function RadioOption({ name, value, label, checked, onChange }) {
+  return (
+    <label className="flex cursor-pointer select-none items-center gap-2.5 text-sm text-gray-700">
+      <input
+        type="radio"
+        name={name}
+        value={value}
+        className="h-4 w-4 cursor-pointer accent-brand"
+        checked={checked}
+        onChange={onChange}
+      />
+      {label}
+    </label>
+  );
+}
 
 function UserChips({ selected, users, onToggle }) {
   return (
     <MultiSelect
-        floating
+      floating
       selected={selected}
       emptyText="Belum ada pengguna"
       removeLabel="Hapus"
@@ -91,9 +139,9 @@ function TaggingRuleForm({ initialRule, users, onSubmit, onClose }) {
   };
 
   return (
-    <form className={modalPanel} onSubmit={submit}>
-      <div className={modalHeader}>
-        <h3 className={modalTitle}>
+    <form className={`${modalPanel} flex max-w-[560px] flex-col`} onSubmit={submit}>
+      <div className={`${modalHeader} shrink-0`}>
+        <h3 className={`${modalTitle} font-bold`}>
           {initialRule ? initialRule.ruleName : "Buat aturan"}
         </h3>
         <button
@@ -106,7 +154,7 @@ function TaggingRuleForm({ initialRule, users, onSubmit, onClose }) {
         </button>
       </div>
 
-      <div className="max-h-[calc(90vh-140px)] overflow-y-auto px-[22px] py-5">
+      <div className="flex-1 overflow-y-auto px-[22px] py-5">
         <div className={formGroup}>
           <label className={formLabel} htmlFor="tagging_rule_name">
             Nama aturan
@@ -124,7 +172,7 @@ function TaggingRuleForm({ initialRule, users, onSubmit, onClose }) {
         <div className={formGroup}>
           <span className={formLabel}>Jenis Transaksi</span>
           <PopoverSelect
-        floating
+            floating
             value={transactionType}
             getOptionLabel={ruleLabel}
             emptyText="Tidak ada pilihan"
@@ -143,27 +191,21 @@ function TaggingRuleForm({ initialRule, users, onSubmit, onClose }) {
           <span className={formLabel}>Jenis penanda yang tampil pada transaksi</span>
           <div className="flex flex-col gap-2.5">
             {taggingTypeOptions.map((option) => (
-              <label
+              <RadioOption
                 key={option.value}
-                className="flex cursor-pointer select-none items-center gap-2.5 text-sm text-gray-900"
-              >
-                <input
-                  type="radio"
-                  name="select_tagging_type"
-                  value={option.value}
-                  className="accent-brand"
-                  checked={taggingType === option.value}
-                  onChange={(event) => setTaggingType(Number(event.target.value))}
-                />
-                {option.label}
-              </label>
+                name="select_tagging_type"
+                value={option.value}
+                label={option.label}
+                checked={taggingType === option.value}
+                onChange={(event) => setTaggingType(Number(event.target.value))}
+              />
             ))}
           </div>
           {taggingType === 3 && (
             <div className="mt-3">
               <span className={formLabel}>Penanda kustom</span>
               <MultiSelect
-        floating
+                floating
                 selected={customTags}
                 emptyText="Belum ada penanda"
                 removeLabel="Hapus"
@@ -185,7 +227,7 @@ function TaggingRuleForm({ initialRule, users, onSubmit, onClose }) {
         </div>
       </div>
 
-      <div className={modalFooter}>
+      <div className={`${modalFooter} shrink-0`}>
         <button type="button" className={btnModalCancel} onClick={onClose}>
           Batal
         </button>
@@ -199,34 +241,25 @@ function TaggingRuleForm({ initialRule, users, onSubmit, onClose }) {
 
 function DeleteTaggingModal({ ruleName, onConfirm, onClose }) {
   return (
-    <div className={modalOverlay}>
-      <div className="w-full max-w-[420px] overflow-hidden rounded-xl bg-white shadow-[0_20px_50px_rgba(0,0,0,0.2)]">
-        <div className={modalHeader}>
-          <h3 className={modalTitle}>{ruleName}</h3>
-          <button
-            type="button"
-            className={modalCloseButton}
-            onClick={onClose}
-            aria-label="Tutup"
-          >
-            <X size={20} />
-          </button>
-        </div>
-        <div className="px-[22px] py-5">
-          <p className="m-0 text-sm leading-relaxed text-slate-600">
-            Aturan yang dihapus tidak dapat dipulihkan.
-          </p>
-        </div>
-        <div className={modalFooter}>
+    <ModalShell
+      title={ruleName}
+      maxWidth="max-w-[420px]"
+      onClose={onClose}
+      footer={
+        <>
           <button type="button" className={btnModalCancel} onClick={onClose}>
             Batal
           </button>
           <button type="button" className={btnModalDelete} onClick={onConfirm}>
             Ya, hapus
           </button>
-        </div>
-      </div>
-    </div>
+        </>
+      }
+    >
+      <p className="m-0 text-sm leading-relaxed text-slate-500">
+        Aturan yang dihapus tidak dapat dipulihkan.
+      </p>
+    </ModalShell>
   );
 }
 
@@ -287,11 +320,16 @@ export default function TaggingRulesPage() {
 
   return (
     <div className="p-7 max-md:p-[18px]">
-      <div className="mb-6 flex items-center justify-between gap-4">
-        <h2 className="m-0 text-[28px] font-bold text-gray-900">Aturan tagging</h2>
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h2 className="m-0 text-[28px] font-bold text-gray-900">Aturan tagging</h2>
+          <p className="m-0 mt-1.5 text-sm text-slate-500">
+            Atur penanda yang tampil otomatis pada transaksi Anda.
+          </p>
+        </div>
         <button
           type="button"
-          className={btnPrimary}
+          className={btnModalSubmit}
           onClick={() => {
             setEditingRule(null);
             setShowForm(true);
@@ -307,70 +345,66 @@ export default function TaggingRulesPage() {
         </p>
       )}
 
-      <div className="mb-4 flex items-center justify-end gap-3">
-        <div className="w-[220px]">
-          <PopoverSelect
-        floating
-            value={filterType}
-            getOptionLabel={ruleLabel}
-            emptyText="Tidak ada pilihan"
-            placeholder="Semua jenis transaksi"
-            includeAll
-            groups={[
-              {
-                label: "",
-                options: taggingTransactionTypes,
-              },
-            ]}
-            onSelect={(value) => {
-              setFilterType(
-                value === "All transaction types" ? "" : value
-              );
-              setCurrentPage(1);
-            }}
-            closeAfterSelect={false}
-          />
+      <div className="company-card mb-6 mt-4 rounded-[10px] bg-white p-6">
+        <div className="flex items-center justify-end gap-3">
+          <div className="w-[240px] max-md:w-full">
+            <PopoverSelect
+              floating
+              value={filterType}
+              getOptionLabel={ruleLabel}
+              emptyText="Tidak ada pilihan"
+              placeholder="Semua jenis transaksi"
+              includeAll
+              groups={[
+                {
+                  label: "",
+                  options: taggingTransactionTypes,
+                },
+              ]}
+              onSelect={(value) => {
+                setFilterType(
+                  value === "All transaction types" ? "" : value
+                );
+                setCurrentPage(1);
+              }}
+              closeAfterSelect={false}
+            />
+          </div>
         </div>
-      </div>
 
-      {filtered.length === 0 ? (
-        <div className={tableCard}>
+        {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-2 px-6 py-16 text-center">
-            <p className="m-0 text-[15px] font-semibold text-gray-900">
+            <p className="m-0 text-[15px] font-bold text-gray-900">
               Belum ada aturan tagging
             </p>
             <p className="m-0 text-sm text-slate-500">
               Aturan tagging akan tampil di sini.
             </p>
           </div>
-        </div>
-      ) : (
-        <div className={tableCard}>
-          <div className={tableWrapper}>
+        ) : (
+          <div className={`${tableWrapper} mt-5`}>
             <table className={tableBase}>
               <thead>
                 <tr>
                   <th className={th}>Nama aturan</th>
                   <th className={th}>Jenis transaksi</th>
                   <th className={th}>Jenis penanda</th>
-                  <th className="bg-slate-50 px-[18px] py-3.5 text-right">
-                    Tindakan
-                  </th>
+                  <th className={`${th} text-right`}>Tindakan</th>
                 </tr>
               </thead>
               <tbody>
                 {pageItems.map((rule) => (
                   <tr key={rule.id} className={trHover}>
-                    <td className={`${td} font-medium text-gray-900`}>
+                    <td className={`${td} font-semibold text-gray-900`}>
                       {rule.ruleName}
                     </td>
                     <td className={td}>{ruleLabel(rule.transactionType)}</td>
                     <td className={td}>{taggingDisplay(rule)}</td>
-                    <td className="border-b border-slate-100 px-[18px] py-[15px] text-right">
+                    <td className={`${td} text-right`}>
                       <div className="relative inline-block">
                         <button
                           type="button"
-                          className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-slate-50"
+                          className={`${btn} inline-flex items-center gap-1`}
                           onClick={(event) => {
                             actionRef.current = event.currentTarget;
                             setOpenActionId(
@@ -392,7 +426,7 @@ export default function TaggingRulesPage() {
                           >
                             <button
                               type="button"
-                              className="flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-left text-[13px] text-gray-700 hover:bg-slate-50"
+                              className={menuItem}
                               onClick={() => {
                                 setOpenActionId(null);
                                 setEditingRule(rule);
@@ -403,7 +437,7 @@ export default function TaggingRulesPage() {
                             </button>
                             <button
                               type="button"
-                              className="flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-left text-[13px] text-red-600 hover:bg-red-50"
+                              className={menuItemDanger}
                               onClick={() => {
                                 setOpenActionId(null);
                                 setDeletingRule(rule);
@@ -420,21 +454,21 @@ export default function TaggingRulesPage() {
               </tbody>
             </table>
           </div>
-        </div>
-      )}
+        )}
 
-      <div className="mt-4">
-        <Pagination
-          currentPage={safePage}
-          totalPages={totalPages}
-          totalItems={filtered.length}
-          pageSize={pageSize}
-          onPageChange={setCurrentPage}
-          onPageSizeChange={(size) => {
-            setPageSize(size);
-            setCurrentPage(1);
-          }}
-        />
+        <div className="mt-5">
+          <Pagination
+            currentPage={safePage}
+            totalPages={totalPages}
+            totalItems={filtered.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setCurrentPage(1);
+            }}
+          />
+        </div>
       </div>
 
       {showForm && (

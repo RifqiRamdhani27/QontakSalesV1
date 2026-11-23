@@ -44,11 +44,11 @@ const SETTINGS_MENU = [
   { id: "appearance", label: "Appearance", path: "/settings/appearance", component: AppearancePage, Icon: PaintBrush },
   { id: "agents", label: "Agen", path: "/settings/agents", component: AgentsPage, Icon: UsersThree },
   { id: "user-management", label: "Pengaturan pengguna", path: "/settings/user-management", component: UserManagementPage, Icon: UserGear },
-  { id: "sales", label: "Penjualan", path: "/settings/sales", component: SalesPage, hasDropdown: true, Icon: Tag },
+  { id: "sales", label: "Penjualan", path: "/settings/sales", component: SalesPage, Icon: Tag },
   { id: "purchases", label: "Pembelian", path: "/settings/purchases", component: PurchasesSettingsPage, Icon: ShoppingCart },
-  { id: "products", label: "Produk", path: "/settings/products", component: ProductsSettingsPage, hasDropdown: true, Icon: Package },
+  { id: "products", label: "Produk", path: "/settings/products", component: ProductsSettingsPage, Icon: Package },
   { id: "productions", label: "Produksi", path: "/settings/productions", component: ProductionsSettingsPage, Icon: Factory },
-  { id: "template", label: "Templat", path: "/settings/template", component: TemplateSettingsPage, hasDropdown: true, Icon: Textbox },
+  { id: "template", label: "Templat", path: "/settings/template", component: TemplateSettingsPage, Icon: Textbox },
   { id: "custom-fields", label: "Custom field", path: "/settings/custom-fields", component: CustomFieldsPage, Icon: SquaresFour },
   { id: "account-mapping", label: "Pemetaan Akun", path: "/settings/account-mapping", component: AccountMappingPage, Icon: ArrowsLeftRight },
   { id: "billings", label: "Tagihan", path: "/settings/billings", component: BillingsPage, Icon: Receipt },
@@ -106,11 +106,12 @@ export default function Pengaturan() {
   const ActiveComponent = activeItem && canViewItem(activeItem) ? activeItem.component : null;
 
   return (
-    <HStack data-qontak-settings="" className={isDark ? "settings-dark" : ""} align="stretch" gap={0} minW={0} style={{ height: "calc(100vh - 60px)", overflow: "hidden" }} bg={isDark ? "#121212" : "#F5F7FA"}>
+    <HStack data-qontak-settings="" className={isDark ? "settings-dark" : ""} align="stretch" gap={0} minW={0} style={{ height: "calc(100vh - 60px)", overflow: "hidden" }} bg={isDark ? "#121212" : "#ffffffff"}>
       <Box
         w={collapsed ? "0px" : "230px"}
         minW={collapsed ? "0px" : "230px"}
         bg={isDark ? "#1A1A1A" : "white"}
+        shadow={isDark ? "0 4px 14px rgba(229, 184, 92, 0.2)" : "0 2px 6px rgba(0,0,0,0.06)" }
         borderRight="1px solid"
         borderColor={isDark ? "#333333" : "border"}
         display="flex"
@@ -124,7 +125,7 @@ export default function Pengaturan() {
             fontSize="xs"
             fontWeight="bold"
             letterSpacing="0.06em"
-            color="primary"
+            color={isDark ? "rgba(243, 164, 46, 0.92)" : "#0bd0d6ff"}
           >
             PENGATURAN
           </Text>
@@ -161,9 +162,9 @@ export default function Pengaturan() {
                   borderRadius="md"
                   fontSize="sm"
                   fontWeight={isActive ? "semibold" : "normal"}
-                  bg={isActive ? (isDark ? "rgba(229,184,92,0.15)" : "#EEF0FE") : "transparent"}
-                  color={isActive ? "primary" : "foreground"}
-                  _hover={{ bg: isActive ? (isDark ? "rgba(229,184,92,0.15)" : "#EEF0FE") : (isDark ? "#2D2D2D" : "muted"), textDecoration: "none" }}
+                  bg={isActive ? (isDark ? "rgba(180, 118, 25, 0.92)" : "#0adae1ff") : "transparent"}
+                  color={isActive ? "#ffffffff" : "foreground"}
+                  _hover={{ bg: isActive ? (isDark ? "rgba(212, 142, 36, 0.92)" : "#0bdfe6ff") : (isDark ? "#2D2D2D" : "muted"), textDecoration: "none" }}
                   transition="all 150ms ease"
                   aria-current={isActive ? "page" : undefined}
                   onClick={() => {
