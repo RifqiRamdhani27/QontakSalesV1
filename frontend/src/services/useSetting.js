@@ -289,7 +289,7 @@ export function useCustomFields({ status, search }) {
       })
       .catch((requestError) => {
         if (!cancelled) {
-          setError(extractError(requestError, "Gagal memuat bidang kustom."));
+          setError(extractError(requestError, "Gagal memuat kolom tambahan."));
         }
       })
       .finally(() => {

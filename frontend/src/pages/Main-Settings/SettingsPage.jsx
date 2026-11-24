@@ -41,7 +41,7 @@ const AppearancePage = lazy(() => import("@/pages/Main-Settings/AppearancePage")
 
 const SETTINGS_MENU = [
   { id: "company", label: "Perusahaan", path: "/settings/company", component: CompanyPage, Icon: Buildings },
-  { id: "appearance", label: "Appearance", path: "/settings/appearance", component: AppearancePage, Icon: PaintBrush },
+  { id: "appearance", label: "Tampilan", path: "/settings/appearance", component: AppearancePage, Icon: PaintBrush },
   { id: "agents", label: "Agen", path: "/settings/agents", component: AgentsPage, Icon: UsersThree },
   { id: "user-management", label: "Pengaturan pengguna", path: "/settings/user-management", component: UserManagementPage, Icon: UserGear },
   { id: "sales", label: "Penjualan", path: "/settings/sales", component: SalesPage, Icon: Tag },
@@ -49,11 +49,11 @@ const SETTINGS_MENU = [
   { id: "products", label: "Produk", path: "/settings/products", component: ProductsSettingsPage, Icon: Package },
   { id: "productions", label: "Produksi", path: "/settings/productions", component: ProductionsSettingsPage, Icon: Factory },
   { id: "template", label: "Templat", path: "/settings/template", component: TemplateSettingsPage, Icon: Textbox },
-  { id: "custom-fields", label: "Custom field", path: "/settings/custom-fields", component: CustomFieldsPage, Icon: SquaresFour },
+  { id: "custom-fields", label: "Kolom tambahan", path: "/settings/custom-fields", component: CustomFieldsPage, Icon: SquaresFour },
   { id: "account-mapping", label: "Pemetaan Akun", path: "/settings/account-mapping", component: AccountMappingPage, Icon: ArrowsLeftRight },
   { id: "billings", label: "Tagihan", path: "/settings/billings", component: BillingsPage, Icon: Receipt },
-  { id: "approval-rules", label: "Aturan approval", path: "/settings/approval-rules", component: ApprovalRulesPage, Icon: SealCheck },
-  { id: "tagging-rules", label: "Aturan tagging", path: "/settings/tagging-rules", component: TaggingRulesPage, Icon: BookmarkSimple },
+  { id: "approval-rules", label: "Aturan persetujuan", path: "/settings/approval-rules", component: ApprovalRulesPage, Icon: SealCheck },
+  { id: "tagging-rules", label: "Aturan penandaan", path: "/settings/tagging-rules", component: TaggingRulesPage, Icon: BookmarkSimple },
 ];
 
 export default function Pengaturan() {
@@ -106,7 +106,7 @@ export default function Pengaturan() {
   const ActiveComponent = activeItem && canViewItem(activeItem) ? activeItem.component : null;
 
   return (
-    <HStack data-qontak-settings="" className={isDark ? "settings-dark" : ""} align="stretch" gap={0} minW={0} style={{ height: "calc(100vh - 60px)", overflow: "hidden" }} bg={isDark ? "#121212" : "#ffffffff"}>
+    <HStack lang="id" data-qontak-settings="" className={isDark ? "settings-dark" : ""} align="stretch" gap={0} minW={0} style={{ height: "calc(100vh - 60px)", overflow: "hidden" }} bg={isDark ? "#121212" : "#ffffffff"}>
       <Box
         w={collapsed ? "0px" : "230px"}
         minW={collapsed ? "0px" : "230px"}

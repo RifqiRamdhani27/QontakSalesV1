@@ -218,11 +218,11 @@ function ImageField({ label, value, onChange, optional = false }) {
           </div>
           <p className="text-xs text-slate-500">
             PNG, JPEG, atau WebP · maksimal {formatBytes(APPEARANCE_LIMITS.imageBytes)} ·
-            otomatis diunggah ke penyimpanan gambar, bukan ditanam di konten.
+            otomatis diunggah ke penyimpanan gambar, bukan disisipkan langsung ke dalam konten.
           </p>
           <details>
             <summary className="w-fit cursor-pointer rounded text-xs font-medium text-slate-600 hover:text-gray-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-              Atau pakai URL gambar
+              Atau gunakan URL gambar
             </summary>
             <div className="mt-2">
               <label htmlFor={`${id}-url`} className="sr-only">URL gambar</label>
@@ -277,10 +277,10 @@ function HeroPreview({ hero }) {
       <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 to-slate-950/90" />
       <div className="relative space-y-3 p-5 sm:p-6">
         <p className="max-w-xl text-lg font-bold leading-tight text-white sm:text-2xl">
-          <HeroText text={hero.title || "Judul hero akan tampil di sini"} />
+          <HeroText text={hero.title || "Judul utama akan tampil di sini"} />
         </p>
         <p className="max-w-xl text-sm leading-relaxed text-slate-300">
-          {hero.description || "Deskripsi singkat hero akan tampil di sini."}
+          {hero.description || "Deskripsi bagian utama akan tampil di sini."}
         </p>
         <span className="inline-flex rounded-full bg-sky-600 px-4 py-2 text-xs font-bold text-white">
           {hero.buttonText || "Teks tombol"}
@@ -318,7 +318,7 @@ function FaqsPreview({ faqs }) {
   return (
     <div className="space-y-2 rounded-xl border border-gray-200 bg-white p-4">
       {items.length === 0 && (
-        <p className="py-6 text-center text-sm text-slate-400">Belum ada FAQ untuk dipratinjau.</p>
+        <p className="py-6 text-center text-sm text-slate-400">Belum ada pertanyaan untuk ditampilkan dalam pratinjau.</p>
       )}
       {items.map((item, index) => (
         <div key={item.id || index} className="rounded-lg border border-gray-200">
@@ -390,7 +390,7 @@ function NewsletterPreview({ newsletter }) {
   return (
     <div className="space-y-3 rounded-xl border border-gray-200 bg-slate-900 px-5 py-6">
       <p className="text-lg font-bold leading-tight text-white">
-        {newsletter.title || "Judul newsletter akan tampil di sini"}
+        {newsletter.title || "Judul buletin akan tampil di sini"}
       </p>
       <p className="text-sm leading-relaxed text-slate-300">
         {newsletter.description || "Deskripsi langganan akan tampil di sini."}
@@ -415,9 +415,9 @@ function WorkspacePreview({ workspace }) {
         </p>
       </div>
       <div className="rounded-lg border border-sky-200 bg-sky-50 px-4 py-3">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-sky-600">Banner add-on</p>
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-sky-600">Promosi fitur tambahan</p>
         <p className="mt-1 text-sm font-semibold text-gray-900">
-          {workspace.bannerTitle || "Judul banner akan tampil di sini"}
+          {workspace.bannerTitle || "Judul promosi akan tampil di sini"}
         </p>
       </div>
       <div className="rounded-lg border border-gray-200 bg-white px-4 py-3">
@@ -505,7 +505,7 @@ function SectionCard({ section, dirty, onReset, disabled = false, preview = null
           <p className="mt-1.5 text-[13px] text-slate-500">{section.hint}</p>
         </div>
         <button type="button" className={btnSecondary} onClick={onReset} disabled={disabled}>
-          <ArrowCounterClockwise size={15} aria-hidden="true" />Kembalikan bawaan
+          <ArrowCounterClockwise size={15} aria-hidden="true" />Pulihkan pengaturan awal
         </button>
       </header>
       <div className="space-y-6 p-6 pt-5">
@@ -616,7 +616,7 @@ export default function AppearancePage() {
 
   const saveChanges = async () => {
     if (readOnly) {
-      showMessage("error", "Akun ini tidak punya izin mengubah tampilan.");
+      showMessage("error", "Akun ini tidak memiliki izin untuk mengubah tampilan.");
       return;
     }
     const instagramUsername = legacyInstagramUsername(draft.contact.instagram);
@@ -669,11 +669,11 @@ export default function AppearancePage() {
   }[message.type] || "";
 
   return (
-    <div className="min-w-0 p-7 max-md:p-[18px]">
+    <div lang="id" className="min-w-0 p-7 max-md:p-[18px]">
       <div className="w-full space-y-6">
         <header className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="m-0 text-[28px] font-bold text-gray-900 max-md:text-2xl">Appearance</h1>
+            <h1 className="m-0 text-[28px] font-bold text-gray-900 max-md:text-2xl">Tampilan</h1>
             {saved.publishedAt && (
               <p className="mt-1 text-xs text-slate-400">
                 Terakhir dipublikasikan: {new Date(saved.publishedAt).toLocaleString("id-ID")}
@@ -688,7 +688,7 @@ export default function AppearancePage() {
         {readOnly && (
           <div role="status" className="flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 p-3.5 text-sm leading-relaxed text-amber-800">
             <Info size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
-            <span>Akun ini hanya bisa melihat konten. Minta akses edit Appearance ke admin.</span>
+            <span>Akun ini hanya dapat melihat konten. Hubungi administrator untuk memperoleh izin mengubah tampilan.</span>
           </div>
         )}
 
@@ -786,7 +786,7 @@ export default function AppearancePage() {
                 onChange={(value) => updateHero("buttonText", value)}
                 required
               />
-              <ImageField label="Gambar latar hero" value={draft.hero.image} onChange={(value) => updateHero("image", value)} optional />
+              <ImageField label="Gambar latar utama" value={draft.hero.image} onChange={(value) => updateHero("image", value)} optional />
             </>
           )}
 
@@ -845,12 +845,12 @@ export default function AppearancePage() {
                     )
                   }
                 >
-                  <Plus size={15} aria-hidden="true" />Tambah FAQ
+                  <Plus size={15} aria-hidden="true" />Tambah pertanyaan
                 </button>
               </div>
               {!draft.faqs.length && (
                 <p className="rounded-lg border border-dashed border-gray-300 bg-slate-50 p-5 text-center text-sm text-slate-500">
-                  Belum ada FAQ. Tambahkan pertanyaan atau kembalikan ke bawaan.
+                  Belum ada pertanyaan. Tambahkan pertanyaan atau pulihkan pengaturan awal.
                 </p>
               )}
               <div className="space-y-4">
@@ -859,13 +859,13 @@ export default function AppearancePage() {
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <div className="flex items-center gap-2">
                         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand">{index + 1}</span>
-                        <h3 className="text-sm font-semibold text-gray-900">FAQ {index + 1}</h3>
+                        <h3 className="text-sm font-semibold text-gray-900">Pertanyaan {index + 1}</h3>
                       </div>
                       <button
                         type="button"
                         className={btnDangerOutline}
                         onClick={() => setConfirmation({ type: "delete-faq", id: item.id })}
-                        aria-label={`Hapus FAQ ${index + 1}`}
+                        aria-label={`Hapus pertanyaan ${index + 1}`}
                       >
                         <Trash size={15} aria-hidden="true" />Hapus
                       </button>
@@ -963,7 +963,7 @@ export default function AppearancePage() {
           {active.id === "newsletter" && (
             <>
               <p className="rounded-lg bg-slate-50 p-3.5 text-xs leading-relaxed text-slate-600">
-                Blok langganan di atas footer halaman publik. Formulir emailnya sendiri tidak diubah dari sini.
+                Blok langganan di atas bagian penutup halaman publik. Formulir email tidak dapat diubah melalui pengaturan ini.
               </p>
               <ContentField
                 label="Judul"
@@ -986,7 +986,7 @@ export default function AppearancePage() {
           {active.id === "workspace" && (
             <>
               <p className="rounded-lg bg-slate-50 p-3.5 text-xs leading-relaxed text-slate-600">
-                Teks ini tampil di halaman Beranda setelah pengguna login — bukan di halaman publik.
+                Teks ini tampil di halaman Beranda setelah pengguna masuk — bukan di halaman publik.
               </p>
               <ContentField
                 label="Sapaan beranda"
@@ -997,7 +997,7 @@ export default function AppearancePage() {
                 hint="Nama pengguna tetap ditampilkan di baris atas secara otomatis."
               />
               <ContentField
-                label="Judul banner add-on"
+                label="Judul promosi fitur tambahan"
                 value={draft.workspace.bannerTitle}
                 maxLength={APPEARANCE_LIMITS.workspace.bannerTitle}
                 onChange={(value) => updateWorkspace("bannerTitle", value)}
@@ -1023,7 +1023,7 @@ export default function AppearancePage() {
           {active.id === "contact" && (
             <>
               <p className="rounded-lg bg-slate-50 p-3.5 text-xs leading-relaxed text-slate-600">
-                Kontak ini tampil sebagai kartu berikon di footer halaman publik. Kosongkan salah satu kolom untuk menyembunyikan kartunya.
+                Kontak ini tampil sebagai kartu berikon di bagian bawah halaman publik. Kosongkan salah satu kolom untuk menyembunyikan kartunya.
               </p>
               <ContentField
                 label="Nomor WhatsApp"
@@ -1033,7 +1033,7 @@ export default function AppearancePage() {
                 type="tel"
                 inputMode="tel"
                 placeholder="+62 812-3456-7890"
-                hint="Boleh 08…, +62…, atau tautan wa.me."
+                hint="Gunakan format 08…, +62…, atau tautan wa.me."
               />
               <ContentField
                 label="Instagram"
@@ -1042,10 +1042,10 @@ export default function AppearancePage() {
                 onChange={(value) => updateContact("instagram", value)}
                 onBlur={normalizeContactInstagram}
                 placeholder="https://www.instagram.com/inotalfinance/"
-                hint="Tempel link profil utuh, contoh: https://www.instagram.com/inotalfinance/ — bukan username polos."
+                hint="Masukkan tautan profil lengkap, misalnya: https://www.instagram.com/inotalfinance/ — bukan hanya nama pengguna."
                 error={
                   draft.contact.instagram.trim() && !getInstagramUrl(draft.contact.instagram)
-                    ? "Link profil Instagram belum valid. Format wajib https://www.instagram.com/username/"
+                    ? "Tautan profil Instagram tidak valid. Gunakan format https://www.instagram.com/username/"
                     : ""
                 }
               />
@@ -1120,16 +1120,16 @@ export default function AppearancePage() {
                 : confirmation.type === "discard"
                   ? "Batalkan perubahan?"
                   : confirmation.type === "delete-faq"
-                    ? "Hapus FAQ ini?"
+                    ? "Hapus pertanyaan ini?"
                     : "Muat ulang konten?"}
             </h2>
             <p id="appearance-confirm-description" className="text-sm leading-relaxed text-slate-600">
               {confirmation.type === "reset"
-                ? "Isi bagian ini akan dikembalikan ke teks bawaan. Perubahan belum diterapkan sebelum kamu menyimpan."
+                ? "Isi bagian ini akan dikembalikan ke teks awal. Perubahan akan diterapkan setelah Anda menyimpannya."
                 : confirmation.type === "discard"
                   ? "Semua perubahan yang belum disimpan akan dibuang."
                   : confirmation.type === "delete-faq"
-                    ? "Pertanyaan dan jawaban ini akan dihapus dari daftar. Perubahan belum diterapkan sebelum kamu menyimpan."
+                    ? "Pertanyaan dan jawaban ini akan dihapus dari daftar. Perubahan akan diterapkan setelah Anda menyimpannya."
                     : "Muat konten terbaru dan buang perubahan yang belum disimpan?"}
             </p>
           </div>
@@ -1138,7 +1138,7 @@ export default function AppearancePage() {
               Tidak, kembali
             </button>
             <button type="button" className={btnModalSubmit} onClick={confirmAction}>
-              {confirmation.type === "reset" ? "Kembalikan" : confirmation.type === "discard" ? "Ya, batalkan" : confirmation.type === "delete-faq" ? "Hapus FAQ" : "Muat ulang"}
+              {confirmation.type === "reset" ? "Kembalikan" : confirmation.type === "discard" ? "Ya, batalkan" : confirmation.type === "delete-faq" ? "Hapus pertanyaan" : "Muat ulang"}
             </button>
           </div>
         </dialog>

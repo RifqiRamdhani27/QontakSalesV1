@@ -129,8 +129,8 @@ const subPagesByPage = {
 
 const salesPreviewRows = [
   ["Pelanggan", "Email"],
-  ["Alamat Penagihan", "Tgl transaksi", "No transaksi", "Penanda"],
-  ["Tgl jatuh tempo", "No referensi pelanggan"],
+  ["Alamat Penagihan", "Tanggal transaksi", "Nomor transaksi", "Penanda"],
+  ["Tanggal jatuh tempo", "Nomor referensi pelanggan"],
   ["Syarat pembayaran", "Gudang"],
 ];
 
@@ -145,8 +145,8 @@ const salesBottomRows = [
 
 const purchasePreviewRows = [
   ["Pemasok", "Email"],
-  ["Alamat Penagihan", "Tgl transaksi", "No transaksi", "Penanda"],
-  ["Tgl jatuh tempo", "No. referensi pemasok"],
+  ["Alamat Penagihan", "Tanggal transaksi", "Nomor transaksi", "Penanda"],
+  ["Tanggal jatuh tempo", "Nomor referensi pemasok"],
   ["Syarat pembayaran", "Gudang"],
 ];
 
@@ -286,7 +286,7 @@ function buildPayload(form) {
 
 function validateForm(form) {
   if (form.name.trim() === "") {
-    return "Nama bidang kustom wajib diisi.";
+    return "Nama kolom tambahan wajib diisi.";
   }
 
   if (form.page === "") {
@@ -300,7 +300,7 @@ function validateForm(form) {
   }
 
   if (form.fieldType === "") {
-    return "Jenis bidang kustom wajib dipilih.";
+    return "Jenis kolom tambahan wajib dipilih.";
   }
 
   if (
@@ -471,13 +471,13 @@ function AddPopUp({ showQuotaPopup, setShowQuotaPopup }) {
 
   return (
     <ModalShell
-      title="Tambah kuota bidang kustom"
+      title="Tambah kuota kolom tambahan"
       maxWidth="max-w-[500px]"
       onClose={() => setShowQuotaPopup(false)}
       footer={
         <>
           <button onClick={() => setShowQuotaPopup(false)} className={btnModalCancel}>
-            OK, Mengerti
+            Baik, saya mengerti
           </button>
 
           <button className={btnModalSubmit}>Hubungi Tim Qontak</button>
@@ -486,7 +486,7 @@ function AddPopUp({ showQuotaPopup, setShowQuotaPopup }) {
     >
       <div className="flex flex-col gap-2">
         <p className="m-0 font-bold text-gray-800">
-          199.000 per bidang kustom per tahun
+          199.000 per kolom tambahan per tahun
         </p>
 
         <p className="m-0 text-sm leading-6 text-slate-500">
@@ -518,7 +518,7 @@ function ReorderPopUp({ onClose, onReorder }) {
       setItems(await fetchCustomFieldScope(nextPage, nextSubPage));
     } catch (requestError) {
       setItems(null);
-      setError(extractError(requestError, "Gagal memuat bidang kustom."));
+      setError(extractError(requestError, "Gagal memuat kolom tambahan."));
     } finally {
       setLoading(false);
     }
@@ -576,7 +576,7 @@ function ReorderPopUp({ onClose, onReorder }) {
 
   return (
     <ModalShell
-      title="Ubah urutan bidang kustom"
+      title="Ubah urutan kolom tambahan"
       maxWidth="max-w-[550px]"
       onClose={onClose}
       footer={
@@ -627,11 +627,11 @@ function ReorderPopUp({ onClose, onReorder }) {
         {!loading && items !== null && items.length === 0 && (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <p className="m-0 font-bold text-gray-800">
-              Halaman ini belum memiliki bidang kustom
+              Halaman ini belum memiliki kolom tambahan
             </p>
 
             <p className="m-0 mt-1 text-sm text-slate-500">
-              Silakan tambahkan bidang kustom.
+              Silakan tambahkan kolom tambahan.
             </p>
           </div>
         )}
@@ -793,14 +793,14 @@ function CustomFieldFormPopUp({ field, onClose, onSubmit }) {
     try {
       await onSubmit(buildPayload(form));
     } catch (requestError) {
-      setError(extractError(requestError, "Gagal menyimpan bidang kustom."));
+      setError(extractError(requestError, "Gagal menyimpan kolom tambahan."));
       setSaving(false);
     }
   }
 
   return (
     <ModalShell
-      title={isEdit ? "Ubah bidang kustom" : "Tambah bidang kustom"}
+      title={isEdit ? "Ubah kolom tambahan" : "Tambah kolom tambahan"}
       maxWidth="max-w-[920px]"
       bodyClassName="flex flex-col gap-6 px-[22px] py-5 md:flex-row"
       footerClassName="relative"
@@ -844,7 +844,7 @@ function CustomFieldFormPopUp({ field, onClose, onSubmit }) {
       <div className="flex w-full flex-col gap-5 md:w-[340px] md:shrink-0">
         <div>
           <label className={formLabel}>
-            Nama bidang kustom <span className="text-red-600">*</span>
+            Nama kolom tambahan <span className="text-red-600">*</span>
           </label>
 
           <input
@@ -926,7 +926,7 @@ function CustomFieldFormPopUp({ field, onClose, onSubmit }) {
 
         <div>
           <label className={formLabel}>
-            Jenis bidang kustom <span className="text-red-600">*</span>
+            Jenis kolom tambahan <span className="text-red-600">*</span>
           </label>
 
           <select
@@ -935,7 +935,7 @@ function CustomFieldFormPopUp({ field, onClose, onSubmit }) {
             className={`${selectBase} cursor-pointer appearance-none`}
           >
             <option value="" disabled>
-              Pilih jenis bidang kustom
+              Pilih jenis kolom tambahan
             </option>
 
             {typeOptions.map((item) => (
@@ -1039,7 +1039,7 @@ function CustomFieldFormPopUp({ field, onClose, onSubmit }) {
         )}
 
         {form.fieldType === "Date" && (
-          <FormSection title="Pemilihan tanggal pada bidang kustom">
+          <FormSection title="Pemilihan tanggal pada kolom tambahan">
             <RadioRow
               name="dateSelection"
               label="Kosong"
@@ -1119,14 +1119,14 @@ function CustomFieldFormPopUp({ field, onClose, onSubmit }) {
 
         <FormSection title="Pengaturan tambahan">
           <CheckRow
-            label="Bidang kustom wajib diisi"
+            label="Kolom tambahan wajib diisi"
             checked={form.mustFilled}
             onChange={(event) => update({ mustFilled: event.target.checked })}
           />
 
           {form.page !== "" && (
             <CheckRow
-              label="Tampilkan bidang kustom saat dicetak"
+              label="Tampilkan kolom tambahan saat dicetak"
               checked={form.showInPrint}
               onChange={(event) => update({ showInPrint: event.target.checked })}
             />
@@ -1142,7 +1142,7 @@ function CustomFieldFormPopUp({ field, onClose, onSubmit }) {
             <Table size={28} className="text-brand" />
 
             <p className="m-0 text-sm font-medium text-gray-800">
-              Pratinjau bidang kustom akan tampil di sini
+              Pratinjau kolom tambahan akan tampil di sini
             </p>
 
             <p className="m-0 text-xs text-slate-500">Pilih halaman terlebih dahulu.</p>
@@ -1155,7 +1155,7 @@ function CustomFieldFormPopUp({ field, onClose, onSubmit }) {
 
                 <div className="grid grid-cols-2 gap-x-6">
                   <PreviewField label="Kode Produk/SKU" />
-                  <PreviewField label="Barcode" />
+                  <PreviewField label="Kode batang" />
                 </div>
 
                 <div className="grid grid-cols-2 gap-x-6">
@@ -1191,21 +1191,21 @@ function CustomFieldFormPopUp({ field, onClose, onSubmit }) {
               </p>
 
               <p className="m-0 pb-2 text-[13px] font-medium text-slate-500">
-                Pengaturan bundle
+                Pengaturan paket produk
               </p>
             </div>
 
             <div className="flex flex-col gap-2.5">
               <div className="grid grid-cols-2 gap-x-6">
-                <PreviewField label="Saya beli produk ini" />
+                <PreviewField label="Saya membeli produk ini" />
               </div>
 
               <div className="grid grid-cols-2 gap-x-6">
-                <PreviewField label="Saya jual produk ini" />
+                <PreviewField label="Saya menjual produk ini" />
               </div>
 
               <div className="grid grid-cols-2 gap-x-6">
-                <PreviewField label="Monitor persediaan barang" />
+                <PreviewField label="Pantau persediaan barang" />
               </div>
             </div>
           </div>
@@ -1305,7 +1305,7 @@ export default function CustomFieldsPage() {
         status: field.status === "active" ? "inactive" : "active",
       });
     } catch (requestError) {
-      alert(extractError(requestError, "Gagal mengubah status bidang kustom."));
+      alert(extractError(requestError, "Gagal mengubah status kolom tambahan."));
     } finally {
       setBusyId(null);
     }
@@ -1317,30 +1317,30 @@ export default function CustomFieldsPage() {
     try {
       await remove(field.id);
     } catch (requestError) {
-      alert(extractError(requestError, "Gagal menghapus bidang kustom."));
+      alert(extractError(requestError, "Gagal menghapus kolom tambahan."));
     } finally {
       setBusyId(null);
     }
   }
 
   return (
-    <div className="p-7 max-md:p-[18px]">
+    <div lang="id" className="p-7 max-md:p-[18px]">
       <div className="mb-6 flex items-start justify-between gap-4 max-md:flex-col">
         <div>
-          <h2 className="m-0 text-[28px] font-bold text-gray-900">Custom field</h2>
+          <h2 className="m-0 text-[28px] font-bold text-gray-900">Kolom tambahan</h2>
           <p className="m-0 mt-1.5 text-sm text-slate-500">
-            Kelola bidang kustom untuk transaksi dan produk Anda.
+            Kelola kolom tambahan untuk transaksi dan produk Anda.
           </p>
         </div>
 
         {canManage && (
           <div className="flex gap-3">
             <button onClick={() => setShowReorderPopup(true)} className={btnModalCancel}>
-              Ubah urutan bidang kustom
+              Ubah urutan kolom tambahan
             </button>
 
             <button onClick={handleAdd} className={btnModalSubmit}>
-              Tambah bidang kustom
+              Tambah kolom tambahan
             </button>
           </div>
         )}
@@ -1349,17 +1349,17 @@ export default function CustomFieldsPage() {
       <div className="company-card mb-6 mt-4 rounded-[10px] bg-white p-6">
         <div className="border-b border-slate-100 pb-5">
           <h2 className="m-0 text-[19px] font-bold text-gray-900">
-            Kuota Bidang Kustom : {remainingQuota}
+            Kuota Kolom Tambahan : {remainingQuota}
           </h2>
 
           <p className="m-0 mt-1 flex flex-wrap items-center gap-x-2 text-sm text-slate-500">
-            Atur bidang kustom sesuai kebutuhan bisnis Anda. Perlu lebih banyak bidang kustom?
+            Atur kolom tambahan sesuai kebutuhan bisnis Anda. Perlu lebih banyak kolom tambahan?
             <button
               type="button"
               onClick={() => setShowQuotaPopup(true)}
               className={`${linkButton} text-sm`}
             >
-              Tambah Kuota Bidang Kustom
+              Tambah Kuota Kolom Tambahan
             </button>
           </p>
         </div>
@@ -1387,7 +1387,7 @@ export default function CustomFieldsPage() {
 
             <input
               type="text"
-              placeholder="Cari bidang kustom"
+              placeholder="Cari kolom tambahan"
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
               className="input w-full !max-w-full !pl-[38px]"
@@ -1398,7 +1398,7 @@ export default function CustomFieldsPage() {
         {error !== "" ? (
           <div className="flex flex-col items-center justify-center p-20 text-center">
             <h2 className="m-0 text-base font-bold text-gray-800">
-              Gagal memuat bidang kustom
+              Gagal memuat kolom tambahan
             </h2>
 
             <p className="m-0 mt-1 whitespace-pre-line text-sm text-red-600">{error}</p>
@@ -1411,14 +1411,14 @@ export default function CustomFieldsPage() {
           <div className="flex flex-col items-center justify-center p-20 text-center">
             <h2 className="m-0 text-base font-bold text-gray-800">
               {isFiltering
-                ? "Bidang kustom tidak ditemukan"
-                : "Daftar bidang kustom akan tampil di sini"}
+                ? "Kolom tambahan tidak ditemukan"
+                : "Daftar kolom tambahan akan tampil di sini"}
             </h2>
 
             <p className="m-0 mt-1 text-sm text-slate-500">
               {isFiltering
                 ? "Coba ubah filter status atau kata kunci pencarian."
-                : "Tambahkan bidang kustom melalui tombol Tambah bidang kustom"}
+                : "Tambahkan kolom tambahan melalui tombol Tambah kolom tambahan"}
             </p>
           </div>
         ) : (
@@ -1527,7 +1527,7 @@ export default function CustomFieldsPage() {
         open={deleteTarget !== null}
         onClose={() => setDeleteTarget(null)}
         onConfirm={() => handleDelete(deleteTarget)}
-        title="Hapus bidang kustom?"
+        title="Hapus kolom tambahan?"
         message={
           deleteTarget ? `"${deleteTarget.name}" akan dihapus dari formulir Anda.` : ""
         }

@@ -17,7 +17,7 @@ const allNavItems = [
   { label: "Kontak", icon: AddressBookIcon, path: "/contact" },
   { label: "Produk", icon: PackageIcon, path: "/main-product/products" },
   { label: "Produksi", icon: Factory, path: "/productionsmain" },
-  { label: "Pemenuhan", icon: Truck, path: "/fulfillment" },
+  { label: "Pemenuhan Pesanan", icon: Truck, path: "/fulfillment" },
   { label: "Aset", icon: Buildings, path: "/aset" },
   { label: "Laporan", icon: FileText, path: "/laporan" },
   { label: "Anggaran", icon: Wallet, path: "/anggaran" },
@@ -267,7 +267,7 @@ export default function Sidebar({ open, onClose }) {
                   whiteSpace="nowrap"
                   display={isCollapsed ? "none" : "block"}
                 >
-                  Settings
+                  Pengaturan
                 </Text>
               </ChakraLink>
             </Box>

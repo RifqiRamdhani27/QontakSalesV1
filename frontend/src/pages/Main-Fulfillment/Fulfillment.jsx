@@ -36,8 +36,8 @@ const btnModalSubmit = `${_btnModalSubmit} dd-btn`;
 
 function MainTab({ activeTab, setActiveTab }) {
   const tabs = [
-    { key: "sales", label: "Sales" },
-    { key: "purchase", label: "Purchase" },
+    { key: "sales", label: "Penjualan" },
+    { key: "purchase", label: "Pembelian" },
   ];
 
   return (
@@ -83,14 +83,14 @@ function GroupingButton() {
               className="flex w-full items-center gap-2.5 px-3.5 py-2 text-left text-sm text-gray-700 hover:bg-slate-50"
               onClick={() => setOpen(false)}
             >
-              Give Feedback
+              Berikan masukan
             </button>
             <button
               type="button"
               className="flex w-full items-center gap-2.5 px-3.5 py-2 text-left text-sm text-gray-700 hover:bg-slate-50"
               onClick={() => setOpen(false)}
             >
-              Guidebook
+              Panduan
             </button>
             <button
               type="button"
@@ -128,7 +128,7 @@ function KanbanCard({ order, statusKey, actions, onAction, onOpenDetail }) {
       <div className="break-words text-sm text-gray-600">{order.person_name}</div>
       {order.status === "partially_completed" && (
         <span className="mt-1 inline-block rounded bg-green-100 px-1.5 py-0.5 text-[11px] font-medium text-green-700">
-          Partially Completed
+          Selesai sebagian
         </span>
       )}
       <div className="mt-1.5 space-y-1 text-[13px] text-gray-600">
@@ -137,8 +137,8 @@ function KanbanCard({ order, statusKey, actions, onAction, onOpenDetail }) {
         {order.status !== "canceled" && order.status !== "completed" && order.remaining_days != null && (
           <div className={order.remaining_days < 0 ? "text-red-600" : "text-gray-600"}>
             {order.remaining_days < 0
-              ? "Late to fulfill"
-              : `Must be fulfilled within ${order.remaining_days} days`}
+              ? "Pemenuhan terlambat"
+              : `Harus dipenuhi dalam ${order.remaining_days} hari`}
           </div>
         )}
       </div>
@@ -235,7 +235,7 @@ function KanbanBoard({ orders, columns, statusMeta, actions, onAction, onOpenDet
               ))}
               {items.length === 0 && (
                 <div className="rounded-md border border-dashed border-gray-200 px-3 py-6 text-center text-xs text-gray-400">
-                  No orders yet
+                  Belum ada pesanan
                 </div>
               )}
             </div>
@@ -350,25 +350,25 @@ function ProcessOrderDrawer({ order, onClose, onSubmit }) {
 
   return (
     <DrawerLayout
-      title="Process Order"
+      title="Proses pesanan"
       onClose={onClose}
       footer={
         <>
           <button type="button" className={btnModalSubmit} onClick={handleSubmit} disabled={totalQty === 0 || hasError}>
-            Process Order
+            Proses pesanan
           </button>
         </>
       }
     >
       <div className="mb-6 grid grid-cols-2 gap-x-6 gap-y-3">
-        <DrawerInfoBlock label="Customer">{order.person_name}</DrawerInfoBlock>
-        <DrawerInfoBlock label="Order Date">{order.order_date}</DrawerInfoBlock>
-        <DrawerInfoBlock label="Sales Order No.">{order.order_number}</DrawerInfoBlock>
-        <DrawerInfoBlock label="Customer Ref. No.">{order.reference_no || "-"}</DrawerInfoBlock>
-        <DrawerInfoBlock label="Warehouse">{order.warehouse_name}</DrawerInfoBlock>
+        <DrawerInfoBlock label="Pelanggan">{order.person_name}</DrawerInfoBlock>
+        <DrawerInfoBlock label="Tanggal pesanan">{order.order_date}</DrawerInfoBlock>
+        <DrawerInfoBlock label="Nomor pesanan penjualan">{order.order_number}</DrawerInfoBlock>
+        <DrawerInfoBlock label="Nomor referensi pelanggan">{order.reference_no || "-"}</DrawerInfoBlock>
+        <DrawerInfoBlock label="Gudang">{order.warehouse_name}</DrawerInfoBlock>
       </div>
 
-      <DrawerTable head={["Product", "Qty Ordered", "Qty Processed", "Unit"]}>
+      <DrawerTable head={["Produk", "Kuantitas dipesan", "Kuantitas diproses", "Satuan"]}>
         {order.lines.map((line) => {
           const qty = getQty(line.id);
           const exceed = qty > line.quantity;
@@ -377,7 +377,7 @@ function ProcessOrderDrawer({ order, onClose, onSubmit }) {
                 <td className="px-3.5 py-3">
                   <div className="flex gap-2.5">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-50">
-                      <span className="text-[10px] text-gray-400">IMG</span>
+                      <span className="text-[10px] text-gray-400">Foto</span>
                     </div>
                     <div>
                       <div className="text-sm text-gray-500">{line.product_code}</div>
@@ -415,23 +415,23 @@ function ProcessOrderDrawer({ order, onClose, onSubmit }) {
                   </div>
                   {exceed && (
                     <div className="mt-1 text-xs text-red-500">
-                      Processed quantity exceeds the ordered quantity
+                      Kuantitas yang diproses melebihi kuantitas pesanan
                     </div>
                   )}
                   {order.status === "partially_completed" && (
                     <div className="mt-1 text-xs text-gray-500">
-                      Already processed: {line.quantity_on_process}
+                      Telah diproses: {line.quantity_on_process}
                     </div>
                   )}
                   <div className="mt-1 text-xs text-gray-500">
-                    Stock available: {line.stock} {line.unit_name}
+                    Stok tersedia: {line.stock} {line.unit_name}
                   </div>
                   {line.has_batch && qty > 0 && (
                     <button
                       type="button"
                       className="mt-1.5 flex items-center gap-1 text-xs font-medium text-brand"
                     >
-                      Set Batch
+                      Atur nomor lot
                     </button>
                   )}
                   {line.use_serial_number && qty > 0 && (
@@ -448,7 +448,7 @@ function ProcessOrderDrawer({ order, onClose, onSubmit }) {
             );
           })}
         <tr>
-          <td className="px-3.5 py-3 text-right text-sm font-semibold text-gray-900">Total Units</td>
+          <td className="px-3.5 py-3 text-right text-sm font-semibold text-gray-900">Total kuantitas</td>
           <td className="px-3.5 py-3 text-sm font-semibold text-gray-900">
             {order.lines.reduce((sum, line) => sum + line.quantity, 0)}
           </td>
@@ -459,7 +459,7 @@ function ProcessOrderDrawer({ order, onClose, onSubmit }) {
 
       {totalQty === 0 && (
         <div className="mt-4 text-sm text-red-500">
-          Failed to process the order because all products have quantity 0
+          Pesanan tidak dapat diproses karena kuantitas seluruh produk adalah 0
         </div>
       )}
     </DrawerLayout>
@@ -476,36 +476,36 @@ function CreatePickingListDrawer({ order, number, onClose, onSubmit }) {
 
   return (
     <DrawerLayout
-      title="Create Picking List"
-      tooltip="A picking list (picklist) is a document used to pick goods available in the warehouse. The picked goods are then handed over to fulfill a customer order."
+      title="Buat daftar pengambilan barang"
+      tooltip="Daftar pengambilan barang adalah dokumen untuk mengambil barang yang tersedia di gudang. Barang yang diambil kemudian diserahkan untuk memenuhi pesanan pelanggan."
       onClose={onClose}
       footer={
         <>
           <button type="button" className={btnSecondary} onClick={handleSubmit}>
-            Print Picking List
+            Cetak daftar pengambilan barang
           </button>
           <button type="button" className={btnModalSubmit} onClick={handleSubmit}>
-            Create Picking List
+            Buat daftar pengambilan barang
           </button>
         </>
       }
     >
       <div className="mb-6 grid grid-cols-2 gap-x-6 gap-y-3">
-        <DrawerInfoBlock label="Customer">{order.person_name}</DrawerInfoBlock>
-        <DrawerInfoBlock label="Order Date">{order.order_date}</DrawerInfoBlock>
-        <DrawerInfoBlock label="Sales Order No.">{order.order_number}</DrawerInfoBlock>
-        <DrawerInfoBlock label="Customer Ref. No.">{order.reference_no || "-"}</DrawerInfoBlock>
-        <DrawerInfoBlock label="Warehouse">{order.warehouse_name}</DrawerInfoBlock>
-        <DrawerInfoBlock label="Picking List No.">{number}</DrawerInfoBlock>
+        <DrawerInfoBlock label="Pelanggan">{order.person_name}</DrawerInfoBlock>
+        <DrawerInfoBlock label="Tanggal pesanan">{order.order_date}</DrawerInfoBlock>
+        <DrawerInfoBlock label="Nomor pesanan penjualan">{order.order_number}</DrawerInfoBlock>
+        <DrawerInfoBlock label="Nomor referensi pelanggan">{order.reference_no || "-"}</DrawerInfoBlock>
+        <DrawerInfoBlock label="Gudang">{order.warehouse_name}</DrawerInfoBlock>
+        <DrawerInfoBlock label="Nomor daftar pengambilan barang">{number}</DrawerInfoBlock>
       </div>
 
-      <DrawerTable head={["Product", "Qty Picked", "Unit"]}>
+      <DrawerTable head={["Produk", "Kuantitas diambil", "Satuan"]}>
         {order.lines.map((line) => (
           <tr key={line.id} className="border-b border-slate-100 align-top">
             <td className="px-3.5 py-3">
               <div className="flex gap-2.5">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-50">
-                  <span className="text-[10px] text-gray-400">IMG</span>
+                  <span className="text-[10px] text-gray-400">Foto</span>
                 </div>
                 <div>
                   <div className="text-sm text-gray-500">{line.product_code}</div>
@@ -521,7 +521,7 @@ function CreatePickingListDrawer({ order, number, onClose, onSubmit }) {
           </tr>
         ))}
         <tr>
-          <td className="px-3.5 py-3 text-right text-sm font-semibold text-gray-900">Total Units</td>
+          <td className="px-3.5 py-3 text-right text-sm font-semibold text-gray-900">Total kuantitas</td>
           <td className="px-3.5 py-3 text-sm font-semibold text-gray-900">
             {order.lines.reduce((sum, line) => sum + line.quantity_on_process, 0)}
           </td>
@@ -536,7 +536,7 @@ function CreatePickingListDrawer({ order, number, onClose, onSubmit }) {
           rows={3}
           value={memo}
           onChange={(event) => setMemo(event.target.value)}
-          placeholder="For internal notes, e.g. the location of the goods to be picked."
+          placeholder="Untuk catatan internal, misalnya lokasi barang yang akan diambil."
         />
       </div>
     </DrawerLayout>
@@ -569,42 +569,42 @@ function CreateDeliveryNoteDrawer({ order, number, onClose, onSubmit }) {
 
   return (
     <DrawerLayout
-      title="Create Delivery Note"
-      tooltip="A delivery note is a mandatory document containing important information about the shipment of goods, commonly used by companies, businesses, and other institutions in their shipping activities."
+      title="Buat surat jalan"
+      tooltip="Surat jalan adalah dokumen wajib yang memuat informasi penting tentang pengiriman barang. Dokumen ini digunakan oleh perusahaan, pelaku usaha, dan lembaga lain dalam kegiatan pengiriman."
       onClose={onClose}
       footer={
         <>
           <button type="button" className={btnSecondary} onClick={handleSubmit}>
-            Print Delivery Note
+            Cetak surat jalan
           </button>
           <button type="button" className={btnModalSubmit} onClick={handleSubmit}>
-            Create Delivery Note
+            Buat surat jalan
           </button>
         </>
       }
     >
       <div className="mb-6 grid grid-cols-2 gap-x-6 gap-y-3">
-        <DrawerInfoBlock label="Customer">{order.person_name}</DrawerInfoBlock>
-        <DrawerInfoBlock label="Order Date">{order.order_date}</DrawerInfoBlock>
-        <DrawerInfoBlock label="Sales Order No.">{order.order_number}</DrawerInfoBlock>
-        <DrawerInfoBlock label="Customer Ref. No.">{order.reference_no || "-"}</DrawerInfoBlock>
-        <DrawerInfoBlock label="Warehouse">{order.warehouse_name}</DrawerInfoBlock>
-        <DrawerInfoBlock label="Shipping Address">{order.person_address || "-"}</DrawerInfoBlock>
+        <DrawerInfoBlock label="Pelanggan">{order.person_name}</DrawerInfoBlock>
+        <DrawerInfoBlock label="Tanggal pesanan">{order.order_date}</DrawerInfoBlock>
+        <DrawerInfoBlock label="Nomor pesanan penjualan">{order.order_number}</DrawerInfoBlock>
+        <DrawerInfoBlock label="Nomor referensi pelanggan">{order.reference_no || "-"}</DrawerInfoBlock>
+        <DrawerInfoBlock label="Gudang">{order.warehouse_name}</DrawerInfoBlock>
+        <DrawerInfoBlock label="Alamat pengiriman">{order.person_address || "-"}</DrawerInfoBlock>
       </div>
 
       <div className="mb-6 grid grid-cols-2 gap-x-6 gap-y-4">
         <div>
-          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Delivery No.</label>
+          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Nomor surat jalan</label>
           <input className={inputBase} value={number} readOnly />
         </div>
         <div>
-          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Courier</label>
+          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Kurir</label>
           <select
             className={selectBase}
             value={courier}
             onChange={(event) => setCourier(event.target.value)}
           >
-            <option value="">Select courier</option>
+            <option value="">Pilih kurir</option>
             {courierOptions.map((item) => (
               <option key={item} value={item}>
                 {item}
@@ -613,16 +613,16 @@ function CreateDeliveryNoteDrawer({ order, number, onClose, onSubmit }) {
           </select>
         </div>
         <div>
-          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Tracking No.</label>
+          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Nomor pelacakan</label>
           <input
             className={inputBase}
             value={trackingNumber}
             onChange={(event) => setTrackingNumber(event.target.value)}
-            placeholder="Enter tracking number"
+            placeholder="Masukkan nomor pelacakan"
           />
         </div>
         <div>
-          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Shipping Date</label>
+          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Tanggal pengiriman</label>
           <input
             type="date"
             className={inputBase}
@@ -631,13 +631,13 @@ function CreateDeliveryNoteDrawer({ order, number, onClose, onSubmit }) {
           />
         </div>
         <div>
-          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Picking List</label>
+          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Daftar pengambilan barang</label>
           <select
             className={selectBase}
             value={pickingList}
             onChange={(event) => setPickingList(event.target.value)}
           >
-            <option value="">Select picking list</option>
+            <option value="">Pilih daftar pengambilan barang</option>
             {pickingOptions.map((item) => (
               <option key={item} value={item}>
                 {item}
@@ -646,7 +646,7 @@ function CreateDeliveryNoteDrawer({ order, number, onClose, onSubmit }) {
           </select>
         </div>
         <div className="col-span-2">
-          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Message</label>
+          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Pesan</label>
           <textarea
             className={textareaBase}
             rows={2}
@@ -661,24 +661,24 @@ function CreateDeliveryNoteDrawer({ order, number, onClose, onSubmit }) {
             rows={2}
             value={memo}
             onChange={(event) => setMemo(event.target.value)}
-            placeholder="For internal notes."
+            placeholder="Untuk catatan internal."
           />
         </div>
         <div className="col-span-2">
-          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Attachments</label>
+          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Lampiran</label>
           <div className="rounded-lg border border-dashed border-gray-300 px-3 py-4 text-center text-xs text-gray-500">
-            Files can be documents, images, or ZIP. Maximum 5 files and 10MB per file.
+            Berkas dapat berupa dokumen, gambar, atau ZIP. Maksimal 5 berkas dengan ukuran 10 MB per berkas.
           </div>
         </div>
       </div>
 
-      <DrawerTable head={["Product", "Qty Ordered", "Qty Shipped", "Unit"]}>
+      <DrawerTable head={["Produk", "Kuantitas dipesan", "Kuantitas dikirim", "Satuan"]}>
         {order.lines.map((line) => (
           <tr key={line.id} className="border-b border-slate-100 align-top">
             <td className="px-3.5 py-3">
               <div className="flex gap-2.5">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-50">
-                  <span className="text-[10px] text-gray-400">IMG</span>
+                  <span className="text-[10px] text-gray-400">Foto</span>
                 </div>
                 <div>
                   <div className="text-sm text-gray-500">{line.product_code}</div>
@@ -697,7 +697,7 @@ function CreateDeliveryNoteDrawer({ order, number, onClose, onSubmit }) {
           </tr>
         ))}
         <tr>
-          <td className="px-3.5 py-3 text-right text-sm font-semibold text-gray-900">Total Units</td>
+          <td className="px-3.5 py-3 text-right text-sm font-semibold text-gray-900">Total kuantitas</td>
           <td className="px-3.5 py-3 text-sm font-semibold text-gray-900">
             {order.lines.reduce((sum, line) => sum + line.quantity, 0)}
           </td>
@@ -722,11 +722,11 @@ function CreateReceiptDrawer({ order, number, onClose, onSubmit }) {
 
   const handleSubmit = () => {
     if (!receiveDate) {
-      setErrorDate("Please select a date");
+      setErrorDate("Pilih tanggal terlebih dahulu");
       return;
     }
     if (receiveDate < deliveryDate) {
-      setErrorDate("Receipt date must be after the shipping date");
+      setErrorDate("Tanggal penerimaan harus setelah tanggal pengiriman");
       return;
     }
     if (!receiver.trim()) return;
@@ -735,13 +735,13 @@ function CreateReceiptDrawer({ order, number, onClose, onSubmit }) {
 
   return (
     <DrawerLayout
-      title="Create Receipt"
-      tooltip="A receipt is a proof document stating that one party has handed over documents, goods, or services to the second party."
+      title="Buat tanda terima"
+      tooltip="Tanda terima adalah dokumen bukti bahwa suatu pihak telah menyerahkan dokumen, barang, atau jasa kepada pihak lain."
       onClose={onClose}
       footer={
         <>
           <button type="button" className={btnSecondary} onClick={handleSubmit}>
-            Print Receipt
+            Cetak tanda terima
           </button>
           <button
             type="button"
@@ -749,30 +749,30 @@ function CreateReceiptDrawer({ order, number, onClose, onSubmit }) {
             onClick={handleSubmit}
             disabled={!receiver.trim()}
           >
-            Create Receipt
+            Buat tanda terima
           </button>
         </>
       }
     >
       <div className="mb-6 grid grid-cols-2 gap-x-6 gap-y-3">
-        <DrawerInfoBlock label="Customer">{order.person_name}</DrawerInfoBlock>
-        <DrawerInfoBlock label="Order Date">{order.order_date}</DrawerInfoBlock>
-        <DrawerInfoBlock label="Sales Order No.">{order.order_number}</DrawerInfoBlock>
-        <DrawerInfoBlock label="Delivery No.">
+        <DrawerInfoBlock label="Pelanggan">{order.person_name}</DrawerInfoBlock>
+        <DrawerInfoBlock label="Tanggal pesanan">{order.order_date}</DrawerInfoBlock>
+        <DrawerInfoBlock label="Nomor pesanan penjualan">{order.order_number}</DrawerInfoBlock>
+        <DrawerInfoBlock label="Nomor surat jalan">
           {order.current_fulfillments?.delivered?.[0]?.number || "-"}
         </DrawerInfoBlock>
-        <DrawerInfoBlock label="Customer Ref. No.">{order.reference_no || "-"}</DrawerInfoBlock>
-        <DrawerInfoBlock label="Delivery Date">{deliveryDate}</DrawerInfoBlock>
-        <DrawerInfoBlock label="Warehouse">{order.warehouse_name}</DrawerInfoBlock>
+        <DrawerInfoBlock label="Nomor referensi pelanggan">{order.reference_no || "-"}</DrawerInfoBlock>
+        <DrawerInfoBlock label="Tanggal pengiriman">{deliveryDate}</DrawerInfoBlock>
+        <DrawerInfoBlock label="Gudang">{order.warehouse_name}</DrawerInfoBlock>
       </div>
 
       <div className="mb-6 grid grid-cols-2 gap-x-6 gap-y-4">
         <div>
-          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Receipt No.</label>
+          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Nomor tanda terima</label>
           <input className={inputBase} value={number} readOnly />
         </div>
         <div>
-          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Received Date</label>
+          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Tanggal penerimaan</label>
           <input
             type="date"
             className={inputBase}
@@ -785,32 +785,32 @@ function CreateReceiptDrawer({ order, number, onClose, onSubmit }) {
           {errorDate && <div className="mt-1 text-xs text-red-500">{errorDate}</div>}
         </div>
         <div className="col-span-2">
-          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Receiver Name</label>
+          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Nama penerima</label>
           <input
             className={inputBase}
             value={receiver}
             onChange={(event) => setReceiver(event.target.value)}
-            placeholder="Enter receiver name"
+            placeholder="Masukkan nama penerima"
           />
           {!receiver.trim() && receiver.length > 0 && (
-            <div className="mt-1 text-xs text-red-500">Receiver name is required</div>
+            <div className="mt-1 text-xs text-red-500">Nama penerima wajib diisi</div>
           )}
         </div>
         <div className="col-span-2">
-          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Attachments</label>
+          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Lampiran</label>
           <div className="rounded-lg border border-dashed border-gray-300 px-3 py-4 text-center text-xs text-gray-500">
-            Files can be documents, images, or ZIP. Maximum 5 files and 10MB per file.
+            Berkas dapat berupa dokumen, gambar, atau ZIP. Maksimal 5 berkas dengan ukuran 10 MB per berkas.
           </div>
         </div>
       </div>
 
-      <DrawerTable head={["Product", "Qty Ordered", "Qty Shipped", "Unit"]}>
+      <DrawerTable head={["Produk", "Kuantitas dipesan", "Kuantitas dikirim", "Satuan"]}>
         {order.lines.map((line) => (
           <tr key={line.id} className="border-b border-slate-100 align-top">
             <td className="px-3.5 py-3">
               <div className="flex gap-2.5">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-50">
-                  <span className="text-[10px] text-gray-400">IMG</span>
+                  <span className="text-[10px] text-gray-400">Foto</span>
                 </div>
                 <div>
                   <div className="text-sm text-gray-500">{line.product_code}</div>
@@ -829,7 +829,7 @@ function CreateReceiptDrawer({ order, number, onClose, onSubmit }) {
           </tr>
         ))}
         <tr>
-          <td className="px-3.5 py-3 text-right text-sm font-semibold text-gray-900">Total Units</td>
+          <td className="px-3.5 py-3 text-right text-sm font-semibold text-gray-900">Total kuantitas</td>
           <td className="px-3.5 py-3 text-sm font-semibold text-gray-900">
             {order.lines.reduce((sum, line) => sum + line.quantity, 0)}
           </td>
@@ -869,11 +869,11 @@ function CreateGoodsReceiptDrawer({ order, number, onClose, onSubmit }) {
 
   const handleSubmit = () => {
     if (!receiveDate) {
-      setErrorDate("You must select the goods receipt date");
+      setErrorDate("Tanggal penerimaan barang wajib dipilih");
       return;
     }
     if (deliveryDate && receiveDate < deliveryDate) {
-      setErrorDate("Receipt date must be after the shipping date");
+      setErrorDate("Tanggal penerimaan harus setelah tanggal pengiriman");
       return;
     }
     if (!receiver.trim()) return;
@@ -886,13 +886,13 @@ function CreateGoodsReceiptDrawer({ order, number, onClose, onSubmit }) {
 
   return (
     <DrawerLayout
-      title="Create Goods Receipt"
-      tooltip="A goods receipt is a follow-up document to a purchase order. After the supplier ships the goods, you can use this document to record the physical quantity of goods received in the warehouse."
+      title="Buat penerimaan barang"
+      tooltip="Penerimaan barang adalah dokumen lanjutan dari pesanan pembelian. Setelah pemasok mengirim barang, dokumen ini digunakan untuk mencatat jumlah barang yang diterima secara fisik di gudang."
       onClose={onClose}
       footer={
         <>
           <button type="button" className={btnSecondary} onClick={handleSubmit}>
-            Print Receipt
+            Cetak tanda terima
           </button>
           <button
             type="button"
@@ -900,33 +900,33 @@ function CreateGoodsReceiptDrawer({ order, number, onClose, onSubmit }) {
             onClick={handleSubmit}
             disabled={totalQty === 0 || hasError || !receiver.trim()}
           >
-            Create Goods Receipt
+            Buat penerimaan barang
           </button>
         </>
       }
     >
       <div className="mb-6 grid grid-cols-2 gap-x-6 gap-y-3">
-        <DrawerInfoBlock label="Supplier">{order.person_name}</DrawerInfoBlock>
-        <DrawerInfoBlock label="Order Date">{order.order_date}</DrawerInfoBlock>
-        <DrawerInfoBlock label="Purchase Order No.">{order.order_number}</DrawerInfoBlock>
-        <DrawerInfoBlock label="Supplier Ref. No.">{order.reference_no || "-"}</DrawerInfoBlock>
-        <DrawerInfoBlock label="Warehouse">{order.warehouse_name}</DrawerInfoBlock>
-        <DrawerInfoBlock label="Shipping Address">{order.person_address || "-"}</DrawerInfoBlock>
+        <DrawerInfoBlock label="Pemasok">{order.person_name}</DrawerInfoBlock>
+        <DrawerInfoBlock label="Tanggal pesanan">{order.order_date}</DrawerInfoBlock>
+        <DrawerInfoBlock label="Nomor pesanan pembelian">{order.order_number}</DrawerInfoBlock>
+        <DrawerInfoBlock label="Nomor referensi pemasok">{order.reference_no || "-"}</DrawerInfoBlock>
+        <DrawerInfoBlock label="Gudang">{order.warehouse_name}</DrawerInfoBlock>
+        <DrawerInfoBlock label="Alamat pengiriman">{order.person_address || "-"}</DrawerInfoBlock>
       </div>
 
       <div className="mb-6 grid grid-cols-2 gap-x-6 gap-y-4">
         <div>
-          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Receipt No.</label>
+          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Nomor tanda terima</label>
           <input className={inputBase} value={number} readOnly />
         </div>
         <div>
-          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Courier</label>
+          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Kurir</label>
           <select
             className={selectBase}
             value={courier}
             onChange={(event) => setCourier(event.target.value)}
           >
-            <option value="">Select courier</option>
+            <option value="">Pilih kurir</option>
             {courierOptions.map((item) => (
               <option key={item} value={item}>
                 {item}
@@ -935,17 +935,17 @@ function CreateGoodsReceiptDrawer({ order, number, onClose, onSubmit }) {
           </select>
         </div>
         <div>
-          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Tracking No.</label>
+          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Nomor pelacakan</label>
           <input
             className={inputBase}
             value={trackingNumber}
             onChange={(event) => setTrackingNumber(event.target.value)}
-            placeholder="Enter tracking number"
+            placeholder="Masukkan nomor pelacakan"
           />
         </div>
         <div>
           <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">
-            Shipping Date
+            Tanggal pengiriman
           </label>
           <input
             type="date"
@@ -956,7 +956,7 @@ function CreateGoodsReceiptDrawer({ order, number, onClose, onSubmit }) {
         </div>
         <div>
           <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">
-            Goods Receipt Date
+            Tanggal penerimaan barang
           </label>
           <input
             type="date"
@@ -970,15 +970,15 @@ function CreateGoodsReceiptDrawer({ order, number, onClose, onSubmit }) {
           {errorDate && <div className="mt-1 text-xs text-red-500">{errorDate}</div>}
         </div>
         <div>
-          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Receiver Name</label>
+          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Nama penerima</label>
           <input
             className={inputBase}
             value={receiver}
             onChange={(event) => setReceiver(event.target.value)}
-            placeholder="Enter receiver name"
+            placeholder="Masukkan nama penerima"
           />
           {!receiver.trim() && receiver.length > 0 && (
-            <div className="mt-1 text-xs text-red-500">Receiver name is required</div>
+            <div className="mt-1 text-xs text-red-500">Nama penerima wajib diisi</div>
           )}
         </div>
         <div className="col-span-2">
@@ -988,18 +988,18 @@ function CreateGoodsReceiptDrawer({ order, number, onClose, onSubmit }) {
             rows={2}
             value={memo}
             onChange={(event) => setMemo(event.target.value)}
-            placeholder="For internal notes"
+            placeholder="Untuk catatan internal"
           />
         </div>
         <div className="col-span-2">
-          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Attachments</label>
+          <label className="mb-[7px] block text-[13px] font-semibold text-gray-700">Lampiran</label>
           <div className="rounded-lg border border-dashed border-gray-300 px-3 py-4 text-center text-xs text-gray-500">
-            Files can be documents, images, or ZIP. Maximum 5 files and 10MB per file
+            Berkas dapat berupa dokumen, gambar, atau ZIP. Maksimal 5 berkas dengan ukuran 10 MB per berkas
           </div>
         </div>
       </div>
 
-      <DrawerTable head={["Product", "Qty Ordered", "Qty Received", "Unit"]}>
+      <DrawerTable head={["Produk", "Kuantitas dipesan", "Kuantitas diterima", "Satuan"]}>
         {order.lines.map((line) => {
           const qty = getQty(line.id);
           const exceed = qty > line.quantity;
@@ -1008,7 +1008,7 @@ function CreateGoodsReceiptDrawer({ order, number, onClose, onSubmit }) {
               <td className="px-3.5 py-3">
                 <div className="flex gap-2.5">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-50">
-                    <span className="text-[10px] text-gray-400">IMG</span>
+                    <span className="text-[10px] text-gray-400">Foto</span>
                   </div>
                   <div>
                     <div className="text-sm text-gray-500">{line.product_code}</div>
@@ -1046,21 +1046,21 @@ function CreateGoodsReceiptDrawer({ order, number, onClose, onSubmit }) {
                 </div>
                 {exceed && (
                   <div className="mt-1 text-xs text-red-500">
-                    Qty received exceeds the ordered quantity
+                    Kuantitas yang diterima melebihi kuantitas pesanan
                   </div>
                 )}
                 <div className="mt-1 text-xs text-gray-500">
-                  Previously received: {line.quantity_on_received || 0}
+                  Telah diterima sebelumnya: {line.quantity_on_received || 0}
                 </div>
                 <div className="mt-1 text-xs text-gray-500">
-                  Stock available: {line.stock} {line.unit_name}
+                  Stok tersedia: {line.stock} {line.unit_name}
                 </div>
                 {line.has_batch && qty > 0 && (
                   <button
                     type="button"
                     className="mt-1.5 flex items-center gap-1 text-xs font-medium text-brand"
                   >
-                    Set Batch
+                    Atur nomor lot
                   </button>
                 )}
                 {line.use_serial_number && qty > 0 && (
@@ -1068,7 +1068,7 @@ function CreateGoodsReceiptDrawer({ order, number, onClose, onSubmit }) {
                     type="button"
                     className="mt-1.5 flex items-center gap-1 text-xs font-medium text-brand"
                   >
-                    Set Serial No.
+                    Atur nomor seri
                   </button>
                 )}
               </td>
@@ -1077,7 +1077,7 @@ function CreateGoodsReceiptDrawer({ order, number, onClose, onSubmit }) {
           );
         })}
         <tr>
-          <td className="px-3.5 py-3 text-right text-sm font-semibold text-gray-900">Total Units</td>
+          <td className="px-3.5 py-3 text-right text-sm font-semibold text-gray-900">Total kuantitas</td>
           <td className="px-3.5 py-3 text-sm font-semibold text-gray-900">
             {order.lines.reduce((sum, line) => sum + line.quantity, 0)}
           </td>
@@ -1099,24 +1099,24 @@ function CancelOrderModal({ order, type, onClose, onConfirm }) {
         <div className={modalHeader}>
           <h2 className={modalTitle}>
             {isProcess
-              ? `Cancel the processed order from Sales Order #${order.order_number}`
-              : "Cancel Fulfillment"}
+              ? `Batalkan proses pesanan penjualan #${order.order_number}`
+              : "Batalkan pemenuhan pesanan"}
           </h2>
         </div>
         <div className="px-[22px] py-5">
           <p className="m-0 text-sm text-gray-600">
             {isProcess
-              ? "A canceled order cannot be restored and will return to the new order status."
-              : "A canceled fulfillment cannot be restored."}
+              ? "Proses pesanan yang dibatalkan tidak dapat dipulihkan. Status pesanan akan kembali menjadi pesanan baru."
+              : "Pemenuhan pesanan yang dibatalkan tidak dapat dipulihkan."}
           </p>
           {isProcess && (
             <div className="mt-4 overflow-hidden rounded-[10px] border border-gray-200">
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="bg-slate-50">
-                    <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Product</th>
-                    <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Qty Processed</th>
-                    <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Unit</th>
+                    <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Produk</th>
+                    <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Kuantitas diproses</th>
+                    <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Satuan</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1133,7 +1133,7 @@ function CancelOrderModal({ order, type, onClose, onConfirm }) {
                     ))}
                   <tr>
                     <td className="px-3.5 py-3 text-right text-sm font-semibold text-gray-900">
-                      Total Units
+                      Total kuantitas
                     </td>
                     <td className="px-3.5 py-3 text-sm font-semibold text-gray-900">
                       {order.lines.reduce((sum, line) => sum + (line.quantity_on_process || 0), 0)}
@@ -1147,10 +1147,10 @@ function CancelOrderModal({ order, type, onClose, onConfirm }) {
         </div>
         <div className={modalFooter}>
           <button type="button" className={btnModalCancel} onClick={onClose}>
-            Cancel
+            Batal
           </button>
           <button type="button" className={btnModalDelete} onClick={onConfirm}>
-            {isProcess ? "Cancel Processed Order" : "Cancel Fulfillment"}
+            {isProcess ? "Batalkan pesanan yang diproses" : "Batalkan pemenuhan pesanan"}
           </button>
         </div>
       </div>
@@ -1187,10 +1187,10 @@ function OutboundDetail({
       : "process";
 
   const actionText = {
-    process: "Process Order",
-    pick: "Create Picking List",
-    deliver: "Create Delivery Note",
-    complete: "Create Receipt",
+    process: "Proses pesanan",
+    pick: "Buat daftar pengambilan barang",
+    deliver: "Buat surat jalan",
+    complete: "Buat tanda terima",
   }[actionType];
 
   const handleFooterAction = () => {
@@ -1216,12 +1216,12 @@ function OutboundDetail({
   );
 
   const latestUpdated = order.logs
-    ? `Last updated by ${order.logs.updated_by} at ${order.logs.updated_at.replace("T", " ")}`
+    ? `Terakhir diperbarui oleh ${order.logs.updated_by} pada ${order.logs.updated_at.replace("T", " ")}`
     : null;
 
   const pickingListTabAction =
     currentFulfillments.on_process.length > 0 && fulfillments.picked.length > 0 && actionType !== "pick"
-      ? { text: "Create Picking List", onClick: () => onPick(order) }
+      ? { text: "Buat daftar pengambilan barang", onClick: () => onPick(order) }
       : null;
 
   return (
@@ -1235,11 +1235,11 @@ function OutboundDetail({
               className="text-[13px] font-medium text-brand"
               onClick={onClose}
             >
-              Sales Fulfillment
+              Pemenuhan pesanan penjualan
             </button>
             <div className="mt-1 flex items-center gap-2">
               <h2 className="m-0 text-[22px] font-bold text-gray-900">
-                Sales Order #{order.order_number}
+                Pesanan penjualan #{order.order_number}
               </h2>
               <span
                 className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusMeta.color}`}
@@ -1259,30 +1259,30 @@ function OutboundDetail({
 
         <div className="p-6">
           <div className="border-b border-gray-100 pb-5">
-            <div className="text-[13px] text-gray-500">Customer</div>
+            <div className="text-[13px] text-gray-500">Pelanggan</div>
             <div className="text-sm font-medium text-brand">{order.person_name}</div>
           </div>
 
           <div className="grid grid-cols-3 gap-6 border-b border-gray-100 py-5">
             <div className="space-y-3">
               <div>
-                <div className="text-[13px] text-gray-500">Order Date</div>
+                <div className="text-[13px] text-gray-500">Tanggal pesanan</div>
                 <div className="text-sm text-gray-900">{order.order_date}</div>
               </div>
               <div>
-                <div className="text-[13px] text-gray-500">Due Date</div>
+                <div className="text-[13px] text-gray-500">Tanggal jatuh tempo</div>
                 <div className="text-sm text-gray-900">{order.due_date}</div>
               </div>
               <div>
-                <div className="text-[13px] text-gray-500">Sales Order No.</div>
+                <div className="text-[13px] text-gray-500">Nomor pesanan penjualan</div>
                 <div className="text-sm font-medium text-brand">{order.order_number}</div>
               </div>
               <div>
-                <div className="text-[13px] text-gray-500">Customer Ref. No.</div>
+                <div className="text-[13px] text-gray-500">Nomor referensi pelanggan</div>
                 <div className="text-sm text-gray-900">{order.reference_no || "-"}</div>
               </div>
               <div>
-                <div className="text-[13px] text-gray-500">Warehouse</div>
+                <div className="text-[13px] text-gray-500">Gudang</div>
                 <div className="text-sm text-gray-900">{order.warehouse_name}</div>
               </div>
               <div>
@@ -1291,16 +1291,16 @@ function OutboundDetail({
               </div>
             </div>
             <div>
-              <div className="text-[13px] text-gray-500">Shipping Address</div>
+              <div className="text-[13px] text-gray-500">Alamat pengiriman</div>
               <div className="text-sm text-gray-900">{order.person_address || "-"}</div>
             </div>
             <div className="space-y-3">
               <div>
-                <div className="text-[13px] text-gray-500">Cancellation Date</div>
+                <div className="text-[13px] text-gray-500">Tanggal pembatalan</div>
                 <div className="text-sm text-gray-900">{order.close_date || "-"}</div>
               </div>
               <div>
-                <div className="text-[13px] text-gray-500">Cancellation Reason</div>
+                <div className="text-[13px] text-gray-500">Alasan pembatalan</div>
                 <div className="text-sm text-gray-900">{order.close_reason || "-"}</div>
               </div>
             </div>
@@ -1310,11 +1310,11 @@ function OutboundDetail({
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-slate-50">
-                  <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Product</th>
-                  <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Qty Ordered</th>
-                  <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Qty Processed</th>
-                  <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Qty Shipped</th>
-                  <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Unit</th>
+                  <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Produk</th>
+                  <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Kuantitas dipesan</th>
+                  <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Kuantitas diproses</th>
+                  <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Kuantitas dikirim</th>
+                  <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Satuan</th>
                 </tr>
               </thead>
               <tbody>
@@ -1323,7 +1323,7 @@ function OutboundDetail({
                     <td className="px-3.5 py-3">
                       <div className="flex gap-2.5">
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-50">
-                          <span className="text-[10px] text-gray-400">IMG</span>
+                          <span className="text-[10px] text-gray-400">Foto</span>
                         </div>
                         <div>
                           <div className="text-sm font-medium text-brand">{line.product_name}</div>
@@ -1341,7 +1341,7 @@ function OutboundDetail({
                 ))}
                 <tr>
                   <td className="px-3.5 py-3 text-right text-sm font-semibold text-gray-900">
-                    Total Units
+                    Total kuantitas
                   </td>
                   <td className="px-3.5 py-3 text-sm font-semibold text-gray-900">{qtyOrderedTotal}</td>
                   <td className="px-3.5 py-3 text-sm font-semibold text-gray-900">{qtyProcessedTotal}</td>
@@ -1366,8 +1366,8 @@ function OutboundDetail({
 
           <div className="flex gap-6 border-b border-gray-200">
             {[
-              { label: "Picking List", total: fulfillments.picked.length },
-              { label: "Delivery", total: fulfillments.delivered.length },
+              { label: "Daftar pengambilan barang", total: fulfillments.picked.length },
+              { label: "Pengiriman", total: fulfillments.delivered.length },
             ].map((tab, index) => (
               <button
                 key={tab.label}
@@ -1407,9 +1407,9 @@ function OutboundDetail({
                   <table className="w-full border-collapse">
                     <thead>
                       <tr className="bg-slate-50">
-                        <th className="px-3.5 py-3 text-left font-semibold text-slate-600">No.</th>
+                        <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Nomor</th>
                         <th className="px-3.5 py-3 text-left font-semibold text-slate-600">
-                          Created Date
+                          Tanggal dibuat
                         </th>
                         <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Status</th>
                       </tr>
@@ -1423,7 +1423,7 @@ function OutboundDetail({
                           <td className="px-3.5 py-3 text-sm text-gray-900">{item.date}</td>
                           <td className="px-3.5 py-3">
                             <span className="rounded bg-cyan-100 px-2 py-0.5 text-xs font-medium text-cyan-700">
-                              Picked
+                              Telah diambil
                             </span>
                           </td>
                         </tr>
@@ -1434,10 +1434,10 @@ function OutboundDetail({
               ) : (
                 <div className="flex flex-col items-center gap-1 py-8 text-center">
                   <h3 className="m-0 text-base font-semibold text-gray-900">
-                    No picking list yet
+                    Belum ada daftar pengambilan barang
                   </h3>
                   <p className="m-0 text-sm text-gray-500">
-                    Your picking list will appear here
+                    Daftar pengambilan barang akan ditampilkan di sini
                   </p>
                 </div>
               )}
@@ -1455,7 +1455,7 @@ function OutboundDetail({
                       className={btnSecondary}
                       onClick={() => onDeliver(order)}
                     >
-                      Create Delivery Note
+                      Buat surat jalan
                     </button>
                   </div>
                 )}
@@ -1464,12 +1464,12 @@ function OutboundDetail({
                   <table className="w-full border-collapse">
                     <thead>
                       <tr className="bg-slate-50">
-                        <th className="px-3.5 py-3 text-left font-semibold text-slate-600">No.</th>
+                        <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Nomor</th>
                         <th className="px-3.5 py-3 text-left font-semibold text-slate-600">
-                          Created Date
+                          Tanggal dibuat
                         </th>
-                        <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Courier</th>
-                        <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Tracking Number</th>
+                        <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Kurir</th>
+                        <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Nomor pelacakan</th>
                         <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Status</th>
                         <th className="px-3.5 py-3" />
                       </tr>
@@ -1495,13 +1495,13 @@ function OutboundDetail({
                                   : "bg-teal-100 text-teal-700"
                               }`}
                             >
-                              {item.latest ? "On Delivery" : "Completed"}
+                              {item.latest ? "Dalam pengiriman" : "Selesai"}
                             </span>
                           </td>
                           <td className="px-3.5 py-3 text-right">
                             {!item.latest && item.completed_id && (
                               <span className="text-[13px] font-medium text-brand">
-                                View Receipt
+                                Lihat tanda terima
                               </span>
                             )}
                           </td>
@@ -1513,10 +1513,10 @@ function OutboundDetail({
               ) : (
                 <div className="flex flex-col items-center gap-1 py-8 text-center">
                   <h3 className="m-0 text-base font-semibold text-gray-900">
-                    No delivery yet
+                    Belum ada pengiriman
                   </h3>
                   <p className="m-0 text-sm text-gray-500">
-                    Your delivery will appear here
+                    Pengiriman akan ditampilkan di sini
                   </p>
                 </div>
               )}
@@ -1532,8 +1532,8 @@ function OutboundDetail({
               onClick={handleCancel}
             >
               {currentFulfillments.on_process.length === 1
-                ? "Cancel Processed Fulfillment"
-                : "Cancel Fulfillment"}
+                ? "Batalkan pemenuhan pesanan yang diproses"
+                : "Batalkan pemenuhan pesanan"}
             </button>
           ) : (
             <div />
@@ -1574,7 +1574,7 @@ function InboundDetail({
   );
 
   const latestUpdated = order.logs
-    ? `Last updated by ${order.logs.updated_by} at ${order.logs.updated_at.replace("T", " ")}`
+    ? `Terakhir diperbarui oleh ${order.logs.updated_by} pada ${order.logs.updated_at.replace("T", " ")}`
     : null;
 
   return (
@@ -1588,11 +1588,11 @@ function InboundDetail({
               className="text-[13px] font-medium text-brand"
               onClick={onClose}
             >
-              Purchase Fulfillment
+              Pemenuhan pesanan pembelian
             </button>
             <div className="mt-1 flex items-center gap-2">
               <h2 className="m-0 text-[22px] font-bold text-gray-900">
-                Purchase Order #{order.order_number}
+                Pesanan pembelian #{order.order_number}
               </h2>
               <span
                 className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusMeta.color}`}
@@ -1612,30 +1612,30 @@ function InboundDetail({
 
         <div className="p-6">
           <div className="border-b border-gray-100 pb-5">
-            <div className="text-[13px] text-gray-500">Supplier</div>
+            <div className="text-[13px] text-gray-500">Pemasok</div>
             <div className="text-sm font-medium text-brand">{order.person_name}</div>
           </div>
 
           <div className="grid grid-cols-3 gap-6 border-b border-gray-100 py-5">
             <div className="space-y-3">
               <div>
-                <div className="text-[13px] text-gray-500">Order Date</div>
+                <div className="text-[13px] text-gray-500">Tanggal pesanan</div>
                 <div className="text-sm text-gray-900">{order.order_date}</div>
               </div>
               <div>
-                <div className="text-[13px] text-gray-500">Due Date</div>
+                <div className="text-[13px] text-gray-500">Tanggal jatuh tempo</div>
                 <div className="text-sm text-gray-900">{order.due_date}</div>
               </div>
               <div>
-                <div className="text-[13px] text-gray-500">Purchase Order No.</div>
+                <div className="text-[13px] text-gray-500">Nomor pesanan pembelian</div>
                 <div className="text-sm font-medium text-brand">{order.order_number}</div>
               </div>
               <div>
-                <div className="text-[13px] text-gray-500">Supplier Ref. No.</div>
+                <div className="text-[13px] text-gray-500">Nomor referensi pemasok</div>
                 <div className="text-sm text-gray-900">{order.reference_no || "-"}</div>
               </div>
               <div>
-                <div className="text-[13px] text-gray-500">Warehouse</div>
+                <div className="text-[13px] text-gray-500">Gudang</div>
                 <div className="text-sm text-gray-900">{order.warehouse_name}</div>
               </div>
               <div>
@@ -1644,16 +1644,16 @@ function InboundDetail({
               </div>
             </div>
             <div>
-              <div className="text-[13px] text-gray-500">Shipping Address</div>
+              <div className="text-[13px] text-gray-500">Alamat pengiriman</div>
               <div className="text-sm text-gray-900">{order.person_address || "-"}</div>
             </div>
             <div className="space-y-3">
               <div>
-                <div className="text-[13px] text-gray-500">Cancellation Date</div>
+                <div className="text-[13px] text-gray-500">Tanggal pembatalan</div>
                 <div className="text-sm text-gray-900">{order.close_date || "-"}</div>
               </div>
               <div>
-                <div className="text-[13px] text-gray-500">Cancellation Reason</div>
+                <div className="text-[13px] text-gray-500">Alasan pembatalan</div>
                 <div className="text-sm text-gray-900">{order.close_reason || "-"}</div>
               </div>
             </div>
@@ -1663,10 +1663,10 @@ function InboundDetail({
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-slate-50">
-                  <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Product</th>
-                  <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Qty Ordered</th>
-                  <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Qty Received</th>
-                  <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Unit</th>
+                  <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Produk</th>
+                  <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Kuantitas dipesan</th>
+                  <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Kuantitas diterima</th>
+                  <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Satuan</th>
                 </tr>
               </thead>
               <tbody>
@@ -1675,7 +1675,7 @@ function InboundDetail({
                     <td className="px-3.5 py-3">
                       <div className="flex gap-2.5">
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-50">
-                          <span className="text-[10px] text-gray-400">IMG</span>
+                          <span className="text-[10px] text-gray-400">Foto</span>
                         </div>
                         <div>
                           <div className="text-sm font-medium text-brand">{line.product_name}</div>
@@ -1694,7 +1694,7 @@ function InboundDetail({
                 ))}
                 <tr>
                   <td className="px-3.5 py-3 text-right text-sm font-semibold text-gray-900">
-                    Total Units
+                    Total kuantitas
                   </td>
                   <td className="px-3.5 py-3 text-sm font-semibold text-gray-900">
                     {qtyOrderedTotal}
@@ -1722,7 +1722,7 @@ function InboundDetail({
 
           <div className="flex gap-6 border-b border-gray-200">
             {[
-              { label: "Goods Receipt", total: fulfillments.received.length },
+              { label: "Penerimaan barang", total: fulfillments.received.length },
             ].map((tab, index) => (
               <button
                 key={tab.label}
@@ -1751,14 +1751,14 @@ function InboundDetail({
                   <table className="w-full border-collapse">
                     <thead>
                       <tr className="bg-slate-50">
-                        <th className="px-3.5 py-3 text-left font-semibold text-slate-600">No.</th>
+                        <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Nomor</th>
                         <th className="px-3.5 py-3 text-left font-semibold text-slate-600">
-                          Received Date
+                          Tanggal penerimaan
                         </th>
                         <th className="px-3.5 py-3 text-left font-semibold text-slate-600">
-                          Shipping Date
+                          Tanggal pengiriman
                         </th>
-                        <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Courier</th>
+                        <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Kurir</th>
                         <th className="px-3.5 py-3 text-left font-semibold text-slate-600">Status</th>
                       </tr>
                     </thead>
@@ -1777,7 +1777,7 @@ function InboundDetail({
                           </td>
                           <td className="px-3.5 py-3">
                             <span className="rounded bg-teal-100 px-2 py-0.5 text-xs font-medium text-teal-700">
-                              Received
+                              Diterima
                             </span>
                           </td>
                         </tr>
@@ -1788,10 +1788,10 @@ function InboundDetail({
               ) : (
                 <div className="flex flex-col items-center gap-1 py-8 text-center">
                   <h3 className="m-0 text-base font-semibold text-gray-900">
-                    No goods receipt yet
+                    Belum ada penerimaan barang
                   </h3>
                   <p className="m-0 text-sm text-gray-500">
-                    Your goods receipts will appear here
+                    Penerimaan barang akan ditampilkan di sini
                   </p>
                 </div>
               )}
@@ -1806,14 +1806,14 @@ function InboundDetail({
               className="text-[13px] font-medium text-gray-600 underline-offset-2 hover:underline"
               onClick={() => onCancelOrder(order)}
             >
-              Cancel Fulfillment
+              Batalkan pemenuhan pesanan
             </button>
           ) : (
             <div />
           )}
           {!isFinished && (
             <button type="button" className={btnSecondary} onClick={() => onReceive(order)}>
-              Create Goods Receipt
+              Buat penerimaan barang
             </button>
           )}
         </div>
@@ -1904,7 +1904,7 @@ function FulfillmentContent() {
     else if (actionKey === "cancelProcess") setCancelOrder({ order, type: "process" });
     else if (actionKey === "cancelPick") {
       moveOrder(order.id, "on_process");
-      showToast("Picking list canceled");
+      showToast("Daftar pengambilan barang berhasil dibatalkan");
     }
   };
 
@@ -1915,7 +1915,7 @@ function FulfillmentContent() {
     });
     moveOrder(order.id, "on_process", { lines: updatedLines });
     setProcessOrder(null);
-    showToast("Order successfully processed");
+    showToast("Pesanan berhasil diproses");
   };
 
   const handlePickingCreated = (order, number) => {
@@ -1936,7 +1936,7 @@ function FulfillmentContent() {
       },
     });
     setPickingOrder(null);
-    showToast("Picking list created successfully");
+    showToast("Daftar pengambilan barang berhasil dibuat");
   };
 
   const handleDeliveryCreated = (order, payload) => {
@@ -1975,7 +1975,7 @@ function FulfillmentContent() {
       },
     });
     setDeliveryOrder(null);
-    showToast("Delivery note created successfully");
+    showToast("Surat jalan berhasil dibuat");
   };
 
   const handleReceiptCreated = (order) => {
@@ -1999,7 +1999,7 @@ function FulfillmentContent() {
       moveOrder(order.id, "completed");
     }
     setReceiptOrder(null);
-    showToast("Receipt created successfully");
+    showToast("Tanda terima berhasil dibuat");
   };
 
   const handleGoodsReceiptCreated = (order, lines) => {
@@ -2010,7 +2010,7 @@ function FulfillmentContent() {
     const allComplete = updatedLines.every((line) => line.quantity_on_received >= line.quantity);
     moveOrder(order.id, allComplete ? "completed" : "partially_completed", { lines: updatedLines });
     setGoodsReceiptOrder(null);
-    showToast("Goods receipt saved successfully");
+    showToast("Penerimaan barang berhasil disimpan");
   };
 
   const handleCancelConfirm = () => {
@@ -2019,10 +2019,10 @@ function FulfillmentContent() {
     if (type === "process") {
       const resetLines = order.lines.map((line) => ({ ...line, quantity_on_process: 0 }));
       moveOrder(order.id, "new_order", { lines: resetLines });
-      showToast("Processed order canceled");
+      showToast("Proses pesanan berhasil dibatalkan");
     } else {
-      moveOrder(order.id, "canceled", { close_date: "2026-09-30", close_reason: "Canceled by user" });
-      showToast("Fulfillment canceled");
+      moveOrder(order.id, "canceled", { close_date: "2026-09-30", close_reason: "Dibatalkan oleh pengguna" });
+      showToast("Pemenuhan pesanan berhasil dibatalkan");
     }
     setCancelOrder(null);
   };
@@ -2031,7 +2031,7 @@ function FulfillmentContent() {
     <div className="p-7 max-md:p-[18px]">
       <div className="mb-6 flex items-start justify-between">
         <h2 className="m-0 text-[28px] font-bold text-gray-900">
-          Fulfillment
+          Pemenuhan pesanan
         </h2>
         <GroupingButton />
       </div>
@@ -2042,7 +2042,7 @@ function FulfillmentContent() {
         <div className="mb-6 grid grid-cols-1 items-end gap-4 md:grid-cols-2">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1.5 block text-[13px] font-medium text-gray-700">Warehouse</label>
+              <label className="mb-1.5 block text-[13px] font-medium text-gray-700">Gudang</label>
               <select
                 className={`${selectBase} w-full`}
                 value={warehouseId}
@@ -2056,7 +2056,7 @@ function FulfillmentContent() {
               </select>
             </div>
             <div>
-              <label className="mb-1.5 block text-[13px] font-medium text-gray-700">Period</label>
+              <label className="mb-1.5 block text-[13px] font-medium text-gray-700">Periode</label>
               <select
                 className={`${selectBase} w-full`}
                 value={periodSlug}
@@ -2074,10 +2074,10 @@ function FulfillmentContent() {
             <button
               type="button"
               className={btnSecondary}
-              onClick={() => showToast("Data reloaded")}
+              onClick={() => showToast("Data berhasil dimuat ulang")}
             >
               <ArrowsClockwise size={14} />
-              <span>Reload</span>
+              <span>Muat ulang</span>
             </button>
             <div className="relative">
               <MagnifyingGlass
@@ -2086,7 +2086,7 @@ function FulfillmentContent() {
               />
               <input
                 className={`${inputBase} w-[238px] pl-9`}
-                placeholder={isSales ? "Search transactions" : "Search..."}
+                placeholder={isSales ? "Cari transaksi" : "Cari…"}
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
               />
@@ -2300,7 +2300,7 @@ export default function FulfillmentPage() {
   const isDark = themeMode === "dark";
 
   return (
-    <div className={isDark ? "dash-dark" : ""}>
+    <div lang="id" className={isDark ? "dash-dark" : ""}>
       <FulfillmentContent />
       <style>{DARK_CSS}</style>
     </div>

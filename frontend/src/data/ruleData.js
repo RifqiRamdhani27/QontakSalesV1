@@ -20,10 +20,10 @@ const ruleLabels = {
   "purchase delivery": "Pengiriman pembelian",
   "purchase request": "Permintaan pembelian",
   "product conversion": "Konversi produk",
-  "warehouse transfer": "Transfer gudang",
+  "warehouse transfer": "Pemindahan antargudang",
   "stock adjustment": "Penyesuaian stok",
-  "either must approve": "Salah satu penyetuju harus menyetujui",
-  "all must approve": "Semua penyetuju harus menyetujui",
+  "either must approve": "Salah satu pemberi persetujuan harus menyetujui",
+  "all must approve": "Semua pemberi persetujuan harus menyetujui",
   "all transaction types": "Semua jenis transaksi",
   edit: "Ubah",
   create: "Buat",
@@ -210,7 +210,7 @@ export const taggingTransactionTypes = [
 export const taggingTypeOptions = [
   { value: 1, label: "Email setiap pengguna" },
   { value: 2, label: "Nama lengkap setiap pengguna" },
-  { value: 3, label: "Custom" },
+  { value: 3, label: "Penanda khusus" },
 ];
 
 export const customTagOptions = [
