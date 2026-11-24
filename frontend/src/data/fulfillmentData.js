@@ -1,18 +1,18 @@
 export const warehouseOptionsSales = [
-  { id: 0, name: "All" },
-  { id: 1, name: "Unassigned" },
+  { id: 0, name: "Semua" },
+  { id: 1, name: "Belum ditetapkan" },
 ];
 
 export const warehouseOptionsPurchase = [
-  { id: 0, name: "All Warehouses" },
-  { id: 1, name: "Unassigned" },
+  { id: 0, name: "Semua gudang" },
+  { id: 1, name: "Belum ditetapkan" },
 ];
 
 export const periodOptions = [
-  { name: "7 days ago", slug: "week" },
-  { name: "14 days ago", slug: "bi-week" },
-  { name: "30 days ago", slug: "month" },
-  { name: "All", slug: "all" },
+  { name: "7 hari terakhir", slug: "week" },
+  { name: "14 hari terakhir", slug: "bi-week" },
+  { name: "30 hari terakhir", slug: "month" },
+  { name: "Semua", slug: "all" },
 ];
 
 export const courierOptions = [
@@ -30,83 +30,83 @@ export const courierOptions = [
 ];
 
 export const outboundStatusMeta = {
-  new_order: { label: "New Order", color: "bg-violet-100 text-violet-700" },
-  on_process: { label: "In Process", color: "bg-amber-100 text-amber-700" },
-  picked: { label: "Picked", color: "bg-cyan-100 text-cyan-700" },
-  delivered: { label: "On Delivery", color: "bg-sky-100 text-sky-700" },
-  completed: { label: "Completed", color: "bg-teal-100 text-teal-700" },
-  canceled: { label: "Canceled", color: "bg-stone-100 text-stone-600" },
-  partially_completed: { label: "Partially Completed", color: "bg-green-100 text-green-700" },
+  new_order: { label: "Pesanan baru", color: "bg-violet-100 text-violet-700" },
+  on_process: { label: "Dalam proses", color: "bg-amber-100 text-amber-700" },
+  picked: { label: "Telah diambil", color: "bg-cyan-100 text-cyan-700" },
+  delivered: { label: "Dalam pengiriman", color: "bg-sky-100 text-sky-700" },
+  completed: { label: "Selesai", color: "bg-teal-100 text-teal-700" },
+  canceled: { label: "Dibatalkan", color: "bg-stone-100 text-stone-600" },
+  partially_completed: { label: "Selesai sebagian", color: "bg-green-100 text-green-700" },
   completed_partially_and_canceled: {
-    label: "Canceled & Partially Completed",
+    label: "Dibatalkan dan selesai sebagian",
     color: "bg-green-100 text-green-700",
   },
 };
 
 export const inboundStatusMeta = {
-  new_order: { label: "New Order", color: "bg-violet-100 text-violet-700" },
-  completed: { label: "Completed", color: "bg-teal-100 text-teal-700" },
-  canceled: { label: "Canceled", color: "bg-stone-100 text-stone-600" },
-  partially_completed: { label: "Partially Completed", color: "bg-green-100 text-green-700" },
+  new_order: { label: "Pesanan baru", color: "bg-violet-100 text-violet-700" },
+  completed: { label: "Selesai", color: "bg-teal-100 text-teal-700" },
+  canceled: { label: "Dibatalkan", color: "bg-stone-100 text-stone-600" },
+  partially_completed: { label: "Selesai sebagian", color: "bg-green-100 text-green-700" },
   completed_partially_and_canceled: {
-    label: "Canceled & Partially Completed",
+    label: "Dibatalkan dan selesai sebagian",
     color: "bg-green-100 text-green-700",
   },
 };
 
 export const outboundKanbanColumns = [
-  { key: "new_order", label: "New Order", statuses: ["new_order"] },
-  { key: "on_process", label: "In Process", statuses: ["on_process", "picked"] },
-  { key: "delivered", label: "On Delivery", statuses: ["delivered"] },
-  { key: "completed", label: "Completed", statuses: ["completed", "partially_completed", "completed_partially_and_canceled"] },
-  { key: "canceled", label: "Canceled", statuses: ["canceled"] },
+  { key: "new_order", label: "Pesanan baru", statuses: ["new_order"] },
+  { key: "on_process", label: "Dalam proses", statuses: ["on_process", "picked"] },
+  { key: "delivered", label: "Dalam pengiriman", statuses: ["delivered"] },
+  { key: "completed", label: "Selesai", statuses: ["completed", "partially_completed", "completed_partially_and_canceled"] },
+  { key: "canceled", label: "Dibatalkan", statuses: ["canceled"] },
 ];
 
 export const inboundKanbanColumns = [
-  { key: "new_order", label: "New Order", statuses: ["new_order"] },
-  { key: "completed", label: "Completed", statuses: ["completed", "partially_completed", "completed_partially_and_canceled"] },
-  { key: "canceled", label: "Canceled", statuses: ["canceled"] },
+  { key: "new_order", label: "Pesanan baru", statuses: ["new_order"] },
+  { key: "completed", label: "Selesai", statuses: ["completed", "partially_completed", "completed_partially_and_canceled"] },
+  { key: "canceled", label: "Dibatalkan", statuses: ["canceled"] },
 ];
 
 export const outboundActions = {
   new_order: [
-    { key: "process", label: "Process Order" },
-    { key: "view", label: "View Details" },
-    { key: "cancel", label: "Cancel Fulfillment" },
+    { key: "process", label: "Proses pesanan" },
+    { key: "view", label: "Lihat detail" },
+    { key: "cancel", label: "Batalkan pemenuhan pesanan" },
   ],
   on_process: [
-    { key: "pick", label: "Create Picking List" },
-    { key: "view", label: "View Details" },
-    { key: "cancelProcess", label: "Cancel Processed Fulfillment" },
+    { key: "pick", label: "Buat daftar pengambilan barang" },
+    { key: "view", label: "Lihat detail" },
+    { key: "cancelProcess", label: "Batalkan pemenuhan pesanan yang diproses" },
   ],
   picked: [
-    { key: "view", label: "View Details" },
-    { key: "cancelPick", label: "Cancel Picking List" },
+    { key: "view", label: "Lihat detail" },
+    { key: "cancelPick", label: "Batalkan daftar pengambilan barang" },
   ],
   delivered: [
-    { key: "complete", label: "Create Receipt" },
-    { key: "view", label: "View Details" },
+    { key: "complete", label: "Buat tanda terima" },
+    { key: "view", label: "Lihat detail" },
   ],
-  completed: [{ key: "view", label: "View Details" }],
-  canceled: [{ key: "view", label: "View Details" }],
+  completed: [{ key: "view", label: "Lihat detail" }],
+  canceled: [{ key: "view", label: "Lihat detail" }],
   partially_completed: [
-    { key: "process", label: "Add Processed Order" },
-    { key: "view", label: "View Details" },
+    { key: "process", label: "Tambah pesanan yang diproses" },
+    { key: "view", label: "Lihat detail" },
   ],
 };
 
 export const inboundActions = {
   new_order: [
-    { key: "receive", label: "Create Receipt" },
-    { key: "view", label: "View Details" },
-    { key: "cancel", label: "Cancel Fulfillment" },
+    { key: "receive", label: "Buat tanda terima" },
+    { key: "view", label: "Lihat detail" },
+    { key: "cancel", label: "Batalkan pemenuhan pesanan" },
   ],
   partially_completed: [
-    { key: "receive", label: "Create Receipt" },
-    { key: "view", label: "View Details" },
+    { key: "receive", label: "Buat tanda terima" },
+    { key: "view", label: "Lihat detail" },
   ],
-  completed: [{ key: "view", label: "View Details" }],
-  canceled: [{ key: "view", label: "View Details" }],
+  completed: [{ key: "view", label: "Lihat detail" }],
+  canceled: [{ key: "view", label: "Lihat detail" }],
 };
 
 export const outboundOrders = [];

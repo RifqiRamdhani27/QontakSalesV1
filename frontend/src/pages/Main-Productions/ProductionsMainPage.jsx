@@ -14,10 +14,10 @@ function formatRupiah(value) {
 }
 const standardCostCategoryOptions = [{
   value: "product",
-  label: "Product components"
+  label: "Komponen produk"
 }, {
   value: "cost",
-  label: "Production cost"
+  label: "Biaya produksi"
 }];
 function getAccountLabel(value) {
   return productionAccountOptions.find(option => option.value === value)?.label ?? value;
@@ -61,7 +61,7 @@ function SelectField({
   value,
   onChange,
   placeholder,
-  emptyText = "Data not found",
+  emptyText = "Data tidak ditemukan",
   error = false,
   footerAction
 }) {
@@ -167,7 +167,7 @@ function ModalShell({
   </div>;
 }
 function EmptyStateFolder({
-  title = "Expense account mapping will appear here",
+  title = "Pemetaan akun biaya akan ditampilkan di sini",
   description
 }) {
   return <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -193,7 +193,7 @@ function AccountCostMenu({
   return <Dropdown trigger={({
     toggle
   }) => <button type="button" onClick={toggle} className={`${btnSecondary} dd-btn-size`}>
-      Set account & standard cost
+      Atur akun dan biaya standar
       <CaretDown size={14} weight="bold" />
     </button>}>
     {({
@@ -203,13 +203,13 @@ function AccountCostMenu({
           onSelectMapping();
           close();
         }} className="block w-full cursor-pointer px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">
-          Production account mapping
+          Pemetaan akun produksi
         </button>
         <button type="button" onClick={() => {
           onSelectStandardCost();
           close();
         }} className="block w-full cursor-pointer px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">
-          Standard cost
+          Biaya standar
         </button>
       </>}
   </Dropdown>;
@@ -221,29 +221,29 @@ function ActionsMenu({
   return <Dropdown align="right" trigger={({
     toggle
   }) => <button type="button" onClick={toggle} className={`${btnPrimary} dd-btn-size`}>
-      Actions
+      Tindakan
       <CaretDown size={14} weight="bold" />
     </button>}>
     {({
       close
     }) => <>
         <div className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-          Bill Of Materials
+          Daftar kebutuhan bahan (BOM)
         </div>
         <button type="button" onClick={() => {
           onCreateBom();
           close();
         }} className="block w-full cursor-pointer px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">
-          Create bill of materials
+          Buat daftar kebutuhan bahan (BOM)
         </button>
         <div className="mt-1 border-t border-gray-100 px-3 pt-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-          Work Orders
+          Perintah kerja
         </div>
         <button type="button" onClick={() => {
           onCreateWorkOrder();
           close();
         }} className="block w-full cursor-pointer px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">
-          Create work order
+          Buat perintah kerja
         </button>
       </>}
   </Dropdown>;
@@ -258,14 +258,14 @@ function ProductionsHeader({
 }) {
   const tabs = [{
     key: "bom",
-    label: "Bill of materials (BOM) list"
+    label: "Daftar kebutuhan bahan (BOM)"
   }, {
     key: "workOrder",
-    label: "Work order list"
+    label: "Daftar perintah kerja"
   }];
   return <div className="border-b border-gray-200 bg-white px-6 pt-5">
     <div className="flex items-center justify-between">
-      <h1 className="text-[22px] font-bold text-slate-900">Productions</h1>
+      <h1 className="text-[22px] font-bold text-slate-900">Produksi</h1>
       <div className="flex items-center gap-2.5">
         <AccountCostMenu onSelectMapping={onSelectMapping} onSelectStandardCost={onSelectStandardCost} />
         <ActionsMenu onCreateBom={onCreateBom} onCreateWorkOrder={onCreateWorkOrder} />
@@ -280,24 +280,24 @@ function ProductionsHeader({
 }
 const bomColumns = [{
   key: "bomName",
-  label: "BOM name",
+  label: "Nama BOM",
   sortable: true
 }, {
   key: "bomCode",
-  label: "BOM code",
+  label: "Kode BOM",
   sortable: true
 }, {
   key: "category",
-  label: "Category"
+  label: "Kategori"
 }, {
   key: "costingReference",
-  label: "Costing reference"
+  label: "Acuan perhitungan biaya"
 }, {
   key: "product",
-  label: "Product"
+  label: "Produk"
 }, {
   key: "description",
-  label: "Description"
+  label: "Deskripsi"
 }];
 function BomListTab({
   bomList = []
@@ -311,7 +311,7 @@ function BomListTab({
         <span role="switch" aria-checked={showArchived} onClick={() => setShowArchived(prev => !prev)} className={`relative h-5 w-9 cursor-pointer rounded-full transition-colors ${showArchived ? "bg-brand" : "bg-slate-300"}`}>
           <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${showArchived ? "translate-x-4" : "translate-x-0.5"}`} />
         </span>
-        Show archived BOM
+        Tampilkan BOM yang diarsipkan
       </label>
       <div className="flex items-center gap-2.5">
         <button type="button" onClick={() => setPopup("import")} className="cursor-pointer text-slate-500 hover:text-slate-700">
@@ -322,7 +322,7 @@ function BomListTab({
         </button>
         <div className="relative">
           <MagnifyingGlass size={16} weight="bold" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input type="text" value={search} onChange={event => setSearch(event.target.value)} placeholder="Cari..." className={`${inputBase} w-56 pl-9`} />
+          <input type="text" value={search} onChange={event => setSearch(event.target.value)} placeholder="Cari…" className={`${inputBase} w-56 pl-9`} />
         </div>
       </div>
     </div>
@@ -343,9 +343,9 @@ function BomListTab({
           <tbody>
             {bomList.length === 0 && <tr>
               <td colSpan={bomColumns.length}>
-                <EmptyStateTable title="Bill of materials list will appear here" description={<>
-                  Create bill of materials from{" "}
-                  <span className="font-semibold text-slate-700">Actions</span> button.
+                <EmptyStateTable title="Daftar kebutuhan bahan akan ditampilkan di sini" description={<>
+                  Buat daftar kebutuhan bahan melalui{" "}
+                  <span className="font-semibold text-slate-700">Tindakan</span> .
                 </>} />
               </td>
             </tr>}
@@ -354,7 +354,7 @@ function BomListTab({
       </div>
     </div>
 
-    {popup === "import" && <ImportPopup title="Import BOM" onClose={() => setPopup(null)} onImport={() => setPopup(null)} />}
+    {popup === "import" && <ImportPopup title="Impor BOM" onClose={() => setPopup(null)} onImport={() => setPopup(null)} />}
 
     {popup === "export" && <ExportBomPopup onClose={() => setPopup(null)} onExport={() => setPopup(null)} />}
   </div>;
@@ -372,7 +372,7 @@ function WorkOrderListTab({
       <div className="flex items-center gap-2.5">
         <div className="w-36 shrink-0">
           <select value={type} onChange={event => setType(event.target.value)} className={inputBase}>
-            <option value="">All types</option>
+            <option value="">Semua jenis</option>
             {workOrderTypeOptions.map(option => <option key={option.value} value={option.value}>
               {option.label}
             </option>)}
@@ -380,7 +380,7 @@ function WorkOrderListTab({
         </div>
         <div className="w-44 shrink-0">
           <select value={status} onChange={event => setStatus(event.target.value)} className={inputBase}>
-            <option value="">All status</option>
+            <option value="">Semua status</option>
             {workOrderStatusOptions.map(option => <option key={option.value} value={option.value}>
               {option.label}
             </option>)}
@@ -398,16 +398,16 @@ function WorkOrderListTab({
         </button>
         <div className="relative">
           <MagnifyingGlass size={16} weight="bold" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input type="text" value={search} onChange={event => setSearch(event.target.value)} placeholder="Search..." className={`${inputBase} w-56 pl-9`} />
+          <input type="text" value={search} onChange={event => setSearch(event.target.value)} placeholder="Cari…" className={`${inputBase} w-56 pl-9`} />
         </div>
       </div>
     </div>
 
-    {workOrderList.length === 0 && <EmptyStateTable title="Work order list will appear here" description={<>
-      Create work orders from <span className="font-semibold text-slate-700">Actions</span> button.
+    {workOrderList.length === 0 && <EmptyStateTable title="Daftar perintah kerja akan ditampilkan di sini" description={<>
+      Buat perintah kerja melalui <span className="font-semibold text-slate-700">Tindakan</span> .
     </>} />}
 
-    {popup === "import" && <ImportPopup title="Import work order" onClose={() => setPopup(null)} onImport={() => setPopup(null)} />}
+    {popup === "import" && <ImportPopup title="Impor perintah kerja" onClose={() => setPopup(null)} onImport={() => setPopup(null)} />}
 
     {popup === "filter" && <FilterWorkOrderPopup filters={filters} onClose={() => setPopup(null)} onApply={next => {
       setFilters(next);
@@ -424,7 +424,7 @@ function AddAccountMappingMenu({
   return <Dropdown align="right" trigger={({
     toggle
   }) => <button type="button" onClick={toggle} className={btnPrimary}>
-      Add account mapping
+      Tambah pemetaan akun
       <CaretDown size={14} weight="bold" />
     </button>}>
     {({
@@ -434,13 +434,13 @@ function AddAccountMappingMenu({
           onSelect("inventory");
           close();
         }} className="block w-full cursor-pointer px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">
-          Inventory-in-process
+          Persediaan dalam proses
         </button>
         <button type="button" onClick={() => {
           onSelect("cost");
           close();
         }} className="block w-full cursor-pointer px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">
-          Production cost
+          Biaya produksi
         </button>
       </>}
   </Dropdown>;
@@ -456,11 +456,11 @@ function AddAccountMappingModal({
   const [submitted, setSubmitted] = useState(false);
   const isInventory = type === "inventory";
   const info = isInventory ? {
-    title: "Inventory-in-process account mapping",
-    description: "The mapped account for inventory-in-process cannot be deleted or archived from chart of accounts (COA)."
+    title: "Pemetaan akun persediaan dalam proses",
+    description: "Akun yang dipetakan untuk persediaan dalam proses tidak dapat dihapus atau diarsipkan dari daftar akun (COA)."
   } : {
-    title: "Production cost account mapping",
-    description: "The mapped account for production cost cannot be deleted or archived from chart of accounts (COA)."
+    title: "Pemetaan akun biaya produksi",
+    description: "Akun yang dipetakan untuk biaya produksi tidak dapat dihapus atau diarsipkan dari daftar akun (COA)."
   };
   const nameError = submitted && !name.trim();
   const accountError = submitted && !account;
@@ -475,12 +475,12 @@ function AddAccountMappingModal({
       category
     });
   }
-  return <ModalShell title="Add account mapping" onClose={onClose} footer={<>
+  return <ModalShell title="Tambah pemetaan akun" onClose={onClose} footer={<>
     <button type="button" onClick={onClose} className={btnModalCancel}>
-      Cancel
+      Batal
     </button>
     <button type="button" onClick={handleSave} className={btnModalSubmit}>
-      Save
+      Simpan
     </button>
   </>}>
     <div className="mb-5 flex gap-2.5 rounded-lg bg-indigo-50 px-4 py-3">
@@ -492,33 +492,33 @@ function AddAccountMappingModal({
     </div>
 
     <div className={formGroup}>
-      <label className={formLabel}>Account mapping name</label>
+      <label className={formLabel}>Nama pemetaan akun</label>
       <input type="text" value={name} onChange={event => setName(event.target.value)} className={nameError ? inputError : inputBase} />
-      {nameError && <FieldError>Account mapping name is required</FieldError>}
+      {nameError && <FieldError>Nama pemetaan akun wajib diisi</FieldError>}
     </div>
 
     <div className={formGroup}>
-      <label className={formLabel}>{isInventory ? "Inventory account" : "Account"}</label>
-      <SelectField options={productionAccountOptions} value={account} onChange={setAccount} placeholder={isInventory ? "Select inventory account" : "Select account"} emptyText="Account not found" error={accountError} />
-      {accountError && <FieldError>Account is required</FieldError>}
+      <label className={formLabel}>{isInventory ? "Akun persediaan" : "Akun"}</label>
+      <SelectField options={productionAccountOptions} value={account} onChange={setAccount} placeholder={isInventory ? "Pilih akun persediaan" : "Pilih akun"} emptyText="Akun tidak ditemukan" error={accountError} />
+      {accountError && <FieldError>Akun wajib dipilih</FieldError>}
     </div>
 
     {!isInventory && <div className={formGroup}>
-      <label className={formLabel}>Production cost category</label>
-      <SelectField options={productionCostCategoryOptions} value={category} onChange={setCategory} placeholder="Select production cost category" emptyText="Category not found" error={categoryError} />
-      {categoryError && <FieldError>Production cost category is required</FieldError>}
+      <label className={formLabel}>Kategori biaya produksi</label>
+      <SelectField options={productionCostCategoryOptions} value={category} onChange={setCategory} placeholder="Pilih kategori biaya produksi" emptyText="Kategori tidak ditemukan" error={categoryError} />
+      {categoryError && <FieldError>Kategori biaya produksi wajib dipilih</FieldError>}
     </div>}
   </ModalShell>;
 }
 const productionCostColumns = [{
   key: "accountMapping",
-  label: "Account mapping"
+  label: "Pemetaan akun"
 }, {
   key: "account",
-  label: "Account (COA)"
+  label: "Akun (COA)"
 }, {
   key: "category",
-  label: "Production cost category"
+  label: "Kategori biaya produksi"
 }];
 function ProductionAccountMappingPage({
   onBack,
@@ -540,10 +540,10 @@ function ProductionAccountMappingPage({
       <div className="flex items-center justify-between">
         <div>
           <button type="button" onClick={onBack} className="cursor-pointer text-xs font-semibold text-brand hover:underline">
-            Production
+            Produksi
           </button>
           <h1 className="mt-0.5 text-[22px] font-bold text-slate-900">
-            Production account mapping
+            Pemetaan akun produksi
           </h1>
         </div>
         <AddAccountMappingMenu onSelect={setModalType} />
@@ -551,26 +551,24 @@ function ProductionAccountMappingPage({
     </div>
 
     <div className="p-6">
-      <h2 className="mb-3 text-[15px] font-bold text-slate-900">Inventory-in-process</h2>
+      <h2 className="mb-3 text-[15px] font-bold text-slate-900">Persediaan dalam proses</h2>
 
       <div className="mb-5 flex gap-2.5 rounded-lg bg-indigo-50 px-4 py-3">
         <Info size={18} weight="bold" className="mt-0.5 shrink-0 text-brand" />
         <p className="text-sm text-slate-600">
-          The inventory-in-process account is required for the production account mapping.
-          Please create a new account on the chart of accounts (COA) page if that account is
-          not listed yet.
+          Akun persediaan dalam proses diperlukan untuk pemetaan akun produksi. Buat akun baru pada halaman daftar akun (COA) jika akun tersebut belum tersedia.
         </p>
       </div>
 
       <div className={formGroup}>
-        <label className={formLabel}>Inventory-in-process account mapping</label>
+        <label className={formLabel}>Pemetaan akun persediaan dalam proses</label>
         <SelectField options={inventoryMappings.map(item => ({
           value: item.id,
           label: item.name
-        }))} value={inventoryMappingValue} onChange={setInventoryMappingValue} placeholder="Select inventory-in-process account mapping" emptyText="No inventory-in-process account mapping found" />
+        }))} value={inventoryMappingValue} onChange={setInventoryMappingValue} placeholder="Pilih pemetaan akun persediaan dalam proses" emptyText="Pemetaan akun persediaan dalam proses tidak ditemukan" />
       </div>
 
-      <h2 className="mb-3 mt-8 text-[15px] font-bold text-slate-900">Production cost</h2>
+      <h2 className="mb-3 mt-8 text-[15px] font-bold text-slate-900">Biaya produksi</h2>
 
       <div className={tableCard}>
         <div className={tableWrapper}>
@@ -600,7 +598,7 @@ function ProductionAccountMappingPage({
 
       <div className="mt-6 flex justify-end">
         <button type="button" className={btnPrimary}>
-          Save changes
+          Simpan perubahan
         </button>
       </div>
     </div>
@@ -610,19 +608,19 @@ function ProductionAccountMappingPage({
 }
 const standardCostColumns = [{
   key: "category",
-  label: "Category"
+  label: "Kategori"
 }, {
   key: "name",
-  label: "Product / Account"
+  label: "Produk / Akun"
 }, {
   key: "unit",
-  label: "Unit"
+  label: "Satuan"
 }, {
   key: "currentCost",
-  label: "Current cost"
+  label: "Biaya saat ini"
 }, {
   key: "standardCost",
-  label: "Standard cost"
+  label: "Biaya standar"
 }];
 function StandardCostFilterModal({
   productOptions,
@@ -639,31 +637,31 @@ function StandardCostFilterModal({
     setCategory(next);
     setRefId("");
   }
-  return <ModalShell title="Filter standard cost" onClose={onClose} footer={<>
+  return <ModalShell title="Filter biaya standar" onClose={onClose} footer={<>
     <button type="button" onClick={onReset} className="cursor-pointer px-3 text-[13px] font-semibold text-slate-600 hover:text-slate-800">
-      Reset filter
+      Atur ulang filter
     </button>
     <button type="button" onClick={() => onApply({
       category,
       refId
     })} className={btnModalSubmit}>
-      Apply
+      Terapkan
     </button>
   </>}>
     <div className={formGroup}>
-      <label className={formLabel}>Category</label>
+      <label className={formLabel}>Kategori</label>
       <CategoryRadio name="filter-standard-cost-category" value={category} onChange={handleCategoryChange} />
     </div>
 
     {isProduct ? <div className={formGroup}>
-      <label className={formLabel}>Product</label>
-      <SelectField options={productOptions} value={refId} onChange={setRefId} placeholder="Select product" emptyText="Product not found" />
+      <label className={formLabel}>Produk</label>
+      <SelectField options={productOptions} value={refId} onChange={setRefId} placeholder="Pilih produk" emptyText="Produk tidak ditemukan" />
     </div> : <div className={formGroup}>
-      <label className={formLabel}>Production cost account mapping</label>
+      <label className={formLabel}>Pemetaan akun biaya produksi</label>
       <SelectField options={productionCostMappings.map(item => ({
         value: item.id,
         label: item.name
-      }))} value={refId} onChange={setRefId} placeholder="Select production cost account mapping" emptyText="Production cost account mapping not found" />
+      }))} value={refId} onChange={setRefId} placeholder="Pilih pemetaan akun biaya produksi" emptyText="Pemetaan akun biaya produksi tidak ditemukan" />
     </div>}
   </ModalShell>;
 }
@@ -711,53 +709,53 @@ function AddStandardCostModal({
     });
   }
   return <>
-    <ModalShell title="Add standard cost" onClose={onClose} footer={<>
+    <ModalShell title="Tambah biaya standar" onClose={onClose} footer={<>
       <button type="button" onClick={onClose} className={btnModalCancel}>
-        Cancel
+        Batal
       </button>
       <button type="button" onClick={handleSave} className={btnModalSubmit}>
-        Save
+        Simpan
       </button>
     </>}>
       <div className={formGroup}>
-        <label className={formLabel}>Category</label>
+        <label className={formLabel}>Kategori</label>
         <CategoryRadio name="add-standard-cost-category" value={category} onChange={handleCategoryChange} />
       </div>
 
       {isProduct ? <>
         <div className="mb-4 grid grid-cols-[1fr_96px] gap-3">
           <div>
-            <label className={formLabel}>Product</label>
-            <SelectField options={productOptions} value={productId} onChange={setProductId} placeholder="Select product" emptyText="Product not found" error={refError} />
-            {refError && <FieldError>Product is required</FieldError>}
+            <label className={formLabel}>Produk</label>
+            <SelectField options={productOptions} value={productId} onChange={setProductId} placeholder="Pilih produk" emptyText="Produk tidak ditemukan" error={refError} />
+            {refError && <FieldError>Produk wajib dipilih</FieldError>}
           </div>
           <div>
-            <label className={formLabel}>Unit</label>
+            <label className={formLabel}>Satuan</label>
             <input type="text" disabled value={unit} className={inputBase} />
           </div>
         </div>
 
         <div className={formGroup}>
-          <label className={formLabel}>Current cost</label>
+          <label className={formLabel}>Biaya saat ini</label>
           <RupiahInput disabled value={currentCost} />
         </div>
 
         <div className={formGroup}>
-          <label className={formLabel}>Standard cost</label>
+          <label className={formLabel}>Biaya standar</label>
           <RupiahInput value={standardCost} onChange={setStandardCost} error={costError} />
-          {costError && <FieldError>Standard cost must be greater than 0</FieldError>}
+          {costError && <FieldError>Biaya standar harus lebih besar dari 0</FieldError>}
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <LabelWithInfo hint="Difference between the standard cost and the current cost.">
-              Cost variance estimation
+            <LabelWithInfo hint="Selisih antara biaya standar dan biaya saat ini.">
+              Estimasi selisih biaya
             </LabelWithInfo>
             <RupiahInput disabled value={variance} />
           </div>
           <div>
-            <LabelWithInfo hint="Cost variance estimation as a percentage of the current cost.">
-              Variance est. %
+            <LabelWithInfo hint="Estimasi selisih biaya dalam persentase terhadap biaya saat ini.">
+              Estimasi selisih (%)
             </LabelWithInfo>
             <div className="flex overflow-hidden rounded-lg border border-gray-300 bg-slate-100">
               <input type="text" disabled value={variancePercent} className="w-full bg-transparent px-3 py-2.5 text-sm outline-none disabled:cursor-not-allowed disabled:text-slate-400" />
@@ -769,21 +767,21 @@ function AddStandardCostModal({
         </div>
       </> : <>
         <div className={formGroup}>
-          <label className={formLabel}>Production cost account mapping</label>
+          <label className={formLabel}>Pemetaan akun biaya produksi</label>
           <SelectField options={productionCostMappings.map(item => ({
             value: item.id,
             label: item.name
-          }))} value={mappingId} onChange={setMappingId} placeholder="Select production cost account mapping" emptyText="Production cost account mapping not found" error={refError} footerAction={{
-            label: "Add account mapping",
+          }))} value={mappingId} onChange={setMappingId} placeholder="Pilih pemetaan akun biaya produksi" emptyText="Pemetaan akun biaya produksi tidak ditemukan" error={refError} footerAction={{
+            label: "Tambah pemetaan akun",
             onClick: () => setShowMappingModal(true)
           }} />
-          {refError && <FieldError>Production cost account mapping is required</FieldError>}
+          {refError && <FieldError>Pemetaan akun biaya produksi wajib dipilih</FieldError>}
         </div>
 
         <div className={formGroup}>
-          <label className={formLabel}>Standard cost</label>
+          <label className={formLabel}>Biaya standar</label>
           <RupiahInput value={standardCost} onChange={setStandardCost} error={costError} />
-          {costError && <FieldError>Standard cost must be greater than 0</FieldError>}
+          {costError && <FieldError>Biaya standar harus lebih besar dari 0</FieldError>}
         </div>
       </>}
     </ModalShell>
@@ -819,17 +817,17 @@ function StandardCostPage({
       <div className="flex items-center justify-between">
         <div>
           <button type="button" onClick={onBack} className="cursor-pointer text-xs font-semibold text-brand hover:underline">
-            Production
+            Produksi
           </button>
-          <h1 className="mt-0.5 text-[22px] font-bold text-slate-900">Standard cost</h1>
+          <h1 className="mt-0.5 text-[22px] font-bold text-slate-900">Biaya standar</h1>
         </div>
         <div className="flex items-center gap-2.5">
           <button type="button" className={`${btn} text-brand`}>
             <BookOpen size={14} weight="bold" />
-            Guide article
+            Artikel panduan
           </button>
           <button type="button" onClick={() => setModal("add")} className={btnPrimary}>
-            Add standard cost
+            Tambah biaya standar
           </button>
         </div>
       </div>
@@ -839,10 +837,9 @@ function StandardCostPage({
       <div className="mb-4 flex gap-2.5 rounded-lg bg-indigo-50 px-4 py-3">
         <Info size={18} weight="bold" className="mt-0.5 shrink-0 text-brand" />
         <div>
-          <p className="text-sm font-semibold text-slate-800">Terms for applying BOM with standard cost</p>
+          <p className="text-sm font-semibold text-slate-800">Ketentuan penerapan BOM dengan biaya standar</p>
           <p className="mt-0.5 text-sm text-slate-600">
-            Adjust the standard cost first, then change the costing reference from actual to
-            standard cost on the related BOM.
+            Sesuaikan biaya standar terlebih dahulu, lalu ubah acuan perhitungan biaya dari biaya aktual menjadi biaya standar pada BOM terkait.
           </p>
         </div>
       </div>
@@ -868,17 +865,16 @@ function StandardCostPage({
             <tbody>
               {visibleList.length === 0 && <tr>
                 <td colSpan={standardCostColumns.length}>
-                  <EmptyStateFolder title="Standard cost list will appear here" description={<>
-                    The standard cost is used as an estimation of the production process
-                    expenses of goods. Add standard cost from{" "}
-                    <span className="font-semibold text-slate-700">Add standard cost</span>{" "}
-                    button.
+                  <EmptyStateFolder title="Daftar biaya standar akan ditampilkan di sini" description={<>
+                    Biaya standar digunakan untuk memperkirakan biaya proses produksi barang. Tambahkan biaya standar melalui{" "}
+                    <span className="font-semibold text-slate-700">Tambah biaya standar</span>{" "}
+                    .
                   </>} />
                 </td>
               </tr>}
               {visibleList.map(item => <tr key={item.id} className={trHover}>
                 <td className={td}>
-                  {item.type === "product" ? "Product components" : "Production cost"}
+                  {item.type === "product" ? "Komponen produk" : "Biaya produksi"}
                 </td>
                 <td className={td}>{item.name}</td>
                 <td className={td}>{item.unit}</td>
@@ -906,67 +902,67 @@ function StandardCostPage({
 }
 const componentColumns = [{
   key: "productName",
-  label: "Product name"
+  label: "Nama produk"
 }, {
   key: "productSku",
-  label: "Product code / SKU"
+  label: "Kode produk / SKU"
 }, {
   key: "qtyNeeded",
-  label: "Qty needed"
+  label: "Kuantitas dibutuhkan"
 }, {
   key: "unit",
-  label: "Unit"
+  label: "Satuan"
 }, {
   key: "unitBuyPrice",
-  label: "Unit buy price"
+  label: "Harga beli per satuan"
 }, {
   key: "estimatedPrice",
-  label: "Estimated price"
+  label: "Estimasi harga"
 }];
 const routingColumns = [{
   key: "process",
-  label: "Process"
+  label: "Proses"
 }, {
   key: "description",
-  label: "Description"
+  label: "Deskripsi"
 }, {
   key: "accountMapping",
-  label: "Account mapping"
+  label: "Pemetaan akun"
 }, {
   key: "routingCost",
-  label: "Routing cost"
+  label: "Biaya alur produksi"
 }];
 const outputColumns = [{
   key: "productName",
-  label: "Product name"
+  label: "Nama produk"
 }, {
   key: "productSku",
-  label: "Product code / SKU"
+  label: "Kode produk / SKU"
 }, {
   key: "qty",
-  label: "Qty"
+  label: "Kuantitas"
 }, {
   key: "unit",
-  label: "Unit"
+  label: "Satuan"
 }, {
   key: "percentage",
-  label: "Percentage"
+  label: "Persentase"
 }, {
   key: "amount",
-  label: "Amount"
+  label: "Jumlah"
 }];
 const wasteColumns = [{
   key: "accountMapping",
-  label: "Account mapping"
+  label: "Pemetaan akun"
 }, {
   key: "allocationMethod",
-  label: "Allocation method"
+  label: "Metode alokasi"
 }, {
   key: "percentage",
-  label: "Percentage"
+  label: "Persentase"
 }, {
   key: "amount",
-  label: "Amount"
+  label: "Jumlah"
 }];
 function OptionPopover({
   options,
@@ -1092,7 +1088,7 @@ function AddSubassemblyModal({
   return <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-900/55 p-6">
     <div className="w-full max-w-[520px] overflow-visible rounded-xl bg-white shadow-xl">
       <div className="flex items-center justify-between border-b border-gray-200 px-[22px] py-4">
-        <h2 className={modalTitle}>Add subassembly product to product components</h2>
+        <h2 className={modalTitle}>Tambahkan produk rakitan antara ke komponen produk</h2>
         <button type="button" onClick={onClose} className="cursor-pointer text-slate-400 hover:text-slate-600">
           <X size={18} weight="bold" />
         </button>
@@ -1102,24 +1098,23 @@ function AddSubassemblyModal({
         <div className="mb-5 flex gap-2.5 rounded-lg bg-indigo-50 px-4 py-3">
           <Info size={18} weight="bold" className="mt-0.5 shrink-0 text-brand" />
           <p className="text-sm text-slate-600">
-            To add subassembly product, ensure you have created a subassembly BOM with standard
-            category.
+            Untuk menambahkan produk rakitan antara, pastikan BOM rakitan antara dengan kategori standar telah dibuat.
           </p>
         </div>
 
         <div className={formGroup}>
-          <label className={formLabel}>Subassembly product</label>
-          <OptionPopover options={productionSubassemblyOptions} value={productId} onChange={setProductId} placeholder="Select subassembly product" emptyText="No result found" />
-          {error && <FieldError>Subassembly product is required</FieldError>}
+          <label className={formLabel}>Produk rakitan antara</label>
+          <OptionPopover options={productionSubassemblyOptions} value={productId} onChange={setProductId} placeholder="Pilih produk rakitan antara" emptyText="Tidak ada hasil yang ditemukan" />
+          {error && <FieldError>Produk rakitan antara wajib dipilih</FieldError>}
         </div>
       </div>
 
       <div className={modalFooter}>
         <button type="button" onClick={onClose} className={btnModalCancel}>
-          Cancel
+          Batal
         </button>
         <button type="button" onClick={handleSave} className={btnModalSubmit}>
-          Save
+          Simpan
         </button>
       </div>
     </div>
@@ -1148,7 +1143,7 @@ function AddBomAccountMappingModal({
   return <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-900/55 p-6">
     <div className="w-full max-w-[480px] overflow-visible rounded-xl bg-white shadow-xl">
       <div className="flex items-center justify-between border-b border-gray-200 px-[22px] py-4">
-        <h2 className={modalTitle}>Add account mapping</h2>
+        <h2 className={modalTitle}>Tambah pemetaan akun</h2>
         <button type="button" onClick={onClose} className="cursor-pointer text-slate-400 hover:text-slate-600">
           <X size={18} weight="bold" />
         </button>
@@ -1158,39 +1153,38 @@ function AddBomAccountMappingModal({
         <div className="mb-5 flex gap-2.5 rounded-lg bg-indigo-50 px-4 py-3">
           <Info size={18} weight="bold" className="mt-0.5 shrink-0 text-brand" />
           <div>
-            <p className="text-sm font-semibold text-slate-800">Production cost account mapping</p>
+            <p className="text-sm font-semibold text-slate-800">Pemetaan akun biaya produksi</p>
             <p className="mt-0.5 text-sm text-slate-600">
-              The mapped account for production cost cannot be deleted or archived from chart of
-              accounts (COA).
+              Akun yang dipetakan untuk biaya produksi tidak dapat dihapus atau diarsipkan dari daftar akun (COA).
             </p>
           </div>
         </div>
 
         <div className={formGroup}>
-          <label className={formLabel}>Account mapping name</label>
+          <label className={formLabel}>Nama pemetaan akun</label>
           <input type="text" value={name} onChange={event => setName(event.target.value)} className={nameError ? inputError : inputBase} />
-          {nameError && <FieldError>Account mapping name is required</FieldError>}
+          {nameError && <FieldError>Nama pemetaan akun wajib diisi</FieldError>}
         </div>
 
         <div className={formGroup}>
-          <label className={formLabel}>Account</label>
-          <OptionPopover searchable options={productionAccountOptions} value={account} onChange={setAccount} placeholder="Select account" emptyText="No result found" />
-          {accountError && <FieldError>Account is required</FieldError>}
+          <label className={formLabel}>Akun</label>
+          <OptionPopover searchable options={productionAccountOptions} value={account} onChange={setAccount} placeholder="Pilih akun" emptyText="Tidak ada hasil yang ditemukan" />
+          {accountError && <FieldError>Akun wajib dipilih</FieldError>}
         </div>
 
         <div className={formGroup}>
-          <label className={formLabel}>Production cost category</label>
-          <OptionPopover options={productionCostCategoryOptions} value={category} onChange={setCategory} placeholder="Select production cost category" />
-          {categoryError && <FieldError>Production cost category is required</FieldError>}
+          <label className={formLabel}>Kategori biaya produksi</label>
+          <OptionPopover options={productionCostCategoryOptions} value={category} onChange={setCategory} placeholder="Pilih kategori biaya produksi" />
+          {categoryError && <FieldError>Kategori biaya produksi wajib dipilih</FieldError>}
         </div>
       </div>
 
       <div className={modalFooter}>
         <button type="button" onClick={onClose} className={btnModalCancel}>
-          Cancel
+          Batal
         </button>
         <button type="button" onClick={handleSave} className={btnModalSubmit}>
-          Save
+          Simpan
         </button>
       </div>
     </div>
@@ -1204,7 +1198,7 @@ function SaveSplitButton({
   return <div className="relative inline-block">
     <div className="flex">
       <button type="button" onClick={onSave} className={btnModalSubmit}>
-        Save
+        Simpan
       </button>
       <button type="button" onClick={() => setOpen(prev => !prev)} className={`${btnModalSubmit} -ml-px rounded-l-none border-l border-white/30`}>
         <CaretDown size={14} weight="bold" />
@@ -1215,13 +1209,13 @@ function SaveSplitButton({
         setOpen(false);
         onSave();
       }} className="block w-full cursor-pointer px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">
-        Save &amp; create another
+        Simpan dan buat lainnya
       </button>
       <button type="button" onClick={() => {
         setOpen(false);
         onSaveDraft();
       }} className="block w-full cursor-pointer px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">
-        Save as draft
+        Simpan sebagai draf
       </button>
     </div>}
   </div>;
@@ -1384,8 +1378,8 @@ function CreateBomModal({
     <div className="my-6 w-full max-w-[1100px] overflow-visible rounded-xl bg-white shadow-xl">
       <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
         <div>
-          <p className="text-xs font-semibold text-brand">Bill of materials (BOM) list</p>
-          <h2 className={`${modalTitle} mt-0.5`}>Create bill of materials</h2>
+          <p className="text-xs font-semibold text-brand">Daftar kebutuhan bahan (BOM)</p>
+          <h2 className={`${modalTitle} mt-0.5`}>Buat daftar kebutuhan bahan (BOM)</h2>
         </div>
         <button type="button" onClick={onClose} className="cursor-pointer text-slate-400 hover:text-slate-600">
           <X size={18} weight="bold" />
@@ -1394,75 +1388,75 @@ function CreateBomModal({
 
       <div className="max-h-[calc(100vh-220px)] overflow-y-auto px-6 py-5">
         <section className="mb-6">
-          <h3 className="mb-4 text-[15px] font-bold text-slate-900">Basic information</h3>
+          <h3 className="mb-4 text-[15px] font-bold text-slate-900">Informasi dasar</h3>
 
           <div className="grid grid-cols-2 gap-4">
             <div className={formGroup}>
               <label className={formLabel}>
-                BOM name <span className="text-red-600">*</span>
+                Nama BOM <span className="text-red-600">*</span>
               </label>
               <input type="text" value={bomName} onChange={event => setBomName(event.target.value)} className={nameError ? inputError : inputBase} />
-              {nameError && <FieldError>BOM name is required</FieldError>}
+              {nameError && <FieldError>Nama BOM wajib diisi</FieldError>}
             </div>
 
             <div className={formGroup}>
-              <label className={formLabel}>BOM code</label>
-              <input type="text" value={bomCode} onChange={event => setBomCode(event.target.value)} placeholder="[Auto]" className={inputBase} />
-            </div>
-
-            <div className={formGroup}>
-              <label className={formLabel}>
-                Category <span className="text-red-600">*</span>
-              </label>
-              <OptionPopover options={bomCategoryOptions} value={category} onChange={setCategory} placeholder="Select category" />
-              {categoryError && <FieldError>Category is required</FieldError>}
+              <label className={formLabel}>Kode BOM</label>
+              <input type="text" value={bomCode} onChange={event => setBomCode(event.target.value)} placeholder="[Otomatis]" className={inputBase} />
             </div>
 
             <div className={formGroup}>
               <label className={formLabel}>
-                Costing reference <span className="text-red-600">*</span>
+                Kategori <span className="text-red-600">*</span>
               </label>
-              <OptionPopover options={bomCostingReferenceOptions} value={costingReference} onChange={setCostingReference} placeholder="Select costing reference" />
-              {costingError && <FieldError>Costing reference is required</FieldError>}
+              <OptionPopover options={bomCategoryOptions} value={category} onChange={setCategory} placeholder="Pilih kategori" />
+              {categoryError && <FieldError>Kategori wajib dipilih</FieldError>}
+            </div>
+
+            <div className={formGroup}>
+              <label className={formLabel}>
+                Acuan perhitungan biaya <span className="text-red-600">*</span>
+              </label>
+              <OptionPopover options={bomCostingReferenceOptions} value={costingReference} onChange={setCostingReference} placeholder="Pilih acuan perhitungan biaya" />
+              {costingError && <FieldError>Acuan perhitungan biaya wajib dipilih</FieldError>}
             </div>
           </div>
 
           <div className={formGroup}>
-            <label className={formLabel}>Description</label>
+            <label className={formLabel}>Deskripsi</label>
             <textarea value={description} onChange={event => setDescription(event.target.value)} maxLength={255} rows={3} className={textareaBase} />
             <p className="mt-1 text-right text-xs text-slate-400">{description.length}/255</p>
           </div>
 
           <div className={formGroup}>
-            <label className={formLabel}>Attachment</label>
+            <label className={formLabel}>Lampiran</label>
             <div className="flex items-center gap-3">
               <button type="button" className={btnSecondary}>
-                Choose file
+                Pilih berkas
               </button>
-              <span className="text-sm text-slate-400">No file selected</span>
+              <span className="text-sm text-slate-400">Belum ada berkas yang dipilih</span>
             </div>
             <p className="mt-1 text-xs text-slate-400">
-              Files must be in PDF format, with a maximum of 3 attachments and 10 MB per file
+              Berkas harus berformat PDF, dengan maksimal 3 lampiran dan ukuran 10 MB per berkas
             </p>
           </div>
 
           {!isCustom && <div className="flex items-start gap-3 rounded-lg bg-slate-50 px-4 py-3">
             <input type="checkbox" id="enable-bom-adjustment" checked={enableAdjustment} onChange={event => setEnableAdjustment(event.target.checked)} className="mt-0.5 h-4 w-4 cursor-pointer accent-brand" />
             <label htmlFor="enable-bom-adjustment" className="cursor-pointer text-sm text-slate-700">
-              <span className="font-semibold">Enable BOM adjustment</span>
+              <span className="font-semibold">Aktifkan penyesuaian BOM</span>
               <span className="mt-0.5 block text-slate-500">
-                Can add/reduce components to the same SKU when creating a work order.
+                Komponen untuk SKU yang sama dapat ditambahkan atau dikurangi saat membuat perintah kerja.
               </span>
             </label>
           </div>}
         </section>
 
-        <SectionAccordion title="Product components" action={<button type="button" onClick={() => setShowSubassemblyModal(true)} className={btnSecondary}>
-          Add subassembly product
+        <SectionAccordion title="Komponen produk" action={<button type="button" onClick={() => setShowSubassemblyModal(true)} className={btnSecondary}>
+          Tambah produk rakitan antara
         </button>}>
           <DataTable columns={componentColumns} rows={components} renderRow={item => <tr key={item.id} className={trHover}>
             <td className={td}>
-              <input type="text" value={item.productName} onChange={event => updateComponent(item.id, "productName", event.target.value)} placeholder="Select/search product" className={inputBase} />
+              <input type="text" value={item.productName} onChange={event => updateComponent(item.id, "productName", event.target.value)} placeholder="Pilih atau cari produk" className={inputBase} />
             </td>
             <td className={td} colSpan={5}>
               <p className="text-sm text-slate-400"> </p>
@@ -1476,11 +1470,11 @@ function CreateBomModal({
             </td>
           </tr>} />
           <p className="mt-3 text-right text-sm font-semibold text-slate-800">
-            Estimated subtotal of product component prices: {formatRupiah(subtotalComponents)}
+            Estimasi subtotal harga komponen produk: {formatRupiah(subtotalComponents)}
           </p>
         </SectionAccordion>
 
-        <SectionAccordion title="Production cost">
+        <SectionAccordion title="Biaya produksi">
           <div className="space-y-5">
             {productionCostRows.map(row => <div key={row.key}>
               <div className="overflow-hidden rounded-[10px] border border-gray-200">
@@ -1489,15 +1483,15 @@ function CreateBomModal({
                     <thead>
                       <tr>
                         <th className={th}>{row.label}</th>
-                        <th className={th}>Cost driver</th>
-                        <th className={th}>Amount</th>
+                        <th className={th}>Pemicu biaya</th>
+                        <th className={th}>Jumlah</th>
                         <th className={th}></th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr className={trHover}>
                         <td className={td}>
-                          <OptionPopover searchable options={productionVariableAccountOptions} value={productionCosts[row.key].account} onChange={value => updateProductionCost(row.key, "account", value)} placeholder="Select variable cost account" emptyText="Variable cost account not found" onCreateNew={() => setShowMappingModal(true)} createLabel="Add new variable cost account" />
+                          <OptionPopover searchable options={productionVariableAccountOptions} value={productionCosts[row.key].account} onChange={value => updateProductionCost(row.key, "account", value)} placeholder="Pilih akun biaya variabel" emptyText="Akun biaya variabel tidak ditemukan" onCreateNew={() => setShowMappingModal(true)} createLabel="Tambah akun biaya variabel baru" />
                         </td>
                         <td className={td}>
                           <p className="text-sm text-slate-400"> </p>
@@ -1516,14 +1510,14 @@ function CreateBomModal({
             </div>)}
           </div>
           <p className="mt-3 text-right text-sm font-semibold text-slate-800">
-            Subtotal production cost: {formatRupiah(subtotalProductionCost)}
+            Subtotal biaya produksi: {formatRupiah(subtotalProductionCost)}
           </p>
         </SectionAccordion>
 
-        <SectionAccordion title="Routing">
+        <SectionAccordion title="Alur produksi">
           <DataTable columns={routingColumns} rows={routings} renderRow={item => <tr key={item.id} className={trHover}>
             <td className={td}>
-              <input type="text" value={item.process} onChange={event => updateRouting(item.id, "process", event.target.value)} placeholder="Select/enter to add" className={inputBase} />
+              <input type="text" value={item.process} onChange={event => updateRouting(item.id, "process", event.target.value)} placeholder="Pilih atau masukkan untuk menambahkan" className={inputBase} />
             </td>
             <td className={td}>
               <p className="text-sm text-slate-400"> </p>
@@ -1538,44 +1532,43 @@ function CreateBomModal({
             </td>
           </tr>} />
           <p className="mt-3 text-right text-sm font-semibold text-slate-800">
-            Subtotal routing cost: {formatRupiah(subtotalRouting)}
+            Subtotal biaya alur produksi: {formatRupiah(subtotalRouting)}
           </p>
         </SectionAccordion>
 
         <div className="mb-6 rounded-lg border border-gray-200 bg-slate-50 p-4">
           <div className="grid grid-cols-3 gap-x-8 gap-y-1.5 text-sm">
             <div className="flex flex-col justify-between">
-              <span className="text-slate-600">Estimated subtotal of product component prices</span>
+              <span className="text-slate-600">Estimasi subtotal harga komponen produk</span>
               <span className="font-semibold text-slate-800">{formatRupiah(subtotalComponents)}</span>
             </div>
             <div className="flex flex-col justify-between">
-              <span className="text-slate-600">Subtotal production cost</span>
+              <span className="text-slate-600">Subtotal biaya produksi</span>
               <span className="font-semibold text-slate-800">{formatRupiah(subtotalProductionCost)}</span>
             </div>
             <div className="flex flex-col justify-between">
-              <span className="text-slate-600">Subtotal routing cost</span>
+              <span className="text-slate-600">Subtotal biaya alur produksi</span>
               <span className="font-semibold text-slate-800">{formatRupiah(subtotalRouting)}</span>
             </div>
           </div>
           <div className="mt-3 flex items-center justify-between border-t border-gray-200 pt-3">
-            <span className="text-[15px] font-bold text-slate-900">Estimated total of production process cost</span>
+            <span className="text-[15px] font-bold text-slate-900">Estimasi total biaya proses produksi</span>
             <span className="text-[15px] font-bold text-slate-900">
               {formatRupiah(subtotalComponents + subtotalProductionCost + subtotalRouting)}
             </span>
           </div>
         </div>
 
-        <SectionAccordion title="Production output">
+        <SectionAccordion title="Hasil produksi">
           <div className="mb-6">
-            <p className="mb-3 text-[13px] font-semibold text-slate-700">Main output</p>
+            <p className="mb-3 text-[13px] font-semibold text-slate-700">Hasil utama</p>
             {isCustom && <p className="mb-3 flex items-start gap-2 rounded-lg bg-slate-50 px-4 py-3 text-sm text-slate-600">
               <Info size={16} weight="bold" className="mt-0.5 shrink-0 text-slate-400" />
-              By selecting the custom BOM category, you can only input products
-              that have not been used in other BOMs.
+              Jika kategori BOM khusus dipilih, hanya produk yang belum digunakan pada BOM lain yang dapat dimasukkan.
             </p>}
             <DataTable columns={outputColumns} rows={mainOutputs} renderRow={item => <tr key={item.id} className={trHover}>
               <td className={td}>
-                <input type="text" value={item.productName} onChange={event => updateOutput(mainOutputs, setMainOutputs, item.id, "productName", event.target.value)} placeholder="Select/search product" className={inputBase} />
+                <input type="text" value={item.productName} onChange={event => updateOutput(mainOutputs, setMainOutputs, item.id, "productName", event.target.value)} placeholder="Pilih atau cari produk" className={inputBase} />
               </td>
               <td className={td} colSpan={4}>
                 <p className="text-sm text-slate-400"> </p>
@@ -1589,15 +1582,15 @@ function CreateBomModal({
               </td>
             </tr>} />
             <p className="mt-3 text-right text-sm font-semibold text-slate-800">
-              Estimated subtotal of main output prices: {formatRupiah(subtotalMainOutputs)}
+              Estimasi subtotal harga hasil utama: {formatRupiah(subtotalMainOutputs)}
             </p>
           </div>
 
           <div>
-            <p className="mb-3 text-[13px] font-semibold text-slate-700">Other outputs</p>
+            <p className="mb-3 text-[13px] font-semibold text-slate-700">Hasil lainnya</p>
             <DataTable columns={outputColumns} rows={otherOutputs} renderRow={item => <tr key={item.id} className={trHover}>
               <td className={td}>
-                <input type="text" value={item.productName} onChange={event => updateOutput(otherOutputs, setOtherOutputs, item.id, "productName", event.target.value)} placeholder="Select/search product" className={inputBase} />
+                <input type="text" value={item.productName} onChange={event => updateOutput(otherOutputs, setOtherOutputs, item.id, "productName", event.target.value)} placeholder="Pilih atau cari produk" className={inputBase} />
               </td>
               <td className={td} colSpan={4}>
                 <p className="text-sm text-slate-400"> </p>
@@ -1611,15 +1604,15 @@ function CreateBomModal({
               </td>
             </tr>} />
             <p className="mt-3 text-right text-sm font-semibold text-slate-800">
-              Estimated subtotal of other output prices: {formatRupiah(subtotalOtherOutputs)}
+              Estimasi subtotal harga hasil lainnya: {formatRupiah(subtotalOtherOutputs)}
             </p>
           </div>
         </SectionAccordion>
 
         <section className="mb-2">
           <div className="flex items-center gap-2 border-b border-gray-200 py-3">
-            <h3 className="text-[15px] font-bold text-slate-900">Production waste</h3>
-            <span title="Production waste is an activity or a factor that decreases the value of production output. In this section, you can expense it to certain accounts by selecting account mapping and allocation methods as needed.">
+            <h3 className="text-[15px] font-bold text-slate-900">Susut produksi</h3>
+            <span title="Susut produksi merupakan aktivitas atau faktor yang mengurangi nilai hasil produksi. Pada bagian ini, susut dapat dibebankan ke akun tertentu dengan memilih pemetaan akun dan metode alokasi sesuai kebutuhan.">
               <Info size={15} weight="bold" className="cursor-help text-slate-400" />
             </span>
           </div>
@@ -1627,7 +1620,7 @@ function CreateBomModal({
           <div className="pt-4">
             <DataTable columns={wasteColumns} rows={wastes} renderRow={item => <tr key={item.id} className={trHover}>
               <td className={td}>
-                <input type="text" value={item.accountMapping} onChange={event => updateWaste(item.id, "accountMapping", event.target.value)} placeholder="Select account mapping" className={inputBase} />
+                <input type="text" value={item.accountMapping} onChange={event => updateWaste(item.id, "accountMapping", event.target.value)} placeholder="Pilih pemetaan akun" className={inputBase} />
               </td>
               <td className={td}>
                 <span className="text-sm text-slate-400">
@@ -1646,7 +1639,7 @@ function CreateBomModal({
               </td>
             </tr>} />
             <p className="mt-3 text-right text-sm font-semibold text-slate-800">
-              Estimated subtotal of production waste: {formatRupiah(subtotalWaste)}
+              Estimasi subtotal susut produksi: {formatRupiah(subtotalWaste)}
             </p>
           </div>
         </section>
@@ -1654,20 +1647,20 @@ function CreateBomModal({
         <div className="mb-6 rounded-lg border border-gray-200 bg-slate-50 p-4">
           <div className="grid grid-cols-3 gap-x-8 gap-y-1.5 text-sm">
             <div className="flex flex-col justify-between">
-              <span className="text-slate-600">Estimated subtotal of main output prices</span>
+              <span className="text-slate-600">Estimasi subtotal harga hasil utama</span>
               <span className="font-semibold text-slate-800">{formatRupiah(subtotalMainOutputs)}</span>
             </div>
             <div className="flex flex-col justify-between">
-              <span className="text-slate-600">Estimated subtotal of other output prices</span>
+              <span className="text-slate-600">Estimasi subtotal harga hasil lainnya</span>
               <span className="font-semibold text-slate-800">{formatRupiah(subtotalOtherOutputs)}</span>
             </div>
             <div className="flex flex-col justify-between">
-              <span className="text-slate-600">Estimated subtotal of production waste</span>
+              <span className="text-slate-600">Estimasi subtotal susut produksi</span>
               <span className="font-semibold text-slate-800">{formatRupiah(subtotalWaste)}</span>
             </div>
           </div>
           <div className="mt-3 flex items-center justify-between border-t border-gray-200 pt-3">
-            <span className="text-[15px] font-bold text-slate-900">Estimated total of production output prices</span>
+            <span className="text-[15px] font-bold text-slate-900">Estimasi total harga hasil produksi</span>
             <span className="text-[15px] font-bold text-slate-900">
               {formatRupiah(subtotalMainOutputs + subtotalOtherOutputs + subtotalWaste)}
             </span>
@@ -1677,7 +1670,7 @@ function CreateBomModal({
 
       <div className="flex justify-end gap-2.5 border-t border-gray-200 bg-slate-50 px-6 py-4">
         <button type="button" onClick={onClose} className={btnModalCancel}>
-          Cancel
+          Batal
         </button>
         <SaveSplitButton onSave={handleSave} onSaveDraft={onSaveDraft} />
       </div>
@@ -1689,10 +1682,10 @@ function CreateBomModal({
   </div>;
 }
 const defaultBomOptions = [];
-const woComponentColumns = ["Product name", "Product code / SKU", "Unit buy price", "Warehouse name", "Stock on hand", "Qty needed", "Unit", "Estimated price", ""];
-const costColumns = ["Cost driver", "Cost per unit estimation", "Multiplier", "Amount", ""];
-const woRoutingColumns = ["Process", "Description", "Account mapping", "Work plan dates", "Routing cost", ""];
-const woOutputColumns = ["Product name", "Product code / SKU", "Warehouse name", "Qty produced", "Unit", "Percentage", "Estimated price", ""];
+const woComponentColumns = ["Nama produk", "Kode produk / SKU", "Harga beli per satuan", "Nama gudang", "Stok tersedia", "Kuantitas dibutuhkan", "Satuan", "Estimasi harga", ""];
+const costColumns = ["Pemicu biaya", "Estimasi biaya per satuan", "Pengali", "Jumlah", ""];
+const woRoutingColumns = ["Proses", "Deskripsi", "Pemetaan akun", "Tanggal rencana kerja", "Biaya alur produksi", ""];
+const woOutputColumns = ["Nama produk", "Kode produk / SKU", "Nama gudang", "Kuantitas dihasilkan", "Satuan", "Persentase", "Estimasi harga", ""];
 function BomTable({
   columns,
   emptyTitle,
@@ -1777,8 +1770,8 @@ function CreateWorkOrderModal({
     <div className="my-6 w-full max-w-[1100px] overflow-visible rounded-xl bg-white shadow-xl">
       <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
         <div>
-          <p className="text-xs font-semibold text-brand">Work order list</p>
-          <h2 className={`${modalTitle} mt-0.5`}>Create work order</h2>
+          <p className="text-xs font-semibold text-brand">Daftar perintah kerja</p>
+          <h2 className={`${modalTitle} mt-0.5`}>Buat perintah kerja</h2>
         </div>
         <button type="button" onClick={onClose} className="cursor-pointer text-slate-400 hover:text-slate-600">
           <X size={18} weight="bold" />
@@ -1787,169 +1780,169 @@ function CreateWorkOrderModal({
 
       <div className="max-h-[calc(100vh-220px)] overflow-y-auto px-6 py-5">
         <section className="mb-6">
-          <h3 className="mb-4 text-[15px] font-bold text-slate-900">Basic information</h3>
+          <h3 className="mb-4 text-[15px] font-bold text-slate-900">Informasi dasar</h3>
 
           <div className="grid grid-cols-2 gap-4">
             <div className={formGroup}>
               <label className={formLabel}>
-                Work order no. <span className="text-red-600">*</span>
+                Nomor perintah kerja <span className="text-red-600">*</span>
               </label>
-              <input type="text" value={workOrderNo} onChange={event => setWorkOrderNo(event.target.value)} placeholder="[Auto]" className={noError ? inputError : inputBase} />
-              {noError && <FieldError>Work order no. is required</FieldError>}
+              <input type="text" value={workOrderNo} onChange={event => setWorkOrderNo(event.target.value)} placeholder="[Otomatis]" className={noError ? inputError : inputBase} />
+              {noError && <FieldError>Nomor perintah kerja wajib diisi</FieldError>}
             </div>
 
             <div className={formGroup}>
               <label className={formLabel}>
-                Category <span className="text-red-600">*</span>
+                Kategori <span className="text-red-600">*</span>
               </label>
-              <OptionPopover options={workOrderCategoryOptions} value={category} onChange={setCategory} placeholder="Select category" />
-              {categoryError && <FieldError>Category is required</FieldError>}
+              <OptionPopover options={workOrderCategoryOptions} value={category} onChange={setCategory} placeholder="Pilih kategori" />
+              {categoryError && <FieldError>Kategori wajib dipilih</FieldError>}
             </div>
 
             {isOrder && <>
               <div className={formGroup}>
-                <label className={formLabel}>Order date</label>
-                <input type="date" value={orderDate} onChange={event => setOrderDate(event.target.value)} placeholder="Select order date" className={inputBase} />
+                <label className={formLabel}>Tanggal pesanan</label>
+                <input type="date" value={orderDate} onChange={event => setOrderDate(event.target.value)} placeholder="Pilih tanggal pesanan" className={inputBase} />
               </div>
               <div className={formGroup}>
-                <label className={formLabel}>Delivery date</label>
-                <input type="date" value={deliveryDate} onChange={event => setDeliveryDate(event.target.value)} placeholder="Select delivery date" className={inputBase} />
+                <label className={formLabel}>Tanggal pengiriman</label>
+                <input type="date" value={deliveryDate} onChange={event => setDeliveryDate(event.target.value)} placeholder="Pilih tanggal pengiriman" className={inputBase} />
               </div>
             </>}
 
             <div className={formGroup}>
               <label className={formLabel}>
-                Work order type <span className="text-red-600">*</span>
+                Jenis perintah kerja <span className="text-red-600">*</span>
               </label>
-              <OptionPopover options={workOrderTypeOptions} value={workOrderType} onChange={setWorkOrderType} placeholder="Select work order type" />
-              {typeError && <FieldError>Work order type is required</FieldError>}
+              <OptionPopover options={workOrderTypeOptions} value={workOrderType} onChange={setWorkOrderType} placeholder="Pilih jenis perintah kerja" />
+              {typeError && <FieldError>Jenis perintah kerja wajib dipilih</FieldError>}
             </div>
 
             {!isDisassembly && <div className={formGroup}>
-              <label className={formLabel}>Track routing</label>
+              <label className={formLabel}>Lacak alur produksi</label>
               <div className="flex items-center gap-5 pt-2">
                 <label className="flex cursor-pointer items-center gap-2 text-[13px] text-slate-700">
                   <input type="radio" name="track-routing" value="use" checked={trackRouting === "use"} onChange={() => setTrackRouting("use")} className="h-4 w-4 cursor-pointer accent-brand" />
-                  Yes
+                  Ya
                 </label>
                 <label className="flex cursor-pointer items-center gap-2 text-[13px] text-slate-700">
                   <input type="radio" name="track-routing" value="not_use" checked={trackRouting === "not_use"} onChange={() => setTrackRouting("not_use")} className="h-4 w-4 cursor-pointer accent-brand" />
-                  No
+                  Nomor
                 </label>
               </div>
             </div>}
 
             {isDisassembly && <div className={formGroup}>
-              <label className={formLabel}>Source</label>
+              <label className={formLabel}>Sumber</label>
               <input type="text" value={source} onChange={event => setSource(event.target.value)} className={inputBase} />
             </div>}
 
             <div className={formGroup}>
               <label className={formLabel}>
-                BOM name <span className="text-red-600">*</span>
+                Nama BOM <span className="text-red-600">*</span>
               </label>
-              <OptionPopover options={availableBomOptions} value={bomName} onChange={setBomName} placeholder="Select BOM" emptyText="No result found" />
-              {bomError && <FieldError>BOM name is required</FieldError>}
+              <OptionPopover options={availableBomOptions} value={bomName} onChange={setBomName} placeholder="Pilih BOM" emptyText="Tidak ada hasil yang ditemukan" />
+              {bomError && <FieldError>Nama BOM wajib diisi</FieldError>}
             </div>
 
             <div className={formGroup}>
-              <label className={formLabel}>BOM no.</label>
+              <label className={formLabel}>Nomor BOM</label>
               <input type="text" value={selectedBom ? selectedBom.bomNo ?? selectedBom.value : ""} disabled placeholder="-" className={inputBase} />
             </div>
 
             <div className={formGroup}>
               <label className={formLabel}>
-                Production plan dates <span className="text-red-600">*</span>
+                Tanggal rencana produksi <span className="text-red-600">*</span>
               </label>
               <div className="flex items-center gap-2">
                 <input type="date" value={productionPlanStart} onChange={event => setProductionPlanStart(event.target.value)} disabled={!bomSelected} className={`${dateError ? inputError : inputBase} flex-1`} />
                 <span className="text-sm text-slate-400">-</span>
                 <input type="date" value={productionPlanEnd} onChange={event => setProductionPlanEnd(event.target.value)} disabled={!bomSelected} className={`${dateError ? inputError : inputBase} flex-1`} />
               </div>
-              {dateError && <FieldError>Production plan dates is required</FieldError>}
+              {dateError && <FieldError>Tanggal rencana produksi wajib diisi</FieldError>}
             </div>
 
             {!isDisassembly && <div className={formGroup}>
-              <label className={formLabel}>Qty produced</label>
+              <label className={formLabel}>Kuantitas dihasilkan</label>
               <input type="text" value={0} disabled className={inputBase} />
               <p className="mt-1 text-xs text-slate-400">
-                Qty produced will be calculated from the selected BOM.
+                Kuantitas hasil produksi akan dihitung berdasarkan BOM yang dipilih.
               </p>
             </div>}
 
             {isDisassembly && <div className={formGroup}>
               <label className={formLabel}>
-                Actual start date <span className="text-red-600">*</span>
+                Tanggal mulai aktual <span className="text-red-600">*</span>
               </label>
               <input type="date" value={actualStartDate} onChange={event => setActualStartDate(event.target.value)} className={inputBase} />
             </div>}
 
             {isDisassembly && <div className={formGroup}>
               <label className={formLabel}>
-                Actual end date <span className="text-red-600">*</span>
+                Tanggal selesai aktual <span className="text-red-600">*</span>
               </label>
               <input type="date" value={actualEndDate} onChange={event => setActualEndDate(event.target.value)} className={inputBase} />
             </div>}
           </div>
 
           <div className={formGroup}>
-            <label className={formLabel}>Attachment</label>
+            <label className={formLabel}>Lampiran</label>
             <div className="flex items-center gap-3">
               <button type="button" className={btnSecondary}>
-                Choose file
+                Pilih berkas
               </button>
-              <span className="text-sm text-slate-400">No file selected</span>
+              <span className="text-sm text-slate-400">Belum ada berkas yang dipilih</span>
             </div>
             <p className="mt-1 text-xs text-slate-400">
-              PDF files only, max 3 files, 10MB each
+              Hanya berkas PDF, maksimal 3 berkas dengan ukuran 10 MB per berkas
             </p>
           </div>
 
           <div className="flex items-start gap-3 rounded-lg bg-slate-50 px-4 py-3">
             <input type="checkbox" id="create-as-subassembly" checked={enableSubassembly} onChange={event => setEnableSubassembly(event.target.checked)} disabled={!bomSelected} className="mt-0.5 h-4 w-4 cursor-pointer accent-brand disabled:cursor-not-allowed disabled:opacity-60" />
             <label htmlFor="create-as-subassembly" className="cursor-pointer text-sm text-slate-700">
-              <span className="font-semibold">Create as subassembly</span>
+              <span className="font-semibold">Buat sebagai rakitan antara</span>
               <span className="mt-0.5 block text-slate-500">
-                Create this work order's output as a subassembly product.
+                Buat hasil perintah kerja ini sebagai produk rakitan antara.
               </span>
             </label>
           </div>
         </section>
 
-        <SectionAccordion title="Product components">
-          <BomTable columns={woComponentColumns} emptyTitle="Product components will appear here" emptyDescription="Please select BOM first." emptyIcon={Package} />
+        <SectionAccordion title="Komponen produk">
+          <BomTable columns={woComponentColumns} emptyTitle="Komponen produk akan ditampilkan di sini" emptyDescription="Pilih BOM terlebih dahulu." emptyIcon={Package} />
         </SectionAccordion>
 
-        <SectionAccordion title="Production cost">
+        <SectionAccordion title="Biaya produksi">
           <div className="space-y-6">
             {productionCostRows.map(row => <div key={row.key}>
               <p className="mb-2 text-[13px] font-semibold text-slate-700">{row.label}</p>
-              <BomTable columns={costColumns} emptyTitle="Cost will appear here" emptyDescription="Please select BOM first." emptyIcon={MoneyWavy} />
+              <BomTable columns={costColumns} emptyTitle="Biaya akan ditampilkan di sini" emptyDescription="Pilih BOM terlebih dahulu." emptyIcon={MoneyWavy} />
             </div>)}
           </div>
         </SectionAccordion>
 
-        {trackRouting === "use" && !isDisassembly && <SectionAccordion title="Routing">
-          <BomTable columns={woRoutingColumns} emptyTitle="Routing will be appear here." emptyDescription="Please select BOM first." emptyIcon={GitBranch} />
+        {trackRouting === "use" && !isDisassembly && <SectionAccordion title="Alur produksi">
+          <BomTable columns={woRoutingColumns} emptyTitle="Alur produksi akan ditampilkan di sini." emptyDescription="Pilih BOM terlebih dahulu." emptyIcon={GitBranch} />
         </SectionAccordion>}
 
-        <SectionAccordion title="Production output">
+        <SectionAccordion title="Hasil produksi">
           <div className="mb-3 flex items-center gap-2">
-            <p className="text-[13px] font-semibold text-slate-700">Main output</p>
-            <span title="The main product produced by this work order.">
+            <p className="text-[13px] font-semibold text-slate-700">Hasil utama</p>
+            <span title="Produk utama yang dihasilkan oleh perintah kerja ini.">
               <Info size={15} weight="bold" className="cursor-help text-slate-400" />
             </span>
           </div>
-          <BomTable columns={woOutputColumns} emptyTitle="Production output will appear here" emptyDescription="Please select BOM first." emptyIcon={Package} />
+          <BomTable columns={woOutputColumns} emptyTitle="Hasil produksi akan ditampilkan di sini" emptyDescription="Pilih BOM terlebih dahulu." emptyIcon={Package} />
         </SectionAccordion>
       </div>
 
       <div className="flex justify-end gap-2.5 border-t border-gray-200 bg-slate-50 px-6 py-4">
         <button type="button" onClick={onClose} className={btnModalCancel}>
-          Cancel
+          Batal
         </button>
         <button type="button" onClick={handleSave} disabled={!canSave} className={`${btnModalSubmit} disabled:cursor-not-allowed disabled:opacity-50`}>
-          Save
+          Simpan
         </button>
       </div>
     </div>
@@ -1957,17 +1950,17 @@ function CreateWorkOrderModal({
 }
 const steps = [{
   number: 1,
-  title: "Download file template",
-  description: "Please use the provided template to import data correctly. This template file has been adjusted to Jurnal system requirements.",
-  action: "Download"
+  title: "Unduh berkas templat",
+  description: "Gunakan templat yang tersedia agar data dapat diimpor dengan benar. Berkas templat ini telah disesuaikan dengan persyaratan sistem Jurnal.",
+  action: "Unduh"
 }, {
   number: 2,
-  title: "Fill in the data in the template file according to the filling rules",
-  description: "You can read the terms listed inside the template."
+  title: "Isi data pada berkas templat sesuai dengan ketentuan pengisian",
+  description: "Ketentuan pengisian tercantum di dalam templat."
 }, {
   number: 3,
-  title: "Upload file template",
-  description: "The accepted file format is XLSX. Just upload 1 template file."
+  title: "Unggah berkas templat",
+  description: "Format berkas yang diterima adalah XLSX. Unggah hanya 1 berkas templat."
 }];
 function ImportPopup({
   title,
@@ -1991,7 +1984,7 @@ function ImportPopup({
 
       <div className="px-[22px] py-5">
         <p className="mb-6 text-sm text-slate-600">
-          Please follow the steps below before importing data to Jurnal.
+          Ikuti langkah-langkah berikut sebelum mengimpor data ke Jurnal.
         </p>
 
         <div className="space-y-6">
@@ -2013,24 +2006,24 @@ function ImportPopup({
           <div onClick={() => inputRef.current?.click()} className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-gray-300 bg-slate-50 px-6 py-10 text-center transition-colors hover:border-brand hover:bg-indigo-50/40">
             <UploadSimple size={36} weight="bold" className="text-brand" />
             <p className="text-sm text-slate-600">
-              Drag file here or{" "}
-              <span className="font-semibold text-brand">Browse</span>
+              Seret berkas ke sini atau{" "}
+              <span className="font-semibold text-brand">Pilih berkas</span>
             </p>
-            <p className="text-xs text-slate-400">Maximum file size is 10 MB.</p>
+            <p className="text-xs text-slate-400">Ukuran berkas maksimal 10 MB.</p>
             <input ref={inputRef} type="file" accept=".xlsx" onChange={handleFileChange} className="hidden" />
           </div>
           {fileName && <p className="mt-3 text-sm font-medium text-slate-700">
-            Selected file: {fileName}
+            Berkas yang dipilih: {fileName}
           </p>}
         </div>
       </div>
 
       <div className={modalFooter}>
         <button type="button" onClick={onClose} className={btnModalCancel}>
-          Cancel
+          Batal
         </button>
         <button type="button" onClick={() => onImport?.(fileName)} disabled={!fileName} className={`${btnModalSubmit} disabled:cursor-not-allowed disabled:opacity-50`}>
-          Import
+          Impor
         </button>
       </div>
     </div>
@@ -2066,7 +2059,7 @@ function ExportBomPopup({
   return <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-900/55 p-6">
     <div className="w-full max-w-[480px] overflow-visible rounded-xl bg-white shadow-xl">
       <div className={modalHeader}>
-        <h2 className={modalTitle}>Export BOM</h2>
+        <h2 className={modalTitle}>Ekspor BOM</h2>
         <button type="button" onClick={onClose} className="cursor-pointer text-slate-400 hover:text-slate-600">
           <X size={18} weight="bold" />
         </button>
@@ -2074,7 +2067,7 @@ function ExportBomPopup({
 
       <div className="px-[22px] py-5">
         <div className={formGroup}>
-          <label className={formLabel}>Category</label>
+          <label className={formLabel}>Kategori</label>
           <select value={category} onChange={event => setCategory(event.target.value)} className={inputBase}>
             {exportCategoryOptions.map(option => <option key={option.value} value={option.value}>
               {option.label}
@@ -2083,7 +2076,7 @@ function ExportBomPopup({
         </div>
 
         <div className={formGroup}>
-          <label className={formLabel}>Costing method</label>
+          <label className={formLabel}>Metode perhitungan biaya</label>
           <select value={costingMethod} onChange={event => setCostingMethod(event.target.value)} className={inputBase}>
             {exportCostingMethodOptions.map(option => <option key={option.value} value={option.value}>
               {option.label}
@@ -2092,57 +2085,56 @@ function ExportBomPopup({
         </div>
 
         <div className={formGroup}>
-          <label className={formLabel}>Created date</label>
+          <label className={formLabel}>Tanggal dibuat</label>
           <div className="grid grid-cols-2 gap-3">
-            <input type="date" value={startDate} onChange={event => setStartDate(event.target.value)} placeholder="Start date" className={inputBase} />
-            <input type="date" value={endDate} onChange={event => setEndDate(event.target.value)} placeholder="End date" className={inputBase} />
+            <input type="date" value={startDate} onChange={event => setStartDate(event.target.value)} placeholder="Tanggal mulai" className={inputBase} />
+            <input type="date" value={endDate} onChange={event => setEndDate(event.target.value)} placeholder="Tanggal selesai" className={inputBase} />
           </div>
           <p className="mt-1 text-xs text-slate-400">
-            Can only select dates within a maximum range of 1 year
+            Tanggal hanya dapat dipilih dalam rentang maksimal 1 tahun
           </p>
         </div>
 
         <div className={formGroup}>
-          <label className={formLabel}>Include production cost in file</label>
+          <label className={formLabel}>Sertakan biaya produksi dalam berkas</label>
           <div className="flex items-center gap-6 pt-1">
-            <RadioRow label="Include" checked={includeCost === "yes"} onChange={() => setIncludeCost("yes")} />
-            <RadioRow label="Do not include" checked={includeCost === "no"} onChange={() => setIncludeCost("no")} />
+            <RadioRow label="Sertakan" checked={includeCost === "yes"} onChange={() => setIncludeCost("yes")} />
+            <RadioRow label="Tidak disertakan" checked={includeCost === "no"} onChange={() => setIncludeCost("no")} />
           </div>
         </div>
       </div>
 
       <div className={modalFooter}>
         <button type="button" onClick={onClose} className={btnModalCancel}>
-          Cancel
+          Batal
         </button>
         <button type="button" onClick={() => setConfirming(true)} className={btnModalSubmit}>
-          Export
+          Ekspor
         </button>
       </div>
 
       {confirming && <div className="fixed inset-0 z-[1200] flex items-center justify-center bg-slate-900/55 p-6">
         <div className="w-full max-w-[400px] rounded-xl bg-white p-6 shadow-xl">
           <h3 className="text-[15px] font-bold text-slate-900">
-            Confirm export BOM
+            Konfirmasi ekspor BOM
           </h3>
           <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm text-slate-600">
             <li>
-              Make sure the filters for exporting BOM suit your needs.
+              Pastikan filter ekspor BOM telah sesuai dengan kebutuhan Anda.
             </li>
             <li>
-              If the total rows of exported BOM file exceed 10,000 rows, BOM
-              will be exported into several different files.
+              Jika jumlah baris dalam berkas ekspor BOM melebihi 10.000, BOM akan diekspor ke beberapa berkas terpisah.
             </li>
           </ul>
           <div className="mt-5 flex justify-end gap-2.5">
             <button type="button" onClick={() => setConfirming(false)} className={btnModalCancel}>
-              Cancel
+              Batal
             </button>
             <button type="button" onClick={() => {
               setConfirming(false);
               onExport?.(filters);
             }} className={btnModalSubmit}>
-              Confirm
+              Konfirmasi
             </button>
           </div>
         </div>
@@ -2173,14 +2165,14 @@ function FilterWorkOrderPopup({
 
       <div className="px-[22px] py-5">
         <div className={formGroup}>
-          <label className={formLabel}>Keyword</label>
-          <input type="text" value={keyword} maxLength={60} onChange={event => setKeyword(event.target.value)} placeholder="Search work order" className={inputBase} />
+          <label className={formLabel}>Kata kunci</label>
+          <input type="text" value={keyword} maxLength={60} onChange={event => setKeyword(event.target.value)} placeholder="Cari perintah kerja" className={inputBase} />
         </div>
 
         <div className={formGroup}>
-          <label className={formLabel}>Work order type</label>
+          <label className={formLabel}>Jenis perintah kerja</label>
           <select value={type} onChange={event => setType(event.target.value)} className={inputBase}>
-            <option value="">All types</option>
+            <option value="">Semua jenis</option>
             {workOrderTypeOptions.map(option => <option key={option.value} value={option.value}>
               {option.label}
             </option>)}
@@ -2188,9 +2180,9 @@ function FilterWorkOrderPopup({
         </div>
 
         <div className={formGroup}>
-          <label className={formLabel}>Work order status</label>
+          <label className={formLabel}>Status perintah kerja</label>
           <select value={status} onChange={event => setStatus(event.target.value)} className={inputBase}>
-            <option value="">All status</option>
+            <option value="">Semua status</option>
             {workOrderStatusOptions.map(option => <option key={option.value} value={option.value}>
               {option.label}
             </option>)}
@@ -2198,13 +2190,13 @@ function FilterWorkOrderPopup({
         </div>
 
         <div className={formGroup}>
-          <label className={formLabel}>Start date</label>
-          <input type="date" value={startDate} onChange={event => setStartDate(event.target.value)} placeholder="Select date" className={inputBase} />
+          <label className={formLabel}>Tanggal mulai</label>
+          <input type="date" value={startDate} onChange={event => setStartDate(event.target.value)} placeholder="Pilih tanggal" className={inputBase} />
         </div>
 
         <div className={formGroup}>
-          <label className={formLabel}>End date</label>
-          <input type="date" value={endDate} onChange={event => setEndDate(event.target.value)} placeholder="Select date" className={inputBase} />
+          <label className={formLabel}>Tanggal selesai</label>
+          <input type="date" value={endDate} onChange={event => setEndDate(event.target.value)} placeholder="Pilih tanggal" className={inputBase} />
         </div>
       </div>
 
@@ -2217,7 +2209,7 @@ function FilterWorkOrderPopup({
           setEndDate("");
           onReset?.();
         }} disabled={!active} className="cursor-pointer px-3 text-[13px] font-semibold text-slate-600 hover:text-slate-800 disabled:cursor-not-allowed disabled:opacity-50">
-          Reset filter
+          Atur ulang filter
         </button>
         <button type="button" onClick={() => onApply?.({
           keyword,
@@ -2226,7 +2218,7 @@ function FilterWorkOrderPopup({
           startDate,
           endDate
         })} className={btnModalSubmit}>
-          Apply
+          Terapkan
         </button>
       </div>
     </div>
@@ -2425,7 +2417,7 @@ export default function ProductionsMainPage() {
   const isDark = themeMode === "dark";
 
   return (
-    <div className={isDark ? "dash-dark" : ""}>
+    <div lang="id" className={isDark ? "dash-dark" : ""}>
       <ProductionsContent />
       <style>{DARK_CSS}</style>
     </div>

@@ -96,14 +96,14 @@ export const APPEARANCE_LIMITS = {
 };
 
 export const APPEARANCE_SECTIONS = [
-  { id: "hero", label: "Hero", hint: "Judul, deskripsi, tombol, dan gambar utama." },
-  { id: "closing", label: "Ajakan Penutup", hint: "Bagian terakhir sebelum footer." },
-  { id: "faqs", label: "FAQ", hint: "Pertanyaan yang sering diajukan pengunjung." },
+  { id: "hero", label: "Bagian utama", hint: "Judul, deskripsi, tombol, dan gambar utama." },
+  { id: "closing", label: "Ajakan penutup", hint: "Ajakan terakhir sebelum bagian penutup halaman." },
+  { id: "faqs", label: "Pertanyaan umum", hint: "Pertanyaan yang sering diajukan pengunjung." },
   { id: "testimonial", label: "Testimoni", hint: "Kutipan, nama, jabatan, dan foto pelanggan." },
   { id: "gallery", label: "Galeri", hint: "Lima gambar galeri beserta labelnya." },
-  { id: "newsletter", label: "Newsletter", hint: "Judul dan deskripsi langganan di footer." },
-  { id: "workspace", label: "Beranda", hint: "Sapaan, banner add-on, dan judul pelatihan di dalam aplikasi." },
-  { id: "contact", label: "Kontak", hint: "WhatsApp, Instagram, dan email di footer." },
+  { id: "newsletter", label: "Buletin", hint: "Judul dan deskripsi langganan di bagian bawah halaman." },
+  { id: "workspace", label: "Beranda", hint: "Sapaan, promosi fitur tambahan, dan judul pelatihan di dalam aplikasi." },
+  { id: "contact", label: "Kontak", hint: "WhatsApp, Instagram, dan email di bagian bawah halaman." },
 ];
 
 export function cloneContent(content = defaultLandingContent) {
@@ -324,16 +324,16 @@ export function validateAppearance(content) {
         errors.push(`${label}: unggah ulang gambarnya supaya tersimpan sebagai URL, bukan data gambar mentah.`);
         return;
       }
-      errors.push(`${label}: gunakan unggahan PNG/JPEG/WebP, path aset, atau URL gambar HTTP/HTTPS.`);
+      errors.push(`${label}: gunakan unggahan PNG/JPEG/WebP, lokasi aset, atau URL gambar HTTP/HTTPS.`);
       return;
     }
     if (value) maximum(value, `${label}: URL gambar`, APPEARANCE_LIMITS.imageUrl);
   };
 
-  required(content.hero.title, "Judul hero", APPEARANCE_LIMITS.hero.title);
-  required(content.hero.description, "Deskripsi hero", APPEARANCE_LIMITS.hero.description);
-  required(content.hero.buttonText, "Teks tombol hero", APPEARANCE_LIMITS.hero.buttonText);
-  image(content.hero.image, "Gambar hero");
+  required(content.hero.title, "Judul utama", APPEARANCE_LIMITS.hero.title);
+  required(content.hero.description, "Deskripsi bagian utama", APPEARANCE_LIMITS.hero.description);
+  required(content.hero.buttonText, "Teks tombol utama", APPEARANCE_LIMITS.hero.buttonText);
+  image(content.hero.image, "Gambar utama");
 
   required(content.closing.title, "Judul ajakan penutup", APPEARANCE_LIMITS.closing.title);
   required(content.closing.description, "Deskripsi ajakan penutup", APPEARANCE_LIMITS.closing.description);
@@ -341,22 +341,22 @@ export function validateAppearance(content) {
   required(content.closing.secondaryButtonText, "Teks tombol demo", APPEARANCE_LIMITS.closing.secondaryButtonText);
 
   if (content.faqs.length > APPEARANCE_LIMITS.faqs.items) {
-    errors.push(`FAQ maksimal ${APPEARANCE_LIMITS.faqs.items} item.`);
+    errors.push(`Jumlah pertanyaan maksimal ${APPEARANCE_LIMITS.faqs.items}.`);
   }
   content.faqs.forEach((item, index) => {
-    required(item.q, `Pertanyaan FAQ ${index + 1}`, APPEARANCE_LIMITS.faqs.q);
-    required(item.a, `Jawaban FAQ ${index + 1}`, APPEARANCE_LIMITS.faqs.a);
+    required(item.q, `Pertanyaan ${index + 1}`, APPEARANCE_LIMITS.faqs.q);
+    required(item.a, `Jawaban ${index + 1}`, APPEARANCE_LIMITS.faqs.a);
   });
 
   maximum(content.contact.whatsapp, "Nomor WhatsApp", APPEARANCE_LIMITS.contact.whatsapp);
   maximum(content.contact.instagram, "Instagram", APPEARANCE_LIMITS.contact.instagram);
   maximum(content.contact.email, "Email", APPEARANCE_LIMITS.contact.email);
   if (content.contact.whatsapp && !getWhatsappUrl(content.contact.whatsapp)) {
-    errors.push("Nomor WhatsApp belum valid. Gunakan nomor Indonesia (08… atau +62…) atau link wa.me.");
+    errors.push("Nomor WhatsApp tidak valid. Gunakan nomor Indonesia (08… atau +62…) atau tautan wa.me.");
   }
   if (content.contact.instagram && !getInstagramUrl(content.contact.instagram)) {
     errors.push(
-      "Instagram harus berupa link profil instagram.com, contoh: https://www.instagram.com/namakamu/ — username polos tidak diterima."
+      "Instagram harus berupa tautan profil instagram.com, misalnya: https://www.instagram.com/namakamu/ — bukan hanya nama pengguna."
     );
   }
   if (content.contact.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(content.contact.email)) {
@@ -377,11 +377,11 @@ export function validateAppearance(content) {
     image(item.image, `Gambar galeri ${index + 1}`);
   });
 
-  required(content.newsletter.title, "Judul newsletter", APPEARANCE_LIMITS.newsletter.title);
-  maximum(content.newsletter.description, "Deskripsi newsletter", APPEARANCE_LIMITS.newsletter.description);
+  required(content.newsletter.title, "Judul buletin", APPEARANCE_LIMITS.newsletter.title);
+  maximum(content.newsletter.description, "Deskripsi buletin", APPEARANCE_LIMITS.newsletter.description);
 
   required(content.workspace.greeting, "Sapaan beranda", APPEARANCE_LIMITS.workspace.greeting);
-  required(content.workspace.bannerTitle, "Judul banner add-on", APPEARANCE_LIMITS.workspace.bannerTitle);
+  required(content.workspace.bannerTitle, "Judul promosi fitur tambahan", APPEARANCE_LIMITS.workspace.bannerTitle);
   required(content.workspace.trainingTitle, "Judul pelatihan", APPEARANCE_LIMITS.workspace.trainingTitle);
   maximum(content.workspace.trainingDescription, "Deskripsi pelatihan", APPEARANCE_LIMITS.workspace.trainingDescription);
 

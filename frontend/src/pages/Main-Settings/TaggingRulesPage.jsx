@@ -203,7 +203,7 @@ function TaggingRuleForm({ initialRule, users, onSubmit, onClose }) {
           </div>
           {taggingType === 3 && (
             <div className="mt-3">
-              <span className={formLabel}>Penanda kustom</span>
+              <span className={formLabel}>Penanda khusus</span>
               <MultiSelect
                 floating
                 selected={customTags}
@@ -296,7 +296,7 @@ export default function TaggingRulesPage() {
       }
       setShowForm(false);
     } catch (requestError) {
-      window.alert(requestError.response?.data?.detail || "Gagal menyimpan aturan tagging.");
+      window.alert(requestError.response?.data?.detail || "Gagal menyimpan aturan penandaan.");
     }
   };
 
@@ -305,7 +305,7 @@ export default function TaggingRulesPage() {
       await remove(deletingRule.id);
       setDeletingRule(null);
     } catch (requestError) {
-      window.alert(requestError.response?.data?.detail || "Gagal menghapus aturan tagging.");
+      window.alert(requestError.response?.data?.detail || "Gagal menghapus aturan penandaan.");
     }
   };
 
@@ -319,10 +319,10 @@ export default function TaggingRulesPage() {
   };
 
   return (
-    <div className="p-7 max-md:p-[18px]">
+    <div lang="id" className="p-7 max-md:p-[18px]">
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h2 className="m-0 text-[28px] font-bold text-gray-900">Aturan tagging</h2>
+          <h2 className="m-0 text-[28px] font-bold text-gray-900">Aturan penandaan</h2>
           <p className="m-0 mt-1.5 text-sm text-slate-500">
             Atur penanda yang tampil otomatis pada transaksi Anda.
           </p>
@@ -335,13 +335,13 @@ export default function TaggingRulesPage() {
             setShowForm(true);
           }}
         >
-          Buat aturan tagging baru
+          Buat aturan penandaan baru
         </button>
       </div>
 
       {(error || loading) && (
         <p className="m-0 mb-4 text-sm text-slate-500">
-          {loading ? "Memuat aturan tagging..." : error}
+          {loading ? "Memuat aturan penandaan..." : error}
         </p>
       )}
 
@@ -375,10 +375,10 @@ export default function TaggingRulesPage() {
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-2 px-6 py-16 text-center">
             <p className="m-0 text-[15px] font-bold text-gray-900">
-              Belum ada aturan tagging
+              Belum ada aturan penandaan
             </p>
             <p className="m-0 text-sm text-slate-500">
-              Aturan tagging akan tampil di sini.
+              Aturan penandaan akan tampil di sini.
             </p>
           </div>
         ) : (

@@ -89,7 +89,7 @@ const displayName = (username) =>
 
 function productScopeLabel(type) {
   if (type === "Product conversion") return "Konversi produk di";
-  if (type === "Warehouse transfer") return "Transfer gudang dari";
+  if (type === "Warehouse transfer") return "Pemindahan dari gudang";
   if (type === "Stock adjustment") return "Kategori penyesuaian";
   return "Gudang";
 }
@@ -385,7 +385,7 @@ function ApprovalRuleForm({ initialRule, users, customers, onSubmit, onClose }) 
     <form className={`${modalPanel} flex max-w-[720px] flex-col`} onSubmit={submit}>
       <div className={`${modalHeader} shrink-0`}>
         <h3 className={`${modalTitle} font-bold`}>
-          {initialRule ? "Ubah aturan approval" : "Buat aturan approval"}
+          {initialRule ? "Ubah aturan persetujuan" : "Buat aturan persetujuan"}
         </h3>
         <button
           type="button"
@@ -712,7 +712,7 @@ function ApprovalRuleForm({ initialRule, users, customers, onSubmit, onClose }) 
         <div className="mb-5 border-t border-gray-200 pt-5">
           <SubHeading
             title="Tahapan persetujuan"
-            subtitle="Tentukan penyetuju dan cara persetujuan diberikan."
+            subtitle="Tentukan pemberi persetujuan dan cara persetujuan diberikan."
           />
           <p className="m-0 mb-4 text-[13px] text-slate-500">
             Pengguna dengan peran pemilik dapat langsung menyetujui transaksi tanpa melalui tahapan persetujuan.
@@ -759,12 +759,12 @@ function ApprovalRuleForm({ initialRule, users, customers, onSubmit, onClose }) 
               </div>
               <div>
                 <span className={formLabel}>
-                  Penyetuju <span className="text-red-600">*</span>
+                  Pemberi persetujuan <span className="text-red-600">*</span>
                 </span>
                 <div className="flex flex-col gap-2">
                   {step.approvers.length === 0 && (
                     <span className="text-[13px] text-slate-400">
-                      Belum ada penyetuju dipilih
+                      Belum ada pemberi persetujuan dipilih
                     </span>
                   )}
                   {step.approvers.map((user, position) => (
@@ -774,7 +774,7 @@ function ApprovalRuleForm({ initialRule, users, customers, onSubmit, onClose }) 
                           floating
                           value={user}
                           emptyText="Belum ada pengguna"
-                          placeholder="Pilih penyetuju"
+                          placeholder="Pilih pemberi persetujuan"
                           groups={[
                             { label: "", options: users.map((item) => item.username) },
                           ]}
@@ -787,7 +787,7 @@ function ApprovalRuleForm({ initialRule, users, customers, onSubmit, onClose }) 
                         type="button"
                         className="cursor-pointer rounded-md border-0 bg-transparent p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-red-600"
                         onClick={() => removeStepApprover(index, position)}
-                        aria-label={`Hapus penyetuju ${position + 1}`}
+                        aria-label={`Hapus pemberi persetujuan ${position + 1}`}
                       >
                         <X size={14} weight="bold" />
                       </button>
@@ -798,7 +798,7 @@ function ApprovalRuleForm({ initialRule, users, customers, onSubmit, onClose }) 
                     className={`${linkButton} inline-flex w-fit items-center gap-1`}
                     onClick={() => addApproverToStep(index)}
                   >
-                    <Plus size={13} /> Tambah penyetuju
+                    <Plus size={13} /> Tambah pemberi persetujuan
                   </button>
                 </div>
               </div>
@@ -857,7 +857,7 @@ function DeleteApprovalModal({ onConfirm, onClose }) {
       }
     >
       <p className="m-0 text-sm leading-relaxed text-slate-500">
-        Aturan approval yang dihapus tidak dapat dipulihkan.
+        Aturan persetujuan yang dihapus tidak dapat dipulihkan.
       </p>
     </ModalShell>
   );
@@ -1109,8 +1109,8 @@ function RuleDetailModal({ rule, users, onEdit, onDelete, onClose }) {
             </p>
             <p className="m-0 mt-1 text-[13px] text-slate-500">
               {step.approverType === "All must approve"
-                ? "Semua penyetuju yang disebutkan harus menyetujui."
-                : "Salah satu penyetuju yang disebutkan harus menyetujui."}
+                ? "Semua pemberi persetujuan yang disebutkan harus menyetujui."
+                : "Salah satu pemberi persetujuan yang disebutkan harus menyetujui."}
             </p>
           </div>
         ))}
@@ -1232,7 +1232,7 @@ export default function ApprovalRulesPage() {
       changeTime: stamp(),
       user: "Anda",
       action: editingRule ? "Edit" : "Buat",
-      description: editingRule ? "Aturan approval diperbarui" : "Aturan approval dibuat",
+      description: editingRule ? "Aturan persetujuan diperbarui" : "Aturan persetujuan dibuat",
     };
     const payload = {
       ...values,
@@ -1249,7 +1249,7 @@ export default function ApprovalRulesPage() {
       setEditingRule(null);
       setShowForm(false);
     } catch (requestError) {
-      window.alert(requestError.response?.data?.detail || "Gagal menyimpan aturan approval.");
+      window.alert(requestError.response?.data?.detail || "Gagal menyimpan aturan persetujuan.");
     }
   };
 
@@ -1259,15 +1259,15 @@ export default function ApprovalRulesPage() {
       setDeletingRule(null);
       setCurrentPage((page) => Math.max(1, page));
     } catch (requestError) {
-      window.alert(requestError.response?.data?.detail || "Gagal menghapus aturan approval.");
+      window.alert(requestError.response?.data?.detail || "Gagal menghapus aturan persetujuan.");
     }
   };
 
   return (
-    <div className="p-7 max-md:p-[18px]">
+    <div lang="id" className="p-7 max-md:p-[18px]">
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h2 className="m-0 text-[28px] font-bold text-gray-900">Aturan approval</h2>
+          <h2 className="m-0 text-[28px] font-bold text-gray-900">Aturan persetujuan</h2>
           <p className="m-0 mt-1.5 text-sm text-slate-500">
             Atur aturan persetujuan untuk transaksi Anda.
           </p>
@@ -1280,13 +1280,13 @@ export default function ApprovalRulesPage() {
             setShowForm(true);
           }}
         >
-          Buat aturan approval
+          Buat aturan persetujuan
         </button>
       </div>
 
       {(error || loading) && (
         <p className="m-0 mb-4 text-sm text-slate-500">
-          {loading ? "Memuat aturan approval..." : error}
+          {loading ? "Memuat aturan persetujuan..." : error}
         </p>
       )}
 
@@ -1328,10 +1328,10 @@ export default function ApprovalRulesPage() {
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-2 px-6 py-16 text-center">
             <p className="m-0 text-[15px] font-bold text-gray-900">
-              Belum ada aturan approval
+              Belum ada aturan persetujuan
             </p>
             <p className="m-0 text-sm text-slate-500">
-              Aturan approval akan tampil di sini.
+              Aturan persetujuan akan tampil di sini.
             </p>
           </div>
         ) : (
