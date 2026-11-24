@@ -231,7 +231,8 @@ export default function Anggaran() {
       </main>
 
       <style>{`
-        .ang-dark { color-scheme: dark; }
+        .ang-dark { color-scheme: dark; 
+        }
 
         .ang-dark .ang-header { border-color: #634f27 !important; }
         .ang-dark .ang-crumb { color: #E5B85C !important; }

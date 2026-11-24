@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Button, Container, Heading, HStack, Stack, Text, VStack } from "@chakra-ui/react";
 import { ArrowLeft, ArrowRight } from "@phosphor-icons/react";
-import brandLogoWhite from "@/assets/Ino-Finance-Footer.png";
+import brandLogoWhite from "@/assets/Ino-Finance-Footer.webp";
 import Navbar from "@/pages/Navbar";
 
 const C = {

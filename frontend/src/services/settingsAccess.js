@@ -16,6 +16,10 @@ export function isSettingsOwner() {
   return settingsAccess.is_owner === true;
 }
 
+export function isSettingsAdmin() {
+  return settingsAccess.is_admin === true;
+}
+
 export function canAccessSettingsTemplate(key, action = "view") {
   return settingsAccess.templates?.[key]?.[action] === true;
 }

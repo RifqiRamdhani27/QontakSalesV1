@@ -38,7 +38,7 @@ import {
   roleLabel as permissionLabel,
 } from "@/components/data/ruleData";
 import api, { extractError } from "@/services/settingsApi";
-import { canAccessSettingsFeature, isSettingsOwner } from "@/services/settingsAccess";
+import { canAccessSettingsFeature, isSettingsAdmin, isSettingsOwner } from "@/services/settingsAccess";
 import { DropdownPanel, useDropdown } from "@/components/ui/PopoverSelect";
 
 const PAGE_SIZE = 10;
@@ -1236,7 +1236,8 @@ function InviteUserModal({ user, onClose, onAddCustomRole, onViewRole, onSubmit 
   );
 }
 
-function UserTable({ users, roles, onTransfer, onEdit, onDelete, onResend }) {
+
+function UserTable({ users, roles, onTransfer, onEdit, onDelete, onResend, onToggleAdmin }) {
   const roleLabel = (user) => {
     if (user.isOwner) return "Pemilik";
     const existing = inviteRoles
@@ -1244,6 +1245,7 @@ function UserTable({ users, roles, onTransfer, onEdit, onDelete, onResend }) {
       .map((r) => permissionLabel(r.name));
     const custom = roles.filter((r) => user.customRoleIds.includes(r.id)).map((r) => r.name);
     const all = [...existing, ...custom];
+    if (user.isAdmin) return all.length > 0 ? `Admin, ${all.join(", ")}` : "Admin";
     return all.length > 0 ? all.join(", ") : "-";
   };
 
@@ -1264,6 +1266,10 @@ function UserTable({ users, roles, onTransfer, onEdit, onDelete, onResend }) {
           {users.map((user) => {
             const menuItems = [
               onEdit && { label: "Ubah", onClick: () => onEdit(user) },
+              onToggleAdmin && !user.isOwner && {
+                label: user.isAdmin ? "Cabut admin" : "Jadikan admin",
+                onClick: () => onToggleAdmin(user),
+              },
               onDelete && { label: "Hapus", danger: true, onClick: () => onDelete(user) },
             ].filter(Boolean);
             if (user.status === "invited" && onResend) {
@@ -1414,6 +1420,7 @@ export default function UserManagementPage() {
           status: user.status,
           type: user.type,
           isOwner: user.role === "MANAGER",
+          isAdmin: user.is_admin === true,
           customRoleIds: user.roles || [],
           roleConfig: user.role_config || {},
         }))
@@ -1488,6 +1495,18 @@ export default function UserManagementPage() {
       alert("Link undangan disalin.");
     } catch {
       window.prompt("Salin tautan undangan:", inviteLink);
+    }
+  };
+
+  const handleToggleAdmin = async (user) => {
+    const next = !user.isAdmin;
+    if (!window.confirm(next ? `Jadikan ${user.username} admin?` : `Cabut status admin ${user.username}?`)) return;
+    try {
+      await api.post(`/settings/members/${user.id}/set-admin/`, { is_admin: next });
+      await loadUsers();
+    } catch (error) {
+      console.error(error);
+      alert(extractError(error, "Gagal mengubah status admin."));
     }
   };
 
@@ -1623,6 +1642,7 @@ export default function UserManagementPage() {
             roles={roles}
             onTransfer={isSettingsOwner() ? () => setTransferOpen(true) : undefined}
             onEdit={canEditUsers ? (user) => setInviteModal({ user }) : undefined}
+            onToggleAdmin={isSettingsAdmin() ? handleToggleAdmin : undefined}
             onDelete={canDeleteUsers ? (user) => setDeleteTarget({ type: "user", item: user }) : undefined}
             onResend={canCreateUsers ? handleResend : undefined}
           />

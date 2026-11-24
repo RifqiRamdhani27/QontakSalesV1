@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { APPEARANCE_EVENT, getPublishedContent, refreshPublishedContent } from "@/services/appearanceSettings";
 import { useOutletContext } from "react-router-dom";
 
 const QUICK_ACTIONS = [
@@ -201,7 +202,25 @@ const DARK = {
     iconTile: "rgba(255, 255, 255, 0.07)",
 };
 
-export default function Beranda({ userName = "Rifqi" }) {
+const readUserName = () => {
+    const stored = (localStorage.getItem("user_name") || localStorage.getItem("impersonated_name") || "").trim();
+    return stored.split(/\s+/)[0] || "Pengguna";
+};
+
+export default function Beranda() {
+    const [userName, setUserName] = useState(readUserName);
+    useEffect(() => {
+        const sync = () => setUserName(readUserName());
+        window.addEventListener("storage", sync);
+        return () => window.removeEventListener("storage", sync);
+    }, []);
+    const [appearance, setAppearance] = useState(() => getPublishedContent().workspace);
+    useEffect(() => {
+        const sync = () => setAppearance(getPublishedContent().workspace);
+        refreshPublishedContent().then((content) => setAppearance(content.workspace)).catch(() => {});
+        window.addEventListener(APPEARANCE_EVENT, sync);
+        return () => window.removeEventListener(APPEARANCE_EVENT, sync);
+    }, []);
     const [themeMode, setThemeMode] = useState(() => localStorage.getItem("app_theme") || "light");
     useEffect(() => {
         const handleThemeChange = () => setThemeMode(localStorage.getItem("app_theme") || "light");
@@ -268,7 +287,7 @@ export default function Beranda({ userName = "Rifqi" }) {
                         Halo, {userName}
                     </p>
                     <p style={{ margin: 0, fontSize: "20px", fontWeight: 700, color: t.textTitle, lineHeight: 1.5 }}>
-                        Aktivitas apa yang ingin Anda lakukan?
+                        {appearance.greeting}
                     </p>
                 </div>
 
@@ -351,7 +370,7 @@ export default function Beranda({ userName = "Rifqi" }) {
                     <div style={{ position: "relative", zIndex: 1 }}>
                         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "16px", marginBottom: "20px" }}>
                             <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 700, color: t.bannerTitle, lineHeight: 1.4, maxWidth: "300px" }}>
-                                Tingkatkan produktivitas bisnis Anda dengan fitur tambahan Jurnal
+                                {appearance.bannerTitle}
                             </h2>
                             <button
                                 type="button"
@@ -411,10 +430,10 @@ export default function Beranda({ userName = "Rifqi" }) {
                 {/* Free training section */}
                 <div style={{ textAlign: "center", marginBottom: "20px" }}>
                     <h2 style={{ fontFamily: "Montserrat, 'sans-serif', system-ui", lineHeight: 1.5, fontWeight: "bold", fontSize: "20px", color: t.textTitle, textAlign: "center", margin: 0 }}>
-                        Pelatihan Jurnal gratis
+                        {appearance.trainingTitle}
                     </h2>
                     <p style={{ margin: "4px 0 0 0", fontSize: "13px", color: t.textMuted }}>
-                        Pilih pelatihan sesuai kebutuhan Anda.
+                        {appearance.trainingDescription}
                     </p>
                 </div>
 

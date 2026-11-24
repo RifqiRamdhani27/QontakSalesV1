@@ -408,7 +408,7 @@
     color: #121212 !important;
   }
 
-  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.bg-brand\/5, .bg-brand\/10, .bg-blue-50, .bg-blue-100, .bg-indigo-50, .bg-indigo-50\/60, .bg-sky-50) {
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.bg-brand\/5, .bg-brand\/10, .bg-blue-50, .bg-blue-100, .bg-indigo-50, .bg-indigo-50\/60) {
     background-color: rgba(229, 184, 92, 0.15) !important;
   }
 
@@ -537,7 +537,74 @@
     color: #d8b4fe !important;
   }
 
-  body:has(.settings-dark)>[data-qontak-settings] {
+  /* Semi-transparan: bar aksi lengket di bawah halaman Appearance. */
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.bg-white\/95, .bg-white\/90) {
+    background-color: rgba(18, 18, 18, 0.95) !important;
+  }
+
+  /* Amber — badge "belum disimpan", catatan peringatan, penghitung karakter. */
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.bg-amber-50, .bg-amber-100) {
+    background-color: rgba(229, 184, 92, 0.15) !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.border-amber-100, .border-amber-200, .border-amber-300) {
+    border-color: rgba(229, 184, 92, 0.45) !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.text-amber-500, .text-amber-600, .text-amber-700, .text-amber-800, .text-amber-900) {
+    color: #f0c978 !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.bg-amber-400, .bg-amber-500) {
+    background-color: #e5b85c !important;
+    color: #121212 !important;
+  }
+
+  /* Hijau — status tersimpan dan catatan sukses. */
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.border-green-100, .border-green-200, .border-emerald-200) {
+    border-color: rgba(52, 211, 153, 0.45) !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.text-green-700, .text-green-800, .text-emerald-600, .text-emerald-700) {
+    color: #86efac !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.bg-green-500, .bg-emerald-500) {
+    background-color: #34d399 !important;
+  }
+
+  /* Sky — pratinjau banner beranda dan tombol biru muda. */
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.border-sky-100, .border-sky-200, .border-sky-300) {
+    border-color: rgba(56, 189, 248, 0.4) !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.text-sky-500, .text-sky-600, .text-sky-700) {
+    color: #7dd3fc !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.bg-sky-50, .bg-sky-100, .bg-sky-200) {
+    background-color: rgba(56, 189, 248, 0.18) !important;
+  }
+
+  /* Merah — garis tepi kotak galat dan tombol hapus. */
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) :is(.border-red-100, .border-red-200, .border-red-300) {
+    border-color: rgba(248, 113, 113, 0.45) !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) .border-red-600\/15 {
+    border-color: rgba(248, 113, 113, 0.35) !important;
+  }
+
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) .outline-blue-600:is(:focus-visible, :focus) {
+    outline-color: #e5b85c !important;
+  }
+
+  /* Dialog bawaan browser di halaman Appearance. */
+  :is(.settings-dark, body:has(.settings-dark) [data-qontak-settings]) dialog::backdrop {
+    background-color: rgba(0, 0, 0, 0.65);
+  }
+
+  body:has(.settings-dark) > [data-qontak-settings] {
     background-color: #242424 !important;
     border-color: #634f27 !important;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;

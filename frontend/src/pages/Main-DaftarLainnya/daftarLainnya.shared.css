@@ -1,0 +1,1086 @@
+/* ==========================================================================
+   Daftar Lainnya — shared page skin
+   Menyeragamkan halaman turunan "Daftar Lainnya" (Kategori Tag, Arsip Tag,
+   Detail Kategori Tag, Jadwal Berulang, Daftar Transaksi, Kategori Produk)
+   supaya sama dengan gaya rumah: Pajak.jsx / DaftarLainnya.jsx.
+
+   Catatan teknis: tiap halaman menaruh <style> sendiri di dalam body, jadi
+   aturan di file ini dikunci dengan ".dlsk-page.dlsk-page" + !important
+   agar menang dari style lokalnya.
+   ========================================================================== */
+
+/* ---------------------------------------------------------------- root */
+.dlsk-page.dlsk-page {
+  margin: -24px !important;
+  padding: 0 !important;
+  width: auto !important;
+  min-height: 100vh !important;
+  background: #edf0f1 !important;
+  color: #334155 !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+.dlsk-page.dlsk-page *,
+.dlsk-page.dlsk-page *::before,
+.dlsk-page.dlsk-page *::after {
+  box-sizing: border-box;
+}
+
+/* pembungkus dalam (Kategori Tag) — biar header menempel seperti halaman lain */
+.kategori-tag-root.dlsk-page.dlsk-page > div {
+  padding: 0 !important;
+}
+
+/* --------------------------------------------------------------- header */
+.dlsk-page.dlsk-page header,
+.dlsk-page.dlsk-page .recurring-heading,
+.dlsk-page.dlsk-page .transaction-heading,
+.dlsk-page.dlsk-page .tag-archive-heading,
+.dlsk-page.dlsk-page .product-category-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 20px !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 20px 24px 16px !important;
+  background: #ffffff !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
+}
+
+.dlsk-page.dlsk-page header h1,
+.dlsk-page.dlsk-page .recurring-title,
+.dlsk-page.dlsk-page .transaction-title,
+.dlsk-page.dlsk-page .tag-archive-title,
+.dlsk-page.dlsk-page .product-category-title {
+  margin: 0 !important;
+  font-family: inherit !important;
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.01em !important;
+  color: #0e3152 !important;
+  text-transform: none !important;
+}
+
+.dlsk-page.dlsk-page header p,
+.dlsk-page.dlsk-page .recurring-breadcrumb,
+.dlsk-page.dlsk-page .transaction-breadcrumb,
+.dlsk-page.dlsk-page .tag-archive-breadcrumb,
+.dlsk-page.dlsk-page .product-category-breadcrumb,
+.dlsk-page.dlsk-page .product-category-breadcrumb button,
+.dlsk-page.dlsk-page header div > div:first-child,
+.dlsk-page.dlsk-page header div > div:first-child button {
+  margin: 0 0 4px !important;
+  padding: 0 !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: 1.2 !important;
+  color: #64748b !important;
+  background: transparent !important;
+  border: 0 !important;
+  cursor: pointer;
+}
+
+/* -------------------------------------------------------------- buttons */
+.dlsk-page.dlsk-page .recurring-primary,
+.dlsk-page.dlsk-page .recurring-apply,
+.dlsk-page.dlsk-page .transaction-apply,
+.dlsk-page.dlsk-page .transaction-filter-button,
+.dlsk-page.dlsk-page .tag-archive-create,
+.dlsk-page.dlsk-page .tag-archive-submit,
+.dlsk-page.dlsk-page .product-category-add-button,
+.dlsk-page.dlsk-page .product-category-save,
+.dlsk-page.dlsk-page header button[class*="bg-[#006fc9]"],
+.dlsk-page.dlsk-page form button[class*="bg-[#006fc9]"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  height: auto !important;
+  min-height: 34px !important;
+  padding: 7px 14px !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+  color: #ffffff !important;
+  background: #24637d !important;
+  border: 1px solid transparent !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  transition: background-color 150ms ease !important;
+}
+
+.dlsk-page.dlsk-page .recurring-primary:hover,
+.dlsk-page.dlsk-page .recurring-apply:hover,
+.dlsk-page.dlsk-page .transaction-apply:hover,
+.dlsk-page.dlsk-page .transaction-filter-button:hover,
+.dlsk-page.dlsk-page .tag-archive-create:hover,
+.dlsk-page.dlsk-page .tag-archive-submit:hover,
+.dlsk-page.dlsk-page .product-category-add-button:hover,
+.dlsk-page.dlsk-page .product-category-save:hover,
+.dlsk-page.dlsk-page header button[class*="bg-[#006fc9]"]:hover,
+.dlsk-page.dlsk-page form button[class*="bg-[#006fc9]"]:hover {
+  background: #1c4f64 !important;
+}
+
+.dlsk-page.dlsk-page .recurring-secondary,
+.dlsk-page.dlsk-page .transaction-cancel,
+.dlsk-page.dlsk-page .transaction-advanced-button,
+.dlsk-page.dlsk-page .tag-archive-cancel,
+.dlsk-page.dlsk-page .tag-archive-create-another,
+.dlsk-page.dlsk-page .product-category-cancel,
+.dlsk-page.dlsk-page form button[class*="bg-white"],
+.dlsk-page.dlsk-page header button[class*="border-[#dedede]"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  height: auto !important;
+  min-height: 34px !important;
+  padding: 7px 14px !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: #334155 !important;
+  background: #ffffff !important;
+  border: 1px solid #e0e4e7 !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  transition: background-color 150ms ease, border-color 150ms ease !important;
+}
+
+.dlsk-page.dlsk-page .recurring-secondary:hover,
+.dlsk-page.dlsk-page .transaction-cancel:hover,
+.dlsk-page.dlsk-page .transaction-advanced-button:hover,
+.dlsk-page.dlsk-page .tag-archive-cancel:hover,
+.dlsk-page.dlsk-page .tag-archive-create-another:hover,
+.dlsk-page.dlsk-page .product-category-cancel:hover,
+.dlsk-page.dlsk-page header button[class*="border-[#dedede]"]:hover {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* tombol teks/link kecil ("Lihat semua tag", pagination) */
+.dlsk-page.dlsk-page .tag-archive-page-button,
+.dlsk-page.dlsk-page .product-category-page-button {
+  min-width: 30px !important;
+  height: 30px !important;
+  padding: 0 8px !important;
+  font-family: inherit !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #334155 !important;
+  background: #ffffff !important;
+  border: 1px solid #e0e4e7 !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+}
+
+/* --------------------------------------------------------------- toolbar */
+.dlsk-page.dlsk-page section,
+.dlsk-page.dlsk-page .recurring-toolbar,
+.dlsk-page.dlsk-page .transaction-toolbar,
+.dlsk-page.dlsk-page .tag-archive-search-row,
+.dlsk-page.dlsk-page .product-category-search-row {
+  font-family: inherit !important;
+}
+
+/* toolbar Jadwal Berulang & Daftar Transaksi: inset samping, tanpa band putih */
+.dlsk-page.dlsk-page .recurring-toolbar,
+.dlsk-page.dlsk-page .transaction-toolbar {
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: space-between !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+  min-height: 0 !important;
+  margin: 0 24px !important;
+  padding: 20px 0 16px !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
+}
+
+/* baris pencarian di dalam konten tabel: inset samping juga */
+.dlsk-page.dlsk-page .tag-archive-search-row,
+.dlsk-page.dlsk-page .product-category-search-row {
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: space-between !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+  min-height: 0 !important;
+  padding: 24px !important;
+  background: transparent !important;
+  border: 0 !important;
+}
+
+.dlsk-page.dlsk-page .recurring-filter-row {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-end !important;
+  gap: 10px !important;
+  margin: 0 !important;
+}
+
+.dlsk-page.dlsk-page .transaction-date-field,
+.dlsk-page.dlsk-page .transaction-type-field,
+.dlsk-page.dlsk-page .tag-archive-category-field {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-end !important;
+  gap: 4px !important;
+  width: auto !important;
+  margin: 0 !important;
+}
+
+.dlsk-page.dlsk-page .recurring-filter-area {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 10px !important;
+}
+
+.dlsk-page.dlsk-page .recurring-filter-label,
+.dlsk-page.dlsk-page .transaction-date-field label,
+.dlsk-page.dlsk-page .transaction-type-field label,
+.dlsk-page.dlsk-page .tag-archive-form-label,
+.dlsk-page.dlsk-page .product-category-label-row,
+.dlsk-page.dlsk-page .recurring-checkbox span {
+  margin: 0 0 4px !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  line-height: 1.3 !important;
+  color: #64748b !important;
+}
+
+.dlsk-page.dlsk-page .recurring-checkbox {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  color: #334155 !important;
+}
+
+.dlsk-page.dlsk-page .recurring-checkbox input {
+  width: 16px !important;
+  min-width: 16px !important;
+  height: 16px !important;
+  margin: 0 !important;
+  accent-color: #24637d;
+}
+
+/* --------------------------------------------------------------- inputs */
+.dlsk-page.dlsk-page input[type="text"],
+.dlsk-page.dlsk-page input[type="search"],
+.dlsk-page.dlsk-page input[type="date"],
+.dlsk-page.dlsk-page input[type="number"],
+.dlsk-page.dlsk-page input[type="email"],
+.dlsk-page.dlsk-page select,
+.dlsk-page.dlsk-page textarea,
+.dlsk-page.dlsk-page .recurring-select,
+.dlsk-page.dlsk-page .recurring-search input,
+.dlsk-page.dlsk-page .transaction-select,
+.dlsk-page.dlsk-page .transaction-date-input,
+.dlsk-page.dlsk-page .transaction-search input,
+.dlsk-page.dlsk-page .tag-archive-search input,
+.dlsk-page.dlsk-page .tag-archive-name-input,
+.dlsk-page.dlsk-page .tag-archive-category-select,
+.dlsk-page.dlsk-page .product-category-search,
+.dlsk-page.dlsk-page .product-category-page-size {
+  width: auto !important;
+  min-width: 170px !important;
+  height: 34px !important;
+  padding: 6px 12px !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: 1.4 !important;
+  color: #334155 !important;
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 6px !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.dlsk-page.dlsk-page input::placeholder {
+  color: #94a3b8 !important;
+  font-style: normal !important;
+  font-size: 14px !important;
+}
+
+.dlsk-page.dlsk-page input:focus,
+.dlsk-page.dlsk-page select:focus,
+.dlsk-page.dlsk-page textarea:focus {
+  border-color: #24637d !important;
+  box-shadow: 0 0 0 1px #24637d !important;
+}
+
+/* tombol cari kecil di dalam search box */
+.dlsk-page.dlsk-page .recurring-search,
+.dlsk-page.dlsk-page .transaction-search,
+.dlsk-page.dlsk-page .tag-archive-search {
+  display: flex !important;
+  align-items: stretch !important;
+  height: 34px !important;
+  min-width: 0 !important;
+  background: #ffffff !important;
+  border: 0 !important;
+}
+
+.dlsk-page.dlsk-page .recurring-search button,
+.dlsk-page.dlsk-page .transaction-search button,
+.dlsk-page.dlsk-page .tag-archive-search-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 34px !important;
+  min-width: 34px !important;
+  min-height: 34px !important;
+  padding: 0 !important;
+  font-size: 15px !important;
+  color: #475569 !important;
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  border-left: 0 !important;
+  border-radius: 0 6px 6px 0 !important;
+  cursor: pointer !important;
+}
+
+.dlsk-page.dlsk-page .recurring-search input,
+.dlsk-page.dlsk-page .transaction-search input,
+.dlsk-page.dlsk-page .tag-archive-search input {
+  min-width: 190px !important;
+  border-radius: 6px 0 0 6px !important;
+}
+
+/* ---------------------------------------------------------------- body */
+.dlsk-page.dlsk-page main,
+.dlsk-page.dlsk-page .transaction-content,
+.dlsk-page.dlsk-page .tag-archive-content,
+.dlsk-page.dlsk-page .product-category-content,
+.dlsk-page.dlsk-page .recurring-table-wrap {
+  margin: 0 !important;
+  padding: 24px !important;
+  background: transparent !important;
+  border: 0 !important;
+}
+
+/* halaman bertabel: konten tanpa padding, inset diatur per blok */
+.dlsk-page.dlsk-page .transaction-content,
+.dlsk-page.dlsk-page .tag-archive-content,
+.dlsk-page.dlsk-page .product-category-content {
+  padding: 0 !important;
+}
+
+/* Jadwal Berulang & Daftar Transaksi: tabel diberi margin samping */
+.dlsk-page.dlsk-page .recurring-table-wrap,
+.dlsk-page.dlsk-page .transaction-table-wrap {
+  padding: 0 24px 24px !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+
+.dlsk-page.dlsk-page .recurring-table,
+.dlsk-page.dlsk-page .transaction-table {
+  border: 1px solid #e0e4e7 !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+}
+
+/* --------------------------------------------------------------- tables */
+.dlsk-page.dlsk-page .product-category-table-wrap,
+.dlsk-page.dlsk-page .tag-archive-table-wrap,
+.dlsk-page.dlsk-page .transaction-table-wrap {
+  overflow-x: auto !important;
+  background: #ffffff !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+}
+
+.dlsk-page.dlsk-page table,
+.dlsk-page.dlsk-page .recurring-table,
+.dlsk-page.dlsk-page .transaction-table,
+.dlsk-page.dlsk-page .tag-archive-table,
+.dlsk-page.dlsk-page .product-category-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  text-align: left !important;
+  background: #ffffff !important;
+}
+
+.dlsk-page.dlsk-page thead tr {
+  background: #e2f0f8 !important;
+  border-top: 1px solid #cce3ef !important;
+  border-bottom: 1px solid #cce3ef !important;
+}
+
+.dlsk-page.dlsk-page th {
+  height: auto !important;
+  padding: 10px 24px !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  line-height: 1.4 !important;
+  color: #1e293b !important;
+  background: transparent !important;
+  border: 0 !important;
+  white-space: nowrap !important;
+}
+
+.dlsk-page.dlsk-page td {
+  padding: 12px 24px !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: 1.5 !important;
+  color: #334155 !important;
+  background: #ffffff !important;
+  border: 0 !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  white-space: nowrap !important;
+}
+
+.dlsk-page.dlsk-page tbody tr:last-child td {
+  border-bottom: 0 !important;
+}
+
+.dlsk-page.dlsk-page tbody tr:hover td {
+  background: #f8fafc !important;
+}
+
+.dlsk-page.dlsk-page .recurring-empty-row td,
+.dlsk-page.dlsk-page .transaction-empty-row td,
+.dlsk-page.dlsk-page .tag-archive-no-results td {
+  height: 56px !important;
+  padding: 20px 24px !important;
+  color: #64748b !important;
+  background: #ffffff !important;
+  text-align: center !important;
+}
+
+.dlsk-page.dlsk-page a {
+  color: #1a73be !important;
+  text-decoration: underline dotted !important;
+  text-underline-offset: 3px;
+}
+
+.dlsk-page.dlsk-page .recurring-close,
+.dlsk-page.dlsk-page .transaction-drawer-close {
+  color: #64748b !important;
+}
+
+/* --------------------------------------------------------------- footer */
+.dlsk-page.dlsk-page footer,
+.dlsk-page.dlsk-page .tag-archive-footer,
+.dlsk-page.dlsk-page .product-category-footer {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+  margin-top: 16px !important;
+  padding: 16px 24px !important;
+  font-family: inherit !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  color: #334155 !important;
+  background: #dff3fc !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+}
+
+.dlsk-page.dlsk-page .tag-archive-pagination,
+.dlsk-page.dlsk-page .product-category-pagination {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+/* -------------------------------------------------------------- modals */
+.dlsk-page.dlsk-page .recurring-modal-backdrop,
+.dlsk-page.dlsk-page .transaction-overlay,
+.dlsk-page.dlsk-page .tag-archive-modal-backdrop,
+.dlsk-page.dlsk-page .product-category-modal-backdrop,
+.dlsk-page.dlsk-page .tag-modal-overlay,
+.dlsk-page.dlsk-page .tag-delete-confirm-backdrop {
+  background: rgba(15, 23, 42, 0.45) !important;
+  backdrop-filter: blur(1px);
+}
+
+.dlsk-page.dlsk-page .recurring-modal,
+.dlsk-page.dlsk-page .transaction-drawer,
+.dlsk-page.dlsk-page .tag-archive-modal,
+.dlsk-page.dlsk-page .product-category-modal,
+.dlsk-page.dlsk-page .tag-delete-confirm-modal,
+.dlsk-page.dlsk-page .tag-modal-overlay > form {
+  padding: 0 !important;
+  font-family: inherit !important;
+  color: #334155 !important;
+  background: #ffffff !important;
+  border: 1px solid #e0e4e7 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18) !important;
+}
+
+.dlsk-page.dlsk-page .recurring-modal-header,
+.dlsk-page.dlsk-page .tag-archive-modal-header,
+.dlsk-page.dlsk-page .product-category-modal-header,
+.dlsk-page.dlsk-page .tag-delete-confirm-header,
+.dlsk-page.dlsk-page .transaction-drawer-title {
+  margin: 0 !important;
+  padding: 18px 24px !important;
+  font-family: inherit !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+  color: #0e3152 !important;
+  border-bottom: 1px solid #e0e4e7 !important;
+}
+
+.dlsk-page.dlsk-page .tag-modal-overlay > form > div:first-child,
+.dlsk-page.dlsk-page .tag-modal-overlay > form > label {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #334155 !important;
+}
+
+.dlsk-page.dlsk-page .recurring-modal-header h2,
+.dlsk-page.dlsk-page .tag-archive-modal-header h2,
+.dlsk-page.dlsk-page .product-category-modal-header h2,
+.dlsk-page.dlsk-page .tag-delete-confirm-header h2 {
+  margin: 0 !important;
+  font-family: inherit !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  color: #0e3152 !important;
+}
+
+.dlsk-page.dlsk-page .recurring-form,
+.dlsk-page.dlsk-page .tag-archive-modal-form,
+.dlsk-page.dlsk-page .product-category-form,
+.dlsk-page.dlsk-page .tag-delete-confirm-body {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  padding: 20px 24px !important;
+}
+
+.dlsk-page.dlsk-page .recurring-form label {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  font-family: inherit !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #334155 !important;
+}
+
+.dlsk-page.dlsk-page .recurring-form input,
+.dlsk-page.dlsk-page .recurring-form select,
+.dlsk-page.dlsk-page .tag-archive-name-input,
+.dlsk-page.dlsk-page .product-category-form input,
+.dlsk-page.dlsk-page .product-category-form select {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.dlsk-page.dlsk-page .recurring-form-actions,
+.dlsk-page.dlsk-page .tag-archive-modal-actions,
+.dlsk-page.dlsk-page .product-category-modal-actions,
+.dlsk-page.dlsk-page .tag-delete-confirm-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+  padding: 16px 24px 20px !important;
+  border-top: 1px solid #e0e4e7 !important;
+}
+
+/* ----------------------------------------------------------- empty state */
+.dlsk-page.dlsk-page .product-category-empty,
+.dlsk-page.dlsk-page .tag-archive-empty-state,
+.dlsk-page.dlsk-page .tag-archive-empty-state-row {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  padding: 56px 24px !important;
+  background: #ffffff !important;
+  border: 1px solid #e0e4e7 !important;
+  border-radius: 10px !important;
+  text-align: center !important;
+}
+
+.dlsk-page.dlsk-page .product-category-empty-title,
+.dlsk-page.dlsk-page .tag-archive-empty-header {
+  margin: 0 !important;
+  font-family: inherit !important;
+  font-size: 17px !important;
+  font-weight: 700 !important;
+  color: #0e3152 !important;
+}
+
+.dlsk-page.dlsk-page .product-category-empty-description,
+.dlsk-page.dlsk-page .tag-archive-empty-copy {
+  margin: 0 !important;
+  max-width: 520px !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  color: #64748b !important;
+}
+
+/* ---------------------------------------------- halaman berbasis Tailwind */
+/* Kategori Tag & Detail Kategori Tag memakai utility class, jadi
+   penyeragaman dilakukan di level elemen. */
+.dlsk-page.dlsk-page main > section > div > div > h2,
+.dlsk-page.dlsk-page main section h2 {
+  margin: 0 !important;
+  font-family: inherit !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+  color: #0e3152 !important;
+}
+
+.dlsk-page.dlsk-page main section h2 + p,
+.dlsk-page.dlsk-page main section > p {
+  margin: 6px 0 0 !important;
+  font-family: inherit !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+  color: #64748b !important;
+}
+
+.dlsk-page.dlsk-page main article {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 224px !important;
+  min-height: 132px !important;
+  height: auto !important;
+  padding: 16px !important;
+  background: #ffffff !important;
+  border: 1px solid #e0e4e7 !important;
+  border-radius: 10px !important;
+  transition: border-color 150ms ease, box-shadow 150ms ease !important;
+}
+
+.dlsk-page.dlsk-page main article:hover {
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06) !important;
+}
+
+.dlsk-page.dlsk-page main article h3 {
+  margin: 0 !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 1.35 !important;
+  color: #0e3152 !important;
+}
+
+.dlsk-page.dlsk-page main article p {
+  margin: 2px 0 0 !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+  color: #64748b !important;
+}
+
+.dlsk-page.dlsk-page main article span[title] {
+  display: inline-flex !important;
+  align-items: center !important;
+  max-width: 100% !important;
+  height: 22px !important;
+  padding: 0 8px !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  color: #334155 !important;
+  background: #eef2f6 !important;
+  border-radius: 999px !important;
+}
+
+.dlsk-page.dlsk-page main article button {
+  margin-top: auto !important;
+  padding: 0 !important;
+  font-family: inherit !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #1a73be !important;
+  background: transparent !important;
+  border: 0 !important;
+  cursor: pointer !important;
+}
+
+.dlsk-page.dlsk-page main article button:hover {
+  text-decoration: underline !important;
+  background: transparent !important;
+}
+
+/* kartu "Buat kategori" bergaya tombol dashed */
+.dlsk-page.dlsk-page main > section > div > button[class*="border-dotted"] {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 224px !important;
+  min-height: 132px !important;
+  height: auto !important;
+  padding: 16px !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: #24637d !important;
+  background: #ffffff !important;
+  border: 1px dashed #9dc0d1 !important;
+  border-radius: 10px !important;
+  cursor: pointer !important;
+}
+
+.dlsk-page.dlsk-page main > section > div > button[class*="border-dotted"]:hover {
+  background: #f4fafc !important;
+  border-color: #24637d !important;
+}
+
+/* form inline kategori custom */
+.dlsk-page.dlsk-page main > section > div > form {
+  width: 224px !important;
+  min-height: 132px !important;
+  height: auto !important;
+  padding: 12px !important;
+  background: #ffffff !important;
+  border: 1px solid #24637d !important;
+  border-radius: 10px !important;
+}
+
+.dlsk-page.dlsk-page main > section > div > form input {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.dlsk-page.dlsk-page main > section > div > form p {
+  margin: 4px 0 0 !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  color: #94a3b8 !important;
+}
+
+/* -------------------------------------------------------- dark mode ---- */
+.dlsk-page.dlsk-page.dlsk-dark,
+.dlsk-page.dlsk-page.dlsk-dark.dash-dark {
+  background: #121212 !important;
+  color: #e2e8f0 !important;
+  color-scheme: dark;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark header,
+.dlsk-page.dlsk-page.dlsk-dark .recurring-heading,
+.dlsk-page.dlsk-page.dlsk-dark .transaction-heading,
+.dlsk-page.dlsk-page.dlsk-dark .tag-archive-heading,
+.dlsk-page.dlsk-page.dlsk-dark .product-category-header {
+  background: #121212 !important;
+  border-bottom: 1px solid #3a3326 !important;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark header h1,
+.dlsk-page.dlsk-page.dlsk-dark .recurring-title,
+.dlsk-page.dlsk-page.dlsk-dark .transaction-title,
+.dlsk-page.dlsk-page.dlsk-dark .tag-archive-title,
+.dlsk-page.dlsk-page.dlsk-dark .product-category-title {
+  color: #f8fafc !important;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark header p,
+.dlsk-page.dlsk-page.dlsk-dark .recurring-breadcrumb,
+.dlsk-page.dlsk-page.dlsk-dark .transaction-breadcrumb,
+.dlsk-page.dlsk-page.dlsk-dark .tag-archive-breadcrumb,
+.dlsk-page.dlsk-page.dlsk-dark .product-category-breadcrumb,
+.dlsk-page.dlsk-page.dlsk-dark .product-category-breadcrumb button,
+.dlsk-page.dlsk-page.dlsk-dark header div > div:first-child {
+  color: #94a3b8 !important;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark main {
+  background: transparent !important;
+  border: 0 !important;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark .recurring-toolbar,
+.dlsk-page.dlsk-page.dlsk-dark .transaction-toolbar,
+.dlsk-page.dlsk-page.dlsk-dark .tag-archive-search-row,
+.dlsk-page.dlsk-page.dlsk-dark .product-category-search-row {
+  background: #1a1a1a !important;
+  border-bottom: 1px solid #3a3326 !important;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark input,
+.dlsk-page.dlsk-page.dlsk-dark select,
+.dlsk-page.dlsk-page.dlsk-dark textarea {
+  color: #e2e8f0 !important;
+  background: #262626 !important;
+  border-color: #3a3326 !important;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark input::placeholder {
+  color: #94a3b8 !important;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark .recurring-search,
+.dlsk-page.dlsk-page.dlsk-dark .transaction-search,
+.dlsk-page.dlsk-page.dlsk-dark .tag-archive-search {
+  background: transparent !important;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark .recurring-search button,
+.dlsk-page.dlsk-page.dlsk-dark .transaction-search button,
+.dlsk-page.dlsk-page.dlsk-dark .tag-archive-search-icon {
+  color: #cbd5e1 !important;
+  background: #262626 !important;
+  border-color: #3a3326 !important;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark .recurring-filter-label,
+.dlsk-page.dlsk-page.dlsk-dark .transaction-date-field label,
+.dlsk-page.dlsk-page.dlsk-dark .transaction-type-field label,
+.dlsk-page.dlsk-page.dlsk-dark .recurring-checkbox span {
+  color: #94a3b8 !important;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark .recurring-checkbox {
+  color: #e2e8f0 !important;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark table,
+.dlsk-page.dlsk-page.dlsk-dark .recurring-table,
+.dlsk-page.dlsk-page.dlsk-dark .transaction-table,
+.dlsk-page.dlsk-page.dlsk-dark .tag-archive-table,
+.dlsk-page.dlsk-page.dlsk-dark .product-category-table {
+  background: #1a1a1a !important;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark thead tr {
+  background: rgba(229, 184, 92, 0.12) !important;
+  border-top: 1px solid #3a3326 !important;
+  border-bottom: 1px solid #3a3326 !important;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark th {
+  color: #f1f5f9 !important;
+  background: transparent !important;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark td {
+  color: #e2e8f0 !important;
+  background: #1a1a1a !important;
+  border-bottom: 1px solid #2c2a25 !important;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark tbody tr:hover td {
+  background: #262522 !important;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark .recurring-empty-row td,
+.dlsk-page.dlsk-page.dlsk-dark .transaction-empty-row td,
+.dlsk-page.dlsk-page.dlsk-dark .tag-archive-no-results td {
+  color: #94a3b8 !important;
+  background: #1a1a1a !important;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark .product-category-table-wrap,
+.dlsk-page.dlsk-page.dlsk-dark .tag-archive-table-wrap,
+.dlsk-page.dlsk-page.dlsk-dark .transaction-table-wrap {
+  background: #1a1a1a !important;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark footer,
+.dlsk-page.dlsk-page.dlsk-dark .tag-archive-footer,
+.dlsk-page.dlsk-page.dlsk-dark .product-category-footer {
+  color: #e2e8f0 !important;
+  background: rgba(229, 184, 92, 0.1) !important;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark .tag-archive-page-button,
+.dlsk-page.dlsk-page.dlsk-dark .product-category-page-button {
+  color: #e2e8f0 !important;
+  background: #1a1a1a !important;
+  border-color: #3a3326 !important;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark .recurring-secondary,
+.dlsk-page.dlsk-page.dlsk-dark .transaction-cancel,
+.dlsk-page.dlsk-page.dlsk-dark .transaction-advanced-button,
+.dlsk-page.dlsk-page.dlsk-dark .tag-archive-cancel,
+.dlsk-page.dlsk-page.dlsk-dark .tag-archive-create-another,
+.dlsk-page.dlsk-page.dlsk-dark .product-category-cancel,
+.dlsk-page.dlsk-page.dlsk-dark header button[class*="border-[#dedede]"],
+.dlsk-page.dlsk-page.dlsk-dark form button[class*="bg-white"] {
+  color: #e2e8f0 !important;
+  background: #1a1a1a !important;
+  border-color: #3a3326 !important;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark .recurring-primary,
+.dlsk-page.dlsk-page.dlsk-dark .recurring-apply,
+.dlsk-page.dlsk-page.dlsk-dark .transaction-apply,
+.dlsk-page.dlsk-page.dlsk-dark .transaction-filter-button,
+.dlsk-page.dlsk-page.dlsk-dark .tag-archive-create,
+.dlsk-page.dlsk-page.dlsk-dark .tag-archive-submit,
+.dlsk-page.dlsk-page.dlsk-dark .product-category-add-button,
+.dlsk-page.dlsk-page.dlsk-dark .product-category-save,
+.dlsk-page.dlsk-page.dlsk-dark header button[class*="bg-[#006fc9]"],
+.dlsk-page.dlsk-page.dlsk-dark form button[class*="bg-[#006fc9]"] {
+  color: #1a1a1a !important;
+  background: #e08d33 !important;
+  border-color: #e08d33 !important;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark .recurring-modal,
+.dlsk-page.dlsk-page.dlsk-dark .transaction-drawer,
+.dlsk-page.dlsk-page.dlsk-dark .tag-archive-modal,
+.dlsk-page.dlsk-page.dlsk-dark .product-category-modal,
+.dlsk-page.dlsk-page.dlsk-dark .tag-delete-confirm-modal,
+.dlsk-page.dlsk-page.dlsk-dark .tag-modal-overlay > form {
+  color: #e2e8f0 !important;
+  background: #1a1a1a !important;
+  border: 1px solid #3a3326 !important;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6) !important;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark .recurring-modal-header,
+.dlsk-page.dlsk-page.dlsk-dark .tag-archive-modal-header,
+.dlsk-page.dlsk-page.dlsk-dark .product-category-modal-header,
+.dlsk-page.dlsk-page.dlsk-dark .tag-delete-confirm-header,
+.dlsk-page.dlsk-page.dlsk-dark .transaction-drawer-title,
+.dlsk-page.dlsk-page.dlsk-dark .recurring-modal-header h2,
+.dlsk-page.dlsk-page.dlsk-dark .tag-archive-modal-header h2,
+.dlsk-page.dlsk-page.dlsk-dark .product-category-modal-header h2,
+.dlsk-page.dlsk-page.dlsk-dark .tag-delete-confirm-header h2 {
+  color: #f8fafc !important;
+  border-bottom-color: #3a3326 !important;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark .product-category-empty,
+.dlsk-page.dlsk-page.dlsk-dark .tag-archive-empty-state,
+.dlsk-page.dlsk-page.dlsk-dark .tag-archive-empty-state-row,
+.dlsk-page.dlsk-page.dlsk-dark main article,
+.dlsk-page.dlsk-page.dlsk-dark main > section > div > form {
+  background: #1a1a1a !important;
+  border-color: #3a3326 !important;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark .product-category-empty-title,
+.dlsk-page.dlsk-page.dlsk-dark .tag-archive-empty-header,
+.dlsk-page.dlsk-page.dlsk-dark main section h2,
+.dlsk-page.dlsk-page.dlsk-dark main article h3 {
+  color: #f8fafc !important;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark .product-category-empty-description,
+.dlsk-page.dlsk-page.dlsk-dark .tag-archive-empty-copy,
+.dlsk-page.dlsk-page.dlsk-dark main section h2 + p,
+.dlsk-page.dlsk-page.dlsk-dark main section > p,
+.dlsk-page.dlsk-page.dlsk-dark main article p {
+  color: #94a3b8 !important;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark main article span[title] {
+  color: #e2e8f0 !important;
+  background: #262626 !important;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark main > section > div > button[class*="border-dotted"] {
+  color: #e08d33 !important;
+  background: #1a1a1a !important;
+  border-color: #4a4133 !important;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark main article button,
+.dlsk-page.dlsk-page.dlsk-dark a {
+  color: #e5b85c !important;
+}
+
+/* ---- override final: Daftar Transaksi ---- */
+.dlsk-page.dlsk-page .transaction-heading {
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  gap: 2px !important;
+}
+
+/* ---- override final: Daftar Transaksi toolbar rapat satu baris ---- */
+.dlsk-page.dlsk-page .transaction-toolbar > * {
+  align-self: flex-end !important;
+}
+
+.dlsk-page.dlsk-page .transaction-toolbar .transaction-date-input,
+.dlsk-page.dlsk-page .transaction-toolbar .transaction-select {
+  min-width: 148px !important;
+  width: 148px !important;
+}
+
+.dlsk-page.dlsk-page .transaction-toolbar .transaction-search input {
+  min-width: 150px !important;
+  width: 150px !important;
+}
+
+.dlsk-page.dlsk-page .transaction-toolbar .transaction-filter-button,
+.dlsk-page.dlsk-page .transaction-toolbar .transaction-advanced-button {
+  min-height: 34px !important;
+  height: 34px !important;
+  border-radius: 6px !important;
+}
+
+.dlsk-page.dlsk-page .transaction-toolbar .transaction-search {
+  margin-left: auto !important;
+}
+
+/* ---- override final: semua tabel & footer rata kiri 24px ---- */
+.dlsk-page.dlsk-page .tag-archive-table-wrap,
+.dlsk-page.dlsk-page .product-category-table-wrap {
+  padding: 0 24px !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+
+.dlsk-page.dlsk-page .tag-archive-table,
+.dlsk-page.dlsk-page .product-category-table {
+  border: 1px solid #e0e4e7 !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+}
+
+.dlsk-page.dlsk-page footer,
+.dlsk-page.dlsk-page .tag-archive-footer,
+.dlsk-page.dlsk-page .product-category-footer {
+  margin: 16px 24px 24px !important;
+  border-radius: 8px !important;
+}
+
+.dlsk-page.dlsk-page.dlsk-dark .tag-archive-table,
+.dlsk-page.dlsk-page.dlsk-dark .product-category-table,
+.dlsk-page.dlsk-page.dlsk-dark .recurring-table,
+.dlsk-page.dlsk-page.dlsk-dark .transaction-table {
+  border-color: #3a3326 !important;
+}
+

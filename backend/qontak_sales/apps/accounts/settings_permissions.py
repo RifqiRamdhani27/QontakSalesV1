@@ -20,6 +20,7 @@ SETTINGS_MODULES = {
     "billings": ("Billings",),
     "approval-rules": ("Approval Rules",),
     "tagging-rules": ("Tagging Rules",),
+    "appearance": ("Appearance",),
 }
 ACTIONS = {"view": "see", "create": "create", "edit": "edit", "delete": "can_delete"}
 COLUMNS = {"view": "View", "create": "Create/Add", "edit": "Edit", "delete": "Delete"}
@@ -38,7 +39,7 @@ TEMPLATE_FEATURES = {
 }
 
 
-def settings_grants(role_config, roles=(), owner=False):
+def settings_grants(role_config, roles=(), owner=False, admin=False):
     features = {feature: {action: False for action in ACTIONS} for items in SETTINGS_MODULES.values() for feature in items}
     config = role_config if isinstance(role_config, dict) else {}
     existing = config.get("existing", [])
@@ -52,7 +53,7 @@ def settings_grants(role_config, roles=(), owner=False):
                 features[name][action] = True
 
     if owner:
-        grant(features, ACTIONS)
+        grant([name for name in features if name != "Appearance"], ACTIONS)
     else:
         general = [name for name in features if name != "Billings"]
         if "ultimate" in selected:
@@ -75,22 +76,34 @@ def settings_grants(role_config, roles=(), owner=False):
                     for action, field in ACTIONS.items():
                         if getattr(authority, field) is True:
                             features[authority.sub_feature][action] = True
+    if admin:
+        # Admin adalah status tambahan: izin lama tetap, Appearance ditambahkan,
+        # dan daftar user bisa dilihat supaya bisa mengatur status admin.
+        grant(("Appearance",), ACTIONS)
+        features["User management: User list"]["view"] = True
+    if not owner and not admin:
+        features["Appearance"] = {action: False for action in ACTIONS}
     modules = {
         module: {action: any(features[name][action] for name in names) for action in ACTIONS}
         for module, names in SETTINGS_MODULES.items()
     }
+
     templates = {key: features[feature].copy() for key, feature in TEMPLATE_FEATURES.items()}
-    return {"modules": modules, "features": features, "templates": templates, "is_owner": owner}
+    return {"modules": modules, "features": features, "templates": templates, "is_owner": owner, "is_admin": admin}
 
 
 def get_settings_access(user):
     active = bool(user and user.is_authenticated and user.is_active and user.status == "active" and user.company_id)
     if not active:
-        return settings_grants({})
+        access = settings_grants({})
+        access["is_admin"] = False
+        return access
     owner = user.role == "MANAGER"
+    admin = bool(getattr(user, "is_admin", False))
     roles = [] if owner else list(user.roles.filter(Q(company_id=user.company_id) | Q(company__isnull=True)).prefetch_related("authorities"))
-    access = settings_grants(user.role_config, roles, owner)
+    access = settings_grants(user.role_config, roles, owner, admin)
     access["user_id"] = user.pk
+    access["is_admin"] = admin
     return access
 
 
@@ -142,14 +155,20 @@ class SettingsPermission(BasePermission):
 
     def has_permission(self, request, view):
         access = request_settings_access(request)
-        if access["is_owner"]:
-            return True
+        getter = getattr(view, "get_settings_features", None)
+        features = getter() if getter else (getattr(view, "settings_feature", None),)
         action = getattr(view, "action", "")
+        if action == "set_admin":
+            return access["is_admin"]
+        # Owner punya akses penuh kecuali Appearance. Appearance tetap hanya
+        # untuk pemegang status admin, termasuk bila owner sendiri yang admin.
+        if access["is_owner"] and "Appearance" not in features:
+            return True
         if action == "transfer_ownership":
             return False
         if getattr(view, "settings_role_choices", False) and action == "list":
             users = access["features"]["User management: User list"]
-            if users["create"] or users["edit"]:
+            if users["create"] or users["edit"] or access["is_admin"]:
                 return True
         if request.method in SAFE_METHODS:
             required = "view"
@@ -161,6 +180,4 @@ class SettingsPermission(BasePermission):
             required = "create"
         else:
             required = "edit"
-        getter = getattr(view, "get_settings_features", None)
-        features = getter() if getter else (getattr(view, "settings_feature", None),)
         return any(access["features"].get(feature, {}).get(required, False) for feature in features)

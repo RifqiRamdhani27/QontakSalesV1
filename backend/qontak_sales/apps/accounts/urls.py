@@ -13,6 +13,7 @@ from .views import (
 )
 from qontak_sales.apps.customers.views import CustomerViewSet
 from .settings_endpoints import CompanyProductionSettingView, CompanyRoleViewSet, InvoiceReminderIntervalViewSet, InvoiceReminderView, ProductBatchReminderListView, ProductSettingView, PurchaseSettingView, SalesFormSettingView
+from .landing_appearance import LandingAppearanceView, PublicLandingAppearanceView
 from .settings_access_views import LegacyRoleViewSet, SettingsAccessView, SettingsAgentViewSet, SettingsCompanyView, SettingsProfileView
 from .settings_views import AcceptInvitationView, AccountMappingViewSet, ApprovalRuleViewSet, BillingViewSet, CustomFieldViewSet, InvitationDetailView, MemberViewSet as SettingsMemberViewSet, TaggingRuleViewSet, TemplateSettingView
 
@@ -39,6 +40,8 @@ urlpatterns = [
     path("settings/profile/", SettingsProfileView.as_view(), name="settings-profile"),
     path("company/", CompanyDetailView.as_view(), name="company-detail"),
     path("settings/access/", SettingsAccessView.as_view(), name="settings-access"),
+    path("landing/appearance/", PublicLandingAppearanceView.as_view(), name="landing-appearance-public"),
+    path("settings/appearance/", LandingAppearanceView.as_view(), name="settings-appearance"),
     path("settings/company/", SettingsCompanyView.as_view(), name="settings-company"),
     path("production-settings/", ProductionSettingDetailView.as_view(), name="production-setting-detail"),
     path("settings/production-settings/", CompanyProductionSettingView.as_view(), name="settings-production-setting-detail"),

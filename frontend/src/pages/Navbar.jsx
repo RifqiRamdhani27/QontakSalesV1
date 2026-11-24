@@ -1,8 +1,8 @@
 import { useState, useEffect, useLayoutEffect, memo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Box, Button, HStack, Text } from "@chakra-ui/react";
-import brandLogoWhite from "@/assets/Ino-Finance-Footer.png";
-import brandLogoBlack from "@/assets/Ino-Finance.png";
+import brandLogoWhite from "@/assets/Ino-Finance-Footer.webp";
+import brandLogoBlack from "@/assets/Ino-Finance.webp";
 
 const C = {
   ink: "#484848ff", mute: "#475569",
