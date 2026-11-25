@@ -59,6 +59,7 @@ const RIGHT_ITEMS = [
   {
     id: "daftar-kunci-periode-tutup-buku",
     title: "Daftar Kunci Periode & Tutup Buku",
+    path: "/tutup-buku",
     badge: "Baru",
     description:
       "Menampilkan daftar periode yang dikunci dan buku yang sudah ditutup dalam satu tabel.",

@@ -686,7 +686,7 @@ export default function LandingPage() {
                   trigger="hover"
                   accentColor="#ffffff"
                   overlayColor="#060010"
-                  textColor={C.sky}
+                  textColor="#ffffff"
                   grayscale
                   showLabels
                   duration={0.6}
