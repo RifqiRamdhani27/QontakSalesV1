@@ -266,7 +266,8 @@ export default function RegisterPage() {
       });
       setSuccess(true);
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed");
+      const d = err.response?.data;
+      setError(d?.message || d?.email?.[0] || d?.password?.[0] || "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -481,9 +482,9 @@ export default function RegisterPage() {
       <LoadingPopup open={loading} message="Creating account..." />
       <SuccessCard
         open={success}
-        title="Sign up berhasil!"
-        subtitle="Akun kamu sudah dibuat. Mengarahkan ke login..."
-        duration={2600}
+        title="Cek email kamu!"
+        subtitle={`Kami sudah kirim link verifikasi ke Email anda.`}
+        duration={4000}
         onClose={() => navigate("/login")}
       />
     </Flex>

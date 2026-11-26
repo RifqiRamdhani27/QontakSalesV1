@@ -16,6 +16,17 @@ from .serializers import (
     RoleSerializer,
     UserSerializer,
 )
+import logging
+from django.core import signing
+from rest_framework.throttling import AnonRateThrottle
+from .email_verification import read_token, send_verification_email
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
+
+from .password_reset import get_user_from_uid_token, send_reset_email
+
+
+logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
@@ -32,10 +43,97 @@ class RegisterView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response({"message": "Registration successful."}, status=status.HTTP_201_CREATED)
+        user = serializer.save()
+        try:
+            send_verification_email(user)
+        except Exception:
+            logger.exception("Gagal kirim email verifikasi ke %s", user.email)
+        return Response(
+            {"message": "Registration successful. Check your email to verify your account."},
+            status=status.HTTP_201_CREATED,
+        )
+
+class VerifyEmailView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        try:
+            payload = read_token(request.data.get("token", ""))
+            user = User.objects.get(pk=payload["uid"], email=payload["email"])
+        except (signing.BadSignature, User.DoesNotExist, KeyError):
+            return Response(
+                {"detail": "Link tidak valid atau sudah kadaluarsa."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not user.email_verified:
+            user.email_verified = True
+            user.save(update_fields=["email_verified"])
+        return Response({"message": "Email verified."})
 
 
+class ResendThrottle(AnonRateThrottle):
+    scope = "resend_verification"
+    rate = "5/hour"
+
+
+class ResendVerificationView(APIView):
+    permission_classes = [permissions.AllowAny]
+    throttle_classes = [ResendThrottle]
+
+    def post(self, request):
+        email = str(request.data.get("email", "")).strip().lower()
+        user = User.objects.filter(email__iexact=email, email_verified=False).first()
+        if user:
+            try:
+                send_verification_email(user)
+            except Exception:
+                logger.exception("Gagal kirim ulang email verifikasi ke %s", user.email)
+        return Response({"message": "Jika email terdaftar dan belum diverifikasi, link baru sudah dikirim."})
+
+class ForgotPasswordThrottle(AnonRateThrottle):
+    scope = "forgot_password"
+    rate = "5/hour"
+
+
+class ForgotPasswordView(APIView):
+    permission_classes = [permissions.AllowAny]
+    throttle_classes = [ForgotPasswordThrottle]
+
+    def post(self, request):
+        email = str(request.data.get("email", "")).strip().lower()
+        user = User.objects.filter(email__iexact=email, is_active=True).first()
+        if user:
+            try:
+                send_reset_email(user)
+            except Exception:
+                logger.exception("Gagal kirim email reset password ke %s", user.email)
+        # jawaban selalu sama supaya orang tidak bisa menebak email mana yang terdaftar
+        return Response({"message": "Jika email terdaftar, link reset password sudah dikirim."})
+
+
+class ResetPasswordView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        user = get_user_from_uid_token(
+            request.data.get("uid", ""), request.data.get("token", "")
+        )
+        if user is None:
+            return Response(
+                {"detail": "Link tidak valid atau sudah kadaluarsa."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        password = request.data.get("password", "")
+        try:
+            validate_password(password, user)
+        except DjangoValidationError as e:
+            return Response({"detail": " ".join(e.messages)}, status=status.HTTP_400_BAD_REQUEST)
+        user.set_password(password)
+        # user terbukti memegang inbox email ini, jadi sekalian dianggap terverifikasi
+        user.email_verified = True
+        user.save(update_fields=["password", "email_verified"])
+        return Response({"message": "Password berhasil diubah."})
+        
 class ProfileView(APIView):
     def get(self, request):
         return Response(UserSerializer(request.user, context={"request": request}).data)

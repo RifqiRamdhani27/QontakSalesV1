@@ -5,6 +5,10 @@ import AuthGuard from "./components/layout/AuthGuard";
 import PublicOnlyRoute from "./components/layout/PublicOnlyRoute";
 import ErrorBoundary from "./components/ui/ErrorBoundary";
 import PageLoader from "./components/ui/PageLoader";
+import VerifyEmailPage from "./pages/VerifyEmailPage";
+import ForgotPassword from "./pages/ForgotPasswordPage";
+import ResetPassword from "./pages/ResetPasswordPage";
+
 
 const Beranda = lazy(() => import("./pages/Main-Beranda/Beranda"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
@@ -268,7 +272,10 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
         </Route>
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/pusat-bantuan" element={<PusatBantuan />} />

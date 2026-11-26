@@ -411,10 +411,10 @@ export default function TopBar({ onMenuClick }) {
         {/* SWITCH TOGGLE (DI SEBELAH KIRI SUPPORT)    */}
         {/* ========================================== */}
         <label className={`switch ${themeMode === "dark" ? "dark-mode-switch" : ""}`} title="Ganti Tema">
-          <input 
-            type="checkbox" 
-            checked={themeMode === "dark"} 
-            onChange={(e) => handleThemeChange(e.target.checked ? "dark" : "light")} 
+          <input
+            type="checkbox"
+            checked={themeMode === "dark"}
+            onChange={(e) => handleThemeChange(e.target.checked ? "dark" : "light")}
           />
           <span className="slider"></span>
         </label>
@@ -581,8 +581,8 @@ export default function TopBar({ onMenuClick }) {
                       n.is_read
                         ? "transparent"
                         : themeMode === "dark"
-                        ? "#333"
-                        : "muted"
+                          ? "#333"
+                          : "muted"
                     }
                     _hover={{ bg: currentTheme.hoverBg }}
                     onClick={() => {
@@ -637,7 +637,13 @@ export default function TopBar({ onMenuClick }) {
         {/* User Menu Wrapper */}
         <Box ref={menuRef} position="relative">
           <Avatar.Root
-            size="sm"
+            w="36px"
+            h="36px"
+            minW="36px"
+            minH="36px"
+            flexShrink={0}
+            borderRadius="full"
+            overflow="hidden"
             cursor="pointer"
             bg={currentTheme.avatarBg}
             onClick={() => {
@@ -650,12 +656,14 @@ export default function TopBar({ onMenuClick }) {
               <Avatar.Image
                 key={avatarKey}
                 src={`${avatarUrl}?t=${avatarKey}`}
+                w="100%"
+                h="100%"
+                objectFit="cover"
+                objectPosition="center"
               />
             ) : (
               <Avatar.Fallback
-                name={
-                  user ? `${user.first_name} ${user.last_name}` : "User"
-                }
+                name={user ? `${user.first_name} ${user.last_name}` : "User"}
                 bg={currentTheme.avatarBg}
                 color={themeMode === "dark" ? "#E5B85C" : "white"}
               />
@@ -712,9 +720,9 @@ export default function TopBar({ onMenuClick }) {
                           setShowMenu(false);
                         }}
                       >
-                        <UserCircle 
-                          size={16} 
-                          color={themeMode === "dark" ? "currentColor" : currentTheme.text} 
+                        <UserCircle
+                          size={16}
+                          color={themeMode === "dark" ? "currentColor" : currentTheme.text}
                         />
                         <Text fontSize="sm">Profil saya</Text>
                       </HStack>
@@ -731,41 +739,12 @@ export default function TopBar({ onMenuClick }) {
                         setShowMenu(false);
                       }}
                     >
-                      <Gear 
-                        size={16} 
-                        color={themeMode === "dark" ? "currentColor" : currentTheme.text} 
+                      <Gear
+                        size={16}
+                        color={themeMode === "dark" ? "currentColor" : currentTheme.text}
                       />
                       <Text fontSize="sm">Settings</Text>
                     </HStack>
-
-                    {(isManager || isImpersonating) && (
-                      <HStack
-                        p={3}
-                        cursor="pointer"
-                        _hover={{
-                          bg: themeMode === "dark" ? "#333333" : "muted",
-                          color: themeMode === "dark" ? "#E5B85C" : "inherit"
-                        }}
-                        onClick={
-                          isImpersonating ? handleSwitchBack : openSwitchSubmenu
-                        }
-                      >
-                        {isImpersonating ? (
-                          <ArrowUUpLeft 
-                            size={16} 
-                            color={themeMode === "dark" ? "currentColor" : currentTheme.text} 
-                          />
-                        ) : (
-                          <ArrowsClockwise
-                            size={16}
-                            color={themeMode === "dark" ? "currentColor" : currentTheme.text}
-                          />
-                        )}
-                        <Text fontSize="sm">
-                          {isImpersonating ? "Switch Back" : "Switch Account"}
-                        </Text>
-                      </HStack>
-                    )}
 
                     <HStack
                       p={3}
@@ -776,9 +755,9 @@ export default function TopBar({ onMenuClick }) {
                       }}
                       onClick={() => setShowThemeSubmenu(true)}
                     >
-                      <PaintBrush 
-                        size={16} 
-                        color={themeMode === "dark" ? "currentColor" : currentTheme.text} 
+                      <PaintBrush
+                        size={16}
+                        color={themeMode === "dark" ? "currentColor" : currentTheme.text}
                       />
                       <Text fontSize="sm">Change Themes</Text>
                     </HStack>
@@ -786,8 +765,8 @@ export default function TopBar({ onMenuClick }) {
                     <HStack
                       p={3}
                       cursor="pointer"
-                      _hover={{ 
-                        bg: themeMode === "dark" ? "rgba(255, 8, 8, 0.15)" : "red.50" 
+                      _hover={{
+                        bg: themeMode === "dark" ? "rgba(255, 8, 8, 0.15)" : "red.50"
                       }}
                       color="destructive"
                       onClick={handleLogout}
@@ -898,133 +877,6 @@ export default function TopBar({ onMenuClick }) {
             </Box>
           )}
 
-          {/* Switch Account Submenu */}
-          {showSwitchSubmenu && (
-            <Box
-              ref={submenuRef}
-              position="absolute"
-              top="100%"
-              right={0}
-              mt={2}
-              w="300px"
-              bg={currentTheme.dropdownBg}
-              border="1px solid"
-              borderColor={currentTheme.border}
-              borderRadius="lg"
-              shadow="lg"
-              zIndex={50}
-              color={currentTheme.dropdownText}
-            >
-              <HStack
-                p={3}
-                borderBottom="1px solid"
-                borderColor={currentTheme.border}
-                justify="space-between"
-              >
-                <HStack
-                  gap={2}
-                  cursor="pointer"
-                  _hover={{ opacity: 0.7 }}
-                  onClick={closeSwitchSubmenu}
-                >
-                  <ArrowLeft size={16} color={currentTheme.text} />
-                  <Text fontSize="sm" fontWeight="semibold">
-                    Back
-                  </Text>
-                </HStack>
-                <Text
-                  fontSize="sm"
-                  fontWeight="semibold"
-                  color={currentTheme.activeColor}
-                >
-                  Switch Account
-                </Text>
-              </HStack>
-
-              {loadingTeam ? (
-                <Box display="flex" justifyContent="center" py={6}>
-                  <Spinner
-                    size="md"
-                    color={themeMode === "dark" ? "#E5B85C" : "primary"}
-                  />
-                </Box>
-              ) : (
-                <VStack align="stretch" gap={0} maxH="320px" overflow="auto">
-                  {teamMembers.map((member) => {
-                    const isActive =
-                      isImpersonating &&
-                      String(member.id) === String(impersonatedId);
-                    const isCurrentManager =
-                      !isImpersonating &&
-                      String(member.id) === String(user?.id);
-                    const disabled = isActive || isCurrentManager;
-                    return (
-                      <HStack
-                        key={member.id}
-                        p={3}
-                        cursor={disabled ? "not-allowed" : "pointer"}
-                        bg={disabled ? currentTheme.hoverBg : "transparent"}
-                        opacity={disabled ? 0.5 : 1}
-                        _hover={disabled ? {} : { bg: currentTheme.hoverBg }}
-                        borderBottom="1px solid"
-                        borderColor={currentTheme.border}
-                        transition="all 150ms ease"
-                        onClick={() => !disabled && handleSwitch(member)}
-                      >
-                        <Avatar.Root size="sm" bg={currentTheme.avatarBg}>
-                          {member.avatar_url ? (
-                            <Avatar.Image src={member.avatar_url} />
-                          ) : (
-                            <Avatar.Fallback
-                              name={`${member.first_name} ${member.last_name}`}
-                              bg={currentTheme.avatarBg}
-                              color={
-                                themeMode === "dark" ? "#E5B85C" : "white"
-                              }
-                            />
-                          )}
-                        </Avatar.Root>
-                        <VStack align="start" gap={0} flex={1}>
-                          <Text fontWeight="semibold" fontSize="sm">
-                            {member.first_name} {member.last_name}
-                          </Text>
-                          <Text fontSize="xs" opacity={0.5}>
-                            {member.email}
-                          </Text>
-                        </VStack>
-                        {isActive ? (
-                          <Badge colorPalette="green" size="sm">
-                            Active
-                          </Badge>
-                        ) : isCurrentManager ? (
-                          <Badge colorPalette="blue" size="sm">
-                            You
-                          </Badge>
-                        ) : (
-                          <Badge
-                            colorPalette={
-                              member.role === "MANAGER" ? "blue" : "green"
-                            }
-                            size="sm"
-                          >
-                            {member.role}
-                          </Badge>
-                        )}
-                        {switching === member.id && (
-                          <Spinner
-                            size="sm"
-                            color={
-                              themeMode === "dark" ? "#E5B85C" : "primary"
-                            }
-                          />
-                        )}
-                      </HStack>
-                    );
-                  })}
-                </VStack>
-              )}
-            </Box>
-          )}
         </Box>
       </HStack>
       {showProfile && user && (

@@ -146,8 +146,14 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
+  const [unverified, setUnverified] = useState(false);
+  const [resent, setResent] = useState(false);
+  const [wrongPassword, setWrongPassword] = useState(false);
+  const [resetSending, setResetSending] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [resetError, setResetError] = useState("");
 
-  // JANGAN pakai pengecekan Navigate di sini pas loading, biar animasi ga keganggu
+
   if (localStorage.getItem("access_token") && !loading && !isSuccess) {
     return <Navigate to="/dashboard" replace />;
   }
@@ -156,6 +162,11 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setUnverified(false);
+    setResent(false);
+    setWrongPassword(false);
+    setResetSent(false);
+    setResetError("");
     setIsSuccess(false);
 
     try {
@@ -182,10 +193,39 @@ export default function LoginPage() {
       }, 2000);
 
     } catch (err) {
-      const msg = err.response?.data?.detail || err.response?.data?.error || "Invalid email or password";
-      setError(msg);
-      setLoading(false); // Matikan loading HANYA jika error
+      const data = err.response?.data;
+      const status = err.response?.status;
+      const isUnverified = data?.code === "email_not_verified";
+      setUnverified(isUnverified);
+      setWrongPassword(!isUnverified && !!status && status < 500);
+      setError(data?.detail || data?.error || "Invalid email or password");
+      setLoading(false);
     }
+  };
+
+  const handleResend = async () => {
+    try {
+      await api.post("/auth/resend-verification/", { email });
+      setResent(true);
+    } catch {
+    }
+  };
+
+  const handleForgotPassword = () => {
+    if (resetSending || resetSent) return;
+    if (!email.trim()) {
+      setResetError("Isi kolom email terlebih dahulu.");
+      return;
+    }
+    setResetError("");
+    setResetSent(true); 
+
+    api
+      .post("/auth/forgot-password/", { email: email.trim() })
+      .catch(() => {
+        setResetSent(false); 
+        setResetError("Gagal mengirim link reset. Coba lagi.");
+      });
   };
 
   return (
@@ -205,10 +245,43 @@ export default function LoginPage() {
               <form onSubmit={handleSubmit} autoComplete="off">
                 <Stack gap={5}>
                   {error && <Box bg="red.900" color="red.100" p={3} borderRadius="md" fontSize="sm" textAlign="center">{error}</Box>}
-
+                  {unverified && (
+                    <Button variant="link" color="#1bceffff" fontSize="sm" onClick={handleResend} disabled={resent}>
+                      {resent ? "Email terkirim, cek inbox kamu" : "Kirim ulang email verifikasi"}
+                    </Button>
+                  )}
                   <Box animation={enter(riseIn, 500)}>
-                    <FloatingInput name="email" type="email" label="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                    <FloatingInput name="email" type="email" label="Email" value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        setResetSent(false);
+                        setResetError("");
+                      }}
+                    />
                   </Box>
+
+                  {wrongPassword && (
+                    <Flex direction="column" align="flex-end" gap={1} mt={-2} animation={enter(riseIn, 0, 400)}>
+                      <Button
+                        type="button"
+                        variant="link"
+                        color={resetSent ? "green.300" : "white"}
+                        fontSize="xs"
+                        h="auto"
+                        minH="0"
+                        minW="0"
+                        p={0}
+                        loading={resetSending}
+                        disabled={resetSent}
+                        onClick={handleForgotPassword}
+                      >
+                        {resetSent ? "Link reset terkirim, cek inbox email kamu" : "Forgot password?"}
+                      </Button>
+                      {resetError && (
+                        <Text fontSize="xs" color="red.300">{resetError}</Text>
+                      )}
+                    </Flex>
+                  )}
 
                   <Box animation={enter(riseIn, 600)}>
                     <FloatingInput
@@ -227,7 +300,6 @@ export default function LoginPage() {
                   </Box>
 
                   <Button type="submit" mt={4} w="100%" h="54px" bg={BTN} color="white" borderRadius="1.5rem" fontSize="md" fontWeight="semibold" loading={loading} _hover={{ bg: ACCENT_HOVER }} transition="background 200ms ease" animation={enter(riseIn, 700)}>Sign In</Button>
-
                   <Text fontSize="xs" textAlign="center" fontWeight="medium" animation={enter(riseIn, 800)}>
                     Don't have an account?{" "}
                     <Button variant="link" color="#1bceffff" fontWeight="semibold" fontSize="inherit" h="auto" minH="0" minW="0" p={0} ml={2} verticalAlign="baseline" onClick={() => navigate("/register")}>Sign up for free</Button>

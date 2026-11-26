@@ -3,8 +3,12 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (
     CompanyDetailView,
+    ForgotPasswordView,
+    ResetPasswordView,
     DashboardStatsView,
     EmailTokenObtainPairView,
+    VerifyEmailView,
+    ResendVerificationView,
     ProfileView,
     AgentViewSet,
     MemberViewSet,
@@ -34,6 +38,10 @@ router.register(r"sales/invoice-reminder/intervals", InvoiceReminderIntervalView
 
 urlpatterns = [
     path("auth/register/", RegisterView.as_view(), name="register"),
+    path("auth/verify-email/", VerifyEmailView.as_view(), name="verify-email"),
+    path("auth/resend-verification/", ResendVerificationView.as_view(), name="resend-verification"),
+    path("auth/forgot-password/", ForgotPasswordView.as_view(), name="forgot-password"),
+    path("auth/reset-password/", ResetPasswordView.as_view(), name="reset-password"),
     path("token/", EmailTokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("auth/profile/", ProfileView.as_view(), name="profile"),
