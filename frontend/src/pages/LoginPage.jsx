@@ -172,14 +172,11 @@ export default function LoginPage() {
     try {
       const response = await api.post("/token/", { email, password });
 
-      // 1. Simpan token
       localStorage.setItem("access_token", response.data.access);
       localStorage.setItem("refresh_token", response.data.refresh);
 
-      // 2. Ubah UI jadi Centang Biru (Loading tetap true biar ga ilang)
       setIsSuccess(true);
 
-      // 3. Ambil profile secara background (abaikan jika error)
       api.get("/auth/profile/")
         .then((profile) => {
           localStorage.setItem("user_role", profile.data.role);
@@ -187,7 +184,6 @@ export default function LoginPage() {
         })
         .catch(() => { });
 
-      // 4. Tunggu 2 detik, baru pindah halaman
       setTimeout(() => {
         navigate("/dashboard", { replace: true });
       }, 2000);
@@ -218,14 +214,24 @@ export default function LoginPage() {
       return;
     }
     setResetError("");
-    setResetSent(true); 
+    setResetSending(true);
+
+    let failed = false;
 
     api
       .post("/auth/forgot-password/", { email: email.trim() })
       .catch(() => {
-        setResetSent(false); 
+        failed = true;
+        setResetSending(false);
+        setResetSent(false);
         setResetError("Gagal mengirim link reset. Coba lagi.");
       });
+
+    setTimeout(() => {
+      if (failed) return;
+      setResetSending(false);
+      setResetSent(true);
+    }, 3000);
   };
 
   return (
