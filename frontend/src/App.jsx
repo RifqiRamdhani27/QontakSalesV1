@@ -5,6 +5,10 @@ import AuthGuard from "./components/layout/AuthGuard";
 import PublicOnlyRoute from "./components/layout/PublicOnlyRoute";
 import ErrorBoundary from "./components/ui/ErrorBoundary";
 import PageLoader from "./components/ui/PageLoader";
+import VerifyEmailPage from "./pages/VerifyEmailPage";
+import ForgotPassword from "./pages/ForgotPasswordPage";
+import ResetPassword from "./pages/ResetPasswordPage";
+
 
 const Beranda = lazy(() => import("./pages/Main-Beranda/Beranda"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
@@ -259,18 +263,19 @@ const CreatePurchaseOrderPage = lazy(() => import("./pages/Main-Pembelian/Create
 const CreatePurchaseQuotePage = lazy(() => import("./pages/Main-Pembelian/CreatePurchaseQuotePage"));
 const CreatePurchaseRequestPage = lazy(() => import("./pages/Main-Pembelian/CreatePurchaseRequestPage"));
 
-
-
 function App() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
+        <Route path="/" element={<LandingPage />} />
         <Route element={<PublicOnlyRoute />}>
-          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
         </Route>
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/pusat-bantuan" element={<PusatBantuan />} />
@@ -476,7 +481,7 @@ function App() {
             <Route path="/isi-daftar-akun/provisi" element={<Provisi />} />
             /* Kontak */
             <Route path="/contact" element={<ContactPage />} />
-            <Route path="/main-contact/profil-kontak/:id" element={<ProfilKontak/>} />
+            <Route path="/main-contact/profil-kontak/:id" element={<ProfilKontak />} />
             <Route path="/main-contact/profil-kontak" element={<ProfilKontak />} />
             <Route path="/main-contact/buat-kontak" element={<BuatKontak />} />
             <Route path="/main-contact/ubah-kontak" element={<UbahKontak />} />
@@ -538,7 +543,7 @@ function App() {
             <Route path="/transaksi/data-pembelian" element={<Transaksi2 />} />
             <Route path="/transaksi/biaya" element={<Transaksi3 />} />
             <Route path="/atur-saldo-coa" element={<AturSaldoCoa />} />
-            <Route path="/beranda" element={<Beranda  />} />
+            <Route path="/beranda" element={<Beranda />} />
             <Route path="/settings/*" element={<ErrorBoundary><SettingsPage /></ErrorBoundary>} />
             <Route path="/daftar-akun" element={<DaftarAkunPage />} />
             <Route path="/tutup-buku" element={<TutupBukuPage />} />

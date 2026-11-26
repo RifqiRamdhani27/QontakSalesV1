@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Camera, Trash, X } from "@phosphor-icons/react";
 import api, { extractError } from "@/services/settingsApi";
+import AvatarCropper from "./AvatarCropper";
 const btnModalCancel = "inline-flex cursor-pointer items-center justify-center gap-[7px] rounded-lg border border-[color:var(--profile-border,#d1d5db)] bg-[color:var(--profile-surface,#fff)] px-[15px] py-[9px] text-[13px] font-semibold text-[color:var(--profile-text,#374151)] transition-colors hover:bg-[color:var(--profile-hover,#f8fafc)] disabled:cursor-not-allowed disabled:opacity-60";
 const btnModalSubmit = "inline-flex cursor-pointer items-center justify-center gap-[7px] rounded-lg border-0 bg-[color:var(--profile-brand,#2563eb)] px-[15px] py-[9px] text-[13px] font-semibold text-[color:var(--profile-brand-text,#fff)] transition-colors hover:bg-[color:var(--profile-brand-hover,#1d4ed8)] disabled:cursor-not-allowed disabled:opacity-60";
 const buttonSpinner = "h-[15px] w-[15px] animate-spin rounded-full border-2 border-[color:var(--profile-spinner-track,rgba(255,255,255,.5))] border-t-current";
@@ -84,14 +85,18 @@ export default function ProfileModal({
   const [removeAvatar, setRemoveAvatar] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [cropSrc, setCropSrc] = useState(null);
+  const [cropName, setCropName] = useState("");
   const fileInputRef = useRef(null);
   const firstFieldRef = useRef(null);
   const modalRef = useRef(null);
   const objectUrlRef = useRef(null);
+  const cropSrcRef = useRef(null);
   const onCloseRef = useRef(onClose);
   const savingRef = useRef(false);
   onCloseRef.current = onClose;
   savingRef.current = saving;
+  cropSrcRef.current = cropSrc;
   const fullName = `${form.first_name} ${form.last_name}`.trim() || user.username || "User";
   const isDirty = Boolean(avatarFile) || removeAvatar || form.first_name !== (user.first_name || "") || form.last_name !== (user.last_name || "") || form.email !== (user.email || "") || form.phone !== (user.phone || "");
   useEffect(() => {
@@ -100,6 +105,7 @@ export default function ProfileModal({
     const focusTarget = window.matchMedia("(min-width: 640px)").matches ? firstFieldRef.current : modalRef.current;
     focusTarget?.focus();
     const handleKeyDown = event => {
+      if (cropSrcRef.current) return; // cropper punya handler Escape sendiri
       if (event.key === "Escape") {
         if (!savingRef.current) onCloseRef.current();
         return;
@@ -122,6 +128,7 @@ export default function ProfileModal({
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", handleKeyDown);
       if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
+      if (cropSrcRef.current) URL.revokeObjectURL(cropSrcRef.current);
     };
   }, []);
   const setField = (field, value) => {
@@ -148,10 +155,21 @@ export default function ProfileModal({
       setError("Ukuran foto maksimal 5 MB.");
       return;
     }
+    // buka cropper dulu, belum langsung dipakai
+    setCropName(file.name);
+    setCropSrc(URL.createObjectURL(file));
+    setError("");
+  };
+  const closeCropper = () => {
+    if (cropSrc) URL.revokeObjectURL(cropSrc);
+    setCropSrc(null);
+  };
+  const onCropDone = croppedFile => {
+    closeCropper();
     clearObjectUrl();
-    const previewUrl = URL.createObjectURL(file);
+    const previewUrl = URL.createObjectURL(croppedFile);
     objectUrlRef.current = previewUrl;
-    setAvatarFile(file);
+    setAvatarFile(croppedFile);
     setAvatarPreview(previewUrl);
     setRemoveAvatar(false);
     setError("");
@@ -190,7 +208,7 @@ export default function ProfileModal({
     }
   };
   return <div data-qontak-profile="" className={`${modalOverlay} z-[1300]`} onMouseDown={event => {
-    if (event.target === event.currentTarget && !saving) onClose();
+    if (event.target === event.currentTarget && !saving && !cropSrc) onClose();
   }} style={profileTheme} data-profile-theme={isDark ? "dark" : "light"}>{isDark && <style>{"[data-profile-theme=\"dark\"] input{caret-color:#E5B85C}\n[data-profile-theme=\"dark\"] input:focus{border-color:#E5B85C!important;box-shadow:0 0 0 3px rgba(229,184,92,.15)}\n[data-profile-theme=\"dark\"] button:disabled{background-color:#36312a!important;color:#94a3b8!important;border-color:#634f27}\n[data-profile-theme=\"dark\"] ::selection{background-color:#E5B85C;color:#121212}"}</style>}
       <div ref={modalRef} className={`${modalPanel} flex max-w-[620px] flex-col`} role="dialog" aria-modal="true" aria-labelledby="profile-modal-title" aria-describedby="profile-modal-description" tabIndex={-1}>
         <div className={`${modalHeader} shrink-0`}>
@@ -295,5 +313,6 @@ export default function ProfileModal({
           </div>
         </form>
       </div>
+      {cropSrc && <AvatarCropper src={cropSrc} fileName={cropName} onCancel={closeCropper} onDone={onCropDone} />}
     </div>;
 }

@@ -23,19 +23,6 @@ const ACCENT_HOVER = "rgba(20, 118, 176, 1)";
 const ACCENT_LIGHT = "#21c6f3ff";
 const PANEL_BG = "#0B1120";
 
-const FacebookLogo = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-    <path fill="#1877F2" d="M24 4C12.954 4 4 12.954 4 24c0 9.982 7.314 18.257 16.875 19.757V29.72H15.18V24h5.695v-4.945c0-5.62 3.348-8.724 8.47-8.724 2.453 0 5.02.438 5.02.438v5.516h-2.828c-2.785 0-3.654 1.728-3.654 3.502V24h6.219l-.994 5.72h-5.225v14.037C40.686 42.257 48 33.982 48 24c0-11.046-8.954-20-20-20z" />
-    <path fill="#FFFFFF" d="M30.892 29.72l.994-5.72h-6.219v-3.713c0-1.774.869-3.502 3.654-3.502h2.828V11.27s-2.567-.438-5.02-.438c-5.122 0-8.47 3.104-8.47 8.724V24h-5.695v5.72h5.695v14.037a20.09 20.09 0 0 0 6.25 0V29.72h5.225z" />
-  </svg>
-);
-
-const XLogo = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-  </svg>
-);
-
 const GoogleLogo = ({ size = 18 }) => (
   <svg width={size} height={size} viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
     <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z" />
@@ -46,8 +33,6 @@ const GoogleLogo = ({ size = 18 }) => (
 );
 
 const socials = [
-  { label: "Facebook", icon: FacebookLogo },
-  { label: "X", icon: XLogo },
   { label: "Google", icon: GoogleLogo },
 ];
 
@@ -161,8 +146,14 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
+  const [unverified, setUnverified] = useState(false);
+  const [resent, setResent] = useState(false);
+  const [wrongPassword, setWrongPassword] = useState(false);
+  const [resetSending, setResetSending] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [resetError, setResetError] = useState("");
 
-  // JANGAN pakai pengecekan Navigate di sini pas loading, biar animasi ga keganggu
+
   if (localStorage.getItem("access_token") && !loading && !isSuccess) {
     return <Navigate to="/dashboard" replace />;
   }
@@ -171,19 +162,21 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setUnverified(false);
+    setResent(false);
+    setWrongPassword(false);
+    setResetSent(false);
+    setResetError("");
     setIsSuccess(false);
 
     try {
       const response = await api.post("/token/", { email, password });
 
-      // 1. Simpan token
       localStorage.setItem("access_token", response.data.access);
       localStorage.setItem("refresh_token", response.data.refresh);
 
-      // 2. Ubah UI jadi Centang Biru (Loading tetap true biar ga ilang)
       setIsSuccess(true);
 
-      // 3. Ambil profile secara background (abaikan jika error)
       api.get("/auth/profile/")
         .then((profile) => {
           localStorage.setItem("user_role", profile.data.role);
@@ -191,16 +184,54 @@ export default function LoginPage() {
         })
         .catch(() => { });
 
-      // 4. Tunggu 2 detik, baru pindah halaman
       setTimeout(() => {
         navigate("/dashboard", { replace: true });
       }, 2000);
 
     } catch (err) {
-      const msg = err.response?.data?.detail || err.response?.data?.error || "Invalid email or password";
-      setError(msg);
-      setLoading(false); // Matikan loading HANYA jika error
+      const data = err.response?.data;
+      const status = err.response?.status;
+      const isUnverified = data?.code === "email_not_verified";
+      setUnverified(isUnverified);
+      setWrongPassword(!isUnverified && !!status && status < 500);
+      setError(data?.detail || data?.error || "Invalid email or password");
+      setLoading(false);
     }
+  };
+
+  const handleResend = async () => {
+    try {
+      await api.post("/auth/resend-verification/", { email });
+      setResent(true);
+    } catch {
+    }
+  };
+
+  const handleForgotPassword = () => {
+    if (resetSending || resetSent) return;
+    if (!email.trim()) {
+      setResetError("Isi kolom email terlebih dahulu.");
+      return;
+    }
+    setResetError("");
+    setResetSending(true);
+
+    let failed = false;
+
+    api
+      .post("/auth/forgot-password/", { email: email.trim() })
+      .catch(() => {
+        failed = true;
+        setResetSending(false);
+        setResetSent(false);
+        setResetError("Gagal mengirim link reset. Coba lagi.");
+      });
+
+    setTimeout(() => {
+      if (failed) return;
+      setResetSending(false);
+      setResetSent(true);
+    }, 3000);
   };
 
   return (
@@ -220,10 +251,43 @@ export default function LoginPage() {
               <form onSubmit={handleSubmit} autoComplete="off">
                 <Stack gap={5}>
                   {error && <Box bg="red.900" color="red.100" p={3} borderRadius="md" fontSize="sm" textAlign="center">{error}</Box>}
-
+                  {unverified && (
+                    <Button variant="link" color="#1bceffff" fontSize="sm" onClick={handleResend} disabled={resent}>
+                      {resent ? "Email terkirim, cek inbox kamu" : "Kirim ulang email verifikasi"}
+                    </Button>
+                  )}
                   <Box animation={enter(riseIn, 500)}>
-                    <FloatingInput name="email" type="email" label="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                    <FloatingInput name="email" type="email" label="Email" value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        setResetSent(false);
+                        setResetError("");
+                      }}
+                    />
                   </Box>
+
+                  {wrongPassword && (
+                    <Flex direction="column" align="flex-end" gap={1} mt={-2} animation={enter(riseIn, 0, 400)}>
+                      <Button
+                        type="button"
+                        variant="link"
+                        color={resetSent ? "green.300" : "white"}
+                        fontSize="xs"
+                        h="auto"
+                        minH="0"
+                        minW="0"
+                        p={0}
+                        loading={resetSending}
+                        disabled={resetSent}
+                        onClick={handleForgotPassword}
+                      >
+                        {resetSent ? "Link reset terkirim, cek inbox email kamu" : "Forgot password?"}
+                      </Button>
+                      {resetError && (
+                        <Text fontSize="xs" color="red.300">{resetError}</Text>
+                      )}
+                    </Flex>
+                  )}
 
                   <Box animation={enter(riseIn, 600)}>
                     <FloatingInput
@@ -242,7 +306,6 @@ export default function LoginPage() {
                   </Box>
 
                   <Button type="submit" mt={4} w="100%" h="54px" bg={BTN} color="white" borderRadius="1.5rem" fontSize="md" fontWeight="semibold" loading={loading} _hover={{ bg: ACCENT_HOVER }} transition="background 200ms ease" animation={enter(riseIn, 700)}>Sign In</Button>
-
                   <Text fontSize="xs" textAlign="center" fontWeight="medium" animation={enter(riseIn, 800)}>
                     Don't have an account?{" "}
                     <Button variant="link" color="#1bceffff" fontWeight="semibold" fontSize="inherit" h="auto" minH="0" minW="0" p={0} ml={2} verticalAlign="baseline" onClick={() => navigate("/register")}>Sign up for free</Button>

@@ -3,6 +3,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import Company, ProductionSetting, Role, RoleAuthority
+from rest_framework.exceptions import PermissionDenied
 
 User = get_user_model()
 
@@ -94,7 +95,12 @@ class RegisterSerializer(serializers.Serializer):
 
     def validate_email(self, value):
         value = value.lower().strip()
-        if User.objects.filter(email__iexact=value).exists():
+        existing = User.objects.filter(email__iexact=value).first()
+        if existing:
+            if not existing.email_verified:
+                raise serializers.ValidationError(
+                    "Email sudah terdaftar tapi belum diverifikasi. Coba login untuk kirim ulang email verifikasi."
+                )
             raise serializers.ValidationError("Email already registered.")
         return value
 
@@ -109,9 +115,9 @@ class RegisterSerializer(serializers.Serializer):
             last_name=" ".join(name_parts[1:]),
             company=company,
             role="MANAGER",
+            email_verified=False,
         )
         return user
-
 
 class AgentCreateSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150)
@@ -185,5 +191,9 @@ class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
             raise serializers.ValidationError("Invalid email or password.")
         if not user.is_active:
             raise serializers.ValidationError("Account is disabled.")
+        if not user.email_verified:
+            raise PermissionDenied(
+                {"code": "email_not_verified", "detail": "Email belum diverifikasi. Cek inbox kamu."}
+            )
         refresh = RefreshToken.for_user(user)
         return {"refresh": str(refresh), "access": str(refresh.access_token)}

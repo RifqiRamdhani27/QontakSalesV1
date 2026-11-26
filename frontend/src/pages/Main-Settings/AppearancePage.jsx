@@ -3,24 +3,37 @@ import {
   AddressBook,
   ArrowCounterClockwise,
   ArrowSquareOut,
+  Buildings,
+  Bank,
+  CertificateIcon,
+  Check,
   CheckCircle,
+  CloudArrowUp,
+  CreditCard,
+  Lightning,
   EnvelopeSimple,
   Eye,
   FloppyDisk,
   Images,
   Info,
   InstagramLogo,
+  Lock,
   Megaphone,
   NewspaperClipping,
   Plus,
   Question,
   Quotes,
+  ShieldCheck,
   Sparkle,
   SquaresFour,
   Trash,
+  TreeStructure,
   UploadSimple,
+  Users,
   WarningCircle,
   WhatsappLogo,
+  X,
+  ArrowRight,
 } from "@phosphor-icons/react";
 import { btnPrimary, btnSecondary, btnDangerOutline, btnModalCancel, btnModalSubmit, formLabel, inputBase, textareaBase } from "@/components/ui/styles";
 import { extractError } from "@/services/settingsApi";
@@ -38,17 +51,27 @@ import {
   publishAppearance,
   validateAppearance,
 } from "@/services/appearanceSettings";
+import imgStartup from "@/assets/imgStartup.webp";
+import imgCorporate from "@/assets/imgCorporate.webp";
+import imgAkuntan from "@/assets/imgAkuntan.webp";
 
 const SECTION_ICONS = {
   hero: Sparkle,
-  closing: Megaphone,
-  faqs: Question,
+  plans: CreditCard,
   testimonial: Quotes,
+  solutions: Buildings,
+  steps: TreeStructure,
+  security: ShieldCheck,
   gallery: Images,
+  faqs: Question,
+  closing: Megaphone,
   newsletter: NewspaperClipping,
   workspace: SquaresFour,
   contact: AddressBook,
 };
+
+const STEP_ICONS = [Bank, TreeStructure, Lightning, CertificateIcon];
+const SOLUTION_IMAGES = [imgStartup, imgCorporate, imgAkuntan];
 
 function ContentField({ label, value, onChange, maxLength, multiline = false, required = false, type = "text", hint, placeholder, inputMode, onBlur, error }) {
   const id = useId();
@@ -337,28 +360,202 @@ function FaqsPreview({ faqs }) {
   );
 }
 
-function TestimonialPreview({ testimonial }) {
+function PlansPreview({ plans = [] }) {
+  if (!plans.length) {
+    return <p className="py-6 text-center text-sm text-slate-400">Belum ada paket untuk dipratinjau.</p>;
+  }
   return (
-    <div className="space-y-4 rounded-xl border border-gray-200 bg-slate-900 px-5 py-8 text-center">
-      <p className="text-base font-semibold leading-snug text-white sm:text-xl">
-        “{testimonial.quote || "Kutipan testimoni akan tampil di sini."}”
-      </p>
-      <div className="flex flex-col items-center gap-2">
-        {testimonial.image ? (
-          <img
-            src={testimonial.image}
-            alt=""
-            aria-hidden="true"
-            className="h-12 w-12 rounded-full border-2 border-sky-500 object-cover"
-          />
-        ) : (
-          <span className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-slate-600 bg-slate-800 text-slate-500">
-            <Quotes size={20} weight="fill" aria-hidden="true" />
-          </span>
-        )}
-        <p className="text-sm font-bold text-white">{testimonial.name || "Nama pelanggan"}</p>
-        <p className="text-xs text-slate-400">{testimonial.position || "Jabatan & perusahaan"}</p>
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      {plans.map((p, idx) => (
+        <div
+          key={p.id || idx}
+          className={`flex flex-col rounded-xl border bg-slate-900 p-4 text-left ${p.popular
+            ? "border-sky-500 shadow-lg shadow-sky-500/20 ring-1 ring-sky-500/60"
+            : "border-slate-800"
+            }`}
+        >
+          <div className="mb-2 h-4">
+            {p.popular && (
+              <span className="inline-block rounded-full bg-sky-500/20 px-2 py-0.5 text-[10px] font-bold leading-none text-sky-300">
+                Terpopuler
+              </span>
+            )}
+          </div>
+          <p className="text-sm font-bold text-white">{p.name || `Paket ${idx + 1}`}</p>
+          <p className="mt-1 text-lg font-extrabold text-sky-400">{p.price || "Rp 0"}</p>
+          <p className="mt-0.5 min-h-[16px] text-[11px] text-slate-400 line-clamp-1">{p.tagline}</p>
+          <ul className="mt-3 space-y-1.5 border-t border-slate-800 pt-2 text-[11px] text-slate-300">
+            {(p.features || []).filter((f) => f && f.trim()).slice(0, 3).map((f, fIdx) => (
+              <li key={fIdx} className="flex items-center gap-1.5">
+                <Check size={12} className="shrink-0 text-sky-400" />
+                <span className="truncate">{f}</span>
+              </li>
+            ))}
+            {(p.features || []).filter((f) => f && f.trim()).length > 3 && (
+              <li className="text-[10px] text-slate-500">
+                +{(p.features || []).filter((f) => f && f.trim()).length - 3} fitur lainnya
+              </li>
+            )}
+          </ul>
+          <div className="mt-auto pt-3">
+            <div className="rounded-lg bg-sky-600 py-1.5 text-center text-xs font-semibold text-white">
+              {p.cta || "Mulai"}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function TestimonialPreview({ testimonials = [], testimonial }) {
+  const items = Array.isArray(testimonials) && testimonials.length ? testimonials : [testimonial].filter(Boolean);
+  if (!items.length) {
+    return <p className="py-6 text-center text-sm text-slate-400">Belum ada testimoni untuk dipratinjau.</p>;
+  }
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {items.map((item, index) => (
+          <div key={item.id || index} className="space-y-3 rounded-xl border border-gray-200 bg-slate-900 p-4 text-center">
+            <p className="text-xs font-medium italic leading-relaxed text-slate-200 line-clamp-3">
+              “{item.quote || "Kutipan testimoni..."}”
+            </p>
+            <div className="flex flex-col items-center gap-1.5">
+              {item.image ? (
+                <img
+                  src={item.image}
+                  alt=""
+                  aria-hidden="true"
+                  className="h-10 w-10 rounded-full border-2 border-sky-500 object-cover"
+                />
+              ) : (
+                <span className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-700 bg-slate-800 text-slate-500">
+                  <Quotes size={16} weight="fill" aria-hidden="true" />
+                </span>
+              )}
+              <p className="text-xs font-bold text-white">{item.name || `Pelanggan ${index + 1}`}</p>
+              <p className="text-[10px] text-slate-400">{item.position || "Jabatan & Perusahaan"}</p>
+            </div>
+          </div>
+        ))}
       </div>
+      <p className="text-center text-[11px] text-slate-400">
+        Menampilkan {items.length} testimoni yang akan digeser (slide) di halaman publik.
+      </p>
+    </div>
+  );
+}
+
+function SolutionsPreview({ solutions = [] }) {
+  if (!solutions.length) {
+    return <p className="py-6 text-center text-sm text-slate-400">Belum ada solusi untuk dipratinjau.</p>;
+  }
+  return (
+    <div className="grid grid-cols-1 gap-5 rounded-xl border border-gray-200 bg-[#F8FAFC] p-5 sm:grid-cols-3">
+      {solutions.map((s, idx) => {
+        const image = s.image || SOLUTION_IMAGES[idx % SOLUTION_IMAGES.length];
+        return (
+          <div
+            key={s.id || idx}
+            className="flex min-w-0 flex-col overflow-hidden rounded-[22px] bg-[#e9e9e9] shadow-[10px_10px_28px_#bebebe,-10px_-10px_28px_#ffffff]"
+          >
+            <div className="relative h-32 overflow-hidden">
+              <img src={image} alt="" aria-hidden="true" className="h-full w-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-transparent" />
+              {s.tag && (
+                <span
+                  className={`absolute left-3 top-3 max-w-[calc(100%-1.5rem)] truncate rounded-full border bg-slate-950/80 px-2.5 py-0.5 text-[10px] font-semibold ${s.dark ? "border-emerald-400/20 text-cyan-300" : "border-sky-400/25 text-sky-300"
+                    }`}
+                >
+                  {s.tag}
+                </span>
+              )}
+            </div>
+            <div className="flex flex-1 flex-col items-start gap-2 p-5">
+              <p className="text-sm font-bold leading-snug text-slate-800">
+                {s.title || `Solusi ${idx + 1}`}
+              </p>
+              <p className="flex-1 text-[11px] leading-relaxed text-slate-600 line-clamp-4">
+                {s.desc || "Deskripsi solusi akan tampil di sini."}
+              </p>
+              <span className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-sky-600">
+                Mulai Sekarang <ArrowRight size={12} weight="bold" aria-hidden="true" />
+              </span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function StepsPreview({ steps = [] }) {
+  if (!steps.length) {
+    return <p className="py-6 text-center text-sm text-slate-400">Belum ada alur langkah untuk dipratinjau.</p>;
+  }
+  return (
+    <div className="relative rounded-xl border border-gray-200 bg-slate-50 p-4">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-[8%] top-[52px] hidden border-t-2 border-dashed border-sky-300/70 lg:block"
+      />
+      <div className="relative grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {steps.map((st, idx) => {
+          const StepIcon = STEP_ICONS[idx % STEP_ICONS.length];
+          return (
+            <div
+              key={st.id || idx}
+              className="flex min-w-0 flex-col justify-between gap-4 rounded-2xl border-2 border-white bg-gradient-to-b from-sky-50 to-white p-4 shadow-[0_12px_28px_-18px_rgba(2,132,199,0.28)]"
+            >
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-sky-200 bg-white text-sky-600 shadow-sm">
+                    <StepIcon size={20} weight="duotone" aria-hidden="true" />
+                  </span>
+                  <span className="bg-gradient-to-b from-sky-300 to-sky-100 bg-clip-text text-3xl font-extrabold leading-none text-transparent">
+                    {String(idx + 1).padStart(2, "0")}
+                  </span>
+                </div>
+                <p className="pt-1 text-sm font-medium leading-snug text-slate-800">
+                  {st.title || `Langkah ${idx + 1}`}
+                </p>
+                <p className="text-[11px] leading-relaxed text-slate-500 line-clamp-4">
+                  {st.desc || "Deskripsi langkah akan tampil di sini."}
+                </p>
+              </div>
+
+              {st.badge && (
+                <div className="flex items-center gap-2 border-t border-dashed border-sky-200 pt-3 text-[10px] font-semibold text-sky-700">
+                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sky-600">
+                    <Check size={9} weight="bold" aria-hidden="true" />
+                  </span>
+                  <span className="truncate">{st.badge}</span>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function SecurityPreview({ security = [] }) {
+  if (!security.length) {
+    return <p className="py-6 text-center text-sm text-slate-400">Belum ada poin keamanan untuk dipratinjau.</p>;
+  }
+  return (
+    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+      {security.map((sec, idx) => (
+        <div key={sec.id || idx} className="flex items-start gap-3 rounded-xl border border-slate-800 bg-slate-900 p-3.5">
+          <ShieldCheck size={22} className="mt-0.5 shrink-0 text-sky-400" />
+          <div className="min-w-0">
+            <p className="text-xs font-bold text-white">{sec.title || `Keamanan ${idx + 1}`}</p>
+            <p className="mt-1 text-[11px] leading-relaxed text-slate-400 line-clamp-2">{sec.desc}</p>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -470,10 +667,14 @@ function ContactPreview({ contact }) {
 function SectionPreview({ sectionId, draft }) {
   const map = {
     hero: <HeroPreview hero={draft.hero} />,
-    closing: <ClosingPreview closing={draft.closing} />,
-    faqs: <FaqsPreview faqs={draft.faqs} />,
-    testimonial: <TestimonialPreview testimonial={draft.testimonial} />,
+    plans: <PlansPreview plans={draft.plans} />,
+    testimonial: <TestimonialPreview testimonial={draft.testimonial} testimonials={draft.testimonials} />,
+    solutions: <SolutionsPreview solutions={draft.solutions} />,
+    steps: <StepsPreview steps={draft.steps} />,
+    security: <SecurityPreview security={draft.security} />,
     gallery: <GalleryPreview gallery={draft.gallery} />,
+    faqs: <FaqsPreview faqs={draft.faqs} />,
+    closing: <ClosingPreview closing={draft.closing} />,
     newsletter: <NewsletterPreview newsletter={draft.newsletter} />,
     workspace: <WorkspacePreview workspace={draft.workspace} />,
     contact: <ContactPreview contact={draft.contact} />,
@@ -518,6 +719,19 @@ function SectionCard({ section, dirty, onReset, disabled = false, preview = null
   );
 }
 
+const detectDark = () => {
+  if (typeof document === "undefined") return false;
+  const stored = localStorage.getItem("app_theme");
+  if (stored === "dark") return true;
+  if (stored === "light") return false;
+  return (
+    Boolean(document.querySelector(".settings-dark")) ||
+    document.documentElement.classList.contains("dark") ||
+    document.body.classList.contains("dark") ||
+    document.body.classList.contains("settings-dark")
+  );
+};
+
 export default function AppearancePage() {
   const [activeSection, setActiveSection] = useState("hero");
   const [saved, setSaved] = useState(() => ({ content: cloneContent(), publishedAt: null, canEdit: false, configured: false }));
@@ -527,6 +741,7 @@ export default function AppearancePage() {
   const [loadError, setLoadError] = useState("");
   const [message, setMessage] = useState({ type: "", text: "" });
   const [confirmation, setConfirmation] = useState(null);
+  () => localStorage.getItem("app_theme ") || "lght"
   const dialogRef = useRef(null);
   const noticeRef = useRef(null);
 
@@ -534,6 +749,7 @@ export default function AppearancePage() {
   const dirty = JSON.stringify(draft) !== JSON.stringify(baseline);
   const sectionDirty = (id) => JSON.stringify(draft[id]) !== JSON.stringify(saved.content[id]);
   const readOnly = !isSettingsAdmin() || saved.canEdit !== true;
+  const [isDark, setIsDark] = useState(detectDark);
 
   const applySettings = (settings) => {
     setSaved(settings);
@@ -560,6 +776,23 @@ export default function AppearancePage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    const syncTheme = () => setIsDark(detectDark());
+
+    window.addEventListener("themeChanged", syncTheme);
+    window.addEventListener("storage", syncTheme);
+
+    const observer = new MutationObserver(syncTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class", "data-theme"] });
+    observer.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+
+    return () => {
+      window.removeEventListener("themeChanged", syncTheme);
+      window.removeEventListener("storage", syncTheme);
+      observer.disconnect();
+    };
+  }, []);
 
   const updateHero = (key, value) => setDraft((previous) => ({ ...previous, hero: { ...previous.hero, [key]: value } }));
   const updateClosing = (key, value) => setDraft((previous) => ({ ...previous, closing: { ...previous.closing, [key]: value } }));
@@ -589,6 +822,134 @@ export default function AppearancePage() {
     setDraft((previous) => ({
       ...previous,
       faqs: previous.faqs.map((item, itemIndex) => (itemIndex === index ? { ...item, [key]: value } : item)),
+    }));
+
+  // Plans
+  const updatePlan = (index, key, value) =>
+    setDraft((previous) => ({
+      ...previous,
+      plans: (previous.plans || []).map((p, idx) => (idx === index ? { ...p, [key]: value } : p)),
+    }));
+  const addPlan = () =>
+    setDraft((previous) => ({
+      ...previous,
+      plans: [
+        ...(previous.plans || []),
+        {
+          id: crypto.randomUUID(),
+          name: "",
+          price: "Rp 0",
+          tagline: "",
+          features: ["Fitur dasar"],
+          cta: "Mulai",
+          action: "register",
+          popular: false,
+        },
+      ],
+    }));
+  const updatePlanFeature = (planIndex, featIndex, value) =>
+    setDraft((previous) => ({
+      ...previous,
+      plans: previous.plans.map((p, pIdx) =>
+        pIdx === planIndex
+          ? {
+            ...p,
+            features: p.features.map((f, fIdx) => (fIdx === featIndex ? value : f)),
+          }
+          : p
+      ),
+    }));
+  const addPlanFeature = (planIndex) =>
+    setDraft((previous) => ({
+      ...previous,
+      plans: previous.plans.map((p, pIdx) =>
+        pIdx === planIndex
+          ? {
+            ...p,
+            features: [...(p.features || []), ""],
+          }
+          : p
+      ),
+    }));
+  const removePlanFeature = (planIndex, featIndex) =>
+    setDraft((previous) => ({
+      ...previous,
+      plans: previous.plans.map((p, pIdx) =>
+        pIdx === planIndex
+          ? {
+            ...p,
+            features: p.features.filter((_, fIdx) => fIdx !== featIndex),
+          }
+          : p
+      ),
+    }));
+
+  // Testimonials (multi-orang)
+  const updateTestimonialItem = (index, key, value) =>
+    setDraft((previous) => {
+      const nextTestis = (previous.testimonials || []).map((t, idx) =>
+        idx === index ? { ...t, [key]: value } : t
+      );
+      return {
+        ...previous,
+        testimonials: nextTestis,
+        testimonial: nextTestis[0] || previous.testimonial,
+      };
+    });
+  const addTestimonial = () =>
+    setDraft((previous) => {
+      const nextItem = { id: crypto.randomUUID(), quote: "", name: "", position: "", image: "" };
+      const nextTestis = [...(previous.testimonials || []), nextItem];
+      return {
+        ...previous,
+        testimonials: nextTestis,
+        testimonial: nextTestis[0] || previous.testimonial,
+      };
+    });
+
+  // Solutions
+  const updateSolution = (index, key, value) =>
+    setDraft((previous) => ({
+      ...previous,
+      solutions: (previous.solutions || []).map((s, idx) => (idx === index ? { ...s, [key]: value } : s)),
+    }));
+  const addSolution = () =>
+    setDraft((previous) => ({
+      ...previous,
+      solutions: [
+        ...(previous.solutions || []),
+        { id: crypto.randomUUID(), tag: "", title: "", desc: "", image: "", dark: false },
+      ],
+    }));
+
+  // Steps
+  const updateStep = (index, key, value) =>
+    setDraft((previous) => ({
+      ...previous,
+      steps: (previous.steps || []).map((st, idx) => (idx === index ? { ...st, [key]: value } : st)),
+    }));
+  const addStep = () =>
+    setDraft((previous) => ({
+      ...previous,
+      steps: [
+        ...(previous.steps || []),
+        { id: crypto.randomUUID(), title: "", desc: "", badge: "" },
+      ],
+    }));
+
+  // Security
+  const updateSecurity = (index, key, value) =>
+    setDraft((previous) => ({
+      ...previous,
+      security: (previous.security || []).map((sec, idx) => (idx === index ? { ...sec, [key]: value } : sec)),
+    }));
+  const addSecurity = () =>
+    setDraft((previous) => ({
+      ...previous,
+      security: [
+        ...(previous.security || []),
+        { id: crypto.randomUUID(), title: "", desc: "", icon: "ShieldCheck" },
+      ],
     }));
 
   useEffect(() => {
@@ -657,6 +1018,23 @@ export default function AppearancePage() {
       showMessage("success", "Konten terbaru dimuat dari server.");
     } else if (action.type === "delete-faq") {
       setDraft((previous) => ({ ...previous, faqs: previous.faqs.filter((faq) => faq.id !== action.id) }));
+    } else if (action.type === "delete-plan") {
+      setDraft((previous) => ({ ...previous, plans: (previous.plans || []).filter((p) => p.id !== action.id) }));
+    } else if (action.type === "delete-testimonial") {
+      setDraft((previous) => {
+        const nextTestis = (previous.testimonials || []).filter((t) => t.id !== action.id);
+        return {
+          ...previous,
+          testimonials: nextTestis,
+          testimonial: nextTestis[0] || previous.testimonial,
+        };
+      });
+    } else if (action.type === "delete-solution") {
+      setDraft((previous) => ({ ...previous, solutions: (previous.solutions || []).filter((s) => s.id !== action.id) }));
+    } else if (action.type === "delete-step") {
+      setDraft((previous) => ({ ...previous, steps: (previous.steps || []).filter((st) => st.id !== action.id) }));
+    } else if (action.type === "delete-security") {
+      setDraft((previous) => ({ ...previous, security: (previous.security || []).filter((sec) => sec.id !== action.id) }));
     }
   };
 
@@ -731,6 +1109,8 @@ export default function AppearancePage() {
             {APPEARANCE_SECTIONS.map((section) => {
               const Icon = SECTION_ICONS[section.id];
               const isActive = section.id === activeSection;
+              const activeBg = isDark ? "rgba(243, 164, 46, 0.92)" : "#0bd0d6ff";
+
               return (
                 <button
                   key={section.id}
@@ -740,9 +1120,9 @@ export default function AppearancePage() {
                   aria-selected={isActive}
                   aria-controls={`appearance-${section.id}`}
                   onClick={() => setActiveSection(section.id)}
-                  className={`flex cursor-pointer items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors ${
-                    isActive ? "bg-brand text-white shadow-sm" : "text-slate-600 hover:bg-slate-50"
-                  }`}
+                  style={isActive ? { backgroundColor: activeBg } : {}}
+                  className={`flex cursor-pointer items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors ${isActive ? "text-white shadow-sm" : "text-slate-600 hover:bg-slate-50"
+                    }`}
                 >
                   <Icon size={16} aria-hidden="true" />
                   <span className="truncate">{section.label}</span>
@@ -786,7 +1166,161 @@ export default function AppearancePage() {
                 onChange={(value) => updateHero("buttonText", value)}
                 required
               />
-              <ImageField label="Gambar latar utama" value={draft.hero.image} onChange={(value) => updateHero("image", value)} optional />
+              <ImageField label="Gambar latar hero" value={draft.hero.image} onChange={(value) => updateHero("image", value)} optional />
+            </>
+          )}
+
+          {active.id === "plans" && (
+            <>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm text-slate-500">
+                  {(draft.plans || []).length} dari maksimal {APPEARANCE_LIMITS.plans.items} paket langganan.
+                </p>
+                <button
+                  type="button"
+                  className={btnSecondary}
+                  disabled={(draft.plans || []).length >= APPEARANCE_LIMITS.plans.items}
+                  onClick={addPlan}
+                >
+                  <Plus size={15} aria-hidden="true" />Tambah Paket
+                </button>
+              </div>
+
+              {!(draft.plans || []).length && (
+                <p className="rounded-lg border border-dashed border-gray-300 bg-slate-50 p-5 text-center text-sm text-slate-500">
+                  Belum ada paket langganan. Tambahkan paket atau kembalikan ke bawaan.
+                </p>
+              )}
+
+              <div className="space-y-6">
+                {(draft.plans || []).map((plan, index) => (
+                  <div key={plan.id || index} className="company-card rounded-[13px] bg-white p-6 shadow-sm border border-gray-200">
+                    <div className="mb-4 flex items-center justify-between gap-3 border-b border-gray-100 pb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand">
+                          {index + 1}
+                        </span>
+                        <h3 className="text-sm font-semibold text-gray-900">
+                          {plan.name ? `Paket: ${plan.name}` : `Paket ${index + 1}`}
+                        </h3>
+                        {plan.popular && (
+                          <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold text-sky-700">
+                            Terpopuler
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        className={btnDangerOutline}
+                        onClick={() => setConfirmation({ type: "delete-plan", id: plan.id, title: plan.name || `Paket ${index + 1}` })}
+                        aria-label={`Hapus Paket ${index + 1}`}
+                      >
+                        <Trash size={15} aria-hidden="true" />Hapus
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <ContentField
+                          label="Nama Paket"
+                          value={plan.name}
+                          maxLength={APPEARANCE_LIMITS.plans.name}
+                          onChange={(value) => updatePlan(index, "name", value)}
+                          placeholder="Starter / Bisnis / Korporasi"
+                          required
+                        />
+                        <ContentField
+                          label="Harga Tampil"
+                          value={plan.price}
+                          maxLength={APPEARANCE_LIMITS.plans.price}
+                          onChange={(value) => updatePlan(index, "price", value)}
+                          placeholder="Rp 0 / Rp 349.000 / Hubungi Kami"
+                          required
+                        />
+                      </div>
+
+                      <ContentField
+                        label="Tagline / Deskripsi Singkat"
+                        value={plan.tagline || ""}
+                        maxLength={APPEARANCE_LIMITS.plans.tagline}
+                        onChange={(value) => updatePlan(index, "tagline", value)}
+                        placeholder="Untuk tim finance yang bertumbuh"
+                      />
+
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <ContentField
+                          label="Teks Tombol CTA"
+                          value={plan.cta}
+                          maxLength={APPEARANCE_LIMITS.plans.cta}
+                          onChange={(value) => updatePlan(index, "cta", value)}
+                          placeholder="Mulai Gratis / Upgrade"
+                          required
+                        />
+                        <div>
+                          <label className={`${formLabel} mb-1.5`}>Aksi Tombol</label>
+                          <select
+                            className={inputBase}
+                            value={plan.action || "register"}
+                            onChange={(e) => updatePlan(index, "action", e.target.value)}
+                          >
+                            <option value="register">Daftar Akun Baru (Register)</option>
+                            <option value="contact">Hubungi Sales (Contact)</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 pt-1">
+                        <input
+                          id={`popular-toggle-${index}`}
+                          type="checkbox"
+                          checked={Boolean(plan.popular)}
+                          onChange={(e) => updatePlan(index, "popular", e.target.checked)}
+                          className="h-4 w-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500"
+                        />
+                        <label htmlFor={`popular-toggle-${index}`} className="text-xs font-semibold text-slate-700 cursor-pointer">
+                          Tandai paket ini sebagai "Terpopuler" (highlighted card)
+                        </label>
+                      </div>
+
+                      <div className="border-t border-gray-100 pt-3">
+                        <div className="mb-2 flex items-center justify-between">
+                          <label className={`${formLabel} !mb-0`}>Fitur Paket (Checklist)</label>
+                          <button
+                            type="button"
+                            className="inline-flex items-center gap-1 text-xs font-semibold text-sky-600 hover:text-sky-700"
+                            onClick={() => addPlanFeature(index)}
+                            disabled={(plan.features || []).length >= APPEARANCE_LIMITS.plans.featureItems}
+                          >
+                            <Plus size={13} /> Tambah Fitur
+                          </button>
+                        </div>
+                        <div className="space-y-2">
+                          {(plan.features || []).map((feat, fIdx) => (
+                            <div key={fIdx} className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                className={`${inputBase} !py-1.5 text-xs`}
+                                value={feat}
+                                maxLength={APPEARANCE_LIMITS.plans.feature}
+                                onChange={(e) => updatePlanFeature(index, fIdx, e.target.value)}
+                                placeholder={`Fitur ${fIdx + 1}`}
+                              />
+                              <button
+                                type="button"
+                                className="p-1.5 text-slate-400 hover:text-red-600 rounded"
+                                onClick={() => removePlanFeature(index, fIdx)}
+                                aria-label="Hapus fitur"
+                              >
+                                <X size={14} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </>
           )}
 
@@ -895,39 +1429,327 @@ export default function AppearancePage() {
 
           {active.id === "testimonial" && (
             <>
-              <p className="rounded-lg bg-slate-50 p-3.5 text-xs leading-relaxed text-slate-600">
-                Testimoni tampil sebagai satu kutipan besar di halaman publik. Foto berbentuk bulat, jadi gunakan potret persegi.
-              </p>
-              <ContentField
-                label="Kutipan"
-                value={draft.testimonial.quote}
-                maxLength={APPEARANCE_LIMITS.testimonial.quote}
-                onChange={(value) => updateTestimonial("quote", value)}
-                required
-                multiline
-              />
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <ContentField
-                  label="Nama"
-                  value={draft.testimonial.name}
-                  maxLength={APPEARANCE_LIMITS.testimonial.name}
-                  onChange={(value) => updateTestimonial("name", value)}
-                  required
-                />
-                <ContentField
-                  label="Jabatan & perusahaan"
-                  value={draft.testimonial.position}
-                  maxLength={APPEARANCE_LIMITS.testimonial.position}
-                  onChange={(value) => updateTestimonial("position", value)}
-                  required
-                />
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <p className="text-sm font-semibold text-slate-800">
+                    Koleksi Testimoni Pelanggan ({(draft.testimonials || []).length} dari maksimal {APPEARANCE_LIMITS.testimonial.items})
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    Semua testimoni ini akan tampil sebagai slider/carousel di landing page sehingga pengunjung bisa geser ke samping.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className={btnSecondary}
+                  disabled={(draft.testimonials || []).length >= APPEARANCE_LIMITS.testimonial.items}
+                  onClick={addTestimonial}
+                >
+                  <Plus size={15} aria-hidden="true" />Tambah Testimoni
+                </button>
               </div>
-              <ImageField
-                label="Foto"
-                value={draft.testimonial.image}
-                onChange={(value) => updateTestimonial("image", value)}
-                optional
-              />
+
+              {!(draft.testimonials || []).length && (
+                <p className="rounded-lg border border-dashed border-gray-300 bg-slate-50 p-5 text-center text-sm text-slate-500">
+                  Belum ada testimoni. Tambahkan testimoni baru atau kembalikan ke bawaan.
+                </p>
+              )}
+
+              <div className="space-y-6">
+                {(draft.testimonials || []).map((item, index) => (
+                  <div key={item.id || index} className="company-card rounded-[13px] bg-white p-6 shadow-sm border border-gray-200">
+                    <div className="mb-3 flex items-center justify-between gap-3 border-b border-gray-100 pb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand">{index + 1}</span>
+                        <h3 className="text-sm font-semibold text-gray-900">
+                          {item.name ? `Testimoni: ${item.name}` : `Testimoni ${index + 1}`}
+                        </h3>
+                      </div>
+                      <button
+                        type="button"
+                        className={btnDangerOutline}
+                        disabled={(draft.testimonials || []).length <= 1}
+                        onClick={() => setConfirmation({ type: "delete-testimonial", id: item.id, title: item.name || `Testimoni ${index + 1}` })}
+                        aria-label={`Hapus Testimoni ${index + 1}`}
+                      >
+                        <Trash size={15} aria-hidden="true" />Hapus
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      <ContentField
+                        label="Kutipan Ulasan"
+                        value={item.quote}
+                        maxLength={APPEARANCE_LIMITS.testimonial.quote}
+                        onChange={(value) => updateTestimonialItem(index, "quote", value)}
+                        required
+                        multiline
+                        placeholder="Tulis ulasan kepuasan klien di sini..."
+                      />
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <ContentField
+                          label="Nama Pelanggan"
+                          value={item.name}
+                          maxLength={APPEARANCE_LIMITS.testimonial.name}
+                          onChange={(value) => updateTestimonialItem(index, "name", value)}
+                          required
+                          placeholder="Nama lengkap klien"
+                        />
+                        <ContentField
+                          label="Jabatan & Perusahaan"
+                          value={item.position}
+                          maxLength={APPEARANCE_LIMITS.testimonial.position}
+                          onChange={(value) => updateTestimonialItem(index, "position", value)}
+                          required
+                          placeholder="CEO PT Telur Asin Sejahtera"
+                        />
+                      </div>
+                      <ImageField
+                        label={`Foto Pelanggan ${index + 1}`}
+                        value={item.image}
+                        onChange={(value) => updateTestimonialItem(index, "image", value)}
+                        optional
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {active.id === "solutions" && (
+            <>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm text-slate-500">
+                  {(draft.solutions || []).length} dari maksimal {APPEARANCE_LIMITS.solutions.items} solusi industri.
+                </p>
+                <button
+                  type="button"
+                  className={btnSecondary}
+                  disabled={(draft.solutions || []).length >= APPEARANCE_LIMITS.solutions.items}
+                  onClick={addSolution}
+                >
+                  <Plus size={15} aria-hidden="true" />Tambah Solusi
+                </button>
+              </div>
+
+              {!(draft.solutions || []).length && (
+                <p className="rounded-lg border border-dashed border-gray-300 bg-slate-50 p-5 text-center text-sm text-slate-500">
+                  Belum ada solusi industri. Tambahkan solusi atau kembalikan ke bawaan.
+                </p>
+              )}
+
+              <div className="space-y-6">
+                {(draft.solutions || []).map((sol, index) => (
+                  <div key={sol.id || index} className="company-card rounded-[13px] bg-white p-6 shadow-sm border border-gray-200">
+                    <div className="mb-3 flex items-center justify-between gap-3 border-b border-gray-100 pb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand">{index + 1}</span>
+                        <h3 className="text-sm font-semibold text-gray-900">
+                          {sol.title ? `Solusi: ${sol.title}` : `Solusi ${index + 1}`}
+                        </h3>
+                      </div>
+                      <button
+                        type="button"
+                        className={btnDangerOutline}
+                        onClick={() => setConfirmation({ type: "delete-solution", id: sol.id, title: sol.title || `Solusi ${index + 1}` })}
+                        aria-label={`Hapus Solusi ${index + 1}`}
+                      >
+                        <Trash size={15} aria-hidden="true" />Hapus
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <ContentField
+                          label="Tag / Kategori Segmen"
+                          value={sol.tag || ""}
+                          maxLength={APPEARANCE_LIMITS.solutions.tag}
+                          onChange={(value) => updateSolution(index, "tag", value)}
+                          placeholder="Startup & Agresif / Multi-Entitas"
+                        />
+                        <ContentField
+                          label="Judul Solusi"
+                          value={sol.title}
+                          maxLength={APPEARANCE_LIMITS.solutions.title}
+                          onChange={(value) => updateSolution(index, "title", value)}
+                          placeholder="Startup & Skala Cepat"
+                          required
+                        />
+                      </div>
+                      <ContentField
+                        label="Deskripsi Solusi"
+                        value={sol.desc}
+                        maxLength={APPEARANCE_LIMITS.solutions.desc}
+                        onChange={(value) => updateSolution(index, "desc", value)}
+                        required
+                        multiline
+                      />
+                      <ImageField
+                        label={`Gambar Ilustrasi Solusi ${index + 1}`}
+                        value={sol.image}
+                        onChange={(value) => updateSolution(index, "image", value)}
+                        optional
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {active.id === "steps" && (
+            <>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm text-slate-500">
+                  {(draft.steps || []).length} dari maksimal {APPEARANCE_LIMITS.steps.items} langkah.
+                </p>
+                <button
+                  type="button"
+                  className={btnSecondary}
+                  disabled={(draft.steps || []).length >= APPEARANCE_LIMITS.steps.items}
+                  onClick={addStep}
+                >
+                  <Plus size={15} aria-hidden="true" />Tambah Langkah
+                </button>
+              </div>
+
+              {!(draft.steps || []).length && (
+                <p className="rounded-lg border border-dashed border-gray-300 bg-slate-50 p-5 text-center text-sm text-slate-500">
+                  Belum ada alur langkah. Tambahkan langkah atau kembalikan ke bawaan.
+                </p>
+              )}
+
+              <div className="space-y-6">
+                {(draft.steps || []).map((st, index) => (
+                  <div key={st.id || index} className="company-card rounded-[13px] bg-white p-6 shadow-sm border border-gray-200">
+                    <div className="mb-3 flex items-center justify-between gap-3 border-b border-gray-100 pb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand">{index + 1}</span>
+                        <h3 className="text-sm font-semibold text-gray-900">
+                          {st.title ? `Langkah ${index + 1}: ${st.title}` : `Langkah ${index + 1}`}
+                        </h3>
+                      </div>
+                      <button
+                        type="button"
+                        className={btnDangerOutline}
+                        onClick={() => setConfirmation({ type: "delete-step", id: st.id, title: st.title || `Langkah ${index + 1}` })}
+                        aria-label={`Hapus Langkah ${index + 1}`}
+                      >
+                        <Trash size={15} aria-hidden="true" />Hapus
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <ContentField
+                          label="Judul Langkah"
+                          value={st.title}
+                          maxLength={APPEARANCE_LIMITS.steps.title}
+                          onChange={(value) => updateStep(index, "title", value)}
+                          placeholder="Hubungkan Akun Bank"
+                          required
+                        />
+                        <ContentField
+                          label="Badge Keterangan"
+                          value={st.badge || ""}
+                          maxLength={APPEARANCE_LIMITS.steps.badge}
+                          onChange={(value) => updateStep(index, "badge", value)}
+                          placeholder="API Terenkripsi 256-bit"
+                        />
+                      </div>
+                      <ContentField
+                        label="Deskripsi Langkah"
+                        value={st.desc}
+                        maxLength={APPEARANCE_LIMITS.steps.desc}
+                        onChange={(value) => updateStep(index, "desc", value)}
+                        required
+                        multiline
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {active.id === "security" && (
+            <>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm text-slate-500">
+                  {(draft.security || []).length} dari maksimal {APPEARANCE_LIMITS.security.items} poin keamanan.
+                </p>
+                <button
+                  type="button"
+                  className={btnSecondary}
+                  disabled={(draft.security || []).length >= APPEARANCE_LIMITS.security.items}
+                  onClick={addSecurity}
+                >
+                  <Plus size={15} aria-hidden="true" />Tambah Poin Keamanan
+                </button>
+              </div>
+
+              {!(draft.security || []).length && (
+                <p className="rounded-lg border border-dashed border-gray-300 bg-slate-50 p-5 text-center text-sm text-slate-500">
+                  Belum ada poin keamanan. Tambahkan poin atau kembalikan ke bawaan.
+                </p>
+              )}
+
+              <div className="space-y-6">
+                {(draft.security || []).map((sec, index) => (
+                  <div key={sec.id || index} className="company-card rounded-[13px] bg-white p-6 shadow-sm border border-gray-200">
+                    <div className="mb-3 flex items-center justify-between gap-3 border-b border-gray-100 pb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand">{index + 1}</span>
+                        <h3 className="text-sm font-semibold text-gray-900">
+                          {sec.title ? `Keamanan: ${sec.title}` : `Poin Keamanan ${index + 1}`}
+                        </h3>
+                      </div>
+                      <button
+                        type="button"
+                        className={btnDangerOutline}
+                        onClick={() => setConfirmation({ type: "delete-security", id: sec.id, title: sec.title || `Poin Keamanan ${index + 1}` })}
+                        aria-label={`Hapus Poin Keamanan ${index + 1}`}
+                      >
+                        <Trash size={15} aria-hidden="true" />Hapus
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <ContentField
+                          label="Judul Poin Keamanan"
+                          value={sec.title}
+                          maxLength={APPEARANCE_LIMITS.security.title}
+                          onChange={(value) => updateSecurity(index, "title", value)}
+                          placeholder="Enkripsi Tingkat Perbankan (AES-256)"
+                          required
+                        />
+                        <div>
+                          <label className={`${formLabel} mb-1.5`}>Ikon Representasi</label>
+                          <select
+                            className={inputBase}
+                            value={sec.icon || "ShieldCheck"}
+                            onChange={(e) => updateSecurity(index, "icon", e.target.value)}
+                          >
+                            <option value="Lock">Lock (Gembok)</option>
+                            <option value="ShieldCheck">ShieldCheck (Perisai Centang)</option>
+                            <option value="CloudArrowUp">CloudArrowUp (Awan Cadangan)</option>
+                            <option value="Users">Users (Hak Akses Pengguna)</option>
+                          </select>
+                        </div>
+                      </div>
+                      <ContentField
+                        label="Deskripsi Keamanan"
+                        value={sec.desc}
+                        maxLength={APPEARANCE_LIMITS.security.desc}
+                        onChange={(value) => updateSecurity(index, "desc", value)}
+                        required
+                        multiline
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </>
           )}
 
@@ -1119,8 +1941,8 @@ export default function AppearancePage() {
                 ? `Kembalikan ${confirmation.title} ke bawaan?`
                 : confirmation.type === "discard"
                   ? "Batalkan perubahan?"
-                  : confirmation.type === "delete-faq"
-                    ? "Hapus pertanyaan ini?"
+                  : confirmation.type?.startsWith("delete-")
+                    ? `Hapus ${confirmation.title || "item"} ini?`
                     : "Muat ulang konten?"}
             </h2>
             <p id="appearance-confirm-description" className="text-sm leading-relaxed text-slate-600">
@@ -1128,8 +1950,8 @@ export default function AppearancePage() {
                 ? "Isi bagian ini akan dikembalikan ke teks awal. Perubahan akan diterapkan setelah Anda menyimpannya."
                 : confirmation.type === "discard"
                   ? "Semua perubahan yang belum disimpan akan dibuang."
-                  : confirmation.type === "delete-faq"
-                    ? "Pertanyaan dan jawaban ini akan dihapus dari daftar. Perubahan akan diterapkan setelah Anda menyimpannya."
+                  : confirmation.type?.startsWith("delete-")
+                    ? "Item ini akan dihapus dari daftar. Perubahan belum diterapkan sebelum kamu menyimpan."
                     : "Muat konten terbaru dan buang perubahan yang belum disimpan?"}
             </p>
           </div>
@@ -1138,7 +1960,13 @@ export default function AppearancePage() {
               Tidak, kembali
             </button>
             <button type="button" className={btnModalSubmit} onClick={confirmAction}>
-              {confirmation.type === "reset" ? "Kembalikan" : confirmation.type === "discard" ? "Ya, batalkan" : confirmation.type === "delete-faq" ? "Hapus pertanyaan" : "Muat ulang"}
+              {confirmation.type === "reset"
+                ? "Kembalikan"
+                : confirmation.type === "discard"
+                  ? "Ya, batalkan"
+                  : confirmation.type?.startsWith("delete-")
+                    ? "Hapus"
+                    : "Muat ulang"}
             </button>
           </div>
         </dialog>
