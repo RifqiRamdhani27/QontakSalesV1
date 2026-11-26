@@ -23,19 +23,6 @@ const ACCENT_HOVER = "rgba(20, 118, 176, 1)";
 const ACCENT_LIGHT = "#21c6f3ff";
 const PANEL_BG = "#0B1120";
 
-const FacebookLogo = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-    <path fill="#1877F2" d="M24 4C12.954 4 4 12.954 4 24c0 9.982 7.314 18.257 16.875 19.757V29.72H15.18V24h5.695v-4.945c0-5.62 3.348-8.724 8.47-8.724 2.453 0 5.02.438 5.02.438v5.516h-2.828c-2.785 0-3.654 1.728-3.654 3.502V24h6.219l-.994 5.72h-5.225v14.037C40.686 42.257 48 33.982 48 24c0-11.046-8.954-20-20-20z" />
-    <path fill="#FFFFFF" d="M30.892 29.72l.994-5.72h-6.219v-3.713c0-1.774.869-3.502 3.654-3.502h2.828V11.27s-2.567-.438-5.02-.438c-5.122 0-8.47 3.104-8.47 8.724V24h-5.695v5.72h5.695v14.037a20.09 20.09 0 0 0 6.25 0V29.72h5.225z" />
-  </svg>
-);
-
-const XLogo = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-  </svg>
-);
-
 const GoogleLogo = ({ size = 18 }) => (
   <svg width={size} height={size} viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
     <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z" />
@@ -46,8 +33,6 @@ const GoogleLogo = ({ size = 18 }) => (
 );
 
 const socials = [
-  { label: "Facebook", icon: FacebookLogo },
-  { label: "X", icon: XLogo },
   { label: "Google", icon: GoogleLogo },
 ];
 

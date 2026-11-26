@@ -5,6 +5,9 @@ import galleryImg3 from "@/assets/Accounting-3.webp";
 import galleryImg4 from "@/assets/Accounting-4.webp";
 import galleryImg5 from "@/assets/Accounting-5.webp";
 import profileRizal from "@/assets/profile-rizal.webp";
+import imgStartup from "@/assets/imgStartup.webp";
+import imgCorporate from "@/assets/imgCorporate.webp";
+import imgAkuntan from "@/assets/imgAkuntan.webp";
 import api from "./api";
 import { publicApi } from "./settingsApi";
 
@@ -55,6 +58,16 @@ export const defaultLandingContent = {
     instagram: "",
     email: "",
   },
+  testimonials: [
+    {
+      id: "testi-1",
+      quote:
+        "Sejak beralih ke Inotal Finance, waktu closing pembukuan akhir bulan kami berkurang dari 14 hari menjadi hanya 2 jam. Visibilitas arus kas real-time mengubah cara direksi mengambil keputusan finansial.",
+      name: "Rizal Umaris",
+      position: "CEO PT Telur Asin Sejahtera",
+      image: profileRizal,
+    },
+  ],
   testimonial: {
     quote:
       "Sejak beralih ke Inotal Finance, waktu closing pembukuan akhir bulan kami berkurang dari 14 hari menjadi hanya 2 jam. Visibilitas arus kas real-time mengubah cara direksi mengambil keputusan finansial.",
@@ -62,6 +75,76 @@ export const defaultLandingContent = {
     position: "CEO PT Telur Asin Sejahtera",
     image: profileRizal,
   },
+  plans: [
+    {
+      id: "plan-1",
+      name: "Starter",
+      price: "Rp 0",
+      tagline: "Untuk usaha rintisan",
+      features: ["1 entitas & 3 pengguna", "Jurnal umum & buku besar", "Laporan laba rugi dasar"],
+      cta: "Mulai Gratis",
+      action: "register",
+      popular: false,
+    },
+    {
+      id: "plan-2",
+      name: "Bisnis",
+      price: "Rp 349.000",
+      tagline: "Untuk tim finance yang bertumbuh",
+      features: ["Entitas & pengguna tanpa batas", "Rekonsiliasi Bank API & e-Faktur", "Laporan keuangan lanjutan"],
+      cta: "Upgrade ke Bisnis",
+      action: "register",
+      popular: true,
+    },
+    {
+      id: "plan-3",
+      name: "Korporasi",
+      price: "Rp 899.000",
+      tagline: "Untuk grup perusahaan",
+      features: ["Konsolidasi multi-cabang", "SSO & audit trail lanjutan", "Account manager khusus"],
+      cta: "Hubungi Sales",
+      action: "contact",
+      popular: false,
+    },
+  ],
+  solutions: [
+    {
+      id: "sol-1",
+      image: imgStartup,
+      tag: "Startup & Agresif",
+      title: "Startup & Skala Cepat",
+      desc: "Pembukuan kas harian otomatis, pemantauan runway dan burn rate real-time, serta integrasi langsung payment gateway e-commerce.",
+      dark: false,
+    },
+    {
+      id: "sol-2",
+      image: imgCorporate,
+      tag: "Multi-Entitas",
+      title: "Korporasi & Multi-Cabang",
+      desc: "Buku besar multi-entitas, konsolidasi mata uang asing otomatis, alur persetujuan PO/Invoice berjenjang, dan tata kelola grup.",
+      dark: false,
+    },
+    {
+      id: "sol-3",
+      image: imgAkuntan,
+      tag: "KAP & Pajak",
+      title: "Akuntan Publik & Konsultan Pajak",
+      desc: "Laporan keuangan standar PSAK/IFRS, audit trail digital anti-manipulasi, serta integrasi e-Faktur dan pelaporan pajak langsung.",
+      dark: true,
+    },
+  ],
+  steps: [
+    { id: "step-1", title: "Hubungkan Akun Bank", desc: "Koneksikan rekening bank korporat dan payment gateway melalui integrasi API terenkripsi 256-bit berstandar perbankan.", badge: "API Terenkripsi 256-bit" },
+    { id: "step-2", title: "Kustomisasi Bagan Akun", desc: "Sesuaikan Chart of Accounts (COA), multi-mata uang, dan struktur cost center dengan template standar industri kamu.", badge: "Standar PSAK / Kustom" },
+    { id: "step-3", title: "Otomasi Jurnal Transaksi", desc: "Setiap transaksi masuk, keluar, dan faktur klien dijurnal secara otomatis ke debit/kredit tanpa entri manual.", badge: "Entri Ganda Otomatis" },
+    { id: "step-4", title: "Terbitkan Laporan Neraca", desc: "Hasilkan laporan neraca, laba rugi, dan arus kas komprehensif dalam satu klik, siap dibagikan ke dewan direksi.", badge: "Laporan Real-Time" },
+  ],
+  security: [
+    { id: "sec-1", icon: "Lock", title: "Enkripsi Tingkat Perbankan (AES-256)", desc: "Seluruh data pembukuan dan kredensial bank dienkripsi saat transit (TLS 1.3) maupun saat istirahat dengan enkripsi AES-256." },
+    { id: "sec-2", icon: "ShieldCheck", title: "Sertifikasi SOC-2 & ISO 27001", desc: "Infrastruktur cloud teraudit secara berkala untuk memenuhi standar kepatuhan tata kelola dan privasi informasi korporasi global." },
+    { id: "sec-3", icon: "CloudArrowUp", title: "Cadangan Data Otomatis Harian", desc: "Snapshot data buku besar dicadangkan di multi-region redundan sehingga kontinuitas bisnis tetap terjamin 99,99% SLA." },
+    { id: "sec-4", icon: "Users", title: "Hak Akses Berbasis Peran (RBAC) Ketat", desc: "Atur wewenang persetujuan transfer, akses viewing laporan, dan modifikasi jurnal berdasar jabatan staf finance secara granular." },
+  ],
   gallery: [
     { image: galleryImg1, label: "Penjualan" },
     { image: galleryImg2, label: "Pembelian" },
@@ -89,20 +172,28 @@ export const APPEARANCE_LIMITS = {
   closing: { title: 120, description: 300, buttonText: 30, secondaryButtonText: 30 },
   faqs: { items: 8, q: 160, a: 600 },
   contact: { whatsapp: 40, instagram: 100, email: 254 },
-  testimonial: { quote: 500, name: 80, position: 100 },
+  testimonial: { items: 10, quote: 500, name: 80, position: 100 },
   gallery: { items: 5, label: 40 },
   newsletter: { title: 120, description: 300 },
   workspace: { greeting: 120, bannerTitle: 160, trainingTitle: 80, trainingDescription: 160 },
+  plans: { items: 6, name: 40, price: 30, tagline: 100, featureItems: 10, feature: 100, cta: 30, action: 30 },
+  solutions: { items: 6, tag: 40, title: 80, desc: 300 },
+  steps: { items: 6, title: 80, desc: 300, badge: 50 },
+  security: { items: 6, title: 80, desc: 300, icon: 40 },
 };
 
 export const APPEARANCE_SECTIONS = [
   { id: "hero", label: "Hero", hint: "Judul, deskripsi, tombol, dan gambar utama." },
-  { id: "closing", label: "Ajakan Penutup", hint: "Bagian terakhir sebelum footer." },
+  { id: "plans", label: "Daftar Paket", hint: "Paket harga langganan, checklist fitur, dan tombol aksi." },
+  { id: "testimonial", label: "Testimoni", hint: "Daftar ulasan & testimoni pelanggan (slider multi-orang)." },
+  { id: "solutions", label: "Solusi Industri", hint: "Kartu solusi segmen bisnis (Startup, Korporasi, KAP)." },
+  { id: "steps", label: "Alur Kerja", hint: "Langkah-langkah alur pembukuan dan integrasi sistem." },
+  { id: "security", label: "Keamanan", hint: "Poin-poin sertifikasi & keamanan tingkat perbankan." },
+  { id: "gallery", label: "Galeri", hint: "Lima gambar galeri produk beserta labelnya." },
   { id: "faqs", label: "FAQ", hint: "Pertanyaan yang sering diajukan pengunjung." },
-  { id: "testimonial", label: "Testimoni", hint: "Kutipan, nama, jabatan, dan foto pelanggan." },
-  { id: "gallery", label: "Galeri", hint: "Lima gambar galeri beserta labelnya." },
-  { id: "newsletter", label: "Newsletter", hint: "Judul dan deskripsi langganan di footer." },
-  { id: "workspace", label: "Beranda", hint: "Sapaan, banner add-on, dan judul pelatihan di dalam aplikasi." },
+  { id: "closing", label: "Ajakan Penutup", hint: "Bagian ajakan terakhir sebelum footer." },
+  { id: "newsletter", label: "Newsletter", hint: "Judul dan deskripsi formulir langganan berita." },
+  { id: "workspace", label: "Beranda", hint: "Sapaan, banner add-on, dan pelatihan di dalam aplikasi." },
   { id: "contact", label: "Kontak", hint: "WhatsApp, Instagram, dan email di footer." },
 ];
 
@@ -131,6 +222,76 @@ function normalizeContent(value) {
         id: typeof faq.id === "string" && faq.id ? faq.id : `faq-${index + 1}`,
         q: typeof faq.q === "string" ? faq.q : "",
         a: typeof faq.a === "string" ? faq.a : "",
+      }));
+  }
+  if (Array.isArray(value?.plans)) {
+    content.plans = value.plans
+      .filter((p) => p && typeof p === "object")
+      .map((p, index) => ({
+        id: typeof p.id === "string" && p.id ? p.id : `plan-${index + 1}`,
+        name: typeof p.name === "string" ? p.name : "",
+        price: typeof p.price === "string" ? p.price : "",
+        tagline: typeof p.tagline === "string" ? p.tagline : "",
+        features: Array.isArray(p.features) ? p.features.map(String) : [],
+        cta: typeof p.cta === "string" ? p.cta : "Mulai",
+        action: typeof p.action === "string" ? p.action : "register",
+        popular: Boolean(p.popular),
+      }));
+  }
+  if (Array.isArray(value?.testimonials)) {
+    content.testimonials = value.testimonials
+      .filter((t) => t && typeof t === "object")
+      .map((t, index) => ({
+        id: typeof t.id === "string" && t.id ? t.id : `testi-${index + 1}`,
+        quote: typeof t.quote === "string" ? t.quote : "",
+        name: typeof t.name === "string" ? t.name : "",
+        position: typeof t.position === "string" ? t.position : "",
+        image: typeof t.image === "string" ? t.image : "",
+      }));
+    if (content.testimonials.length > 0) {
+      content.testimonial = content.testimonials[0];
+    }
+  } else if (value?.testimonial && typeof value.testimonial === "object") {
+    content.testimonials = [
+      {
+        id: "testi-1",
+        quote: typeof value.testimonial.quote === "string" ? value.testimonial.quote : "",
+        name: typeof value.testimonial.name === "string" ? value.testimonial.name : "",
+        position: typeof value.testimonial.position === "string" ? value.testimonial.position : "",
+        image: typeof value.testimonial.image === "string" ? value.testimonial.image : "",
+      },
+    ];
+  }
+  if (Array.isArray(value?.solutions)) {
+    content.solutions = value.solutions
+      .filter((s) => s && typeof s === "object")
+      .map((s, index) => ({
+        id: typeof s.id === "string" && s.id ? s.id : `sol-${index + 1}`,
+        tag: typeof s.tag === "string" ? s.tag : "",
+        title: typeof s.title === "string" ? s.title : "",
+        desc: typeof s.desc === "string" ? s.desc : "",
+        image: typeof s.image === "string" ? s.image : "",
+        dark: Boolean(s.dark),
+      }));
+  }
+  if (Array.isArray(value?.steps)) {
+    content.steps = value.steps
+      .filter((st) => st && typeof st === "object")
+      .map((st, index) => ({
+        id: typeof st.id === "string" && st.id ? st.id : `step-${index + 1}`,
+        title: typeof st.title === "string" ? st.title : "",
+        desc: typeof st.desc === "string" ? st.desc : "",
+        badge: typeof st.badge === "string" ? st.badge : "",
+      }));
+  }
+  if (Array.isArray(value?.security)) {
+    content.security = value.security
+      .filter((sec) => sec && typeof sec === "object")
+      .map((sec, index) => ({
+        id: typeof sec.id === "string" && sec.id ? sec.id : `sec-${index + 1}`,
+        title: typeof sec.title === "string" ? sec.title : "",
+        desc: typeof sec.desc === "string" ? sec.desc : "",
+        icon: typeof sec.icon === "string" ? sec.icon : "ShieldCheck",
       }));
   }
   if (content.contact && typeof content.contact === "object") {
@@ -384,6 +545,63 @@ export function validateAppearance(content) {
   required(content.workspace.bannerTitle, "Judul banner add-on", APPEARANCE_LIMITS.workspace.bannerTitle);
   required(content.workspace.trainingTitle, "Judul pelatihan", APPEARANCE_LIMITS.workspace.trainingTitle);
   maximum(content.workspace.trainingDescription, "Deskripsi pelatihan", APPEARANCE_LIMITS.workspace.trainingDescription);
+
+  if (Array.isArray(content.plans)) {
+    if (content.plans.length > APPEARANCE_LIMITS.plans.items) {
+      errors.push(`Daftar paket maksimal ${APPEARANCE_LIMITS.plans.items} item.`);
+    }
+    content.plans.forEach((item, index) => {
+      required(item.name || "", `Nama paket ${index + 1}`, APPEARANCE_LIMITS.plans.name);
+      required(item.price || "", `Harga paket ${index + 1}`, APPEARANCE_LIMITS.plans.price);
+      maximum(item.tagline || "", `Tagline paket ${index + 1}`, APPEARANCE_LIMITS.plans.tagline);
+      required(item.cta || "", `Tombol CTA paket ${index + 1}`, APPEARANCE_LIMITS.plans.cta);
+    });
+  }
+
+  if (Array.isArray(content.testimonials)) {
+    if (content.testimonials.length > APPEARANCE_LIMITS.testimonial.items) {
+      errors.push(`Testimoni maksimal ${APPEARANCE_LIMITS.testimonial.items} item.`);
+    }
+    content.testimonials.forEach((item, index) => {
+      required(item.quote || "", `Kutipan testimoni ${index + 1}`, APPEARANCE_LIMITS.testimonial.quote);
+      required(item.name || "", `Nama testimoni ${index + 1}`, APPEARANCE_LIMITS.testimonial.name);
+      required(item.position || "", `Jabatan testimoni ${index + 1}`, APPEARANCE_LIMITS.testimonial.position);
+      image(item.image, `Foto testimoni ${index + 1}`);
+    });
+  }
+
+  if (Array.isArray(content.solutions)) {
+    if (content.solutions.length > APPEARANCE_LIMITS.solutions.items) {
+      errors.push(`Solusi industri maksimal ${APPEARANCE_LIMITS.solutions.items} item.`);
+    }
+    content.solutions.forEach((item, index) => {
+      maximum(item.tag || "", `Tag solusi ${index + 1}`, APPEARANCE_LIMITS.solutions.tag);
+      required(item.title || "", `Judul solusi ${index + 1}`, APPEARANCE_LIMITS.solutions.title);
+      required(item.desc || "", `Deskripsi solusi ${index + 1}`, APPEARANCE_LIMITS.solutions.desc);
+      image(item.image, `Gambar solusi ${index + 1}`);
+    });
+  }
+
+  if (Array.isArray(content.steps)) {
+    if (content.steps.length > APPEARANCE_LIMITS.steps.items) {
+      errors.push(`Alur langkah maksimal ${APPEARANCE_LIMITS.steps.items} item.`);
+    }
+    content.steps.forEach((item, index) => {
+      required(item.title || "", `Judul langkah ${index + 1}`, APPEARANCE_LIMITS.steps.title);
+      required(item.desc || "", `Deskripsi langkah ${index + 1}`, APPEARANCE_LIMITS.steps.desc);
+      maximum(item.badge || "", `Badge langkah ${index + 1}`, APPEARANCE_LIMITS.steps.badge);
+    });
+  }
+
+  if (Array.isArray(content.security)) {
+    if (content.security.length > APPEARANCE_LIMITS.security.items) {
+      errors.push(`Poin keamanan maksimal ${APPEARANCE_LIMITS.security.items} item.`);
+    }
+    content.security.forEach((item, index) => {
+      required(item.title || "", `Judul keamanan ${index + 1}`, APPEARANCE_LIMITS.security.title);
+      required(item.desc || "", `Deskripsi keamanan ${index + 1}`, APPEARANCE_LIMITS.security.desc);
+    });
+  }
 
   return [...new Set(errors)];
 }

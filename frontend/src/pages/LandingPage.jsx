@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Button, Container, Flex, Heading, HStack, SimpleGrid, Stack, Text, VStack } from "@chakra-ui/react";
 import {
-  ArrowRight, CaretDown, Rocket, ShieldCheck, Sparkle,
+  ArrowRight, CaretDown, CaretLeft, CaretRight, Rocket, ShieldCheck, Sparkle,
   Check, Lock, CloudArrowUp, Users, Quotes, Bank, TreeStructure, Lightning, CertificateIcon,
   WhatsappLogo, InstagramLogo,
 } from "@phosphor-icons/react";
@@ -33,7 +33,7 @@ const EASE = "cubic-bezier(0.25, 1, 0.8, 1)";
 const CARD_TRANSITION =
   "transform 400ms cubic-bezier(0.25, 1, 0.5, 1), box-shadow 400ms cubic-bezier(0.25, 1, 0.5, 1), border-color 400ms cubic-bezier(0.25, 1, 0.5, 1)";
 
-const DARK_IDS = ["home", "section-dark-testimonial", "section-dark-2", "section-dark-3"];
+const DARK_IDS = ["home", "section-dark-testimonial", "section-dark-2", "section-dark-3", "section-dark-footer"];
 const NAV_MID = 35;
 
 const navLinks = [
@@ -43,7 +43,14 @@ const navLinks = [
 
 const stepIcons = [Bank, TreeStructure, Lightning, CertificateIcon,];
 
-const solutions = [
+/* Peta ikon & gambar untuk data dari Appearance */
+const PLAN_ICONS = [Sparkle, Rocket, Users];
+const SOLUTION_IMAGES = [imgStartup, imgCorporate, imgAkuntan];
+const SECURITY_ICONS = { Lock, ShieldCheck, CloudArrowUp, Users };
+const pick = (value, fallback) => (Array.isArray(value) ? value : fallback);
+
+/* Data bawaan: dipakai hanya kalau konten dari Appearance belum memuat key-nya */
+const FALLBACK_SOLUTIONS = [
   {
     image: imgStartup,
     tag: "Startup & Agresif",
@@ -65,14 +72,14 @@ const solutions = [
   },
 ];
 
-const steps = [
+const FALLBACK_STEPS = [
   { title: "Hubungkan Akun Bank", desc: "Koneksikan rekening bank korporat dan payment gateway melalui integrasi API terenkripsi 256-bit berstandar perbankan.", badge: "API Terenkripsi 256-bit" },
   { title: "Kustomisasi Bagan Akun", desc: "Sesuaikan Chart of Accounts (COA), multi-mata uang, dan struktur cost center dengan template standar industri kamu.", badge: "Standar PSAK / Kustom" },
   { title: "Otomasi Jurnal Transaksi", desc: "Setiap transaksi masuk, keluar, dan faktur klien dijurnal secara otomatis ke debit/kredit tanpa entri manual.", badge: "Entri Ganda Otomatis" },
   { title: "Terbitkan Laporan Neraca", desc: "Hasilkan laporan neraca, laba rugi, dan arus kas komprehensif dalam satu klik, siap dibagikan ke dewan direksi.", badge: "Laporan Real-Time" },
 ];
 
-const security = [
+const FALLBACK_SECURITY = [
   { icon: Lock, title: "Enkripsi Tingkat Perbankan (AES-256)", desc: "Seluruh data pembukuan dan kredensial bank dienkripsi saat transit (TLS 1.3) maupun saat istirahat dengan enkripsi AES-256." },
   { icon: ShieldCheck, title: "Sertifikasi SOC-2 & ISO 27001", desc: "Infrastruktur cloud teraudit secara berkala untuk memenuhi standar kepatuhan tata kelola dan privasi informasi korporasi global." },
   { icon: CloudArrowUp, title: "Cadangan Data Otomatis Harian", desc: "Snapshot data buku besar dicadangkan di multi-region redundan sehingga kontinuitas bisnis tetap terjamin 99,99% SLA." },
@@ -91,7 +98,7 @@ const legalLinks = [
   { label: "Kebijakan Privasi", url: "/privacy" },
 ];
 
-const plans = [
+const FALLBACK_PLANS = [
   {
     icon: Sparkle,
     name: "Starter",
@@ -291,6 +298,81 @@ function LazyMount({ children, rootMargin = "100px" }) {
   );
 }
 
+/* Slider testimoni: banyak orang, geser otomatis tiap 6 detik */
+function TestimonialSlider({ items }) {
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const count = items.length;
+  const current = Math.min(index, count - 1);
+
+  useEffect(() => {
+    if (count < 2 || paused) return;
+    const t = setInterval(() => setIndex((i) => (Math.min(i, count - 1) + 1) % count), 6000);
+    return () => clearInterval(t);
+  }, [count, paused]);
+
+  const goTo = (n) => setIndex((n + count) % count);
+
+  return (
+    <Box
+      w="full" position="relative"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      <Box overflow="hidden" w="full">
+        <Flex transform={`translateX(-${current * 100}%)`} transition={`transform 600ms ${EASE}`}>
+          {items.map((t, i) => (
+            <VStack
+              key={t.id || i} flex="0 0 100%" minW={0} gap={6} px={{ base: 2, md: 12 }}
+              textAlign="center" aria-hidden={i !== current}
+            >
+              <Box w="48px" h="48px" borderRadius="full" bg="rgba(14,165,233,.15)" border="1px solid rgba(56,189,248,.3)" color={C.sky400} display="flex" alignItems="center" justifyContent="center">
+                <Quotes size={24} weight="fill" />
+              </Box>
+              <Heading as="blockquote" fontSize={{ base: "xl", md: "4xl" }} lineHeight="1.15" fontWeight="600" color="white">
+                “{t.quote}”
+              </Heading>
+              <VStack gap={0}>
+                {t.image && (
+                  <Box
+                    as="img" src={t.image} alt={t.name} loading="lazy" decoding="async"
+                    w="56px" h="56px" borderRadius="full" border="2px solid" borderColor={C.sky500}
+                    objectFit="cover" mb={3}
+                  />
+                )}
+                <Text fontWeight="700" color="white">{t.name}</Text>
+                <Text fontSize="xs" color={C.soft}>{t.position}</Text>
+              </VStack>
+            </VStack>
+          ))}
+        </Flex>
+      </Box>
+
+      {count > 1 && (
+        <HStack justify="center" gap={4} mt={8}>
+          <Box as="button" type="button" aria-label="Testimoni sebelumnya" onClick={() => goTo(current - 1)} color={C.soft} _hover={{ color: "white" }}>
+            <CaretLeft size={22} weight="bold" />
+          </Box>
+          <HStack gap={2}>
+            {items.map((t, i) => (
+              <Box
+                key={t.id || i} as="button" type="button" aria-label={`Testimoni ${i + 1}`}
+                onClick={() => goTo(i)}
+                w={i === current ? "24px" : "8px"} h="8px" borderRadius="full"
+                bg={i === current ? C.sky400 : "#334155"}
+                transition={`all 300ms ${EASE}`}
+              />
+            ))}
+          </HStack>
+          <Box as="button" type="button" aria-label="Testimoni berikutnya" onClick={() => goTo(current + 1)} color={C.soft} _hover={{ color: "white" }}>
+            <CaretRight size={22} weight="bold" />
+          </Box>
+        </HStack>
+      )}
+    </Box>
+  );
+}
+
 const Navbar = memo(function Navbar() {
   const navigate = useNavigate();
   const scrolled = useScrolled();
@@ -428,8 +510,8 @@ function FaqItem({ q, a }) {
 }
 
 {/* Price */ }
-function PlanContent({ p, onClick, selected }) {
-  const Icon = p.icon;
+function PlanContent({ p, onClick, selected, icon }) {
+  const Icon = p.icon || icon || Sparkle;
   return (
     <VStack align="stretch" justify="space-between" gap={8} p={8} h="full" w="full" textAlign="left">
       <VStack align="stretch" gap={6}>
@@ -452,12 +534,12 @@ function PlanContent({ p, onClick, selected }) {
             <Text fontSize={{ base: "4xl", md: "5xl" }} fontWeight="700" color="#0F172A" lineHeight="1">{p.price}</Text>
             <Text fontSize="md" color={C.soft}>/bulan</Text>
           </HStack>
-          <Text mt={3} color={C.mute}>{p.tagline}</Text>
+          {p.tagline && <Text mt={3} color={C.mute}>{p.tagline}</Text>}
         </Box>
 
         <VStack align="stretch" gap={4} pt={2}>
-          {p.features.map((f) => (
-            <HStack key={f} gap={3}>
+          {(p.features || []).filter((f) => f && f.trim()).map((f, fi) => (
+            <HStack key={fi} gap={3}>
               <Box color={C.sky300} flexShrink={0}><Check size={18} weight="bold" /></Box>
               <Text color="#1E293B" fontWeight="500">{f}</Text>
             </HStack>
@@ -481,7 +563,7 @@ function PlanContent({ p, onClick, selected }) {
   );
 }
 
-function PlanCard({ p, selected, onSelect, onClick }) {
+function PlanCard({ p, icon, selected, onSelect, onClick }) {
   const [ref, inView] = useInView("150px");
 
   const shellStyle = {
@@ -526,19 +608,23 @@ function PlanCard({ p, selected, onSelect, onClick }) {
           introDelay={300}
           style={{ ...shellStyle, placeItems: "stretch" }}
         >
-          <PlanContent p={p} onClick={onClick} selected={selected} />
+          <PlanContent p={p} icon={icon} onClick={onClick} selected={selected} />
         </PixelCard>
       ) : (
         <Box style={{ ...shellStyle, borderRadius: "24px", background: "white" }}>
-          <PlanContent p={p} onClick={onClick} selected={selected} />
+          <PlanContent p={p} icon={icon} onClick={onClick} selected={selected} />
         </Box>
       )}
     </Box>
   );
 }
 
-function PricingSection({ onRegister, onContact }) {
-  const [selected, setSelected] = useState(1);
+function PricingSection({ plans, onRegister, onContact }) {
+  const popularIndex = plans.findIndex((p) => p.popular);
+  const [selected, setSelected] = useState(popularIndex >= 0 ? popularIndex : 0);
+  const active = selected < plans.length ? selected : 0;
+
+  if (!plans.length) return null;
 
   return (
     <Box id="harga" scrollMarginTop="70px" py={24} bg="white">
@@ -551,12 +637,13 @@ function PricingSection({ onRegister, onContact }) {
             </VStack>
           </Reveal>
 
-          <SimpleGrid columns={{ base: 1, lg: 3 }} gap={8} w="full" alignItems="stretch">
+          <SimpleGrid columns={{ base: 1, lg: Math.min(plans.length, 3) }} gap={8} w="full" alignItems="stretch">
             {plans.map((p, i) => (
-              <Reveal key={p.name} delay={i * 0.12} style={{ height: "100%" }}>
+              <Reveal key={p.id || i} delay={i * 0.12} style={{ height: "100%" }}>
                 <PlanCard
                   p={p}
-                  selected={selected === i}
+                  icon={PLAN_ICONS[i % PLAN_ICONS.length]}
+                  selected={active === i}
                   onSelect={() => setSelected(i)}
                   onClick={p.action === "contact" ? onContact : onRegister}
                 />
@@ -575,6 +662,14 @@ export default function LandingPage() {
   const register = () => navigate("/register");
   const [content, setContent] = useState(getPublishedContent);
   const faqs = content.faqs;
+  const plans = pick(content.plans, FALLBACK_PLANS);
+  const solutions = pick(content.solutions, FALLBACK_SOLUTIONS);
+  const steps = pick(content.steps, FALLBACK_STEPS);
+  const security = pick(content.security, FALLBACK_SECURITY);
+  const testimonials = (Array.isArray(content.testimonials) && content.testimonials.length
+    ? content.testimonials
+    : [content.testimonial]
+  ).filter(Boolean);
   const instagramUrl = getInstagramUrl(content.contact.instagram);
   const whatsappUrl = getWhatsappUrl(content.contact.whatsapp);
   useEffect(() => {
@@ -706,7 +801,7 @@ export default function LandingPage() {
       </Box>
 
       {/* Solusi */}
-      <Box id="solusi" scrollMarginTop="50px" py={24} bg={C.bg} borderTop="1px solid" borderColor="rgba(226,232,240,.8)">
+      <Box display={solutions.length ? undefined : "none"} id="solusi" scrollMarginTop="50px" py={24} bg={C.bg} borderTop="1px solid" borderColor="rgba(226,232,240,.8)">
         <Container maxW="6xl">
           <VStack gap={14}>
             <Reveal>
@@ -714,7 +809,7 @@ export default function LandingPage() {
             </Reveal>
             <SimpleGrid columns={{ base: 1, md: 3 }} gap={10} w="full">
               {solutions.map((s, i) => (
-                <Reveal key={s.title} delay={i * 0.22} style={{ height: "100%" }}>
+                <Reveal key={s.id || i} delay={i * 0.22} style={{ height: "100%" }}>
                   <VStack
                     h="full" align="stretch" gap={0}
                     bg="#e9e9e9ff"
@@ -728,15 +823,17 @@ export default function LandingPage() {
                   >
                     <Box h="256px" position="relative" overflow="hidden" borderTopRadius="30px">
                       <Box
-                        as="img" src={s.image} alt={s.title} loading="lazy" decoding="async"
+                        as="img" src={s.image || SOLUTION_IMAGES[i % SOLUTION_IMAGES.length]} alt={s.title} loading="lazy" decoding="async"
                         w="full" h="full" objectFit="cover"
                       />
                       <Box position="absolute" inset={0} bg="linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 50%)" borderTopRadius="30px" />
-                      <Box position="absolute" top={4} left={4}>
-                        <Pill color={s.dark ? "#13dcebff" : C.sky300} border={s.dark ? "rgba(52,211,153,.2)" : undefined}>
-                          {s.tag}
-                        </Pill>
-                      </Box>
+                      {s.tag && (
+                        <Box position="absolute" top={4} left={4}>
+                          <Pill color={s.dark ? "#13dcebff" : C.sky300} border={s.dark ? "rgba(52,211,153,.2)" : undefined}>
+                            {s.tag}
+                          </Pill>
+                        </Box>
+                      )}
                     </Box>
                     <VStack align="start" gap={3} p={8} flex={1}>
                       <Heading as="h3" fontSize="xl" fontWeight="700">{s.title}</Heading>
@@ -754,6 +851,7 @@ export default function LandingPage() {
       {/* Testimoni */}
       <Box
         id="section-dark-testimonial"
+        display={testimonials.length ? undefined : "none"}
         position="relative" overflow="hidden"
         py={{ base: 20, md: 28 }}
         bg={C.navy} borderBottom="1px solid" borderColor="#1E293B"
@@ -789,21 +887,9 @@ export default function LandingPage() {
 
         <Reveal>
           <Container maxW="4xl" position="relative" zIndex={1}>
-            <VStack gap={6} textAlign="center" userSelect="none">
-              <Box w="48px" h="48px" borderRadius="full" bg="rgba(14,165,233,.15)" border="1px solid rgba(56,189,248,.3)" color={C.sky400} display="flex" alignItems="center" justifyContent="center">
-                <Quotes size={24} weight="fill" />
-              </Box>
-              <Heading as="blockquote" fontSize={{ base: "xl", md: "4xl" }} lineHeight="1.15" fontWeight="600" color="white">“{content.testimonial.quote}”</Heading>
-              <VStack gap={0}>
-                {content.testimonial.image && (<Box
-                  as="img" src={content.testimonial.image} alt={content.testimonial.name} loading="lazy" decoding="async"
-                  w="56px" h="56px" borderRadius="full" border="2px solid" borderColor={C.sky500}
-                  objectFit="cover" mb={3}
-                />)}
-                <Text fontWeight="700" color="white">{content.testimonial.name}</Text>
-                <Text fontSize="xs" color={C.soft}>{content.testimonial.position}</Text>
-              </VStack>
-            </VStack>
+            <Box userSelect="none">
+              <TestimonialSlider items={testimonials} />
+            </Box>
           </Container>
         </Reveal>
       </Box>
@@ -811,6 +897,7 @@ export default function LandingPage() {
       {/* Alur implementasi */}
       <Box
         id="fitur" scrollMarginTop="80px" py={24} bg={C.bg}
+        display={steps.length ? undefined : "none"}
         borderY="1px solid" borderColor={C.line}
         position="relative" overflow="hidden"
       >
@@ -847,9 +934,9 @@ export default function LandingPage() {
 
               <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} gap={8} w="full" position="relative" zIndex={1}>
                 {steps.map((s, i) => {
-                  const StepIcon = stepIcons[i];
+                  const StepIcon = stepIcons[i % stepIcons.length];
                   return (
-                    <Reveal key={s.title} delay={i * 0.1} style={{ height: "100%" }}>
+                    <Reveal key={s.id || i} delay={i * 0.1} style={{ height: "100%" }}>
                       <VStack
                         className="group"
                         position="relative" overflow="hidden"
@@ -891,7 +978,7 @@ export default function LandingPage() {
                                 WebkitTextFillColor: "transparent",
                               }}
                             >
-                              0{i + 1}
+                              {String(i + 1).padStart(2, "0")}
                             </Text>
                           </HStack>
 
@@ -900,19 +987,21 @@ export default function LandingPage() {
                           <Text fontSize="sm" color={C.mute} lineHeight="1.7">{s.desc}</Text>
                         </VStack>
 
-                        <HStack
-                          gap={2} pt={4} borderTop="1px dashed #BAE6FD"
-                          fontSize="xs" fontWeight="600" color="#0369A1"
-                        >
-                          <Box
-                            w="18px" h="18px" borderRadius="full" flexShrink={0}
-                            display="flex" alignItems="center" justifyContent="center"
-                            bg="#E0F2FE" color={C.sky}
+                        {s.badge && (
+                          <HStack
+                            gap={2} pt={4} borderTop="1px dashed #BAE6FD"
+                            fontSize="xs" fontWeight="600" color="#0369A1"
                           >
-                            <Check size={11} weight="bold" />
-                          </Box>
-                          <Text>{s.badge}</Text>
-                        </HStack>
+                            <Box
+                              w="18px" h="18px" borderRadius="full" flexShrink={0}
+                              display="flex" alignItems="center" justifyContent="center"
+                              bg="#E0F2FE" color={C.sky}
+                            >
+                              <Check size={11} weight="bold" />
+                            </Box>
+                            <Text>{s.badge}</Text>
+                          </HStack>
+                        )}
                       </VStack>
                     </Reveal>
                   );
@@ -925,11 +1014,11 @@ export default function LandingPage() {
 
       {/* Harga */}
       <Box mb={20}>
-        <PricingSection onRegister={register} onContact={() => navigate("/nantidlu")} />
+        <PricingSection plans={plans} onRegister={register} onContact={() => navigate("/nantidlu")} />
       </Box>
 
       {/* Keamanan */}
-      <Box id="section-dark-2" py={24} bg={C.navy}>
+      <Box id="section-dark-2" display={security.length ? undefined : "none"} py={24} bg={C.navy}>
         <Container maxW="6xl">
           <VStack gap={16}>
             <Reveal>
@@ -940,26 +1029,29 @@ export default function LandingPage() {
               </VStack>
             </Reveal>
             <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} gap={10} w="full">
-              {security.map((s, i) => (
-                <Reveal key={s.title} delay={i * 0.1} style={{ height: "100%" }}>
-                  <VStack
-                    h="full" align="start" gap={2} p={6} borderRadius="3xl"
-                    bg="rgba(11,17,32,.6)"
-                    border="2px solid #00e1ffd8"
-                    boxShadow="8px 8px 14px rgba(0, 255, 234, 0.2)"
-                    transition={CARD_TRANSITION}
-                    _hover={{
-                      transform: "translateY(-7px)",
-                      borderColor: C.sky300,
-                      boxShadow: "0 30px 60px -15px rgba(14, 164, 233, 0.55)"
-                    }}
-                  >
-                    <Box color={C.sky400}><s.icon size={32} /></Box>
-                    <Text pt={2} fontWeight="700" color="white">{s.title}</Text>
-                    <Text fontSize="sm" color={C.soft} lineHeight="1.6">{s.desc}</Text>
-                  </VStack>
-                </Reveal>
-              ))}
+              {security.map((s, i) => {
+                const SecIcon = typeof s.icon === "string" ? (SECURITY_ICONS[s.icon] || ShieldCheck) : (s.icon || ShieldCheck);
+                return (
+                  <Reveal key={s.id || i} delay={i * 0.1} style={{ height: "100%" }}>
+                    <VStack
+                      h="full" align="start" gap={2} p={6} borderRadius="3xl"
+                      bg="rgba(11,17,32,.6)"
+                      border="2px solid #00e1ffd8"
+                      boxShadow="8px 8px 14px rgba(0, 255, 234, 0.2)"
+                      transition={CARD_TRANSITION}
+                      _hover={{
+                        transform: "translateY(-7px)",
+                        borderColor: C.sky300,
+                        boxShadow: "0 30px 60px -15px rgba(14, 164, 233, 0.55)"
+                      }}
+                    >
+                      <Box color={C.sky400}><SecIcon size={32} /></Box>
+                      <Text pt={2} fontWeight="700" color="white">{s.title}</Text>
+                      <Text fontSize="sm" color={C.soft} lineHeight="1.6">{s.desc}</Text>
+                    </VStack>
+                  </Reveal>
+                );
+              })}
             </SimpleGrid>
           </VStack>
         </Container>
@@ -1005,7 +1097,7 @@ export default function LandingPage() {
       </Box>
 
       {/* Footer */}
-      <Box bg={C.navy} borderTop="1px solid #1E293B" pt={20} pb={12}>
+      <Box id="section-dark-footer" bg={C.navy} borderTop="1px solid #1E293B" pt={20} pb={12}>
         <Container maxW="7xl">
           <VStack gap={16} align="stretch">
             <VStack align="start" gap={3} pb={16} borderBottom="1px solid #1E293B" maxW="672px">
@@ -1058,12 +1150,14 @@ export default function LandingPage() {
                   p={0}
                   listStyleType="none"
                   css={{
-                    "--social-surface": "#ffffff",
-                    "--social-ink": C.ink,
+                    "--social-surface": C.navy2,
+                    "--social-border": "#1E293B",
+                    "--social-ink": C.soft,
+                    "--social-ink-hover": "#ffffff",
                     "--social-focus": C.sky400,
                     "--social-size": "50px",
                     "--social-duration": "300ms",
-                    "--social-ease": "ease-in-out",
+                    "--social-ease": "cubic-bezier(0.25, 1, 0.5, 1)",
                     "--social-gmail": "#EA4335",
                     "--social-whatsapp": "#25D366",
                     "--social-instagram": "linear-gradient(45deg, #405de6, #5b51db, #b33ab4, #c135b4, #e1306c, #fd1f1f)",
@@ -1079,14 +1173,21 @@ export default function LandingPage() {
                       width: "var(--social-size)",
                       height: "var(--social-size)",
                       borderRadius: "50%",
-                      background: "var(--social-surface)",
+                      background: "linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02)), var(--social-surface)",
+                      border: "1px solid var(--social-border)",
+                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
                       color: "var(--social-ink)",
                       textDecoration: "none",
-                      transition: "color var(--social-duration) var(--social-ease), box-shadow var(--social-duration) var(--social-ease)",
+                      transition: "color var(--social-duration) var(--social-ease), border-color var(--social-duration) var(--social-ease), box-shadow var(--social-duration) var(--social-ease), transform var(--social-duration) var(--social-ease)",
                     },
+                    "& .landing-social-link[data-social='gmail']": { "--social-glow": "rgba(234, 67, 53, 0.45)" },
+                    "& .landing-social-link[data-social='whatsapp']": { "--social-glow": "rgba(37, 211, 102, 0.4)" },
+                    "& .landing-social-link[data-social='instagram']": { "--social-glow": "rgba(225, 48, 108, 0.45)" },
                     "& .landing-social-link:is(:hover, :focus-visible)": {
-                      color: "var(--social-surface)",
-                      boxShadow: "3px 2px 45px 0 rgb(0 0 0 / 12%)",
+                      color: "var(--social-ink-hover)",
+                      borderColor: "transparent",
+                      transform: "translateY(-3px)",
+                      boxShadow: "0 12px 24px -8px var(--social-glow)",
                     },
                     "& .landing-social-link:focus-visible": {
                       outline: "2px solid var(--social-focus)",
@@ -1096,17 +1197,19 @@ export default function LandingPage() {
                       position: "absolute",
                       inset: 0,
                       background: "var(--social-brand)",
-                      transform: "translateY(100%)",
-                      transition: "transform var(--social-duration) var(--social-ease)",
+                      opacity: 0,
+                      transform: "translateY(110%)",
+                      transition: "transform var(--social-duration) var(--social-ease), opacity var(--social-duration) var(--social-ease)",
                     },
                     "& .landing-social-link:is(:hover, :focus-visible) .landing-social-fill": {
+                      opacity: 1,
                       transform: "translateY(0)",
                     },
                     "& .landing-social-link svg": {
                       position: "relative",
                       zIndex: 1,
-                      width: "30px",
-                      height: "30px",
+                      width: "26px",
+                      height: "26px",
                     },
                     "& .landing-social-tooltip": {
                       position: "absolute",
@@ -1114,16 +1217,18 @@ export default function LandingPage() {
                       left: "50%",
                       transform: "translate(-50%, 8px)",
                       padding: "6px 10px",
-                      borderRadius: "5px",
-                      background: "var(--social-brand)",
-                      color: "var(--social-surface)",
-                      fontSize: "14px",
-                      fontWeight: 500,
+                      borderRadius: "8px",
+                      background: "var(--social-surface)",
+                      border: "1px solid var(--social-border)",
+                      color: "var(--social-ink-hover)",
+                      fontSize: "13px",
+                      fontWeight: 600,
                       whiteSpace: "nowrap",
                       opacity: 0,
                       visibility: "hidden",
                       pointerEvents: "none",
                       zIndex: 2,
+                      boxShadow: "0 8px 20px -8px rgba(0, 0, 0, 0.6)",
                       transition: "opacity var(--social-duration) var(--social-ease), transform var(--social-duration) var(--social-ease), visibility var(--social-duration) var(--social-ease)",
                     },
                     "& .landing-social-item:is(:hover, :focus-within) .landing-social-tooltip": {
